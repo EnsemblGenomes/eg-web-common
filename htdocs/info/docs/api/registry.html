@@ -1,0 +1,289 @@
+<html>
+<head>
+<title>API Registry</title>
+</head>
+
+<body>
+
+<h1>Ensembl Registry</h1>
+
+
+<h2>Introduction</h2>
+
+<p>
+The Registry system allows to tell your programs where to find the EnsEMBL databases and how to connect to them.
+</p>
+
+<h2>Basic Usage</h2>
+
+<p>
+The following call will load all the "latest" databases from the public Ensembl Genomes MySQL server mysql.ebi.ac.uk:
+</p>
+
+<pre class="code">
+Bio::EnsEMBL::Registry-&gt;load_registry_from_db(
+    -host =&gt; 'mysql.ebi.ac.uk',
+    -port =&gt; 4157,
+    -user =&gt; 'anonymous',
+    -verbose =&gt; 1 );
+</pre>
+
+<p>
+Port and Password are the other allowed parameters to this subroutine.
+The latest database is the one with the highest release for each species.
+</p>
+
+<h2>Loading from more than one Ensembl Resource</h2>
+
+<p>
+The Ensembl API allows you to load the databases from more than one resource
+without fear of clashing names and the possibility of missing out resources. To
+load from more than one resource use the following call
+</p>
+
+<pre class='code'>
+Bio::EnsEMBL::Registry-&gt;load_registry_from_multiple_dbs(
+	{
+    -host =&gt; 'mysql.ebi.ac.uk',
+    -port =&gt; 4157,
+    -user =&gt; 'anonymous',
+    -verbose =&gt; 1
+  },
+  {
+    -host =&gt; 'ensembldb.ensembl.org',
+    -port =&gt; 5306,
+    -user =&gt; 'anonymous',
+    -verbose =&gt; 1
+  }
+);
+</pre>
+
+<p>You should take close note of the anonymous HashRefs created in this call. We
+generate one per Ensembl resource where the elements of the hash are identical
+to those specified in the <em>load_registry_from_db()</em> subroutine
+to any version of Ensembl so long as you are sure there will be no issues
+call. You can specify as many resources as you require &amp; have them connecting 
+with API clashes.</p>
+
+<p>One problem of using this is that different Ensembl resources may host
+the same species but at different versions e.g. <em>D.melanogaster</em>
+is hosted by Ensembl and EnsemblGenomes yet the EnsemblGenomes version is
+normally the more upto date version. The code will use the first species
+it encounters in preference to any other it finds in the subsequent
+resources. In the given code example any clashing species
+from Ensembl would be ignored and preference be given to EnsemblGenomes. If
+this is not your desired intention then change the order.</p>
+
+<h2>Using a Custom Registry</h2>
+
+<p>
+Alternatively, a custom registry configuration file could be typically loaded at the beginning of the script using the command:
+</p>
+
+<pre class="code">
+Bio::EnsEMBL::Registry-&gt;load_all();
+</pre>
+
+<p>
+This method loads the Registry from the configuration file passed as an argument.
+If no argument is supplied, it tries to use the file defined in the environment variable ENSEMBL_REGISTRY.
+It uses the file .ensembl_init if all the previous fail.
+</p>
+
+
+<h2>Registry Configuration File</h2>
+
+<p>
+The Registry configuration file for the Perl API is a Perl file which defines the DBAdaptors you will need in your scripts.
+You should start with a:
+</p>
+
+<pre class="code">
+use strict;
+use warnings;
+</pre>
+
+<p>
+clause. You will have to import some modules:
+</p>
+
+<pre class="code">
+use Bio::EnsEMBL::Utils::ConfigRegistry;
+use Bio::EnsEMBL::DBSQL::DBAdaptor;
+use Bio::EnsEMBL::Compara::DBSQL::DBAdaptor;
+</pre>
+
+<p>
+The first one will allow you to define some aliases for the databases.
+The second module is needed if you want to configure EnsEMBL core databases and the third one is needed for the EnsEMBL Compara databases.
+You may need other DBAdaptors for connecting to an EnsEMBL Variation database for instance.</p>
+<p>Next, you have to declare your DBAdaptors.
+For each database you will need to create a new object: Bio::EnsEMBL::DBSQL::DBAdaptor objects for the core database, Bio::EnsEMBL::Compara::DBSQL::DBAdaptor objects for compara databases and so on.
+You will have to define the database host, the port (3306 is the default value), the name of the database, the type of database (core, compara, variation ...) and the species to which this database refers.
+You may also add some aliases of the name using the Bio::EnsEMBL::Utils::ConfigRegistry module.
+Here is an example for the public Plasmodium falciparum core database (release 4):
+</p>
+
+<pre class="code">
+Bio::EnsEMBL::DBSQL::DBAdaptor-&gt;new(
+    -host =&gt; 'mysql.ebi.ac.uk',
+    -port =&gt; 4157,
+    -user =&gt; 'anonymous',
+    -species =&gt; 'plasmodium_falciparum',
+    -group   =&gt; 'core',
+    -dbname  =&gt; 'plasmodium_falciparum_core_4_56_2a'
+);
+
+my $aliases = ['plasmodium falciparum', 'P_falciparum'];
+
+Bio::EnsEMBL::Utils::ConfigRegistry-&gt;add_alias(
+    -species =&gt; "plasmodium_falciparum",
+    -alias   =&gt; $aliases );
+</pre>
+
+<p>
+From release to release, you will have to change the dbname parameter.
+In order to find out the exact name of the new database you can use the "show databases" command of mysql:
+</p>
+
+<pre class="code">
+shell&gt; mysql -u anonymous -h mysql.ebi.ac.uk -P 4157
+mysql&gt; show databases like "plasmodium_falciparum_core_%";
+</pre>
+
+<p>
+It is also possible to connect to a multi-species database with a similar
+method of construction however in addition to the above parameters you will
+need to know the species ID of the species you wish to connect to. For
+example to connect to E.Coli K12 in release 4 you would use the following:
+</p>
+
+<pre class='code'>
+Bio::EnsEMBL::DBSQL::DBAdaptor-&gt;new(
+    -host =&gt; 'mysql.ebi.ac.uk',
+    -port =&gt; 4157,
+    -user =&gt; 'anonymous',
+    -species =&gt; 'Escherichia coli K12',
+    -group   =&gt; 'core',
+    -dbname  =&gt; 'escherichia_shigella_collection_core_4_56_3a',
+    -species_id =&gt; 1,
+    -multispecies_db =&gt; 1
+);
+
+@aliases = ('e_coli_k12');
+
+Bio::EnsEMBL::Utils::ConfigRegistry-&gt;add_alias(
+		-species =&gt; "Escherichia coli K12",
+		-alias   =&gt; \@aliases
+);
+</pre>
+
+<p>
+If you do not know the species ID of the species you need then you can
+list it using the following SQL:
+</p>
+
+<pre class="code">
+shell&gt; mysql -u anonymous -h mysql.ebi.ac.uk -P 4157
+mysql&gt; use escherichia_shigella_collection_core_4_56_3a;
+mysql&gt; select species_id, meta_value from meta where meta_key = 'species.db_name';
++------------+-------------------------------------+
+| species_id | meta_value                          |
++------------+-------------------------------------+
+|          1 | Escherichia coli K12                |
+|          2 | Escherichia coli Crooks             |
+|          3 | Escherichia coli DH10B              |
+|.......     | .......                             |
+|         29 | Escherichia coli O81 ED1a           |
+|         30 | Escherichia coli O7:K1 IAI39        |
++------------+-------------------------------------+
+</pre>
+
+
+<p>
+The species name can be whatever you want and you may add as many aliases as you want,
+BUT:
+</p>
+
+<ol>
+
+<li>
+You should not have two databases with the same name or alias.
+</li>
+
+<li>
+If you intend to use the compara API, you need to use the standard binomial name as the species name and any aliases, as the API relies on this in order to connect to the correct core database.
+</li>
+
+</ol>
+
+<p>
+For connecting to the EnsEMBL Compara database, you will have to create a Bio::EnsEMBL::Compara::DBSQL::DBAdaptor. Here is an example:
+</p>
+
+<pre class="code">
+Bio::EnsEMBL::Compara::DBSQL::DBAdaptor-&gt;new(
+    -host =&gt; 'mysql.ebi.ac.uk',
+    -port =&gt; 4157,
+    -user    =&gt; 'anonymous',
+    -species =&gt; 'bacteria',
+    -dbname  =&gt; 'ensembl_compara_bacteria_4_56'
+);
+
+@aliases = ('ensembl_compara_bactera');
+
+Bio::EnsEMBL::Utils::ConfigRegistry-&gt;add_alias(
+		-species =&gt; 'bacteria',
+		-alias   =&gt; \@aliases );
+</pre>
+
+<p>
+Finally, you have to end with a 1 for the import to be successful:
+</p>
+
+<pre class="code">
+1;
+</pre>
+
+
+<h2>Save the File</h2>
+
+<p>
+If you want this file to be your default configuration file, you probably want to save it as .ensembl_init in your home directory.
+You can also save it elsewhere and point the ENSEMBL_REGISTRY environment variable to that location.
+Here are a couple of examples of how to configure your environment depending on your shell:
+</p>
+
+<ul>
+
+<li>
+Under bash:
+
+<pre class="code">
+ENSEMBL_REGISTRY="/usr/local/share/ensembl_registry.conf"
+export ENSEMBL_REGISTRY
+</pre>
+</li>
+
+<li>
+Under csh or tcsh:
+
+<pre class="code">
+setenv ENSEMBL_REGISTRY "/usr/local/share/ensembl_registry.conf"
+</pre>
+</li>
+
+</ul>
+
+
+<h2 id="support">Ensembl Software Support</h2>
+
+<p>
+Ensembl Genomes &amp; Ensembl are open projects and we would like to encourage correspondence and discussions on any subject on any aspect of them.
+Please see the
+<a href="/info/about/contact/">Ensembl Genomes Contacts</a> page for suitable options for getting in touch with us.
+</p>
+
+
+</body>
+</html>

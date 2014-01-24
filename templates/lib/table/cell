@@ -1,0 +1,3 @@
+<td [% IF tableclass %] class="[% tableclass %]" [% END %]>
+  [% content %]
+</td>

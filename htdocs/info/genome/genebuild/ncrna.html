@@ -1,0 +1,73 @@
+<html>
+<head>
+<title>Annotation of Non-Coding RNA</title>
+</head>
+
+<body>
+<h1>Non-coding RNA Overview</h1>
+
+<p>
+The majority of non-coding RNA, or ncRNA, in Ensembl has been generated using the program <a href="http://www.sanger.ac.uk/Software/Rfam/help/software.shtml">rfam_script.pl</a>.
+rfam_scan.pl is a perl wrapper for searching DNA sequences against the <a rel="external" href="http://rfam.sanger.ac.uk">Rfam</a> Database (Gardner PP <i>et al.</i> (2009)).
+
+</p>
+
+<p>
+The following non-coding RNA gene types are annotated, along with pseudogenes
+</p>
+
+<dl>
+
+<dt>tRNA</dt><dd>transfer RNA</dd>
+<dt>rRNA</dt><dd>ribosomal RNA</dd>
+<dt>scRNA</dt><dd>small cytoplasmic RNA</dd>
+
+<dt>snRNA</dt><dd>small nuclear RNA</dd>
+<dt>snoRNA</dt><dd>small nucleolar RNA</dd>
+<dt>miRNA</dt><dd>microRNA precursors</dd>
+
+<dt>tmRNA</dt><dd>transfer-messenger RNA
+<dt>MRP_RNA</dt><dd>ribonuclease MRP (RNase MRP)
+<dt>P_RNA</dt><dd>ribonuclease P (RNase P)
+<dt>SRP_RNA</dt><dd>signal recognition particle (SRP) RNA
+
+<dt>antisense</dt><dd>antisense RNA
+<dt>ribozyme</dt><dd>ribozyme
+<dt>telo_RNA</dt><dd>ribonucleoprotein reverse transcriptase (telomerase RNA)
+<dt>v_RNA</dt><dd>vault RNA
+
+<dt>class_I_RNA<dt><dd>class I RNA
+<dt>class_II_RNA<dt><dd>class II RNA
+
+<dt>misc_RNA</dt><dd>miscellaneous other RNA</dd>
+
+</dl>
+
+<h2 id="Details">Annotation Details</h2>
+
+<p>
+Most <strong>ncRNA</strong> is annotated by aligning a genomic sequence against 
+<a rel="external" href="http://rfam.sanger.ac.uk/">Rfam sequences</a> using 
+<a rel="external" href="http://blast.ncbi.nlm.nih.gov/Blast.cgi">BLASTN</a>. 
+The BLAST hits are then used to seed <a rel="external" href="http://infernal.janelia.org/">Infernal</a> searches of the aligned regions with the corresponding Rfam covariance models. The purpose of 
+this is to reduce the search space required, as to scan the entire genome with all 
+the Rfam covariance models would be extremely CPU-intensive.<br>
+See Gardner PP <i>et al.</i> (2009) "Rfam: updates to the RNA families database.", <i>Nucl. Acids Res.</i>, <b>37</b>, D136-40.<br>
+See also <a rel="external" href="http://rfam.sanger.ac.uk/">http://rfam.sanger.ac.uk/</a>.
+<br>
+</p>
+<p>
+<strong>tRNA</strong> is predicted by using tRNAScan-SE software. See Lowe T.M. and Eddy S.R. (1997) "tRNAScan-SE: a program for improved detection of transfer RNA genes in genomic sequence", <i>Nucl. Acids Res.</i>, <b>25</b>, 955-964.<br>
+
+See also <a rel="external" href="http://selab.janelia.org/tRNAscan-SE/">http://selab.janelia.org/tRNAscan-SE/</a>.<br><br>
+Version 1.23 of the program was used, configured for superregnum as appropriate.
+</p>
+<p>
+<strong>rRNA</strong> is predicted by using RNAmmer software. See Lagesen K. <i>et al.</i> (2007) "RNammer: consistent annotation of rRNA genes in genomic sequences", <i>Nucl. Acids Res.</i>, <b>35</b>, 3100-3108.<br>
+
+See also <a rel="external" href="http://www.cbs.dtu.dk/services/RNAmmer">http://www.cbs.dtu.dk/services/RNAmmer</a>.<br><br>
+Version 1.2 of the program was used, configured for superregnum as appropriate.
+</p>
+
+</body>
+</html>

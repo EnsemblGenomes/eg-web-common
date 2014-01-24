@@ -1,0 +1,89 @@
+<html>
+<head>
+<meta name="order" content="4" />
+<title>Public MySQL Server</title>
+</head>
+
+<body>
+
+<h1>The Ensembl Genomes public MySQL Servers</h1>
+
+<p>For large amounts of data and more detailed analysis, we
+recommend you use our publicly-accessible MySQL server,which you can
+access as user 'anonymous'. The server is available in a similar manner
+to the <a href="http://www.ensembl.org/info/data/mysql.html">Ensembl
+MySQL server</a>, but is located at a different address. Connection details
+are given below.
+<p>There are two options for retrieving data from the Ensembl amd
+Ensembl Genomes databases:</p>
+
+<dl>
+		<dt>Perl API</dt>
+		<dd>The easiest option is to use the Ensembl <a
+				href="/info/data/api.html">Perl API</a>. The API uses an
+		object-oriented approach to model real biological objects such as
+		genes, transcripts and 'slices' of DNA sequence, making it
+		straightforward for you to write scripts that retrieve and analyze
+		data. <pre class="code">
+# find gene stable ids corresponding to the MGI symbol 'Tyr'
+my $gene_adaptor = $dbCore-&gt;get_GeneAdaptor();
+my @genes = @{ $gene_adaptor-&gt;fetch_all_by_external_name('Tyr') };
+</pre>
+		<p>Additional code examples and suggestions can be found in the
+		various <a href="/info/genome/api/index.html">API tutorials</a> and the <a
+				href="http://lists.ensembl.org/pipermail/dev/"
+				rel="external">ensembl-dev mailing list archives</a>.</p>
+		</dd>
+
+		<dt>MySQL client</dt>
+		<dd>Alternatively, you can use a MySQL <a
+				href="http://dev.mysql.com/downloads/mysql/5.0.html#downloads">client
+		program</a> to query the database directly. However this does require
+		knowledge of the complex <a href="/info/genome/api/index.html">database
+		schemas</a> used by Ensembl, so we only recommend it if you are unable to
+		install our API (e.g. if you have no access to Perl). Also note that
+		direct MySQL queries on the database are not suited to retrieve
+		sequences. To retrieve sequences please use the Perl API.</dd>
+</dl>
+
+<p>For <strong>BioMart</strong> access, we strongly recommend that
+you use the <a href="/Multi/martview">martview web interface</a>, as the
+mart databases contain very many tables of denormalised data. Data can
+also be retrieved from BioMart programmatically, using the <a
+		href="http://www.biomart.org/martservice.html">Mart XML-based
+webservice</a>.</p>
+
+<h2>Summary of servers and ports</h2>
+
+<p><strong>Important note:</strong> Ensembl and Ensembl Genomes MySQL
+servers are located at different URLs. All Ensembl Genomes databases can
+be found on the same server; Ensembl BioMart is on a different server to
+the other Ensembl databases. Not all MySQL instances use the default
+port, so please ensure that you specify the correct port when trying to
+connect.</p>
+
+<table class="ss tint">
+		<tr>
+				<th>Database</th>
+				<th>Server</th>
+				<th class="center">Port</th>
+		</tr>
+		<tr>
+				<td>Ensembl Genomes, all databases</td>
+				<td>mysql.ebi.ac.uk</td>
+				<td class="center">4157</td>
+		</tr>
+		<tr>
+				<td>Ensembl</td>
+				<td>ensembldb.ensembl.org</td>
+				<td class="center">5306</td>
+		</tr>
+		<tr>
+				<td>Ensembl Mart</td>
+				<td>martdb.ensembl.org</td>
+				<td class="center">5316</td>
+		</tr>
+</table>
+
+</body>
+</html>

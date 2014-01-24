@@ -1,0 +1,82 @@
+<html>
+<head>
+<meta name="order" content="3" />
+<title>API Documentation</title>
+</head>
+
+<body>
+
+<h1>Perl API Documentation</h1>
+
+
+<h2>Databases and Application Programme Interfaces (APIs)</h2>
+
+<p>Ensembl Genomes uses <a href="http://www.mysql.com/" rel="external">MySQL</a> relational 
+databases to store its information. A comprehensive set of Application Programme Interfaces 
+(APIs) serve as a middle-layer between underlying database schemes and more specific 
+application programmes. The APIs aim to encapsulate the database layout by providing 
+efficient high-level access to data tables and isolate applications from data layout changes.</p>
+
+<p>The schema and API used for Ensembl Genomes is the same as that developed in the course of the <A HREF="http://www.ensembl.org">Ensembl</A> project, and Ensembl Genomes will work with the same version of the API as Ensembl.  <strong>Please note</strong> that until the release of Ensembl 53, <A HREF="">this patch</A> is required in order to use the Ensembl API with Ensembl Genomes.
+</p>
+
+<p>Ensembl's API is written in Perl - <a href="./api_installation.html">installation instructions</a> 
+and <a href="http://www.ensembl.org/info/docs/api/">full documentation</a> 
+of all modules are available online.</p>
+
+<p>The Ensembl Genomes database types included in the first release are introduced below (other types of Ensembl databases will be included in subsequent releases). Data releases for these databases can be obtained 
+from the Ensembl Genomes <a href="ftp://ftp.ensemblgenomes.org/pub/" rel="external">FTP site</a>.
+</p>
+
+<dl>
+<dt>Core databases and APIs</dt>
+<dd>
+<p>The species-specific Core databases store genome sequences and most of the annotation information.
+This includes the gene, transcript and protein models annotated by the Ensembl automated genome analysis and
+<a href="/info/docs/genebuild/genome_annotation.html">annotation</a> pipeline.</p>
+
+<p>Core databases also store assembly information, cDNA and 
+protein alignments, external references, markers and repeat regions data sets.</p>
+
+<p><a href="./core/index.html">More about the Core databases and APIs...</a></p>
+</dd>
+
+
+<dt>Compara database and APIs</dt>
+<dd>
+<p>The Compara multi-species database stores the results of genome-wide species comparisons 
+re-calculated for each release.</p>
+
+<p>The comparative genomics set includes pairwise whole genome alignments and synteny regions.  
+The comparative proteomics data set contains orthologue predictions.</p>
+
+<p><a href="./compara/index.html">More about the Compara database and API...</a></p>
+</dd>
+
+</dl>
+
+<h2>Ensembl Registry</h2>
+
+<p>
+The Registry system allows to tell your programs where to find the EnsEMBL databases and how to connect to them.
+It has been implemented for the Ensembl Core and Compara APIs. 
+</p>
+
+<p><a href="./registry.html">More about the Registry...</a></p>
+
+
+<h2 id="support">Ensembl Software Support</h2>
+
+<p>
+Ensembl and Ensembl Genomes are an open projects and we would like to encourage correspondence and discussions on any subject 
+on any aspect of Ensembl. Please see the <a href="/info/about/contact/">Ensembl Contacts</a> page for suitable 
+options for getting in touch with us.
+</p>
+
+<p>If you are interested in undertaking a short-term collaborative project, our 
+"<a href="/info/about/outreach/geek4aweek.html">Geek for a Week</a>" scheme allows developers and researchers to work 
+alongside Ensembl Genomes team members. <a href="/info/about/outreach/geek4aweek.html">More information</a>...</p>
+
+
+</body>
+</html>

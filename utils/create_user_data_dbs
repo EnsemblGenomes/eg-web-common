@@ -1,0 +1,189 @@
+#!/usr/bin/env perl
+
+### create_user_data_dbs
+use lib '/nfs/ensembl/perllib/catalystlibs/lib/perl5/site_perl/5.8.8';
+use lib '/nfs/ensembl/perllib/catalystlibs/lib64/perl5/site_perl/5.8.8/x86_64-linux-thread-multi';
+
+
+use strict;
+
+# use EnsEMBL::Web::SpeciesDefs;
+use FindBin qw($Bin);
+use File::Basename qw( dirname );      
+# Load libraries needed for reading config
+use Data::Dumper;
+use File::Slurp qw(slurp);
+use File::Find::Object::Rule;
+
+BEGIN {
+
+   unshift @INC, "$Bin/../../../conf";
+   unshift @INC, "$Bin/../../..";
+   unshift @INC, "$Bin/../../utils";
+   eval { require SiteDefs };
+   if ($@) { die "Can't use SiteDefs.pm - $@\n"; }
+   map { unshift @INC, $_ } @SiteDefs::ENSEMBL_LIB_DIRS;
+}
+
+
+
+use utils::Tool;                                                
+
+my $SPECIES_DEFS = EnsEMBL::Web::SpeciesDefs->new(); 
+
+
+die "cannot find user_data_template.ddl. We can\'t run without it\n" unless -e('user_data_template.ddl');
+my $DDL = slurp('user_data_template.ddl');
+chomp $DDL;
+my @table_create_statments = split /;/ ,$DDL;
+
+my @SPECIES;
+
+
+
+# # Get Species List from SiteDefs
+
+@SPECIES = @{ utils::Tool::all_species()};                                                                                                                                   
+
+
+
+foreach my $species (@SPECIES) {
+    print "Getting credentientials for $species\n" . '='x20 . "\n";
+
+    my $user_db_name = user_db_name($species);
+    check_user_db_exists($species) eq 'No' ? create_from_new($species, $user_db_name) : print patch_existing($species);
+
+}
+
+sub user_db_name {
+    my $species = shift;
+
+    my $user_data_name = $SPECIES_DEFS->GENOMIC_UNIT eq 'bacteria' ? '_collection_userdata' : '_userdata';
+
+    my $user_db_name = lcfirst($species) . $user_data_name;
+
+    return $user_db_name;
+}
+
+
+sub check_user_db_exists {
+    my $species = shift;
+    my $user_db_name = user_db_name($species);
+
+    my $dbh = get_dbh_from_species_type($species, 'core');
+    my $query = qq{SELECT IF(EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME =  '$user_db_name'), 'Yes','No') as 'exists'};
+    # warn $query;
+    my $array_ref = $dbh->selectall_arrayref($query);
+    #warn Dumper $array_ref;
+    return  $array_ref->[0]->[0];
+}
+
+
+
+
+
+sub get_dbh_from_species_type {
+    my ($species, $type) = @_;
+
+    die "need species and database type" unless $species && $type;
+
+
+    my $database = $type eq 'core' ?  $SPECIES_DEFS->get_config($species, 'databases')->{'DATABASE_CORE'}->{'NAME'}: user_db_name($species);
+
+    # make the DB handle, get the credentials from SPECIES_DEFS
+    my $db_credentials = $SPECIES_DEFS->get_config($species, 'databases')->{'DATABASE_CORE'};
+    my $host = $db_credentials->{HOST} ||  (warn "** no HOST in config for [ $species ]");
+    print "Using HOST: [$host]\n". '='x20 . "\n";
+
+    my $port = $db_credentials->{PORT} || warn "** no PORT in config for [ $species ]";
+    my $write_user =  $SPECIES_DEFS->DATABASE_WRITE_USER || die "** no WRITE_USER in config ";
+    my $write_pass = $SPECIES_DEFS->DATABASE_WRITE_PASS || die "** no WRITE_PASS in config ";
+
+    my $dsn = "DBI:mysql:database=$database;host=$host";                                                                                                                                        
+    $dsn .= ";port=$port" if ($port);                                                                                                                                        
+    my     $dbh = DBI->connect( $dsn, $write_user, $write_pass );                       
+
+    return $dbh;
+
+}
+
+
+
+sub create_from_new {
+    my ($species, $user_db_name) = @_;
+
+    warn "creating from new [$species]";
+    # my $db_stub = qq{mysql -u $write_user -p}. $write_pass . qq{ -h $host -P $port};
+    # #    my $db_stub = "mysql -uadmin -pMotxY157 -hmysql-eg-live-1.ebi.ac.uk -P4159";
+    # my $db_create_st = $db_stub . " -e 'create database IF NOT EXISTS $user_db_name'"; 
+    # print 'Stub is:' . $db_create_st, "\n";
+    my $dbh = get_dbh_from_species_type($species, 'core');
+
+
+    $dbh->do("create database  $user_db_name");
+
+    my $userdata_dbh = get_dbh_from_species_type($species,'userdata');
+
+    #load the schema from the DDL
+
+    map { $userdata_dbh->do($_);} @table_create_statments;
+
+    #  need to populate the analysis,meta,meta_coord and coord_system
+    # tables with data. This script does this by copying the data from
+     # the relevant tables on the core DB.
+    my @tables = qw( analysis meta meta_coord coord_system);
+    my $core_db_name = $SPECIES_DEFS->get_config($species, 'databases')->{'DATABASE_CORE'}->{'NAME'};
+    
+    foreach my $table (@tables){
+     	# copy meta table
+	$userdata_dbh->do("create table if not exists $user_db_name.$table select * from $core_db_name.$table");
+    }
+
+}
+
+
+sub calculate_applicable_patches {
+
+    my $species = shift;
+
+    my $userdata_dbh = get_dbh_from_species_type($species,'userdata');
+    my $core_dbh = get_dbh_from_species_type($species, 'core');
+
+
+    # look in the meta table, find out what the schema versions is
+    # look in patch directory and choose the right ones
+    # return an array of pathes to use in the order they must be applied
+
+
+    # work out the patch dir relative to this one
+
+    my $patch_dir = "$Bin/../../../ensembl/sql";
+
+    my $current_core_schema = $core_dbh->selectrow_array(qq{select meta_value from meta where meta_key = 'schema_version'});
+    my $user_db_schema_version = $userdata_dbh->selectrow_array(qq{select meta_value from meta where meta_key = 'schema_version'});
+
+
+    my @found = File::Find::Object::Rule->file()->name( '*.sql' )->in( $patch_dir);
+     die "didn't find any Patch files in  dir:'$patch_dir'\n" unless @found > 0;
+
+    my @schema_range = ($user_db_schema_version + 1)..$current_core_schema;
+    my $regex;
+    map {$regex .= "patch_$_|"} @schema_range;
+    chop $regex;
+    my @patch_list = grep/$regex/, @found;
+   return \@patch_list;
+
+
+}
+
+
+
+
+__END__
+
+=head1 NAME - create_user_data_dbs
+
+=head1 AUTHOR
+
+Stephen Keenan B<email> keenan@ebi.ac.uk
+

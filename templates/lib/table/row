@@ -1,0 +1,4 @@
+<tr 
+[% IF rowclass %]class="[%- rowclass -%]"[% END %] >
+  [% content %]
+</tr>

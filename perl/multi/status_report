@@ -1,0 +1,79 @@
+#!/usr/bin/perl -w                                                              
+use DBI;
+use DBD::mysql;
+use Data::Dumper;
+use strict;
+use warnings;
+
+
+use vars qw( $SERVERROOT );
+BEGIN{
+
+    $SERVERROOT = `pwd`; #dirname(  );                                                                                                                        
+    chop $SERVERROOT;
+    unshift @INC, "$SERVERROOT/conf";
+    eval{ require SiteDefs };
+    if ($@){ die "Can't use SiteDefs.pm - $@\n"; }
+    map{ unshift @INC, $_ } @SiteDefs::ENSEMBL_LIB_DIRS;
+}
+
+require EnsEMBL::Web::SpeciesDefs;                  # Loaded at run time                                                                                    
+my $SPECIES_DEFS = EnsEMBL::Web::SpeciesDefs->new;
+$SPECIES_DEFS || pod2usage("$0: SpeciesDefs config not found");
+my $species_defs = $SPECIES_DEFS;
+
+my $cgi = new CGI;
+$cgi->header(-type => 'text/html');
+
+print "USER_DB host is:\t ". $species_defs->ENSEMBL_USERDB_HOST. "<br>";
+print "USER_DB user is:\t ". $species_defs->ENSEMBL_USERDB_USER. "<br>";
+#print "USER_DB pass is:\t ". $species_defs->ENSEMBL_USERDB_PASS. "<br>";
+#print "USER_DB port is:\t ". $species_defs->ENSEMBL_USERDB_PORT. "<br><br>";
+
+print "DATA_DB host is:\t ".$species_defs->get_config('MULTI', 'DATABASE_HOST'). "<br>";
+print "DATA_DB port is:\t ".$species_defs->get_config('MULTI', 'DATABASE_HOST_PORT'). "<br>";
+#print "DATA_DB user is:\t ".$species_defs->get_config('MULTI', 'DATABASE_DBUSER'). "<br>";
+#print "DATA_DB pass is:\t ".$species_defs->get_config('MULTI', 'DATABASE_DBPASS'). "<br><br>";
+
+
+#PARAMS USER_DB                                                                       
+my $database = "";                                                             
+my $host = $species_defs->ENSEMBL_USERDB_HOST;                                               
+my $port = $species_defs->ENSEMBL_USERDB_PORT;                                                             
+my $user = $species_defs->ENSEMBL_USERDB_USER;                                                            
+my $pw = $species_defs->ENSEMBL_USERDB_PASS;                                 
+
+
+#PARAMS DATA_DB                                                                                                                                            
+my $data_host = $species_defs->get_config('MULTI', 'DATABASE_HOST');
+my $data_port = $species_defs->get_config('MULTI', 'DATABASE_HOST_PORT');
+my $data_user = $species_defs->get_config('MULTI', 'DATABASE_DBUSER');
+my $data_pw = $species_defs->get_config('MULTI', 'DATABASE_DBPASS');
+
+
+my $user_conn_status = "User DB: OK";
+my $data_conn_status = "Data DB: OK";
+my $result = "STATUS: OK";
+
+
+#DATA SOURCE NAME 
+my $user_dsn = "dbi:mysql:$database:$host:$port";
+my $data_dsn = "dbi:mysql:$database:$data_host:$data_port";
+
+
+#DBI CONNECT                                                                                                                                              
+my $user_dbh = DBI->connect($user_dsn, $user, $pw) or $user_conn_status= "Unable to connect to USER DB: $DBI::errstr\n";
+my $data_dbh = DBI->connect($data_dsn, $data_user, $data_pw) or $data_conn_status= "Unable to connect to DATA DB: $DBI::errstr\n";
+
+if(($user_conn_status=~/Unable/i) || ($data_conn_status=~/Unable/i))  {
+    $result = "STATUS: UNABLE TO CONNECT";
+}
+
+print "<html><head>";
+print "<title>Report connection</title>";
+print "</head>";
+print "<body><b>$user_conn_status</b><BR>";
+print "<b>$data_conn_status</b><BR>";
+print "<hr><b>$result</b><BR>";
+print "</body></html>";
+

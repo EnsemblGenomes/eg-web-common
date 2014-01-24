@@ -1,0 +1,1207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<nodes>
+  <node>
+    <name>Treponema pallidum subsp. pallidum str. Nichols (ASM860v1)</name>
+    <division>Bacteria</division>
+    <taxonomy>243276</taxonomy>
+    <db_name>treponema_pallidum_subsp_pallidum_str_nichols_asm860v1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Haloferax volcanii DS2 (ASM2568v1)</name>
+    <division>Bacteria</division>
+    <taxonomy>309800</taxonomy>
+    <db_name>haloferax_volcanii_ds2_asm2568v1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Enterococcus faecalis V583 (ASM778v1)</name>
+    <division>Bacteria</division>
+    <taxonomy>226185</taxonomy>
+    <db_name>enterococcus_faecalis_v583_asm778v1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Bradyrhizobium diazoefficiens USDA 110</name>
+    <division>Bacteria</division>
+    <taxonomy>224911</taxonomy>
+    <db_name>bradyrhizobium_diazoefficiens_usda_110</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Solanum lycopersicum</name>
+    <division>Plants</division>
+    <taxonomy>4081</taxonomy>
+    <db_name>solanum_lycopersicum</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Vitis vinifera</name>
+    <division>Plants</division>
+    <taxonomy>29760</taxonomy>
+    <db_name>vitis_vinifera</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Arabidopsis thaliana</name>
+    <division>Plants</division>
+    <taxonomy>3702</taxonomy>
+    <db_name>arabidopsis_thaliana</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Chlamydomonas reinhardtii</name>
+    <division>Plants</division>
+    <taxonomy>3055</taxonomy>
+    <db_name>chlamydomonas_reinhardtii</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Cyanidioschyzon merolae strain 10D</name>
+    <division>Plants</division>
+    <taxonomy>280699</taxonomy>
+    <db_name>cyanidioschyzon_merolae</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Oryza sativa</name>
+    <division>Plants</division>
+    <taxonomy>39947</taxonomy>
+    <db_name>oryza_sativa</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Physcomitrella patens subsp. patens</name>
+    <division>Plants</division>
+    <taxonomy>145481</taxonomy>
+    <db_name>physcomitrella_patens</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Schizosaccharomyces pombe h978-</name>
+    <division>Fungi</division>
+    <taxonomy>284812</taxonomy>
+    <db_name>schizosaccharomyces_pombe</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Trichoplax adhaerens</name>
+    <division>Metazoa</division>
+    <taxonomy>10228</taxonomy>
+    <db_name>trichoplax_adhaerens</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Ustilago maydis 521</name>
+    <division>Fungi</division>
+    <taxonomy>237631</taxonomy>
+    <db_name>ustilago_maydis</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Zymoseptoria tritici</name>
+    <division>Fungi</division>
+    <taxonomy>336722</taxonomy>
+    <db_name>zymoseptoria_tritici</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Puccinia graminis f. sp. tritici CRL 75-36-700-3</name>
+    <division>Fungi</division>
+    <taxonomy>418459</taxonomy>
+    <db_name>puccinia_graminis</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Saccharomyces cerevisiae S288c</name>
+    <division>Fungi</division>
+    <taxonomy>559292</taxonomy>
+    <db_name>saccharomyces_cerevisiae</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Schistosoma mansoni</name>
+    <division>Metazoa</division>
+    <taxonomy>6183</taxonomy>
+    <db_name>schistosoma_mansoni</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Strigamia maritima</name>
+    <division>Metazoa</division>
+    <taxonomy>126957</taxonomy>
+    <db_name>strigamia_maritima</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Strongylocentrotus purpuratus</name>
+    <division>Metazoa</division>
+    <taxonomy>7668</taxonomy>
+    <db_name>strongylocentrotus_purpuratus</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Tetrahymena thermophila</name>
+    <division>Protists</division>
+    <taxonomy>312017</taxonomy>
+    <db_name>tetrahymena_thermophila</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Tetranychus urticae</name>
+    <division>Metazoa</division>
+    <taxonomy>32264</taxonomy>
+    <db_name>tetranychus_urticae</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Guillardia theta</name>
+    <division>Protists</division>
+    <taxonomy>905079</taxonomy>
+    <db_name>guillardia_theta</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Helobdella robusta</name>
+    <division>Metazoa</division>
+    <taxonomy>6412</taxonomy>
+    <db_name>helobdella_robusta</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Leishmania major strain Friedlin</name>
+    <division>Protists</division>
+    <taxonomy>347515</taxonomy>
+    <db_name>leishmania_major</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Lottia gigantea</name>
+    <division>Metazoa</division>
+    <taxonomy>225164</taxonomy>
+    <db_name>lottia_gigantea</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Nematostella vectensis</name>
+    <division>Metazoa</division>
+    <taxonomy>45351</taxonomy>
+    <db_name>nematostella_vectensis</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Neurospora crassa OR74A</name>
+    <division>Fungi</division>
+    <taxonomy>367110</taxonomy>
+    <db_name>neurospora_crassa</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Phaeodactylum tricornutum CCAP 1055/1</name>
+    <division>Protists</division>
+    <taxonomy>556484</taxonomy>
+    <db_name>phaeodactylum_tricornutum</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Phytophthora infestans T30-4</name>
+    <division>Protists</division>
+    <taxonomy>403677</taxonomy>
+    <db_name>phytophthora_infestans</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Plasmodium falciparum 3D7</name>
+    <division>Protists</division>
+    <taxonomy>36329</taxonomy>
+    <db_name>plasmodium_falciparum</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Giardia lamblia</name>
+    <division>Protists</division>
+    <taxonomy>184922</taxonomy>
+    <db_name>giardia_lamblia</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Amphimedon queenslandica</name>
+    <division>Metazoa</division>
+    <taxonomy>400682</taxonomy>
+    <db_name>amphimedon_queenslandica</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Anopheles gambiae</name>
+    <division>Metazoa</division>
+    <taxonomy>7165</taxonomy>
+    <db_name>anopheles_gambiae</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Apis mellifera</name>
+    <division>Metazoa</division>
+    <taxonomy>7460</taxonomy>
+    <db_name>apis_mellifera</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Aspergillus nidulans FGSC A4</name>
+    <division>Fungi</division>
+    <taxonomy>227321</taxonomy>
+    <db_name>aspergillus_nidulans</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Brugia malayi</name>
+    <division>Metazoa</division>
+    <taxonomy>6279</taxonomy>
+    <db_name>brugia_malayi</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Caenorhabditis elegans</name>
+    <division>Metazoa</division>
+    <taxonomy>6239</taxonomy>
+    <db_name>caenorhabditis_elegans</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Daphnia pulex</name>
+    <division>Metazoa</division>
+    <taxonomy>6669</taxonomy>
+    <db_name>daphnia_pulex</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Dictyostelium discoideum</name>
+    <division>Protists</division>
+    <taxonomy>44689</taxonomy>
+    <db_name>dictyostelium_discoideum</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Drosophila melanogaster</name>
+    <division>Metazoa</division>
+    <taxonomy>7227</taxonomy>
+    <db_name>drosophila_melanogaster</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Monodelphis domestica</name>
+    <division>Ensembl</division>
+    <taxonomy>13616</taxonomy>
+    <db_name>monodelphis_domestica</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Mus musculus</name>
+    <division>Ensembl</division>
+    <taxonomy>10090</taxonomy>
+    <db_name>mus_musculus</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Ornithorhynchus anatinus</name>
+    <division>Ensembl</division>
+    <taxonomy>9258</taxonomy>
+    <db_name>ornithorhynchus_anatinus</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Pan troglodytes</name>
+    <division>Ensembl</division>
+    <taxonomy>9598</taxonomy>
+    <db_name>pan_troglodytes</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Pongo abelii</name>
+    <division>Ensembl</division>
+    <taxonomy>9601</taxonomy>
+    <db_name>pongo_abelii</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Xenopus tropicalis</name>
+    <division>Ensembl</division>
+    <taxonomy>8364</taxonomy>
+    <db_name>xenopus_tropicalis</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Anolis carolinensis</name>
+    <division>Ensembl</division>
+    <taxonomy>28377</taxonomy>
+    <db_name>anolis_carolinensis</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Ciona savignyi</name>
+    <division>Ensembl</division>
+    <taxonomy>51511</taxonomy>
+    <db_name>ciona_savignyi</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Danio rerio</name>
+    <division>Ensembl</division>
+    <taxonomy>7955</taxonomy>
+    <db_name>danio_rerio</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Gallus gallus</name>
+    <division>Ensembl</division>
+    <taxonomy>9031</taxonomy>
+    <db_name>gallus_gallus</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Gasterosteus aculeatus</name>
+    <division>Ensembl</division>
+    <taxonomy>69293</taxonomy>
+    <db_name>gasterosteus_aculeatus</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Homo sapiens</name>
+    <division>Ensembl</division>
+    <taxonomy>9606</taxonomy>
+    <db_name>homo_sapiens</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Yersinia pestis biovar Microtus str. 91001</name>
+    <division>Bacteria</division>
+    <taxonomy>229193</taxonomy>
+    <db_name>yersinia_pestis_biovar_microtus_str_91001</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Xanthomonas campestris pv. campestris str. ATCC 33913</name>
+    <division>Bacteria</division>
+    <taxonomy>190485</taxonomy>
+    <db_name>xanthomonas_campestris_pv_campestris_str_atcc_33913</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Wolbachia endosymbiont of Drosophila melanogaster</name>
+    <division>Bacteria</division>
+    <taxonomy>163164</taxonomy>
+    <db_name>wolbachia_endosymbiont_of_drosophila_melanogaster</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Vibrio cholerae O1 biovar El Tor str. N16961</name>
+    <division>Bacteria</division>
+    <taxonomy>243277</taxonomy>
+    <db_name>vibrio_cholerae_o1_biovar_el_tor_str_n16961</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Vibrio fischeri ES114</name>
+    <division>Bacteria</division>
+    <taxonomy>312309</taxonomy>
+    <db_name>vibrio_fischeri_es114</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Ureaplasma parvum serovar 3 str. ATCC 700970</name>
+    <division>Bacteria</division>
+    <taxonomy>273119</taxonomy>
+    <db_name>ureaplasma_parvum_serovar_3_str_atcc_700970</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Thermus thermophilus HB8</name>
+    <division>Bacteria</division>
+    <taxonomy>300852</taxonomy>
+    <db_name>thermus_thermophilus_hb8</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Thermosynechococcus elongatus BP-1</name>
+    <division>Bacteria</division>
+    <taxonomy>197221</taxonomy>
+    <db_name>thermosynechococcus_elongatus_bp_1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Thermotoga maritima MSB8 (ASM854v1)</name>
+    <division>Bacteria</division>
+    <taxonomy>243274</taxonomy>
+    <db_name>thermotoga_maritima_msb8_asm854v1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Thermococcus kodakarensis KOD1</name>
+    <division>Bacteria</division>
+    <taxonomy>69014</taxonomy>
+    <db_name>thermococcus_kodakarensis_kod1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Thermodesulfovibrio yellowstonii DSM 11347</name>
+    <division>Bacteria</division>
+    <taxonomy>289376</taxonomy>
+    <db_name>thermodesulfovibrio_yellowstonii_dsm_11347</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Thermofilum pendens Hrk 5</name>
+    <division>Bacteria</division>
+    <taxonomy>368408</taxonomy>
+    <db_name>thermofilum_pendens_hrk_5</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Thermoplasma acidophilum DSM 1728</name>
+    <division>Bacteria</division>
+    <taxonomy>273075</taxonomy>
+    <db_name>thermoplasma_acidophilum_dsm_1728</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Synechocystis sp. PCC 6803 (ASM972v1)</name>
+    <division>Bacteria</division>
+    <taxonomy>1148</taxonomy>
+    <db_name>synechocystis_sp_pcc_6803_asm972v1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Thermanaerovibrio acidaminovorans DSM 6589</name>
+    <division>Bacteria</division>
+    <taxonomy>525903</taxonomy>
+    <db_name>thermanaerovibrio_acidaminovorans_dsm_6589</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Sulfolobus solfataricus P2</name>
+    <division>Bacteria</division>
+    <taxonomy>273057</taxonomy>
+    <db_name>sulfolobus_solfataricus_p2</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Streptomyces coelicolor A3(2)</name>
+    <division>Bacteria</division>
+    <taxonomy>100226</taxonomy>
+    <db_name>streptomyces_coelicolor_a3_2_</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Streptococcus pneumoniae TIGR4</name>
+    <division>Bacteria</division>
+    <taxonomy>170187</taxonomy>
+    <db_name>streptococcus_pneumoniae_tigr4</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Stenotrophomonas maltophilia K279a</name>
+    <division>Bacteria</division>
+    <taxonomy>522373</taxonomy>
+    <db_name>stenotrophomonas_maltophilia_k279a</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Staphylococcus aureus subsp. aureus N315</name>
+    <division>Bacteria</division>
+    <taxonomy>158879</taxonomy>
+    <db_name>staphylococcus_aureus_subsp_aureus_n315</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Sinorhizobium meliloti 1021</name>
+    <division>Bacteria</division>
+    <taxonomy>266834</taxonomy>
+    <db_name>sinorhizobium_meliloti_1021</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Shewanella oneidensis MR-1</name>
+    <division>Bacteria</division>
+    <taxonomy>211586</taxonomy>
+    <db_name>shewanella_oneidensis_mr_1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Shigella dysenteriae Sd197</name>
+    <division>Bacteria</division>
+    <taxonomy>300267</taxonomy>
+    <db_name>shigella_dysenteriae_sd197</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Salmonella enterica subsp. enterica serovar Typhimurium str. LT2</name>
+    <division>Bacteria</division>
+    <taxonomy>99287</taxonomy>
+    <db_name>salmonella_enterica_subsp_enterica_serovar_typhimurium_str_lt2</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Salinibacter ruber DSM 13855</name>
+    <division>Bacteria</division>
+    <taxonomy>309807</taxonomy>
+    <db_name>salinibacter_ruber_dsm_13855</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Rickettsia prowazekii str. Madrid E</name>
+    <division>Bacteria</division>
+    <taxonomy>272947</taxonomy>
+    <db_name>rickettsia_prowazekii_str_madrid_e</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Rhodopirellula baltica SH 1</name>
+    <division>Bacteria</division>
+    <taxonomy>243090</taxonomy>
+    <db_name>rhodopirellula_baltica_sh_1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Rhodospirillum rubrum ATCC 11170</name>
+    <division>Bacteria</division>
+    <taxonomy>269796</taxonomy>
+    <db_name>rhodospirillum_rubrum_atcc_11170</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Rhizobium leguminosarum bv. viciae 3841</name>
+    <division>Bacteria</division>
+    <taxonomy>216596</taxonomy>
+    <db_name>rhizobium_leguminosarum_bv_viciae_3841</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Rhodobacter sphaeroides 2.4.1</name>
+    <division>Bacteria</division>
+    <taxonomy>272943</taxonomy>
+    <db_name>rhodobacter_sphaeroides_2_4_1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Pyrobaculum aerophilum str. IM2</name>
+    <division>Bacteria</division>
+    <taxonomy>178306</taxonomy>
+    <db_name>pyrobaculum_aerophilum_str_im2</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Pyrococcus horikoshii OT3</name>
+    <division>Bacteria</division>
+    <taxonomy>70601</taxonomy>
+    <db_name>pyrococcus_horikoshii_ot3</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Ralstonia solanacearum GMI1000</name>
+    <division>Bacteria</division>
+    <taxonomy>267608</taxonomy>
+    <db_name>ralstonia_solanacearum_gmi1000</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Proteus mirabilis HI4320</name>
+    <division>Bacteria</division>
+    <taxonomy>529507</taxonomy>
+    <db_name>proteus_mirabilis_hi4320</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Pseudomonas aeruginosa MPAO1/P2</name>
+    <division>Bacteria</division>
+    <taxonomy>1131758</taxonomy>
+    <db_name>pseudomonas_aeruginosa_mpao1_p2</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Propionibacterium acnes KPA171202</name>
+    <division>Bacteria</division>
+    <taxonomy>267747</taxonomy>
+    <db_name>propionibacterium_acnes_kpa171202</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Prochlorococcus marinus subsp. marinus str. CCMP1375</name>
+    <division>Bacteria</division>
+    <taxonomy>167539</taxonomy>
+    <db_name>prochlorococcus_marinus_subsp_marinus_str_ccmp1375</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Porphyromonas gingivalis W83</name>
+    <division>Bacteria</division>
+    <taxonomy>242619</taxonomy>
+    <db_name>porphyromonas_gingivalis_w83</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Prevotella intermedia 17</name>
+    <division>Bacteria</division>
+    <taxonomy>246198</taxonomy>
+    <db_name>prevotella_intermedia_17</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Pasteurella multocida subsp. multocida str. Pm70</name>
+    <division>Bacteria</division>
+    <taxonomy>272843</taxonomy>
+    <db_name>pasteurella_multocida_subsp_multocida_str_pm70</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Paracoccus denitrificans PD1222</name>
+    <division>Bacteria</division>
+    <taxonomy>318586</taxonomy>
+    <db_name>paracoccus_denitrificans_pd1222</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Nitrosopumilus maritimus SCM1</name>
+    <division>Bacteria</division>
+    <taxonomy>436308</taxonomy>
+    <db_name>nitrosopumilus_maritimus_scm1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Nostoc punctiforme PCC 73102</name>
+    <division>Bacteria</division>
+    <taxonomy>63737</taxonomy>
+    <db_name>nostoc_punctiforme_pcc_73102</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Neisseria meningitidis Z2491</name>
+    <division>Bacteria</division>
+    <taxonomy>122587</taxonomy>
+    <db_name>neisseria_meningitidis_z2491</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Mycoplasma pneumoniae M129</name>
+    <division>Bacteria</division>
+    <taxonomy>272634</taxonomy>
+    <db_name>mycoplasma_pneumoniae_m129</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Myxococcus xanthus DK 1622</name>
+    <division>Bacteria</division>
+    <taxonomy>246197</taxonomy>
+    <db_name>myxococcus_xanthus_dk_1622</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Nanoarchaeum equitans Kin4-M</name>
+    <division>Bacteria</division>
+    <taxonomy>228908</taxonomy>
+    <db_name>nanoarchaeum_equitans_kin4_m</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Natronomonas pharaonis DSM 2160</name>
+    <division>Bacteria</division>
+    <taxonomy>348780</taxonomy>
+    <db_name>natronomonas_pharaonis_dsm_2160</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Mycobacterium tuberculosis H37Rv (ASM19595v2)</name>
+    <division>Bacteria</division>
+    <taxonomy>83332</taxonomy>
+    <db_name>mycobacterium_tuberculosis_h37rv_asm19595v2</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Moraxella catarrhalis 7169</name>
+    <division>Bacteria</division>
+    <taxonomy>857581</taxonomy>
+    <db_name>moraxella_catarrhalis_7169</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Micrococcus luteus NCTC 2665</name>
+    <division>Bacteria</division>
+    <taxonomy>465515</taxonomy>
+    <db_name>micrococcus_luteus_nctc_2665</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Microcystis aeruginosa NIES-843</name>
+    <division>Bacteria</division>
+    <taxonomy>449447</taxonomy>
+    <db_name>microcystis_aeruginosa_nies_843</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Moorella thermoacetica ATCC 39073</name>
+    <division>Bacteria</division>
+    <taxonomy>264732</taxonomy>
+    <db_name>moorella_thermoacetica_atcc_39073</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Methanopyrus kandleri AV19</name>
+    <division>Bacteria</division>
+    <taxonomy>190192</taxonomy>
+    <db_name>methanopyrus_kandleri_av19</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Methanosarcina acetivorans C2A</name>
+    <division>Bacteria</division>
+    <taxonomy>188937</taxonomy>
+    <db_name>methanosarcina_acetivorans_c2a</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Methanospirillum hungatei JF-1</name>
+    <division>Bacteria</division>
+    <taxonomy>323259</taxonomy>
+    <db_name>methanospirillum_hungatei_jf_1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Methanothermobacter thermautotrophicus str. Delta H</name>
+    <division>Bacteria</division>
+    <taxonomy>187420</taxonomy>
+    <db_name>methanothermobacter_thermautotrophicus_str_delta_h</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Methanococcus maripaludis S2</name>
+    <division>Bacteria</division>
+    <taxonomy>267377</taxonomy>
+    <db_name>methanococcus_maripaludis_s2</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Mesoplasma florum L1</name>
+    <division>Bacteria</division>
+    <taxonomy>265311</taxonomy>
+    <db_name>mesoplasma_florum_l1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Methanobacterium formicicum DSM 3637</name>
+    <division>Bacteria</division>
+    <taxonomy>1204725</taxonomy>
+    <db_name>methanobacterium_formicicum_dsm_3637</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Methanobrevibacter smithii ATCC 35061</name>
+    <division>Bacteria</division>
+    <taxonomy>420247</taxonomy>
+    <db_name>methanobrevibacter_smithii_atcc_35061</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Methanocaldococcus jannaschii DSM 2661</name>
+    <division>Bacteria</division>
+    <taxonomy>243232</taxonomy>
+    <db_name>methanocaldococcus_jannaschii_dsm_2661</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Lysinibacillus sphaericus C3-41</name>
+    <division>Bacteria</division>
+    <taxonomy>444177</taxonomy>
+    <db_name>lysinibacillus_sphaericus_c3_41</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Mannheimia haemolytica serotype A2 str. OVINE</name>
+    <division>Bacteria</division>
+    <taxonomy>669261</taxonomy>
+    <db_name>mannheimia_haemolytica_serotype_a2_str_ovine</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Leuconostoc mesenteroides subsp. mesenteroides ATCC 8293</name>
+    <division>Bacteria</division>
+    <taxonomy>203120</taxonomy>
+    <db_name>leuconostoc_mesenteroides_subsp_mesenteroides_atcc_8293</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Listeria monocytogenes EGD-e</name>
+    <division>Bacteria</division>
+    <taxonomy>169963</taxonomy>
+    <db_name>listeria_monocytogenes_egd_e</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Leptospira interrogans serovar Lai str. 56601</name>
+    <division>Bacteria</division>
+    <taxonomy>189518</taxonomy>
+    <db_name>leptospira_interrogans_serovar_lai_str_56601</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Lactococcus lactis subsp. lactis Il1403</name>
+    <division>Bacteria</division>
+    <taxonomy>272623</taxonomy>
+    <db_name>lactococcus_lactis_subsp_lactis_il1403</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Legionella pneumophila str. Paris</name>
+    <division>Bacteria</division>
+    <taxonomy>297246</taxonomy>
+    <db_name>legionella_pneumophila_str_paris</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Lactobacillus plantarum WCFS1</name>
+    <division>Bacteria</division>
+    <taxonomy>220668</taxonomy>
+    <db_name>lactobacillus_plantarum_wcfs1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Klebsiella pneumoniae subsp. pneumoniae MGH 78578</name>
+    <division>Bacteria</division>
+    <taxonomy>272620</taxonomy>
+    <db_name>klebsiella_pneumoniae_subsp_pneumoniae_mgh_78578</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Hyperthermus butylicus DSM 5456</name>
+    <division>Bacteria</division>
+    <taxonomy>415426</taxonomy>
+    <db_name>hyperthermus_butylicus_dsm_5456</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Helicobacter pylori 26695 (ASM852v1)</name>
+    <division>Bacteria</division>
+    <taxonomy>85962</taxonomy>
+    <db_name>helicobacter_pylori_26695_asm852v1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Haemophilus influenzae Rd KW20</name>
+    <division>Bacteria</division>
+    <taxonomy>71421</taxonomy>
+    <db_name>haemophilus_influenzae_rd_kw20</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Haloarcula marismortui ATCC 43049</name>
+    <division>Bacteria</division>
+    <taxonomy>272569</taxonomy>
+    <db_name>haloarcula_marismortui_atcc_43049</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Halobacterium salinarum R1</name>
+    <division>Bacteria</division>
+    <taxonomy>478009</taxonomy>
+    <db_name>halobacterium_salinarum_r1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Geobacter sulfurreducens PCA</name>
+    <division>Bacteria</division>
+    <taxonomy>243231</taxonomy>
+    <db_name>geobacter_sulfurreducens_pca</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Gloeobacter violaceus PCC 7421</name>
+    <division>Bacteria</division>
+    <taxonomy>251221</taxonomy>
+    <db_name>gloeobacter_violaceus_pcc_7421</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Fusobacterium nucleatum subsp. nucleatum ATCC 25586</name>
+    <division>Bacteria</division>
+    <taxonomy>190304</taxonomy>
+    <db_name>fusobacterium_nucleatum_subsp_nucleatum_atcc_25586</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Gardnerella vaginalis 0288E</name>
+    <division>Bacteria</division>
+    <taxonomy>698952</taxonomy>
+    <db_name>gardnerella_vaginalis_0288e</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Francisella tularensis subsp. tularensis SCHU S4</name>
+    <division>Bacteria</division>
+    <taxonomy>177416</taxonomy>
+    <db_name>francisella_tularensis_subsp_tularensis_schu_s4</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Flavobacterium psychrophilum JIP02/86</name>
+    <division>Bacteria</division>
+    <taxonomy>402612</taxonomy>
+    <db_name>flavobacterium_psychrophilum_jip02_86</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Escherichia coli str. K-12 substr. MG1655</name>
+    <division>Bacteria</division>
+    <taxonomy>511145</taxonomy>
+    <db_name>escherichia_coli_str_k_12_substr_mg1655</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Enterobacter cloacae subsp. cloacae ATCC 13047</name>
+    <division>Bacteria</division>
+    <taxonomy>716541</taxonomy>
+    <db_name>enterobacter_cloacae_subsp_cloacae_atcc_13047</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Desulfovibrio vulgaris str. Hildenborough</name>
+    <division>Bacteria</division>
+    <taxonomy>882</taxonomy>
+    <db_name>desulfovibrio_vulgaris_str_hildenborough</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Dictyoglomus turgidum DSM 6724</name>
+    <division>Bacteria</division>
+    <taxonomy>515635</taxonomy>
+    <db_name>dictyoglomus_turgidum_dsm_6724</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Deinococcus radiodurans R1</name>
+    <division>Bacteria</division>
+    <taxonomy>243230</taxonomy>
+    <db_name>deinococcus_radiodurans_r1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Coxiella burnetii RSA 493</name>
+    <division>Bacteria</division>
+    <taxonomy>227377</taxonomy>
+    <db_name>coxiella_burnetii_rsa_493</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Corynebacterium glutamicum ATCC 13032 (ASM19633v1)</name>
+    <division>Bacteria</division>
+    <taxonomy>196627</taxonomy>
+    <db_name>corynebacterium_glutamicum_atcc_13032_asm19633v1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Clostridium botulinum A str. Hall</name>
+    <division>Bacteria</division>
+    <taxonomy>441771</taxonomy>
+    <db_name>clostridium_botulinum_a_str_hall</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Clostridium difficile 630</name>
+    <division>Bacteria</division>
+    <taxonomy>272563</taxonomy>
+    <db_name>clostridium_difficile_630</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Chlorobium tepidum TLS</name>
+    <division>Bacteria</division>
+    <taxonomy>194439</taxonomy>
+    <db_name>chlorobium_tepidum_tls</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Chloroflexus aurantiacus J-10-fl</name>
+    <division>Bacteria</division>
+    <taxonomy>324602</taxonomy>
+    <db_name>chloroflexus_aurantiacus_j_10_fl</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Citrobacter freundii 4_7_47CFAA</name>
+    <division>Bacteria</division>
+    <taxonomy>742730</taxonomy>
+    <db_name>citrobacter_freundii_4_7_47cfaa</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Chlamydia trachomatis D/UW-3/CX</name>
+    <division>Bacteria</division>
+    <taxonomy>272561</taxonomy>
+    <db_name>chlamydia_trachomatis_d_uw_3_cx</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Caulobacter crescentus CB15</name>
+    <division>Bacteria</division>
+    <taxonomy>190650</taxonomy>
+    <db_name>caulobacter_crescentus_cb15</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Cenarchaeum symbiosum A</name>
+    <division>Bacteria</division>
+    <taxonomy>414004</taxonomy>
+    <db_name>cenarchaeum_symbiosum_a</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Candidatus Korarchaeum cryptofilum OPF8</name>
+    <division>Bacteria</division>
+    <taxonomy>374847</taxonomy>
+    <db_name>candidatus_korarchaeum_cryptofilum_opf8</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Candidatus Koribacter versatilis Ellin345</name>
+    <division>Bacteria</division>
+    <taxonomy>204669</taxonomy>
+    <db_name>candidatus_koribacter_versatilis_ellin345</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Campylobacter jejuni subsp. jejuni NCTC 11168 = ATCC 700819</name>
+    <division>Bacteria</division>
+    <taxonomy>192222</taxonomy>
+    <db_name>campylobacter_jejuni_subsp_jejuni_nctc_11168_atcc_700819</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Burkholderia pseudomallei 1710b</name>
+    <division>Bacteria</division>
+    <taxonomy>320372</taxonomy>
+    <db_name>burkholderia_pseudomallei_1710b</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Buchnera aphidicola str. APS (Acyrthosiphon pisum)</name>
+    <division>Bacteria</division>
+    <taxonomy>107806</taxonomy>
+    <db_name>buchnera_aphidicola_str_aps_acyrthosiphon_pisum_</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Brucella abortus bv. 1 str. 9-941</name>
+    <division>Bacteria</division>
+    <taxonomy>262698</taxonomy>
+    <db_name>brucella_abortus_bv_1_str_9_941</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Bordetella pertussis Tohama I</name>
+    <division>Bacteria</division>
+    <taxonomy>257313</taxonomy>
+    <db_name>bordetella_pertussis_tohama_i</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Borrelia burgdorferi B31</name>
+    <division>Bacteria</division>
+    <taxonomy>224326</taxonomy>
+    <db_name>borrelia_burgdorferi_b31</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Bifidobacterium longum NCC2705</name>
+    <division>Bacteria</division>
+    <taxonomy>206672</taxonomy>
+    <db_name>bifidobacterium_longum_ncc2705</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Bacteroides thetaiotaomicron VPI-5482</name>
+    <division>Bacteria</division>
+    <taxonomy>226186</taxonomy>
+    <db_name>bacteroides_thetaiotaomicron_vpi_5482</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Bartonella henselae str. Houston-1</name>
+    <division>Bacteria</division>
+    <taxonomy>283166</taxonomy>
+    <db_name>bartonella_henselae_str_houston_1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Bacillus subtilis subsp. subtilis str. 168</name>
+    <division>Bacteria</division>
+    <taxonomy>224308</taxonomy>
+    <db_name>bacillus_subtilis_subsp_subtilis_str_168</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Azotobacter vinelandii DJ</name>
+    <division>Bacteria</division>
+    <taxonomy>322710</taxonomy>
+    <db_name>azotobacter_vinelandii_dj</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Anaplasma phagocytophilum HZ</name>
+    <division>Bacteria</division>
+    <taxonomy>212042</taxonomy>
+    <db_name>anaplasma_phagocytophilum_hz</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Aquifex aeolicus VF5</name>
+    <division>Bacteria</division>
+    <taxonomy>224324</taxonomy>
+    <db_name>aquifex_aeolicus_vf5</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Archaeoglobus fulgidus DSM 4304</name>
+    <division>Bacteria</division>
+    <taxonomy>224325</taxonomy>
+    <db_name>archaeoglobus_fulgidus_dsm_4304</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Agrobacterium fabrum str. C58</name>
+    <division>Bacteria</division>
+    <taxonomy>176299</taxonomy>
+    <db_name>agrobacterium_fabrum_str_c58</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Aeromonas hydrophila subsp. hydrophila ATCC 7966</name>
+    <division>Bacteria</division>
+    <taxonomy>380703</taxonomy>
+    <db_name>aeromonas_hydrophila_subsp_hydrophila_atcc_7966</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Aeropyrum pernix K1</name>
+    <division>Bacteria</division>
+    <taxonomy>272557</taxonomy>
+    <db_name>aeropyrum_pernix_k1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Aggregatibacter actinomycetemcomitans D11S-1</name>
+    <division>Bacteria</division>
+    <taxonomy>668336</taxonomy>
+    <db_name>aggregatibacter_actinomycetemcomitans_d11s_1</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Actinobacillus pleuropneumoniae serovar 5b str. L20</name>
+    <division>Bacteria</division>
+    <taxonomy>416269</taxonomy>
+    <db_name>actinobacillus_pleuropneumoniae_serovar_5b_str_l20</db_name>
+    <Published>Yes</Published>
+  </node>
+  <node>
+    <name>Acinetobacter baumannii AYE</name>
+    <division>Bacteria</division>
+    <taxonomy>509173</taxonomy>
+    <db_name>acinetobacter_baumannii_aye</db_name>
+    <Published>Yes</Published>
+  </node>
+</nodes>

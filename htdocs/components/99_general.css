@@ -1,0 +1,11 @@
+li p {
+  margin: 0;
+}
+
+#doxygen .tablist li {
+  margin: 0;
+}
+
+div.image_container.ui-state-disabled {
+  opacity: 1;
+}

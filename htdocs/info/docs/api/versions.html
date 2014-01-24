@@ -1,0 +1,143 @@
+<html>
+<head>
+<title>Code versioning scheme</title>
+</head>
+
+<body>
+
+
+<h1>Ensembl Genomes Versions</h1>
+
+<p>
+This page uses data release 1, software release 52 as a version example.
+We recommend always using the latest versions of code and data.
+</p>
+
+
+<h2>Ensembl Versioning Scheme</h2>
+            
+<p>
+
+Each Ensembl release has an integer version number associated with it which is used to 
+identify the correct versions of the API, web code and databases that make up that release.
+The idea is that components with the same release version should work together - i.e. any web site built with
+'version 52' API and web code, and 'version 52' 
+databases should work correctly.
+
+</p>
+
+
+
+<h2>Ensembl Genomes Versioning Scheme</h2>
+
+Each Ensembl Genomes release has two integer numbers associated with it.  One is used to identify the  release of Ensembl Genomes data (starting from 1 for the first release of Ensembl Genomes).  The second number is the Ensembl Version number, and is used to identify the version of the database schemas, and the associated version of the Ensembl API that can be used to access the databases.  We will endeavour to make Ensembl Genomes databases available through the same version of the API as is used to access Ensembl databases (for example, updating the schemas of existing data releases if it is not practical to synchronise an Ensembl Genomes data release with a new release of Ensembl software).
+
+
+<p>
+The BioMart code has its own versioning scheme, since it is independent of the Ensembl code - see the
+<a href="http://www.ebi.ac.uk/biomart/" rel="external">BioMart website</a> for information on using the code 
+separately, e.g. with the MartJ Java interface.
+</p>
+
+
+<h2>Archiv<em><span class="blue">e</span><span class="red">!</span></em> sites</h2>
+
+<p>
+Previous releases of Ensembl Genomes are internally archived and are currently unavailable for external users. We are working towards providing this service.
+</p>
+
+<h2>Ensembl Genomes Code Versioning</h2>
+
+<p>
+
+For the APIs and the web code, a CVS branch (essentially a named snapshot of the code) is made 
+for each release and named with the release version number.
+The
+<a href="./api_installation.html">Perl API</a> and
+<a href="/info/docs/webcode/install/build.html#cvs_co">web code</a>
+can be checked out of CVS with the tag "branch-ensembl-versionnumber",
+e.g. branch-ensembl-52.
+</p>
+
+<p>
+Sometimes alternations are made to the Ensembl codebase which cannot be 
+introduced into these ensembl branches. Because of this Ensembl Genomes
+specific branches have been created under 
+"branch-ensemblgenomes-egversion-ensemblversion". All branches created in this manner are
+compatible with the advertised version of Ensembl. If you are using just the 
+API then we recommend using these branches to ensure compatibility.  
+</p>
+
+
+<h2>Ensembl and Ensembl Genomes Data Versioning</h2>
+
+<p>
+The Ensembl database names have the format:
+</p>
+
+<pre>
+&lt;species&gt;&lt;database type&gt;&lt;release number&gt;&lt;data version&gt;
+</pre>
+
+<p>
+As an example, the name of the Human Core database for the Ensembl 32 release would be:
+</p>
+
+<pre>
+homo_sapiens_core_32_35e
+</pre>
+
+<p>
+A letter suffix to the data version indicates a change in data without a change in assembly; e.g. a new gene build.
+</p>
+
+
+<p>
+Ensembl Genomes database names have the format:
+</p>
+
+<pre>
+&lt;species&gt;&lt;database type&gt;&lt;data release number&gt;Ensembl (software) release number&gt;&lt;data version&gt;
+</pre>
+
+<p>
+As an example, the name of the <i>Plasmodium knowlesi</i> Core database for the 1st release of Ensembl Genomes, utilising the Ensembl 52 schema and API, would be:
+</p>
+
+<pre>
+plasmodium_knowlesi_core_1_52_1a
+</pre>
+
+<p>
+Bacterial species are grouped in collections sharing a single database.  These databases have the format:
+</p>
+
+<pre>
+&lt;collection description&gt;&lt;database type&gt;&lt;data release number&gt;Ensembl (software) release number&gt;&lt;data version&gt;
+</pre>
+
+As some examples, the names of the Core databases holding genomes from the genii <i>Escherichia</i> and <i>Shigella</i>, and the database holding data for <i>Mycobacterium</i> species, are as follows:
+
+<pre>
+escherichia_shigella_collection_core_1_52_1a<br>
+mycobacterium_collection_core_1_52_1a
+</pre>
+
+<p>
+Individual species can still be accessed by species name through the use of the Ensembl Registry, making the grouping of genomes in collections transparent to users of the Ensembl API.  See this page <A HREF="/info/docs/api/registry.html"> this page</A> for more information about how to use the Ensembl Registry.
+</p>
+
+
+<h2>BioMart Versioning</h2>
+
+<p>
+<a href="http://www.ebi.ac.uk/biomart/" rel="external">BioMart</a> will branch less frequently than Ensembl, and the release number bears no relation to that of Ensembl.
+</p>
+
+<p>
+The code can be checked out of CVS - see the <a href="/info/docs/webcode/install/build.html#cvs_cobiomart">installation instructions</a> for the CVS tag format.
+
+</p>
+
+</body>
+</html>
