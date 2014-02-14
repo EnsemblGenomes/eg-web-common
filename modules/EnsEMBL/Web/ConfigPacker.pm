@@ -33,8 +33,7 @@ sub munge_config_tree {
 # get data about file formats from corresponding Perl modules
     $self->_munge_file_formats;
 
-# Internal flatfile data sources
-    $self->_summarise_datahubs;
+
 ### EG
     $self->_configure_external_resources;
 ###
