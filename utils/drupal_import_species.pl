@@ -51,18 +51,11 @@ sub new {
 sub main {
   my $self=shift;
   my ($url, $plugin_root, $noimg, $tmp, $division, $quiet, $commit, $message, $pan);
+  $plugin_root = "my-plugins";
   GetOptions('url=s' => \$url, 'd|division=s' => \$division, 'plugin_root=s' => \$plugin_root, 'noimg' => \$noimg, 'tmp=s', 'q' => \$quiet, 'c|commit=s' => \$commit, 'm|message=s' => \$message, 'pan' => \$pan);
   if($pan){
-    getstore("http://www.ensemblgenomes.org/export/ensembl-pan-species","eg-plugins/common/htdocs/ssi/species/pan_compara_species.xml");
-   #my $pantreefile='eg-plugins/common/htdocs/info/genome/compara/pan.nh';
-   #if(-f $pantreefile){
-   #  my $treein = Bio::TreeIO->new(-file=>$pantreefile, -format=>'newick');
-   #  my $treeout = Bio::TreeIO->new(-file=>">$pantreefile.svg", -format=>'svggraph');
-   #  while( my $tree = $treein->next_tree){
-   #    my $svg_xml = $treeout->write_tree($tree);
-   #    last;
-   #  }
-   #}
+    `mkdir -p ${plugin_root}/htdocs/ssi/species`;
+    getstore("http://www.ensemblgenomes.org/export/ensembl-pan-species","${plugin_root}/htdocs/ssi/species/pan_compara_species.xml");
     exit;
   }
   unless($division){

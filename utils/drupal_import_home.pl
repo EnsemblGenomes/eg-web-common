@@ -49,6 +49,8 @@ sub new {
 sub main {
  #my $obj = EG::Drupal->new;
   my ($root, $url, $plugin_root, $noimg, $division, $release, $quiet, $commit, $message);
+  $plugin_root = "my-plugins";
+
   GetOptions('root=s' => \$root, 'd|division=s' => \$division, 'r|release=s' => \$release, 'url=s' => \$url, 'plugin_root=s' => \$plugin_root, 'noimg' => \$noimg, 'q' => \$quiet, 'c|commit=s' => \$commit, 'm|message=s' => \$message);
   if($root){
     chdir($root) or die "Cannot use $root: $!\n";
