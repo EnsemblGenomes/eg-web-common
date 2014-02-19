@@ -1,6 +1,6 @@
 =head1 LICENSE
 
-Copyright [2009-2014] EMBL-European Bioinformatics Institute
+Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,21 +16,23 @@ limitations under the License.
 
 =cut
 
-# $Id: contigviewbottom.pm,v 1.7 2013-11-27 14:23:52 ek3 Exp $
-
-package EnsEMBL::Web::ImageConfig::contigviewbottom;
+package Bio::EnsEMBL::GlyphSet::gradient_legend;
 
 use strict;
 
-sub modify {
+use base qw(Bio::EnsEMBL::GlyphSet::legend);
+
+sub _init {
   my $self = shift;
+
+  return unless $self->{'legend'}{[split '::', ref $self]->[-1]};
   
-  $self->load_configured_bam;
-  $self->load_configured_bed;
-  $self->load_configured_bedgraph;
-  $self->load_configured_mw;
-  
-  $self->add_track('information', 'gradient_legend', 'Gradient Legend', 'gradient_legend', { strand => 'r' });
-} 
+  $self->init_legend(2);
+
+  $self->add_to_legend({
+    legend => '%',
+    colour => [qw(yellow green blue)],
+  }); 
+}
 
 1;

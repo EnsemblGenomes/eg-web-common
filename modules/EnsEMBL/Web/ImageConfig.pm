@@ -20,6 +20,33 @@ package EnsEMBL::Web::ImageConfig;
 
 use strict;
 
+sub _add_bigwig_track {
+  my ($self, %args) = @_;
+  
+  my $renderers = $args{'source'}{'renderers'} || [
+    'off',     'Off',
+    'tiling',  'Wiggle plot',
+## EG    
+    'gradient', 'Gradient',
+##    
+  ];
+ 
+  my $options = {
+    external => 'external',
+    sub_type => 'bigwig',
+    colour   => $args{'menu'}{'colour'} || $args{'source'}{'colour'} || 'red',
+  };
+  
+  $options->{viewLimits} = $args{viewLimits} || $args{source}->{viewLimits};
+
+  $self->_add_file_format_track(
+    format    => 'BigWig', 
+    renderers =>  $renderers,
+    options   => $options,
+    %args
+  );
+}
+
 sub load_configured_mw    { shift->load_file_format('mw');    }
 
 sub _add_mw_track {
@@ -410,6 +437,7 @@ sub load_user_tracks {
       timestamp   => $entry->{'timestamp'} || time,
       strand      => $entry->{strand},
       caption     => $entry->{caption},
+      viewLimits  => $entry->{viewLimits},
 
     };
   }
@@ -554,7 +582,6 @@ sub load_user_tracks {
 
 sub _add_flat_file_track {
   my ($self, $menu, $sub_type, $key, $name, $description, %options) = @_;
-  
   $menu ||= $self->get_node('user_data');
   
   return unless $menu;
@@ -567,7 +594,9 @@ sub _add_flat_file_track {
     external    => 'external',
     glyphset    => '_flat_file',
     colourset   => 'classes',
+## EG    
     caption     => $options{caption} || $name,
+##
     sub_type    => $sub_type,
     renderers   => $renderers,
     description => $description,
@@ -575,6 +604,23 @@ sub _add_flat_file_track {
   });
   
   $menu->append($track) if $track;
+}
+
+sub _user_track_settings {
+  my ($self, $style, $format) = @_;
+  my ($strand, @user_renderers);
+      
+  if ($style =~ /^(wiggle|WIG)$/) {
+    $strand         = 'r';
+## EG
+    @user_renderers = ('off', 'Off', 'tiling', 'Wiggle plot', 'gradient', 'Gradient');
+##
+  } else {
+    $strand         = uc($format) eq 'VEP_INPUT' ? 'f' : 'b'; 
+    @user_renderers = (@{$self->{'alignment_renderers'}}, 'difference', 'Differences');
+  }
+  
+  return ($strand, \@user_renderers);
 }
 
 sub _add_file_format_track {
@@ -627,29 +673,36 @@ sub update_from_url {
   my $species = $hub->species;
   
   foreach my $v (@values) {
+## EG    
     # first value url, second one query string containing params for image like strand, name and colour
     my @array = split /::/, $v; 
     my $url_string = $array [0];
-
-    my @split = split /=/, $url_string;
+    my %image_param = split /\//, $array[1];
+    
+    my $viewLimits = $hub->param('viewLimits');
+##
+      
+    my $format = $hub->param('format');
     my ($key, $renderer);
     
-    if (scalar @split > 1) { 
-      $renderer = pop @split;
-      $key      = join '=', @split;
+    if (uc $format eq 'DATAHUB') {
+      $key = $v;
     } else {
-      $key      = $split[0];
-      $renderer = 'normal';
+      my @split = split /=/, $v;
+      
+      if (scalar @split > 1) {
+        $renderer = pop @split;
+        $key      = join '=', @split;
+      } else {
+        $key      = $split[0];
+        $renderer = 'normal';
+      }
     }
 
     if ($key =~ /^(\w+)[\.:](.*)$/) {
       my ($type, $p) = ($1, $2);
-
-      # split the second part of params like strand or colour
-      my %image_param = split /\//, $array[1];
       
       if ($type eq 'url') {
-        my $format      = $hub->param('format');
         my $menu_name   = $hub->param('menu');
         my $all_formats = $hub->species_defs->DATA_FORMAT_INFO;
         
@@ -686,6 +739,27 @@ sub update_from_url {
           $n = $p =~ /\/([^\/]+)\/*$/ ? $1 : 'un-named';
         }
         
+        # Don't add if the URL or menu are the same as an existing track
+        if ($session->get_data(type => 'url', code => $code)) {
+          $session->add_data(
+            type     => 'message',
+            function => '_warning',
+            code     => "duplicate_url_track_$code",
+            message  => "You have already attached the URL $p. No changes have been made for this data source.",
+          );
+          
+          next;
+        } elsif (grep $_->{'name'} eq $n, $session->get_data(type => 'url')) {
+          $session->add_data(
+            type     => 'message',
+            function => '_error',
+            code     => "duplicate_url_track_$n",
+            message  => qq{Sorry, the menu "$n" is already in use. Please change the value of "menu" in your URL and try again.},
+          );
+          
+          next;
+        }
+        
         # We have to create a URL upload entry in the session
         $session->set_data(
           type    => 'url',
@@ -695,9 +769,12 @@ sub update_from_url {
           name    => $n,
           format  => $format,
           style   => $style,
-          colour  => $image_param{colour},
-          strand  => $image_param{strand},
-          caption => $image_param{name},
+## EG          
+          colour     => $image_param{colour},
+          strand     => $image_param{strand},
+          caption    => $image_param{name},
+          viewLimits => $viewLimits,
+##
         );
         
         $session->add_data(
@@ -715,7 +792,10 @@ sub update_from_url {
             sprintf('Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: %s', encode_entities($n), encode_entities($p)),
             url   => $p,
             style => $style,
-            caption => $image_param{name}
+## EG            
+            caption => $image_param{name},
+            viewLimits => $viewLimits,
+##
           );
 
           $self->update_track_renderer("url_$code", $renderer);

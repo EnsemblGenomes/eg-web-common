@@ -136,5 +136,102 @@ sub draw_features {
   return 0;
 }
 
+## EG gradient
+
+sub render_gradient {
+  my $self = shift;
+  
+  $self->{'renderer_no_join'} = 1;
+  $self->{'legend'}{'gradient_legend'} = 1; # instruct to draw legend  
+  $self->SUPER::render_normal(8, 0);
+  
+  # Add text line showing name and score range
+  
+  my %features = $self->features;
+  my $fconf    = $features{url}->[1];
+  my $label    = sprintf '%s  %.2f - %.2f', $self->my_config('name'), $fconf->{min_score}, $fconf->{max_score};
+  my %font     = $self->get_font_details('innertext', 1);
+  
+  my (undef, undef, $width, $height) = $self->get_text_width(0,  $label, '', %font); 
+  
+  $self->push($self->Text({
+    text      => $label,
+    width     => $width,
+    halign    => 'left',
+    valign    => 'bottom',
+    colour    => $self->my_config('colour'),
+    y         => 7,
+    height    => $height,
+    x         => 1,
+    absolutey => 1,
+    absolutex => 1,
+    %font,
+  })); 
+}
+
+sub href {
+  return ''; # this causes the zmenu content to be supressed (leaving only title)
+}
+
+sub feature_title {
+  my ($self, $f) = @_;
+  return sprintf '%.2f', $f->score; # the score is all that we want to show
+}
+
+sub features {
+  my $self = shift;
+  
+  if (!exists($self->{_cache}->{bw_features})) {
+  
+    my $slice = $self->{'container'};
+  
+    my $max_bins = $self->{'config'}->image_width();
+    if ($max_bins > $slice->length) {
+      $max_bins = $slice->length;
+    }
+  
+    my $feats =  $self->wiggle_features($max_bins);
+  
+    my $min_score = $feats->[0]->{score};
+    my $max_score = $feats->[0]->{score};
+    
+    my @features;
+  
+    my $fake_anal = Bio::EnsEMBL::Analysis->new(-logic_name => 'fake');
+    foreach my $feat (@$feats) {
+      my $fscore = $feat->{score};
+      if ($fscore < $min_score) { $min_score = $fscore };
+      if ($fscore > $max_score) { $max_score = $fscore };
+      
+      my $f = Bio::EnsEMBL::SimpleFeature->new(-start => $feat->{start}, 
+                                               -end => $feat->{end}, 
+                                               -slice => $slice, 
+                                               -strand => 1, 
+                                               -score => $fscore, 
+                                               -analysis => $fake_anal);
+      push @features, $f;
+    }
+  
+    my $viewLimits = $self->my_config('viewLimits');
+    if ($viewLimits) {
+      ($min_score, $max_score) = split ":",$viewLimits;
+    } 
+    
+    my $config = {};
+    $config->{'implicit_colour'} = 1;
+    $config->{'greyscale_max'}   = 100;
+    
+    # this config is for the gradient renderer
+    $config->{'max_score'}       = $max_score;
+    $config->{'min_score'}       = $min_score;
+    $config->{'useScore'}        = 2;
+  
+    $self->{_cache}->{bw_features} = {'url' => [ \@features, $config ]};
+  }
+
+  return %{ $self->{_cache}->{bw_features} };
+}
+
+## EG /gradient
 
 1;
