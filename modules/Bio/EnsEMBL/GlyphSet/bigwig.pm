@@ -154,6 +154,15 @@ sub feature_title {
   return sprintf '%.2f', $f->score; # the score is all that we want to show
 }
 
+sub feature_group {
+  my ($self, $f) = @_;
+  my $name = '';
+  if ($f->can('hseqname')) {
+    ($name = $f->hseqname) =~ s/(\..*|T7|SP6)$//; # this regexp will remove the differences in names between the ends of BACs/FOSmids.
+  }
+  return $name;
+}
+
 sub features {
   my $self = shift;
   
