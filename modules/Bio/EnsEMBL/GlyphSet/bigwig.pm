@@ -209,6 +209,12 @@ sub features {
     $config->{'max_score'}       = $max_score;
     $config->{'min_score'}       = $min_score;
     $config->{'useScore'}        = 2;
+    
+    if (my $colours = $self->species_defs->GRADIENT_COLOURS) {
+      for (0..$#{ $colours }) {
+        $config->{"cgColour$_"} = $colours->[$_];
+      }
+    }
   
     $self->{_cache}->{bw_features} = {'url' => [ \@features, $config ]};
   }
