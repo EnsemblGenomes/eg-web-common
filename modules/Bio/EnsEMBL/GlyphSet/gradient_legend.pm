@@ -31,7 +31,7 @@ sub _init {
 
   $self->add_to_legend({
     legend => '%',
-    colour => [qw(yellow green blue)],
+    colour => $self->species_defs->GRADIENT_COLOURS || [qw(yellow green blue)],
   }); 
 }
 

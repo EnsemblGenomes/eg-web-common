@@ -27,19 +27,19 @@ use EnsEMBL::Web::Hub;
 use EnsEMBL::Web::Document::Table;
 
 use base qw(EnsEMBL::Web::Document::HTML);
-use JSON::Parse qw /json_to_perl valid_json/;
-use List::MoreUtils qw /first_index/;
-
-sub get_resources {
-  open FILE, "<".$SiteDefs::ENSEMBL_SERVERROOT."/eg-plugins/common/htdocs/species_metadata.json";
-  my $file_contents = do { local $/; <FILE> };
-  close FILE;
-
-  if (valid_json ($file_contents)) {
-    my $data = json_to_perl ($file_contents);
-    return $data->{genome};
-  }
-}
+#use JSON::Parse qw /json_to_perl valid_json/;
+#use List::MoreUtils qw /first_index/;
+#
+#sub get_resources {
+#  open FILE, "<".$SiteDefs::ENSEMBL_SERVERROOT."/eg-plugins/common/htdocs/species_metadata.json";
+#  my $file_contents = do { local $/; <FILE> };
+#  close FILE;
+#
+#  if (valid_json ($file_contents)) {
+#    my $data = json_to_perl ($file_contents);
+#    return $data->{genome};
+#  }
+#}
 
 sub render {
   my $self = shift;
@@ -50,7 +50,6 @@ sub render {
   my $rel = $species_defs->SITE_RELEASE_VERSION;
 
   my @species = $species_defs->valid_species;
-  my $species_resources = get_resources();
   my %title = (
     dna       => 'Masked and unmasked genome sequences associated with the assembly (contigs, chromosomes etc.)',
     cdna      => 'cDNA sequences for protein-coding genes',
@@ -119,8 +118,7 @@ tsv        => qq{<a rel="external"  title="$title{'tsv'}" href="$ftp_base_path_s
 vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/vep/$sp_dir">VEP</a>},
     };
 
-    my $index = first_index { $_->{species} eq lc($spp) } @$species_resources;
-    if (keys %{$$species_resources[$index]->{variation}}) {
+    if ($hub->databases_species($spp, 'variation')) {
       $data->{'gvf'} = qq{<a rel="external" title="$title{'gvf'}" href="$ftp_base_path_stub/gvf/$sp_dir">GVF</a>};
       $data->{'vcf'} = qq{<a rel="external" title="$title{'vcf'}" href="$ftp_base_path_stub/vcf/$sp_dir">VCF</a>};
     }
