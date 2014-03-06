@@ -19,20 +19,9 @@ use warnings;
 use File::Basename qw(dirname);
 use FindBin qw($Bin);
 use Data::Dumper;
-
-# Comment; this script will create a copy of the help link for every ontology graph in EG
-
-BEGIN {
-  my $serverroot = dirname($Bin) . "/../../";
-  unshift @INC, "$serverroot/conf", $serverroot;
-  
-  require SiteDefs;
-  
-  unshift @INC, $_ for @SiteDefs::ENSEMBL_LIB_DIRS;
-
-  require EnsEMBL::Web::DBSQL::WebsiteAdaptor;
-  require EnsEMBL::Web::Hub;  
-}
+use LibDirs;
+use EnsEMBL::Web::DBSQL::WebsiteAdaptor;
+use EnsEMBL::Web::Hub;  
 
 my $hub = new EnsEMBL::Web::Hub;
 my $dbh = new EnsEMBL::Web::DBSQL::WebsiteAdaptor($hub)->db;

@@ -28,7 +28,7 @@ GetOptions(
   "v" => \$verbose,
 ) || die "Invalid options\n";
 
-die "Please specify the plugin dir (example: --plugin_dir=eg-plugins/fungi)\n" if !$plugin_dir;
+die "Please specify the plugin dir (example: --plugin_dir=eg-web-fungi)\n" if !$plugin_dir;
 die "Plugin dir does not exist\n" if !-e $plugin_dir;
 $plugin_dir =~ s/\/$//; # strip trailing slash
 

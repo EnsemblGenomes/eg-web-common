@@ -25,20 +25,14 @@ use Capture::Tiny qw(capture);
 
 my $REGISTRY_URL  = 'http://www.ebi.ac.uk/pride/biomart/martservice?type=registry';
 
-BEGIN {
-  unshift @INC, "$Bin/../../../conf";
-  unshift @INC, "$Bin/../../../";
-  require SiteDefs;
-  unshift @INC, $_ for @SiteDefs::ENSEMBL_LIB_DIRS;
-}
-
+use LibDirs;
 use LoadPlugins;
 use EnsEMBL::Web::SpeciesDefs;
 my $species_defs = EnsEMBL::Web::SpeciesDefs->new;
 
 # crude check to see which ini files in this plugin already have pride configured
 (my $plugin = lc($SiteDefs::ENSEMBL_SITETYPE)) =~ s/^ensembl\s*//;
-my $grep = `grep "DS_1436\\s*=" $Bin/../../$plugin/conf/ini-files/*`;
+my $grep = `grep "DS_1436\\s*=" $Bin/../../eg-web-$plugin/conf/ini-files/*`;
 
 my %site_tax  = map {$species_defs->get_config($_, 'TAXONOMY_ID') => $_} $species_defs->valid_species;
 

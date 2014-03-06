@@ -15,19 +15,12 @@
 
 use strict;
 use warnings;
-use FindBin qw($Bin);
 use Getopt::Long;
 use XML::Generator;
 use Data::Dumper;
 use HTML::Entities;
-
-BEGIN {
-  unshift @INC, "$Bin/../../conf";
-  unshift @INC, "$Bin/../../";
-  require SiteDefs;
-  unshift @INC, $_ for @SiteDefs::ENSEMBL_LIB_DIRS;
-  require EnsEMBL::Web::Hub; 
-}
+use LibDirs;
+use EnsEMBL::Web::Hub; 
 
 my $dir  = '.';
 my $index_list;

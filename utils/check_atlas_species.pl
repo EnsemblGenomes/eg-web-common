@@ -19,13 +19,7 @@ use FindBin qw($Bin);
 use Data::Dumper;
 use DBI;
 use Net::FTP;
-
-BEGIN {
-  unshift @INC, "$Bin/../../../conf";
-  unshift @INC, "$Bin/../../../";
-  require SiteDefs;
-  unshift @INC, $_ for @SiteDefs::ENSEMBL_LIB_DIRS;
-}
+use LibDirs;
 
 use LoadPlugins;
 use EnsEMBL::Web::SpeciesDefs;
@@ -53,7 +47,7 @@ my @species = keys %species_hash;
 (my $plugin = lc($SiteDefs::ENSEMBL_SITETYPE)) =~ s/^ensembl\s*//;
 
 # crude check to see which ini files already have pride configured
-my $grep = `grep "S4_EXPRESSION\\s*=\\s*1" $Bin/../../$plugin/conf/ini-files/*`;
+my $grep = `grep "S4_EXPRESSION\\s*=\\s*1" $Bin/../../eg-web-$plugin/conf/ini-files/*`;
 
 print "\nIt looks like Expression Atlas is already configured in these ini files:\n";
 print "$grep\n";

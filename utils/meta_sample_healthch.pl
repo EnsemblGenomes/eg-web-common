@@ -31,19 +31,7 @@ use Data::Dumper qw( Dumper );
 use Config::Tiny;
 use File::Basename;
 use Time::Local;
-
-# Load libraries needed for reading config -----------------------------------                                                                                                                                    
-use vars qw( $SERVERROOT );
-
-BEGIN {
-    my $dirname = dirname("$Bin");
-    $SERVERROOT = "$dirname/../../";
-    unshift @INC, "$SERVERROOT/conf";
-    unshift @INC, "$SERVERROOT";
-    eval { require SiteDefs };
-    if ($@) { die "Can't use SiteDefs.pm - $@\n"; }
-    map { unshift @INC, $_ } @SiteDefs::ENSEMBL_LIB_DIRS;
-}
+use LibDirs;
 
 use Bio::EnsEMBL::DBLoader;
 use EnsEMBL::Web::DBSQL::DBConnection;
