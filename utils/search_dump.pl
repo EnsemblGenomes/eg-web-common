@@ -22,20 +22,13 @@ package ebi_search_dump;
 use strict;
 use DBI;
 use Carp;
-use File::Basename qw( dirname );
 use File::Find;
-use FindBin qw($Bin);
 use Getopt::Long;
 use IO::Zlib;
 use Data::Dumper;
 use HTML::Entities;
-
-BEGIN{
-  unshift @INC, "$Bin/../../conf";
-  unshift @INC, "$Bin/../..";
-  eval{ require utils::Tool };
-  if ($@){ warn "Can't use utils::Tool (required for ensemblgenomes)\n"; }
-}
+use LibDirs;
+use utils::Tool;
 
 my (
   $host,    $user,        $pass,   $port,     $species, $ind,
@@ -260,402 +253,411 @@ sub dumpGene {
 
   my ( $dataset, $conf ) = @_;
 
-  #foreach my $DB ( 'core') { #, 'vega' ) {
-  my $DB = 'core';
-  my $SNPDB     = $novariation ? undef : eval { $conf->{variation}->{$release} };
-  my $FUNCGENDB = eval { $conf->{funcgen}->{$release} };
-  my $DBNAME    = $conf->{$DB}->{$release} or warn "$dataset $DB $release: no database not found";
-  next unless $DBNAME;
-  
-  print "\nSTART dumpGene\n";
-  print "Database: $DBNAME\n";
+  foreach my $DB (qw(core otherfeatures)) {
+    my $SNPDB     = $novariation ? undef : eval { $conf->{variation}->{$release} };
+    my $FUNCGENDB = eval { $conf->{funcgen}->{$release} };
+    my $DBNAME    = $conf->{$DB}->{$release} or warn "$dataset $DB $release: no database not found";
+    next unless $DBNAME;
     
-  my $dsn = "DBI:mysql:host=$host";
-  $dsn .= ";port=$port" if ($port);
-
-  my $dbh;  
-  my $attempt = 0;
-  my $max_attempts = 100;
-  while (!$dbh and ++$attempt <= $max_attempts) {
-    eval { $dbh = DBI->connect( "$dsn:$DBNAME", $user, $pass ) };
-    warn "DBI connect error: $@" if $@;
-    if (!$dbh) {
-      warn "Failed DBI connect attempt $attempt of $max_attempts\n" if !$dbh;
-      sleep 5;
-    }
-  }
-
-  $dbh->do("SET sql_mode = 'NO_BACKSLASH_ESCAPES'"); # metazoa have backslahes in thier gene names and synonyms :.(
-  
-  # determine genomic unit
-  my $division = $dbh->selectrow_array("SELECT meta_value FROM meta WHERE meta_key = 'species.division'");
-  (my $genomic_unit = lc($division)) =~ s/^ensembl//; # eg EnsemblProtists -> protists
-  print "Genomic unit: " . $genomic_unit . "\n";
-
-  my $genetree_lookup = $nogenetrees ? {} : get_genetree_lookup($genomic_unit, $conf);
-  
-  my $haplotypes = $dbh->selectall_hashref(
-    "SELECT gene_id FROM gene g, assembly_exception ae WHERE g.seq_region_id=ae.seq_region_id AND ae.exc_type='HAP'", 
-    [qw(gene_id)]
-  );
-
-  my %transcript_probes;
-  my %transcript_probesets;
-  if ($FUNCGENDB) {
-  
-    print "Fetching probes...\n";  
-  
-    my $rows = $dbh->selectall_arrayref(
-      "SELECT x.dbprimary_acc, p.name 
-       FROM $FUNCGENDB.probe p, $FUNCGENDB.array_chip ac, $FUNCGENDB.array a, $FUNCGENDB.status s, 
-            $FUNCGENDB.status_name sn, $FUNCGENDB.object_xref ox, $FUNCGENDB.xref x 
-       WHERE sn.name='MART_DISPLAYABLE'        
-       AND sn.status_name_id=s.status_name_id       
-       AND s.table_name='array'        
-       AND s.table_id=a.array_id              
-       AND p.array_chip_id = ac.array_chip_id        
-       AND ac.array_id = a.array_id
-       AND p.probe_id=ox.ensembl_id
-       AND ox.ensembl_object_type='Probe'
-       AND ox.xref_id=x.xref_id
-       GROUP BY ox.object_xref_id"
-    );
-    
-    foreach (@$rows) {
-      $transcript_probes{$_->[0]} ||= [];
-      push @{$transcript_probes{$_->[0]}}, $_->[1];
-    }
-    
-    print "Fetching probe sets...\n";  
-  
-    $rows = $dbh->selectall_arrayref(
-      "SELECT x.dbprimary_acc, ps.name 
-       FROM $FUNCGENDB.probe_set ps, $FUNCGENDB.probe p, $FUNCGENDB.array_chip ac, $FUNCGENDB.array a, 
-            $FUNCGENDB.status s, $FUNCGENDB.status_name sn, $FUNCGENDB.object_xref ox, $FUNCGENDB.xref x 
-       WHERE sn.name='MART_DISPLAYABLE'        
-       AND sn.status_name_id=s.status_name_id       
-       AND s.table_name='array'        
-       AND s.table_id=a.array_id        
-       AND ps.probe_set_id = p.probe_set_id             
-       AND p.array_chip_id = ac.array_chip_id        
-       AND ac.array_id = a.array_id
-       AND ps.probe_set_id=ox.ensembl_id
-       AND ox.ensembl_object_type='ProbeSet'
-       AND ox.xref_id=x.xref_id
-       GROUP BY ox.object_xref_id;"
-    );
-    
-    foreach (@$rows) {
-      $transcript_probesets{$_->[0]} ||= [];
-      push @{$transcript_probesets{$_->[0]}}, $_->[1];
-    }
-  }
-
-  my %xrefs      = ();
-  my %xrefs_desc = ();
-  my %disp_xrefs = ();
-  unless ($noxrefs) {
-    foreach my $type (qw(Gene Transcript Translation)) {
-  
-      print "Fetching $type xrefs...\n";
-            
-      my $xrefs = [];
-      if ($type ne 'Translation') {
-        
-        my $table = lc($type);
-        
-        $xrefs = $dbh->selectall_arrayref(
-          "SELECT t.${table}_id, x.display_label, x.dbprimary_acc, ed.db_name, es.synonym, x.description
-           FROM ${table} t
-           JOIN xref x ON x.xref_id = t.display_xref_id
-           JOIN external_db ed ON ed.external_db_id = x.external_db_id
-           LEFT JOIN external_synonym es ON es.xref_id = x.xref_id"
-        );
-      }
+    print "\nSTART dumpGene\n";
+    print "Database: $DBNAME\n";
       
-      my $object_xrefs = $dbh->selectall_arrayref(
-        "SELECT ox.ensembl_id, x.display_label, x.dbprimary_acc, ed.db_name, es.synonym, x.description
-         FROM (object_xref AS ox, xref AS x, external_db AS ed) 
-         LEFT JOIN external_synonym AS es ON es.xref_id = x.xref_id
-         WHERE ox.ensembl_object_type = '$type' AND ox.xref_id = x.xref_id AND x.external_db_id = ed.external_db_id"
+    my $dsn = "DBI:mysql:host=$host";
+    $dsn .= ";port=$port" if ($port);
+  
+    my $dbh;  
+    my $attempt = 0;
+    my $max_attempts = 100;
+    while (!$dbh and ++$attempt <= $max_attempts) {
+      eval { $dbh = DBI->connect( "$dsn:$DBNAME", $user, $pass ) };
+      warn "DBI connect error: $@" if $@;
+      if (!$dbh) {
+        warn "Failed DBI connect attempt $attempt of $max_attempts\n" if !$dbh;
+        sleep 5;
+      }
+    }
+  
+    my $has_stable_ids = $dbh->selectrow_array('SELECT COUNT(*) FROM gene WHERE stable_id IS NOT NULL');
+    if (!$has_stable_ids) {
+      warn "Skipping this database - the genes do not have stable IDs\n";
+      return;
+    }
+  
+    $dbh->do("SET sql_mode = 'NO_BACKSLASH_ESCAPES'"); # metazoa have backslahes in thier gene names and synonyms :.(
+    
+    # determine genomic unit
+    my $division = $dbh->selectrow_array("SELECT meta_value FROM meta WHERE meta_key = 'species.division'");
+    (my $genomic_unit = lc($division)) =~ s/^ensembl//; # eg EnsemblProtists -> protists
+    print "Genomic unit: " . $genomic_unit . "\n";
+  
+    my $genetree_lookup = $nogenetrees ? {} : get_genetree_lookup($genomic_unit, $conf);
+    
+    my $haplotypes = $dbh->selectall_hashref(
+      "SELECT gene_id FROM gene g, assembly_exception ae WHERE g.seq_region_id=ae.seq_region_id AND ae.exc_type='HAP'", 
+      [qw(gene_id)]
+    );
+  
+    my %transcript_probes;
+    my %transcript_probesets;
+    if ($FUNCGENDB) {
+    
+      print "Fetching probes...\n";  
+    
+      my $rows = $dbh->selectall_arrayref(
+        "SELECT x.dbprimary_acc, p.name 
+         FROM $FUNCGENDB.probe p, $FUNCGENDB.array_chip ac, $FUNCGENDB.array a, $FUNCGENDB.status s, 
+              $FUNCGENDB.status_name sn, $FUNCGENDB.object_xref ox, $FUNCGENDB.xref x 
+         WHERE sn.name='MART_DISPLAYABLE'        
+         AND sn.status_name_id=s.status_name_id       
+         AND s.table_name='array'        
+         AND s.table_id=a.array_id              
+         AND p.array_chip_id = ac.array_chip_id        
+         AND ac.array_id = a.array_id
+         AND p.probe_id=ox.ensembl_id
+         AND ox.ensembl_object_type='Probe'
+         AND ox.xref_id=x.xref_id
+         GROUP BY ox.object_xref_id"
       );
       
-      foreach (@$xrefs, @$object_xrefs) {
-        $xrefs{$type}{ $_->[0] }{ $_->[3] }{ $_->[1] } = 1 if $_->[1];
-        $xrefs{$type}{ $_->[0] }{ $_->[3] }{ $_->[2] } = 1 if $_->[2];
-        ## remove the duplicates + Temp fix for metazoa data
-        if (my $syn = $_->[4]) {
-          $syn =~ s/^\'|\'$//g;
-          next if ($syn =~ /^(FBtr|FBpp)\d+/);
-          next if ($syn =~ /^CG\d+\-/);
-          $xrefs{$type}{ $_->[0] }{ $_->[3] . "_synonym" }{ $syn } = 1;
-        }
-        ##
-        $xrefs_desc{$type}{ $_->[0] }{ $_->[5] } = 1 if $_->[5];
+      foreach (@$rows) {
+        $transcript_probes{$_->[0]} ||= [];
+        push @{$transcript_probes{$_->[0]}}, $_->[1];
+      }
+      
+      print "Fetching probe sets...\n";  
+    
+      $rows = $dbh->selectall_arrayref(
+        "SELECT x.dbprimary_acc, ps.name 
+         FROM $FUNCGENDB.probe_set ps, $FUNCGENDB.probe p, $FUNCGENDB.array_chip ac, $FUNCGENDB.array a, 
+              $FUNCGENDB.status s, $FUNCGENDB.status_name sn, $FUNCGENDB.object_xref ox, $FUNCGENDB.xref x 
+         WHERE sn.name='MART_DISPLAYABLE'        
+         AND sn.status_name_id=s.status_name_id       
+         AND s.table_name='array'        
+         AND s.table_id=a.array_id        
+         AND ps.probe_set_id = p.probe_set_id             
+         AND p.array_chip_id = ac.array_chip_id        
+         AND ac.array_id = a.array_id
+         AND ps.probe_set_id=ox.ensembl_id
+         AND ox.ensembl_object_type='ProbeSet'
+         AND ox.xref_id=x.xref_id
+         GROUP BY ox.object_xref_id;"
+      );
+      
+      foreach (@$rows) {
+        $transcript_probesets{$_->[0]} ||= [];
+        push @{$transcript_probesets{$_->[0]}}, $_->[1];
       }
     }
-  }
   
-  print "Fetching exons...\n";
-
-  my %exons = ();
-  my $T = $dbh->selectall_arrayref(
-    "SELECT DISTINCT t.gene_id, e.stable_id
-     FROM transcript AS t, exon_transcript AS et, exon AS e
-     WHERE t.transcript_id = et.transcript_id AND et.exon_id = e.exon_id"
-  );
-  
-  foreach (@$T) {
-    $exons{ $_->[0] }{ $_->[1] } = 1;
-  }
-
-  print "Fetching domains...\n";
-
-  my %domains;
-  $T = $dbh->selectall_arrayref(
-    'SELECT DISTINCT g.gene_id, pf.hit_name 
-     FROM gene g, transcript t, translation tl, protein_feature pf 
-     WHERE g.gene_id = t.gene_id AND t.transcript_id = tl.transcript_id AND tl.translation_id = pf.translation_id'
-  );
-  
-  foreach (@$T) {
-    $domains{$_->[0]}{$_->[1]} = 1;
-  }
-
-  print "Fetching seq regions...\n";
-
-  my $species_to_seq_region = $dbh->selectall_hashref(
-    "SELECT 
-      meta.meta_value AS species_name, 
-      coord_system.species_id, coord_system.coord_system_id, seq_region.seq_region_id,
-      coord_system.name, seq_region.name AS seqname, 
-      seq_region.length, attrib_type.name
-     FROM meta, coord_system, seq_region, seq_region_attrib, attrib_type
-     WHERE 
-       coord_system.coord_system_id = seq_region.coord_system_id 
-       AND seq_region_attrib.seq_region_id = seq_region.seq_region_id
-       AND seq_region_attrib.attrib_type_id = attrib_type.attrib_type_id
-       AND meta.species_id=coord_system.species_id 
-       AND meta.meta_key = 'species.display_name' 
-       AND attrib_type.name = 'Top Level'
-     GROUP BY seq_region.seq_region_id  
-     ORDER BY species_name, seqname, LENGTH DESC",
-    [ 'species_name', 'seq_region_id' ]
-  );
-
-  #warn Dumper($species_to_seq_region);
-
-  foreach my $species (keys %$species_to_seq_region) {
-    my $counter = make_counter(0);
-    my ($species_id)      = @{$dbh->selectrow_arrayref("SELECT DISTINCT(species_id) FROM meta WHERE meta_value = ? LIMIT 0,1", undef, $species)};
-    my ($taxon_id)        = @{$dbh->selectrow_arrayref("SELECT meta_value FROM meta WHERE meta_key = 'species.taxonomy_id' AND species_id = ?", undef, $species_id)};
-    my ($production_name) = @{$dbh->selectrow_arrayref("SELECT meta_value FROM meta WHERE meta_key = 'species.production_name' AND species_id = ?", undef, $species_id)};
+    my %xrefs      = ();
+    my %xrefs_desc = ();
+    my %disp_xrefs = ();
+    unless ($noxrefs) {
+      foreach my $type (qw(Gene Transcript Translation)) {
     
-    my $ortholog_lookup     = get_ortholog_lookup($conf, $production_name, $genomic_unit);
-    my $ortholog_lookup_pan = get_ortholog_lookup($conf, $production_name, 'pan_homology');
-    
-    (my $filename = "Gene_${species}_${DB}") =~ s/[\W]/_/g;
-    my $file = "$dir/$filename." . ($format eq 'solr' ? 'tsv' : 'xml');
-    $file .= ".gz" unless $nogzip;
-    my $start_time = time;
-  
-    if ($skip_existing and -f $file) {
-      warn "**** Index file already exists - skipping ****\n";
-      next;
-    }
-  
-    print "Dumping $species to $file\n";
-    print "Start time " . format_datetime($start_time) . "\n";
-    print "Num seq regions: " . (scalar keys %{ $species_to_seq_region->{$species} }) . "\n";
-    
-    if ($nogzip) {
-      open( FILE, ">$file" ) || die "Can't open $file: $!";
-    } else {
-      $fh = new IO::Zlib;
-      $fh->open( "$file", "wb9" ) || die("Can't open compressed stream to $file: $!");
-    }
-    
-    header( $DBNAME, $dataset, $DB ) unless $format eq 'solr';
-
-    # prepare the gene output sub
-    # this is called when ready to ouput the gene line
-    my $output_gene = sub() {
-      my ($gene_data) = shift;
-      my @transcript_stable_ids = keys %{ $gene_data->{transcript_stable_ids} };
-      
-      # add variation features
-      if ($SNPDB) {
-        $gene_data->{snps} = $dbh->selectcol_arrayref(
-          "SELECT DISTINCT(vf.variation_name) FROM $SNPDB.transcript_variation AS tv, $SNPDB.variation_feature AS vf
-           WHERE vf.variation_feature_id = tv.variation_feature_id AND tv.feature_stable_id IN('" . join("', '", @transcript_stable_ids) . "')"
-        );
-      }
-      
-      # add probes and probesets
-      if ($FUNCGENDB) {
-        $gene_data->{probes} = [];
-        $gene_data->{probesets} = [];
-        foreach (@transcript_stable_ids) { 
-          push(@{$gene_data->{probes}},    @{$transcript_probes{$_}})    if $transcript_probes{$_};
-          push(@{$gene_data->{probesets}}, @{$transcript_probesets{$_}}) if $transcript_probesets{$_};
-        }
-      }
-      
-      # add orthologs    
-      
-      $gene_data->{orthologs} = $ortholog_lookup_pan->{$gene_data->{gene_stable_id}};      # want all eg
-      foreach my $orth ( @{ $ortholog_lookup->{$gene_data->{gene_stable_id}} || [] } ) {         
-        if (!grep { $orth->[0] eq $_->[0] } @{ $gene_data->{orthologs} }) {                # want only unique ensembl
-          push @{ $gene_data->{orthologs} }, $orth;
-        }
-      }      
-      
-      if ($format eq 'solr') {
-	  p geneLineTSV( $species, $dataset, $gene_data, $counter );
-      } else {
-	  p geneLineXML( $species, $dataset, $gene_data, $counter );
-      }
-    };
-    
-
-    #my $sr_count = 0;
-    
-    foreach my $seq_region_id ( keys %{ $species_to_seq_region->{$species} } ) {
-      #print ++$sr_count . " ";
-      #$|++;
-            
-      my $gene_sql = 
-        "SELECT g.gene_id, t.transcript_id, tr.translation_id,
-           g.stable_id AS gsid, t.stable_id AS tsid, tr.stable_id AS trsid,
-           g.description, ed.db_display_name, x.dbprimary_acc,x.display_label AS xdlgene, 
-           ad.display_label, ad.description, g.source, g.status, g.biotype,
-           sr.name AS seq_region_name, g.seq_region_start, g.seq_region_end
-         FROM (gene AS g,
-           analysis_description AS ad,
-           transcript AS t) LEFT JOIN
-           translation AS tr ON t.transcript_id = tr.transcript_id LEFT JOIN
-           xref AS `x` ON g.display_xref_id = x.xref_id LEFT JOIN
-           external_db AS ed ON ed.external_db_id = x.external_db_id LEFT JOIN
-           seq_region AS sr ON sr.seq_region_id = g.seq_region_id
-         WHERE t.gene_id = g.gene_id AND g.analysis_id = ad.analysis_id AND g.seq_region_id = ?
-         ORDER BY g.stable_id, t.stable_id";
-      
-      #warn "$gene_sql  $seq_region_id\n";
-      
-      my $gene_info = $dbh->selectall_arrayref($gene_sql, undef, $seq_region_id);
-      next unless @$gene_info;
-    
-      my %old;
-    
-      foreach my $row (@$gene_info) {
-    
-        my (
-          $gene_id,                            $transcript_id,
-          $translation_id,                     $gene_stable_id,
-          $transcript_stable_id,               $translation_stable_id,
-          $gene_description,                   $extdb_db_display_name,
-          $xref_primary_acc,                   $xref_display_label,
-          $analysis_description_display_label, $analysis_description,
-          $gene_source,                        $gene_status,
-          $gene_biotype,                       $seq_region_name,
-          $seq_region_start,                   $seq_region_end
-        ) = @$row;
-    
-        if ( $old{'gene_id'} != $gene_id ) {
+        print "Fetching $type xrefs...\n";
+              
+        my $xrefs = [];
+        if ($type ne 'Translation') {
           
-          # output old gene if we have one
-          $output_gene->(\%old) if $old{'gene_id'}; 
+          my $table = lc($type);
           
-          # start building a new gene
-          %old = (
-            'gene_id'                => $gene_id,
-            'haplotype'              => $haplotypes->{$gene_id} ? 'haplotype' : 'reference',
-            'gene_stable_id'         => $gene_stable_id,
-            'description'            => $gene_description,
-            'taxon_id'               => $taxon_id,
-            'translation_stable_ids' => { $translation_stable_id ? ( $translation_stable_id => 1 ) : () },
-            'transcript_stable_ids'  => { $transcript_stable_id ? ( $transcript_stable_id => 1 ) : () },
-            'transcript_ids'         => { $transcript_id ? ( $transcript_id => 1 ) : () },
-            'exons'                  => {},
-            'external_identifiers'   => {},
-            'gene_name'              => $xref_display_label ? $xref_display_label : $gene_stable_id,
-            'seq_region_name'        => $seq_region_name,
-            'ana_desc_label'         => $analysis_description_display_label,
-            'ad'                     => $analysis_description,
-            'source'                 => ucfirst($gene_source),
-            'st'                     => $gene_status,
-            'biotype'                => $gene_biotype,
-            'genomic_unit'           => $genomic_unit,
-            'location'               => sprintf( '%s:%s-%s', $seq_region_name, $seq_region_start, $seq_region_end ),
-            'exons'                  => $exons{$gene_id},
-            'genetrees'              => $genetree_lookup->{$gene_stable_id} || [],
-            'domains'                => $domains{$gene_id},
-            'system_name'            => $production_name,
+          $xrefs = $dbh->selectall_arrayref(
+            "SELECT t.${table}_id, x.display_label, x.dbprimary_acc, ed.db_name, es.synonym, x.description
+             FROM ${table} t
+             JOIN xref x ON x.xref_id = t.display_xref_id
+             JOIN external_db ed ON ed.external_db_id = x.external_db_id
+             LEFT JOIN external_synonym es ON es.xref_id = x.xref_id"
           );
-          
-          $old{'source'} =~ s/base/Base/;
-    
-          # display name
-          if (!$xref_display_label or $xref_display_label eq $gene_stable_id) {
-            $old{'display_name'} = $gene_stable_id;
-          } else {
-            $old{'display_name'} = "$xref_display_label [$gene_stable_id]";
-          }
-    
-          foreach my $K ( keys %{ $exons{$gene_id} } ) {
-            $old{'i'}{$K} = 1;
-          }
-    
-          foreach my $db ( keys %{ $xrefs{'Gene'}{$gene_id} || {} } ) {
-            foreach my $K ( keys %{ $xrefs{'Gene'}{$gene_id}{$db} } ) {
-              $old{'external_identifiers'}{$db}{$K} = 1;
-            }
-          }
-          
-          foreach my $db ( keys %{ $xrefs{'Transcript'}{$transcript_id} || {} } ) {
-            foreach my $K ( keys %{ $xrefs{'Transcript'}{$transcript_id}{$db} } ) {
-              $old{'external_identifiers'}{$db}{$K} = 1;
-            }
-          }
-          
-          foreach my $db ( keys %{ $xrefs{'Translation'}{$translation_id} || {} } ) {
-            foreach my $K ( keys %{ $xrefs{'Translation'}{$translation_id}{$db} } ) {
-              $old{'external_identifiers'}{$db}{$K} = 1;
-            }
-          }
+        }
         
+        my $object_xrefs = $dbh->selectall_arrayref(
+          "SELECT ox.ensembl_id, x.display_label, x.dbprimary_acc, ed.db_name, es.synonym, x.description
+           FROM (object_xref AS ox, xref AS x, external_db AS ed) 
+           LEFT JOIN external_synonym AS es ON es.xref_id = x.xref_id
+           WHERE ox.ensembl_object_type = '$type' AND ox.xref_id = x.xref_id AND x.external_db_id = ed.external_db_id"
+        );
+        
+        foreach (@$xrefs, @$object_xrefs) {
+          $xrefs{$type}{ $_->[0] }{ $_->[3] }{ $_->[1] } = 1 if $_->[1];
+          $xrefs{$type}{ $_->[0] }{ $_->[3] }{ $_->[2] } = 1 if $_->[2];
+          ## remove the duplicates + Temp fix for metazoa data
+          if (my $syn = $_->[4]) {
+            $syn =~ s/^\'|\'$//g;
+            next if ($syn =~ /^(FBtr|FBpp)\d+/);
+            next if ($syn =~ /^CG\d+\-/);
+            $xrefs{$type}{ $_->[0] }{ $_->[3] . "_synonym" }{ $syn } = 1;
+          }
+          ##
+          $xrefs_desc{$type}{ $_->[0] }{ $_->[5] } = 1 if $_->[5];
+        }
+      }
+    }
+    
+    print "Fetching exons...\n";
+  
+    my %exons = ();
+    my $T = $dbh->selectall_arrayref(
+      "SELECT DISTINCT t.gene_id, e.stable_id
+       FROM transcript AS t, exon_transcript AS et, exon AS e
+       WHERE t.transcript_id = et.transcript_id AND et.exon_id = e.exon_id"
+    );
+    
+    foreach (@$T) {
+      $exons{ $_->[0] }{ $_->[1] } = 1;
+    }
+  
+    print "Fetching domains...\n";
+  
+    my %domains;
+    $T = $dbh->selectall_arrayref(
+      'SELECT DISTINCT g.gene_id, pf.hit_name 
+       FROM gene g, transcript t, translation tl, protein_feature pf 
+       WHERE g.gene_id = t.gene_id AND t.transcript_id = tl.transcript_id AND tl.translation_id = pf.translation_id'
+    );
+    
+    foreach (@$T) {
+      $domains{$_->[0]}{$_->[1]} = 1;
+    }
+  
+    print "Fetching seq regions...\n";
+  
+    my $species_to_seq_region = $dbh->selectall_hashref(
+      "SELECT 
+        meta.meta_value AS species_name, 
+        coord_system.species_id, coord_system.coord_system_id, seq_region.seq_region_id,
+        coord_system.name, seq_region.name AS seqname, 
+        seq_region.length, attrib_type.name
+       FROM meta, coord_system, seq_region, seq_region_attrib, attrib_type
+       WHERE 
+         coord_system.coord_system_id = seq_region.coord_system_id 
+         AND seq_region_attrib.seq_region_id = seq_region.seq_region_id
+         AND seq_region_attrib.attrib_type_id = attrib_type.attrib_type_id
+         AND meta.species_id=coord_system.species_id 
+         AND meta.meta_key = 'species.display_name' 
+         AND attrib_type.name = 'Top Level'
+       GROUP BY seq_region.seq_region_id  
+       ORDER BY species_name, seqname, LENGTH DESC",
+      [ 'species_name', 'seq_region_id' ]
+    );
+  
+    #warn Dumper($species_to_seq_region);
+  
+    foreach my $species (keys %$species_to_seq_region) {
+      my $counter = make_counter(0);
+      my ($species_id)      = @{$dbh->selectrow_arrayref("SELECT DISTINCT(species_id) FROM meta WHERE meta_value = ? LIMIT 0,1", undef, $species)};
+      my ($taxon_id)        = @{$dbh->selectrow_arrayref("SELECT meta_value FROM meta WHERE meta_key = 'species.taxonomy_id' AND species_id = ?", undef, $species_id)};
+      my ($production_name) = @{$dbh->selectrow_arrayref("SELECT meta_value FROM meta WHERE meta_key = 'species.production_name' AND species_id = ?", undef, $species_id)};
+      
+      my $ortholog_lookup     = get_ortholog_lookup($conf, $production_name, $genomic_unit);
+      my $ortholog_lookup_pan = get_ortholog_lookup($conf, $production_name, 'pan_homology');
+      
+      (my $filename = "Gene_${species}_${DB}") =~ s/[\W]/_/g;
+      my $file = "$dir/$filename." . ($format eq 'solr' ? 'tsv' : 'xml');
+      $file .= ".gz" unless $nogzip;
+      my $start_time = time;
+    
+      if ($skip_existing and -f $file) {
+        warn "**** Index file already exists - skipping ****\n";
+        next;
+      }
+    
+      print "Dumping $species to $file\n";
+      print "Start time " . format_datetime($start_time) . "\n";
+      print "Num seq regions: " . (scalar keys %{ $species_to_seq_region->{$species} }) . "\n";
+      
+      if ($nogzip) {
+        open( FILE, ">$file" ) || die "Can't open $file: $!";
+      } else {
+        $fh = new IO::Zlib;
+        $fh->open( "$file", "wb9" ) || die("Can't open compressed stream to $file: $!");
+      }
+      
+      header( $DBNAME, $dataset, $DB ) unless $format eq 'solr';
+  
+      # prepare the gene output sub
+      # this is called when ready to ouput the gene line
+      my $output_gene = sub() {
+        my ($gene_data) = shift;
+        my @transcript_stable_ids = keys %{ $gene_data->{transcript_stable_ids} };
+        
+        # add variation features
+        if ($SNPDB) {
+          $gene_data->{snps} = $dbh->selectcol_arrayref(
+            "SELECT DISTINCT(vf.variation_name) FROM $SNPDB.transcript_variation AS tv, $SNPDB.variation_feature AS vf
+             WHERE vf.variation_feature_id = tv.variation_feature_id AND tv.feature_stable_id IN('" . join("', '", @transcript_stable_ids) . "')"
+          );
+        }
+        
+        # add probes and probesets
+        if ($FUNCGENDB) {
+          $gene_data->{probes} = [];
+          $gene_data->{probesets} = [];
+          foreach (@transcript_stable_ids) { 
+            push(@{$gene_data->{probes}},    @{$transcript_probes{$_}})    if $transcript_probes{$_};
+            push(@{$gene_data->{probesets}}, @{$transcript_probesets{$_}}) if $transcript_probesets{$_};
+          }
+        }
+        
+        # add orthologs    
+        
+        $gene_data->{orthologs} = $ortholog_lookup_pan->{$gene_data->{gene_stable_id}};      # want all eg
+        foreach my $orth ( @{ $ortholog_lookup->{$gene_data->{gene_stable_id}} || [] } ) {         
+          if (!grep { $orth->[0] eq $_->[0] } @{ $gene_data->{orthologs} }) {                # want only unique ensembl
+            push @{ $gene_data->{orthologs} }, $orth;
+          }
+        }      
+        
+        if ($format eq 'solr') {
+  	  p geneLineTSV( $species, $dataset, $gene_data, $counter );
         } else {
+  	  p geneLineXML( $species, $dataset, $gene_data, $counter );
+        }
+      };
+      
+  
+      #my $sr_count = 0;
+      
+      foreach my $seq_region_id ( keys %{ $species_to_seq_region->{$species} } ) {
+        #print ++$sr_count . " ";
+        #$|++;
+              
+        my $gene_sql = 
+          "SELECT g.gene_id, t.transcript_id, tr.translation_id,
+             g.stable_id AS gsid, t.stable_id AS tsid, tr.stable_id AS trsid,
+             g.description, ed.db_display_name, x.dbprimary_acc,x.display_label AS xdlgene, 
+             ad.display_label, ad.description, g.source, g.status, g.biotype,
+             sr.name AS seq_region_name, g.seq_region_start, g.seq_region_end
+           FROM (gene AS g,
+             analysis_description AS ad,
+             transcript AS t) LEFT JOIN
+             translation AS tr ON t.transcript_id = tr.transcript_id LEFT JOIN
+             xref AS `x` ON g.display_xref_id = x.xref_id LEFT JOIN
+             external_db AS ed ON ed.external_db_id = x.external_db_id LEFT JOIN
+             seq_region AS sr ON sr.seq_region_id = g.seq_region_id
+           WHERE t.gene_id = g.gene_id AND g.analysis_id = ad.analysis_id AND g.seq_region_id = ?
+           ORDER BY g.stable_id, t.stable_id";
         
-          $old{'transcript_stable_ids'}{$transcript_stable_id}   = 1;
-          $old{'transcript_ids'}{$transcript_id}                 = 1;
-          $old{'translation_stable_ids'}{$translation_stable_id} = 1;
-    
-          foreach my $db ( keys %{ $xrefs{'Transcript'}{$transcript_id} || {} } ) {
-            foreach my $K ( keys %{ $xrefs{'Transcript'}{$transcript_id}{$db} } ) {
-              $old{'external_identifiers'}{$db}{$K} = 1;
+        #warn "$gene_sql  $seq_region_id\n";
+        
+        my $gene_info = $dbh->selectall_arrayref($gene_sql, undef, $seq_region_id);
+        next unless @$gene_info;
+      
+        my %old;
+      
+        foreach my $row (@$gene_info) {
+      
+          my (
+            $gene_id,                            $transcript_id,
+            $translation_id,                     $gene_stable_id,
+            $transcript_stable_id,               $translation_stable_id,
+            $gene_description,                   $extdb_db_display_name,
+            $xref_primary_acc,                   $xref_display_label,
+            $analysis_description_display_label, $analysis_description,
+            $gene_source,                        $gene_status,
+            $gene_biotype,                       $seq_region_name,
+            $seq_region_start,                   $seq_region_end
+          ) = @$row;
+      
+          if ( $old{'gene_id'} != $gene_id ) {
+            
+            # output old gene if we have one
+            $output_gene->(\%old) if $old{'gene_id'}; 
+            
+            # start building a new gene
+            %old = (
+              'gene_id'                => $gene_id,
+              'haplotype'              => $haplotypes->{$gene_id} ? 'haplotype' : 'reference',
+              'gene_stable_id'         => $gene_stable_id,
+              'description'            => $gene_description,
+              'taxon_id'               => $taxon_id,
+              'translation_stable_ids' => { $translation_stable_id ? ( $translation_stable_id => 1 ) : () },
+              'transcript_stable_ids'  => { $transcript_stable_id ? ( $transcript_stable_id => 1 ) : () },
+              'transcript_ids'         => { $transcript_id ? ( $transcript_id => 1 ) : () },
+              'exons'                  => {},
+              'external_identifiers'   => {},
+              'gene_name'              => $xref_display_label ? $xref_display_label : $gene_stable_id,
+              'seq_region_name'        => $seq_region_name,
+              'ana_desc_label'         => $analysis_description_display_label,
+              'ad'                     => $analysis_description,
+              'source'                 => ucfirst($gene_source),
+              'st'                     => $gene_status,
+              'biotype'                => $gene_biotype,
+              'genomic_unit'           => $genomic_unit,
+              'location'               => sprintf( '%s:%s-%s', $seq_region_name, $seq_region_start, $seq_region_end ),
+              'exons'                  => $exons{$gene_id},
+              'genetrees'              => $genetree_lookup->{$gene_stable_id} || [],
+              'domains'                => $domains{$gene_id},
+              'system_name'            => $production_name,
+              'database'                => $DB,
+            );
+            
+            $old{'source'} =~ s/base/Base/;
+      
+            # display name
+            if (!$xref_display_label or $xref_display_label eq $gene_stable_id) {
+              $old{'display_name'} = $gene_stable_id;
+            } else {
+              $old{'display_name'} = "$xref_display_label [$gene_stable_id]";
             }
-          }
+      
+            foreach my $K ( keys %{ $exons{$gene_id} } ) {
+              $old{'i'}{$K} = 1;
+            }
+      
+            foreach my $db ( keys %{ $xrefs{'Gene'}{$gene_id} || {} } ) {
+              foreach my $K ( keys %{ $xrefs{'Gene'}{$gene_id}{$db} } ) {
+                $old{'external_identifiers'}{$db}{$K} = 1;
+              }
+            }
+            
+            foreach my $db ( keys %{ $xrefs{'Transcript'}{$transcript_id} || {} } ) {
+              foreach my $K ( keys %{ $xrefs{'Transcript'}{$transcript_id}{$db} } ) {
+                $old{'external_identifiers'}{$db}{$K} = 1;
+              }
+            }
+            
+            foreach my $db ( keys %{ $xrefs{'Translation'}{$translation_id} || {} } ) {
+              foreach my $K ( keys %{ $xrefs{'Translation'}{$translation_id}{$db} } ) {
+                $old{'external_identifiers'}{$db}{$K} = 1;
+              }
+            }
           
-          foreach my $db ( keys %{ $xrefs{'Translation'}{$translation_id} || {} } ) {
-            foreach my $K ( keys %{ $xrefs{'Translation'}{$translation_id}{$db} } ) {
-              $old{'external_identifiers'}{$db}{$K} = 1;
+          } else {
+          
+            $old{'transcript_stable_ids'}{$transcript_stable_id}   = 1;
+            $old{'transcript_ids'}{$transcript_id}                 = 1;
+            $old{'translation_stable_ids'}{$translation_stable_id} = 1;
+      
+            foreach my $db ( keys %{ $xrefs{'Transcript'}{$transcript_id} || {} } ) {
+              foreach my $K ( keys %{ $xrefs{'Transcript'}{$transcript_id}{$db} } ) {
+                $old{'external_identifiers'}{$db}{$K} = 1;
+              }
+            }
+            
+            foreach my $db ( keys %{ $xrefs{'Translation'}{$translation_id} || {} } ) {
+              foreach my $K ( keys %{ $xrefs{'Translation'}{$translation_id}{$db} } ) {
+                $old{'external_identifiers'}{$db}{$K} = 1;
+              }
             }
           }
         }
+        $output_gene->(\%old);
       }
-      $output_gene->(\%old);
+      footer( $counter->() );
     }
-    footer( $counter->() );
-  }
-    
-  warn "FINISHED dumpGene ($DB)\n";
-  #} #$DB loop
+      
+    warn "FINISHED dumpGene ($DB)\n";
+  } #$DB loop
 }
 
 sub geneLineXML {
   my ( $species, $dataset, $xml_data, $counter ) = @_;
 
-  return warn "gene id not set" if $xml_data->{'gene_stable_id'} eq '';
+  if (!$xml_data->{'gene_stable_id'}) {
+    warn "gene id not set" ;
+    return;
+  }
 
   my $gene_id              = $xml_data->{'gene_stable_id'};
   my $genomic_unit         = $xml_data->{'genomic_unit'};
@@ -681,6 +683,7 @@ sub geneLineXML {
   my $probes               = $xml_data->{'probes'};
   my $probesets            = $xml_data->{'probesets'};
   my $system_name          = $xml_data->{'system_name'};
+  my $database             = $xml_data->{'database'};
 
   $display_name =~ s/</&lt;/g;
   $display_name =~ s/>/&gt;/g;
@@ -810,6 +813,7 @@ sub geneLineXML {
 <field name="gene_synonym">$_</field>}
       } map {encode_entities($_)} keys %$unique_synonyms ) )  
     . qq{
+<field name="databse">$database</field>      
 </additional_fields>};
 
   $counter->();
