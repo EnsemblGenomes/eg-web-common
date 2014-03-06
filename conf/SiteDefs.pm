@@ -32,11 +32,11 @@ sub update_conf {
   $SiteDefs::ENSEMBL_LONGPROCESS_MINTIME    = 10;
   
   @SiteDefs::ENSEMBL_PERL_DIRS    = (
-    $SiteDefs::ENSEMBL_SERVERROOT.'/perl',
-    $SiteDefs::ENSEMBL_SERVERROOT.'/public-plugins/eg/common/perl',
+    $SiteDefs::ENSEMBL_WEBROOT.'/perl',
+    $SiteDefs::ENSEMBL_SERVERROOT.'/eg-web-common/perl',
   );
   
-  $SiteDefs::TEMPLATE_ROOT = $SiteDefs::ENSEMBL_SERVERROOT.'/public-plugins/eg/common/templates';
+  $SiteDefs::TEMPLATE_ROOT = $SiteDefs::ENSEMBL_SERVERROOT.'/eg-web-common/templates';
       
   $SiteDefs::DOCSEARCH_INDEX_DIR = $SiteDefs::ENSEMBL_TMP_DIR . '/docsearch_index';
   
