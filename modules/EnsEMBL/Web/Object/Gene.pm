@@ -22,81 +22,40 @@ package EnsEMBL::Web::Object::Gene;
 
 use Data::Dumper;
 
-sub counts {
-  my $self = shift;
+use previous qw(counts availability);
+
+sub availability {
+  $self = shift;
+  $self->PREV::availability(@_);
+ 
+  my $obj = $self->Obj;
+    
+  if ($obj->isa('Bio::EnsEMBL::Gene')) {
+    my $member     = $self->database('compara') ? $self->database('compara')->get_GeneMemberAdaptor->fetch_by_source_stable_id('ENSEMBLGENE', $obj->stable_id) : undef;
+    my $pan_member = $self->database('compara_pan_ensembl') ? $self->database('compara_pan_ensembl')->get_GeneMemberAdaptor->fetch_by_source_stable_id('ENSEMBLGENE', $obj->stable_id) : undef;
+    my $counts     = $self->counts($member, $pan_member);
+    
+    $self->{_availability}->{has_homoeologs} = $counts->{homoeologs};
+  }
+
+  return $self->{_availability};
+}
+
+sub _counts {
+  my ($self, $member, $pan_member) = @_;
   my $obj = $self->Obj;
 
   return {} unless $obj->isa('Bio::EnsEMBL::Gene');
   
-  my $key = sprintf '::COUNTS::GENE::%s::%s::%s::', $self->species, $self->hub->core_param('db'), $self->hub->core_param('g');
   my $counts = $self->{'_counts'};
-  $counts ||= $MEMD->get($key) if $MEMD;
-  
-  if (!$counts) {
-    $counts = {
-      transcripts        => scalar @{$obj->get_all_Transcripts},
-      exons              => scalar @{$obj->get_all_Exons},
-      similarity_matches => $self->get_xref_available,
-      operons => 0,
-    };
-    if ($obj->feature_Slice->can('get_all_Operons')){
-      $counts->{'operons'} = scalar @{$obj->feature_Slice->get_all_Operons};
+ 
+  if (!$counts) {    
+    if ($member) {
+      $counts->{'homoeologs'} = $member->number_of_homoeologues;
     }
-    $counts->{structural_variation} = 0;
-    if ($self->database('variation')){ 
-      my $vdb = $self->species_defs->get_config($self->species,'databases')->{'DATABASE_VARIATION'};
-      $counts->{structural_variation} = $vdb->{'tables'}{'structural_variation'}{'rows'};
-    }
-    my $compara_db = $self->database('compara');
-    
-    if ($compara_db) {
-      my $compara_dbh = $compara_db->get_MemberAdaptor->dbc->db_handle;
-      
-      if ($compara_dbh) {
-        $counts = {%$counts, %{$self->count_homologues($compara_dbh)}};
-      
-        my ($res) = $compara_dbh->selectrow_array(
-          'select count(*) from family_member fm, member as m where fm.member_id=m.member_id and stable_id=? and source_name =?',
-          {}, $obj->stable_id, 'ENSEMBLGENE'
-        );
-        
-        $counts->{'families'} = $res;
-      }
-      my $alignments = $self->count_alignments;
-      $counts->{'alignments'} = $alignments->{'all'} if $self->get_db eq 'core';
-      $counts->{'pairwise_alignments'} = $alignments->{'pairwise'} + $alignments->{'patch'};
-    }
-    if (my $compara_db = $self->database('compara_pan_ensembl')) {
-      my $compara_dbh = $compara_db->get_MemberAdaptor->dbc->db_handle;
-
-      my $pan_counts = {};
-
-      if ($compara_dbh) {
-        $pan_counts = $self->count_homologues($compara_dbh);
-      
-        my ($res) = $compara_dbh->selectrow_array(
-          'select count(*) from family_member fm, member as m where fm.member_id=m.member_id and stable_id=? and source_name =?',
-          {}, $obj->stable_id, 'ENSEMBLGENE'
-        );
-        
-        $pan_counts->{'families'} = $res;
-      }
-      
-      $pan_counts->{'alignments'} = $self->count_alignments('DATABASE_COMPARA_PAN_ENSEMBL')->{'all'} if $self->get_db eq 'core';
-
-      foreach (keys %$pan_counts) {
-        my $key = $_."_pan";
-        $counts->{$key} = $pan_counts->{$_};
-      }
-    }
-
-    $counts = {%$counts, %{$self->_counts}};
-
-    $MEMD->set($key, $counts, undef, 'COUNTS') if $MEMD;
-    $self->{'_counts'} = $counts;
   }
-  
-  return $counts;
+    
+  return $counts || {};
 }
 
 sub store_TransformedTranscripts {
@@ -282,5 +241,79 @@ sub gene_type {
   return $type;
 }
 
+## EG - add homoeolog descriptions
+sub get_homology_matches {
+  my ($self, $homology_source, $homology_description, $disallowed_homology, $compara_db) = @_;
+  #warn ">>> MATCHING $homology_source, $homology_description BUT NOT $disallowed_homology";
+  
+  $homology_source      ||= 'ENSEMBL_HOMOLOGUES';
+  $homology_description ||= 'ortholog';
+  $compara_db           ||= 'compara';
+  
+  my $key = "$homology_source::$homology_description";
+  
+  if (!$self->{'homology_matches'}{$key}) {
+    my $homologues = $self->fetch_homology_species_hash($homology_source, $homology_description, $compara_db);
+    
+    return $self->{'homology_matches'}{$key} = {} unless keys %$homologues;
+    
+    my $gene         = $self->Obj;
+    my $geneid       = $gene->stable_id;
+    my $adaptor_call = $self->param('gene_adaptor') || 'get_GeneAdaptor';
+    my %homology_list;
+
+    # Convert descriptions into more readable form
+    my %desc_mapping = (
+      ortholog_one2one          => '1-to-1',
+      apparent_ortholog_one2one => '1-to-1 (apparent)', 
+      ortholog_one2many         => '1-to-many',
+      possible_ortholog         => 'possible ortholog',
+      ortholog_many2many        => 'many-to-many',
+      within_species_paralog    => 'paralogue (within species)',
+      other_paralog             => 'other paralogue (within species)',
+      putative_gene_split       => 'putative gene split',
+      contiguous_gene_split     => 'contiguous gene split',
+## EG      
+      homoeolog_one2one         => '1-to-1',
+      homoeolog_one2many        => '1-to-many',
+      homoeolog_many2many       => 'many-to-many',
+##
+    );
+    
+    foreach my $display_spp (keys %$homologues) {
+      my $order = 0;
+      
+      foreach my $homology (@{$homologues->{$display_spp}}) { 
+        my ($homologue, $homology_desc, $homology_subtype, $query_perc_id, $target_perc_id, $dnds_ratio, $gene_tree_node_id) = @$homology;
+        
+        next unless $homology_desc =~ /$homology_description/;
+        next if $disallowed_homology && $homology_desc =~ /$disallowed_homology/;
+        
+        # Avoid displaying duplicated (within-species and other paralogs) entries in the homology table (e!59). Skip the other_paralog (or overwrite it)
+        next if $homology_list{$display_spp}{$homologue->stable_id} && $homology_desc eq 'other_paralog';
+        
+        $homology_list{$display_spp}{$homologue->stable_id} = { 
+          homology_desc       => $desc_mapping{$homology_desc} || 'no description',
+          description         => $homologue->description       || 'No description',
+          display_id          => $homologue->display_label     || 'Novel Ensembl prediction',
+          homology_subtype    => $homology_subtype,
+          spp                 => $display_spp,
+          query_perc_id       => $query_perc_id,
+          target_perc_id      => $target_perc_id,
+          homology_dnds_ratio => $dnds_ratio,
+          gene_tree_node_id   => $gene_tree_node_id,
+          order               => $order,
+          location            => sprintf('%s:%s-%s:%s', map $homologue->$_, qw(chr_name chr_start chr_end chr_strand))
+        };
+        
+        $order++;
+      }
+    }
+    
+    $self->{'homology_matches'}{$key} = \%homology_list;
+  }
+  
+  return $self->{'homology_matches'}{$key};
+}
 
 1;

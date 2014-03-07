@@ -25,7 +25,6 @@ sub modify_tree {
   my $species = $hub->species;
   my $species_defs = $hub->species_defs;
   my $object = $self->object;
-
   my $summary = $self->get_node('Summary');
 
 #  my $splice = $self->get_node('Splice');
@@ -124,6 +123,23 @@ sub modify_tree {
 
   $compara_menu->set('caption', $cdb_name);
 
+  # We only have homoeologues for Triticum aestivum (Plants).
+  # For other genomes we don't want this menu to be visible at all (because people don't know what they are).
+  # If we get homoeologue data for other species we should find a better way to control this.
+  if ($hub->species =~ /triticum_aestivum/i) {
+    $self->get_node('Compara_Paralog')->after( 
+      $self->create_node('Compara_Homoeolog', 'Homoeologues ([[counts::homoeologs]])',
+        [qw(paralogues EnsEMBL::Web::Component::Gene::ComparaHomoeologs)],
+        { 'availability' => 'gene database:compara core has_homoeologs', 'concise' => 'Homoeologues' }
+      ),
+      $self->create_node('Compara_Homoeolog/Alignment', 'Homoeologue alignment',
+        [qw( alignment EnsEMBL::Web::Component::Gene::HomologAlignment )],
+        { 'availability'  => 'gene database:compara core has_homoeologs', 'no_menu_entry' => 1 }
+      )
+    );
+  }
+  
+  
 ##----------------------------------------------------------------------
 ## Compara menu: alignments/orthologs/paralogs/trees
   my $pancompara_menu = $self->create_node( 'PanCompara', 'Pan-taxonomic Compara',

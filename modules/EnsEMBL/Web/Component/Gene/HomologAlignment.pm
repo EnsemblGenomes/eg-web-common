@@ -23,7 +23,6 @@ package EnsEMBL::Web::Component::Gene::HomologAlignment;
 use strict;
 
 use Bio::AlignIO;
-use List::MoreUtils qw{ none any };
 
 use EnsEMBL::Web::Constants;
 
@@ -31,6 +30,7 @@ sub content {
   my $self         = shift;
   my $hub          = $self->hub;
   my $cdb          = shift || $hub->param('cdb') || 'compara';
+
   my $species      = $hub->species;
   my $species_defs = $hub->species_defs;
   my $gene_id      = $self->object->stable_id;
@@ -38,37 +38,52 @@ sub content {
   my $seq          = $hub->param('seq');
   my $text_format  = $hub->param('text_format');
   my $database     = $hub->database($cdb);
-  my $qm           = $database->get_MemberAdaptor->fetch_by_source_stable_id('ENSEMBLGENE', $gene_id);
+  my $qm           = $database->get_GeneMemberAdaptor->fetch_by_source_stable_id('ENSEMBLGENE', $gene_id);
   my ($homologies, $html, %skipped);
-
+  
   eval {
     $homologies = $database->get_HomologyAdaptor->fetch_all_by_Member($qm);
   };
-
-  my %desc_mapping = (
-    ortholog_one2one          => '1 to 1 orthologue',
-    apparent_ortholog_one2one => '1 to 1 orthologue (apparent)',
-    ortholog_one2many         => '1 to many orthologue',
-    between_species_paralog   => 'paralogue (between species)',
-    ortholog_many2many        => 'many to many orthologue',
-    within_species_paralog    => 'paralogue (within species)',
-    other_paralog             => 'other paralogue (within species)',
-  );
  
-  my @orthologues = qw/ortholog_one2one apparent_ortholog_one2one ortholog_one2many ortholog_many2many possible_ortholog/;
-  my @paralogues = ('other_paralog', 'between_species_paralog', 'within_species_paralog');
-  my @list_to_show = ();
-
-  if ( ($hub->referer->{'ENSEMBL_ACTION'} eq 'Compara_Paralog' && $hub->referer->{'ENSEMBL_FUNCTION'} eq 'Alignment_pan_compara')
-    || ($hub->referer->{'ENSEMBL_ACTION'} eq 'Compara_Paralog' && $hub->referer->{'ENSEMBL_FUNCTION'} eq 'Alignment') ) { 
-      @list_to_show = (@paralogues);
+  my ($match_type, %desc_mapping);
+  
+  if ($hub->action eq 'Compara_Ortholog') {
+    $match_type = 'Orthologue';
+    %desc_mapping = (
+      ortholog_one2one          => '1 to 1 orthologue',
+      apparent_ortholog_one2one => '1 to 1 orthologue (apparent)',
+      ortholog_one2many         => '1 to many orthologue',
+      ortholog_many2many        => 'many to many orthologue',
+      possible_ortholog         => 'possible orthologue',
+    );
+  } 
+## EG  
+  elsif ($hub->action eq 'Compara_Homoeolog') {
+    $match_type = 'Homoeologue';
+    %desc_mapping = (
+      homoeolog_one2one         => '1-to-1',
+      homoeolog_one2many        => '1-to-many',
+      homoeolog_many2many       => 'many-to-many',
+    );
+  } 
+##  
+  else {
+    $match_type = 'Paralogue';
+    %desc_mapping = (
+      within_species_paralog    => 'paralogue (within species)',
+      putative_gene_split       => 'putative gene split',
+      contiguous_gene_split     => 'contiguous gene split',
+    );
   }
-  if ( ($hub->referer->{'ENSEMBL_ACTION'} eq 'Compara_Ortholog' && $hub->referer->{'ENSEMBL_FUNCTION'} eq 'Alignment_pan_compara')
-    || ( $hub->referer->{'ENSEMBL_ACTION'} eq 'Compara_Ortholog' && $hub->referer->{'ENSEMBL_FUNCTION'} eq 'Alignment')){
-      @list_to_show = (@orthologues);
-  }
-
+ 
+  my $homology_types = EnsEMBL::Web::Constants::HOMOLOGY_TYPES;
+  
   foreach my $homology (@{$homologies}) {
+
+    ## filter out non-required types
+    my $homology_desc  = $homology_types->{$homology->{'_description'}} || $homology->{'_description'};
+    next unless $desc_mapping{$homology_desc};      
+
     my $sa;
     
     eval {
@@ -100,6 +115,7 @@ sub content {
             $peptide->stable_id,
             sprintf('%d aa', $peptide->seq_length),
             sprintf('%d %%', $peptide->perc_id),
+            sprintf('%d %%', $peptide->perc_cov),
             $location,
           ]; 
         } else {
@@ -115,6 +131,7 @@ sub content {
             ),
             sprintf('%d aa', $peptide->seq_length),
             sprintf('%d %%', $peptide->perc_id),
+            sprintf('%d %%', $peptide->perc_cov),
             sprintf('<a href="%s">%s</a>',
               $hub->url({ species => $member_species, type => 'Location', action => 'View', g => $gene->stable_id, r => $location, t => undef }),
               $location
@@ -125,24 +142,19 @@ sub content {
       
       next unless $flag;
       
-      my $homology_types = EnsEMBL::Web::Constants::HOMOLOGY_TYPES;
-      my $homology_desc  = $homology_types->{$homology->{'_description'}} || $homology->{'_description'};
-
-      next if 
-        none { $homology_desc eq $_ } @list_to_show;
-      
       my $homology_desc_mapped = $desc_mapping{$homology_desc} ? $desc_mapping{$homology_desc} : 
                                  $homology_desc ? $homology_desc : 'no description';
 
-      $html .= "<h2>Homologue type: $homology_desc_mapped</h2>";
+      $html .= "<h2>$match_type type: $homology_desc_mapped</h2>";
       
       my $ss = $self->new_table([
-          { title => 'Species',          width => '18%' },
-          { title => 'Gene ID',          width => '18%' },
-          { title => 'Peptide ID',       width => '18%' },
-          { title => 'Peptide length',   width => '13%' },
-          { title => '% identity',       width => '13%' },
-          { title => 'Genomic location', width => '20%' }
+          { title => 'Species',          width => '15%' },
+          { title => 'Gene ID',          width => '15%' },
+          { title => 'Peptide ID',       width => '15%' },
+          { title => 'Peptide length',   width => '10%' },
+          { title => '% identity',       width => '10%' },
+          { title => '% coverage',       width => '10%' },
+          { title => 'Genomic location', width => '25%' }
         ],
         $data
       );
@@ -178,18 +190,20 @@ sub content {
       $html .= "<pre>$var</pre>";
     }
   }
+  
   if (scalar keys %skipped) {
     my $count;
     $count += $_ for values %skipped;
-    
-    $html .= '<br />' . $self->_info(
-      'Orthologues hidden by configuration',
+## EG    
+    $html .= '<br />' . $self->_info(   
+      "${match_type}s hidden by configuration",
       sprintf(
-        '<p>%d orthologues not shown in the table above from the following species. Use the "<strong>Configure this page</strong>" on the left to show them.<ul><li>%s</li></ul></p>',
+        '<p>%d ${match_type}s not shown in the table above from the following species. Use the "<strong>Configure this page</strong>" on the left to show them.<ul><li>%s</li></ul></p>',
         $count,
         join "</li>\n<li>", map "$_ ($skipped{$_})", sort keys %skipped
       )
     );
+##    
   }
   
   return $html;
