@@ -134,7 +134,7 @@ sub navbar {
       <input type="hidden" class="panel_type" value="LocationNav" />
       <input type="hidden" class="update_url" value="%s" />
       <div class="relocate">
-        <form action="$psychic" method="get">    
+        <form action="$url->[0]" method="get">    
           <label for="loc_r">Location:</label>
           $extra_inputs
           $g_input
