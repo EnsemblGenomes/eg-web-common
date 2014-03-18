@@ -29,15 +29,15 @@ use strict;
 use FindBin qw($Bin);
 use Cwd qw(abs_path);
 
-our $WEBROOT;
 our $SERVERROOT;
+our $WEBROOT;
 
 BEGIN {
-  $WEBROOT    = find_web_root();
-  $SERVERROOT = "$WEBROOT/ensembl-webcode";
+  $SERVERROOT = find_server_root();
+  $WEBROOT    = "$SERVERROOT/ensembl-webcode";
   
-  unshift @INC, "$SERVERROOT";
-  unshift @INC, "$SERVERROOT/conf";
+  unshift @INC, "$WEBROOT";
+  unshift @INC, "$WEBROOT/conf";
   
   require SiteDefs;
   map{ unshift @INC, $_ } @SiteDefs::ENSEMBL_LIB_DIRS;  
@@ -45,21 +45,21 @@ BEGIN {
   # Find the webroot by stepping up the dir tree looking for 
   # the dir containing 'ensembl-webcode'
   
-  sub find_web_root {
-    my $web_root = $Bin;
+  sub find_server_root {
+    my $root = $Bin;
     my $found    = 0;
 
-    while (!$found and $web_root ne '/') {
-      if (-d "$web_root/ensembl-webcode") {
+    while (!$found and $root ne '/') {
+      if (-d "$root/ensembl-webcode") {
         $found = 1;
       } else {
-        $web_root = abs_path("$web_root/../");
+        $root = abs_path("$root/../");
       }
     }
     
-    die "Cannot locate WEBROOT dir" if !$found;
+    die "Cannot locate SERVERROOT dir" if !$found;
     
-    return $web_root;
+    return $root;
   }
 }
 

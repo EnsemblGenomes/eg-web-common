@@ -29,8 +29,8 @@ use Storable qw(lock_nstore);
 use Getopt::Long;
 use lib $Bin;
 use LibDirs;
-use lib "$LibDirs::WEBROOT/ensemblgenomes-api/modules";
-use lib "$LibDirs::WEBROOT/eg-web-bacteria/modules";
+use lib "$LibDirs::SERVERROOT/ensemblgenomes-api/modules";
+use lib "$LibDirs::SERVERROOT/eg-web-bacteria/modules";
 
 my $NO_CACHE = 1; # don't cache the registry
 
@@ -92,7 +92,7 @@ print "getting db adaptors...\n";
 Bio::EnsEMBL::Registry->load_registry_from_db(@db_args);
 Bio::EnsEMBL::Registry->set_disconnect_when_inactive;
 
-my %valid = map {lc($_) => 1} split /\n/, `$SERVER_ROOT/utils/dump_ensembl_valid_species.pl`; 
+my %valid = map {lc($_) => 1} split /\n/, `$LibDirs::WEBROOT/utils/dump_ensembl_valid_species.pl`; 
 my @dbas  = grep { $valid{$_->species} } @{ Bio::EnsEMBL::Registry->get_all_DBAdaptors(-group => 'core') };
 
 #------------------------------------------------------------------------------
