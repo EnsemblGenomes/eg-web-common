@@ -69,6 +69,12 @@ BEGIN{
   my $plugin = $PRE ? '/sanger-plugins/pre' : '/public-plugins/ensembl';
   $PLUGIN_ROOT ||= $SERVERROOT.$plugin;
 
+  my $eg_plugins = 0;
+  if ($PLUGIN_ROOT =~ m#eg-web-#) {
+    $eg_plugins = 1;
+    $SERVERROOT =~ s|[^/]+$||;
+    chop $SERVERROOT;
+  }
   unless( $PLUGIN_ROOT =~ /^\// ){ # Relative path
     $PLUGIN_ROOT = $SERVERROOT.'/'.$PLUGIN_ROOT;
   }
@@ -95,7 +101,6 @@ use EnsEMBL::Web::Hub;
 
 my $SD      = EnsEMBL::Web::SpeciesDefs->new();
 my $pre     = $PLUGIN_ROOT =~ m#sanger-plugins/pre# ? 1 : 0;
-my $eg_plugins = $PLUGIN_ROOT =~ m#eg-plugins# ? 1 : 0;
 $NOINTERPRO = 1 if $pre;
 
 # get a list of valid species for this release
@@ -1110,7 +1115,8 @@ sub render_all_species_page {
   }
 
   # write into html file
-  my $dir = $SERVERROOT.'/eg-plugins/'.$SD->GENOMIC_UNIT.'/htdocs/info/data/';
+  my $dir = $SERVERROOT.'/eg-web-'.$SD->GENOMIC_UNIT.'/htdocs/info/data/';
+   warn "XX unit=".$dir;
 
   &check_dir($dir);
   my $resources = $dir."resources.html";
@@ -1122,7 +1128,7 @@ sub render_all_species_page {
 }
 
 sub get_resources {
-  open FILE, "<".$SiteDefs::ENSEMBL_SERVERROOT."/eg-plugins/common/htdocs/species_metadata.json";
+  open FILE, "<".$SiteDefs::ENSEMBL_SERVERROOT."/eg-web-common/htdocs/species_metadata.json";
   my $file_contents = do { local $/; <FILE> };
   close FILE;
   
@@ -1174,7 +1180,7 @@ B<--coordsys>
 
 B<--all_species_page>
   Generates all the species resources file and puts it in
-  eg-plugin/group/htdocs/info/data/resources.html
+  eg-web-group/htdocs/info/data/resources.html
 
 =head1 DESCRIPTION
 
