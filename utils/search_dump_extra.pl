@@ -19,6 +19,8 @@ use Getopt::Long;
 use XML::Generator;
 use Data::Dumper;
 use HTML::Entities;
+use FindBin qw($Bin);
+use lib $Bin;
 use LibDirs;
 use EnsEMBL::Web::Hub; 
 

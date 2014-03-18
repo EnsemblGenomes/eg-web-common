@@ -27,6 +27,8 @@ use Getopt::Long;
 use IO::Zlib;
 use Data::Dumper;
 use HTML::Entities;
+use FindBin qw($Bin);
+use lib $Bin;
 use LibDirs;
 use utils::Tool;
 

@@ -25,6 +25,7 @@ use Capture::Tiny qw(capture);
 
 my $REGISTRY_URL  = 'http://www.ebi.ac.uk/pride/biomart/martservice?type=registry';
 
+use lib $Bin;
 use LibDirs;
 use LoadPlugins;
 use EnsEMBL::Web::SpeciesDefs;

@@ -31,6 +31,7 @@ use Data::Dumper qw( Dumper );
 use Config::Tiny;
 use File::Basename;
 use Time::Local;
+use lib $Bin;
 use LibDirs;
 
 use Bio::EnsEMBL::DBLoader;

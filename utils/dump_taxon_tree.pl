@@ -27,19 +27,12 @@ use FindBin qw($Bin);
 use JSON;
 use Storable qw(lock_nstore);
 use Getopt::Long;
+use lib $Bin;
+use LibDirs;
+use lib "$LibDirs::WEBROOT/ensemblgenomes-api/modules";
+use lib "$LibDirs::WEBROOT/eg-web-bacteria/modules";
 
-my $SERVER_ROOT;
 my $NO_CACHE = 1; # don't cache the registry
-
-BEGIN {
-  $SERVER_ROOT = "$Bin/../../../";
-  unshift @INC, "$SERVER_ROOT/";
-  unshift @INC, "$SERVER_ROOT/conf/";
-  unshift @INC, "$SERVER_ROOT/ensemblgenomes-api/modules";
-  unshift @INC, "$SERVER_ROOT/eg-plugins/bacteria/modules";
-  require SiteDefs;
-  unshift @INC, $_ for @SiteDefs::ENSEMBL_LIB_DIRS;
-}
 
 use Bio::EnsEMBL::Registry;
 use Bio::EnsEMBL::DBSQL::DBAdaptor;

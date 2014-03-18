@@ -19,6 +19,8 @@ use FindBin qw($Bin);
 use Data::Dumper;
 use DBI;
 use Net::FTP;
+
+use lib $Bin;
 use LibDirs;
 
 use LoadPlugins;

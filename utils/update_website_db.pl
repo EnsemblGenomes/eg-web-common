@@ -17,8 +17,9 @@ use strict;
 use warnings;
 
 use File::Basename qw(dirname);
-use FindBin qw($Bin);
 use Data::Dumper;
+use FindBin qw($Bin);
+use lib $Bin;
 use LibDirs;
 use EnsEMBL::Web::DBSQL::WebsiteAdaptor;
 use EnsEMBL::Web::Hub;  

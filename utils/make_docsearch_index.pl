@@ -20,6 +20,7 @@ use FindBin qw($Bin);
 use File::Find;
 use Lucy::Simple;
 use File::Path qw(make_path remove_tree);
+use lib $Bin;
 use LibDirs;
 
 my $index_dir = $SiteDefs::DOCSEARCH_INDEX_DIR || die '$SiteDefs::DOCSEARCH_INDEX_DIR is not set';
