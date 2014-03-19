@@ -31,6 +31,9 @@ use Carp;
 use Data::Dumper qw( Dumper );
 
 use FindBin qw($Bin);
+use lib $Bin;
+use LibDirs;
+
 use File::Basename qw( dirname );
 
 use Pod::Usage;
@@ -38,6 +41,7 @@ use Getopt::Long;
 use JSON;
 use List::MoreUtils qw /first_index/;
 use HTML::Entities qw(encode_entities);
+
 
 use vars qw( $SERVERROOT $PRE $PLUGIN_ROOT $SCRIPT_ROOT $DEBUG $FUDGE $NOINTERPRO $NOSUMMARY $help $info @user_spp $allgenetypes $coordsys $list $pan_comp_species $ena $nogenebuild
   $species_page);
@@ -69,9 +73,7 @@ BEGIN{
   my $plugin = $PRE ? '/sanger-plugins/pre' : '/public-plugins/ensembl';
   $PLUGIN_ROOT ||= $SERVERROOT.$plugin;
 
-  my $eg_plugins = 0;
   if ($PLUGIN_ROOT =~ m#eg-web-#) {
-    $eg_plugins = 1;
     $SERVERROOT =~ s|[^/]+$||;
     chop $SERVERROOT;
   }
@@ -103,6 +105,11 @@ my $SD      = EnsEMBL::Web::SpeciesDefs->new();
 my $pre     = $PLUGIN_ROOT =~ m#sanger-plugins/pre# ? 1 : 0;
 $NOINTERPRO = 1 if $pre;
 
+my $eg_plugins = 0;
+  if ($PLUGIN_ROOT =~ m#eg-web-#) {
+    $eg_plugins = 1;
+}
+
 # get a list of valid species for this release
 my $release_id  = $SD->ENSEMBL_VERSION;
 my @release_spp = $SD->valid_species;
@@ -112,6 +119,7 @@ foreach my $sp (@release_spp) {
   $species_check{$sp}++;
   print STDERR "$sp\n" if($list);
 }
+
 exit if ($list);
 
 # check validity of user-provided species
@@ -377,6 +385,7 @@ foreach my $spp (@valid_spp) {
     ##--------------------------- OUTPUT STATS TABLE -----------------------------
     print STDERR "...writing stats file...\n";
 
+warn "XX STATS FILE";
     print STATS qq(
       <h3>Summary</h3>
     
@@ -926,7 +935,7 @@ sub render_all_species_page {
   my @taxon_species;
   my $taxon_gr;
   my @groups;
-  
+
   foreach my $group_name (@group_order) {
     my $optgroup     = 0;
     my $species_list = $phylo_tree{$group_name};
@@ -1053,7 +1062,7 @@ sub render_all_species_page {
             if (keys %{$$species_resources[$index]->{bam}} || keys %{$$species_resources[$index]->{features}{proteinAlignFeatures}}
               || keys %{$$species_resources[$index]->{features}{dnaAlignFeatures}});
         }
-        
+
         unless ($common =~ /\./) {
           my $provider = $info->{'provider'};
           my $url  = $info->{'provider_url'};
@@ -1116,7 +1125,6 @@ sub render_all_species_page {
 
   # write into html file
   my $dir = $SERVERROOT.'/eg-web-'.$SD->GENOMIC_UNIT.'/htdocs/info/data/';
-   warn "XX unit=".$dir;
 
   &check_dir($dir);
   my $resources = $dir."resources.html";
@@ -1133,8 +1141,9 @@ sub get_resources {
   close FILE;
   
   my $data;
-  
-  eval { $data = from_json($file_contents); };
+
+  my $is_boolean = JSON::is_bool($file_contents);  
+  eval { $data = from_json($file_contents ); };
   
   return $data->{genome} unless $@;
 }
