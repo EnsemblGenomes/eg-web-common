@@ -36,7 +36,7 @@ sub render {
   # check if we've got static content with species available resources and if so, use it
   # if not, use all the species page with no resources shown (red letters V P G A).
   my $content;
-  my $filename = $SiteDefs::ENSEMBL_SERVERROOT.'/eg-plugins/'.$species_defs->GENOMIC_UNIT."/htdocs/info/data/resources.html";
+  my $filename = $SiteDefs::ENSEMBL_SERVERROOT.'/eg-web-'.$species_defs->GENOMIC_UNIT."/htdocs/info/data/resources.html";
 
   if (-e $filename) {
     open(my $fh, '<', $filename);
