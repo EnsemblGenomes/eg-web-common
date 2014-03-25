@@ -122,11 +122,11 @@ sub modify_tree {
   my $cdb_name = $self->hub->species_defs->COMPARA_DB_NAME || 'Comparative Genomics';
 
   $compara_menu->set('caption', $cdb_name);
-
-  # We only have homoeologues for Triticum aestivum (Plants).
-  # For other genomes we don't want this menu to be visible at all (because people don't know what they are).
-  # If we get homoeologue data for other species we should find a better way to control this.
-  if ($hub->species =~ /triticum_aestivum/i) {
+  
+  
+  # homoeologues for polyploids
+  
+  if ($species_defs->POLYPLOIDY) {
     $self->get_node('Compara_Paralog')->after( 
       $self->create_node('Compara_Homoeolog', 'Homoeologues ([[counts::homoeologs]])',
         [qw(paralogues EnsEMBL::Web::Component::Gene::ComparaHomoeologs)],

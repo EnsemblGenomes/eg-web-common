@@ -177,6 +177,7 @@ sub _munge_meta {
     species.sql_name              SYSTEM_NAME
     species.biomart_dataset       BIOMART_DATASET
     species.wikipedia_url         WIKIPEDIA_URL
+    ploidy                        PLOIDY
   );
   
   my @months    = qw(blank Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
@@ -291,6 +292,9 @@ sub _munge_meta {
 
     # check if the karyotype/list of toplevel regions ( normally chroosomes) is defined in meta table
     @{$self->tree($species)->{'TOPLEVEL_REGIONS'}} = @{$meta_hash->{'regions.toplevel'}} if $meta_hash->{'regions.toplevel'};
+    
+    # convenience flag to determine if species is polyploidy
+    $self->tree->{$species}{POLYPLOIDY} = ($self->tree->{$species}{PLOIDY} > 2);
   }
 }
 
@@ -374,7 +378,7 @@ sub _summarise_compara_db {
   
   my (%intra_species, %intra_species_constraints);
   $intra_species{$_->[0]}{$_->[1]} = 1 for @$intra_species_aref;
-  
+ 
   # look at all the multiple alignments
   ## We've done the DB hash...So lets get on with the multiple alignment hash;
   my $res_aref = $dbh->selectall_arrayref('
@@ -442,9 +446,11 @@ sub _summarise_compara_db {
     
     $self->db_tree->{$db_name}{'ALIGNMENTS'}{$alignment_id}{'conservation_score'} = $conservation_score_id;
   }
-  
+
+## EG - now done on the fly - too many alignments to put in configs 
   # if there are intraspecies alignments then get full details of genomic alignments, ie start and stop, constrained by a set defined above (or no constraint for all alignments)
-  $self->_summarise_compara_alignments($dbh, $db_name, $vega ? undef : \%intra_species_constraints) if scalar keys %intra_species_constraints;
+  #$self->_summarise_compara_alignments($dbh, $db_name, $vega ? undef : \%intra_species_constraints) if scalar keys %intra_species_constraints;
+##
   
   my %sections = (
     ENSEMBL_ORTHOLOGUES => 'GENE',

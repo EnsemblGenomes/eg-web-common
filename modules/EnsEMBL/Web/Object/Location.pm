@@ -22,6 +22,18 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 
+sub count_alignments {
+  my $self          = shift;
+  my $cdb           = shift || 'DATABASE_COMPARA';
+  my $c             = $self->SUPER::count_alignments($cdb);
+## EG
+  #my %intra_species = $self->species_defs->multi($cdb, 'INTRA_SPECIES_ALIGNMENTS');
+  
+  $c->{'patch'} = scalar @{ $self->hub->intra_species_alignments($cdb, $self->species, $self->slice->seq_region_name) };
+##  
+  return $c; 
+}
+
 sub chr_short_name {
   my $self = shift;
   
