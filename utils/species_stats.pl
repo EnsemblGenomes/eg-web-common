@@ -39,7 +39,7 @@ use File::Basename qw( dirname );
 use Pod::Usage;
 use Getopt::Long;
 use JSON;
-use List::MoreUtils qw /first_index/;
+use List::MoreUtils qw /first_index any/;
 use HTML::Entities qw(encode_entities);
 
 
@@ -385,7 +385,6 @@ foreach my $spp (@valid_spp) {
     ##--------------------------- OUTPUT STATS TABLE -----------------------------
     print STDERR "...writing stats file...\n";
 
-warn "XX STATS FILE";
     print STATS qq(
       <h3>Summary</h3>
     
@@ -1047,20 +1046,20 @@ sub render_all_species_page {
         }
         else {
           $html .= qq(<a href="/$dir/Info/Index/"  style="$link_style">$link_text</a>);
+
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has a variation database">V</span>)
-              if keys %{$$species_resources[$index]->{variation}};
+            if (exists $$species_resources[$index]->{has_variations} && $$species_resources[$index]->{has_variations} == 1);
 
+          my $compara = $$species_resources[$index]->{compara};
+          my $is_pan_compara = any { (exists $_->{is_pan_compara} && $_->{is_pan_compara} == 1) } @$compara;
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Is in pan-taxonomic compara">P</span>)
-              if $$species_resources[$index]->{pan_species};
+              if $is_pan_compara;
 
-          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has whole genome DNA alignments">G</span>)
-            if (exists $$species_resources[$index]->{compara}->{LASTZ} || exists $$species_resources[$index]->{compara}->{LASTZ_NET}
-              || exists $$species_resources[$index]->{compara}->{BLASTZ} || exists $$species_resources[$index]->{compara}->{BLASTZ_NET}
-              || exists $$species_resources[$index]->{compara}->{TRANSLATED_BLAT} || exists $$species_resources[$index]->{compara}->{TRANSLATED_BLAT_NET});
+          my $is_compara = any { (exists$_->{is_dna_compara} && $_->{is_dna_compara}==1 ) } @$compara;
+          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has whole genome DNA alignments">G</span>) if $is_compara;
 
-          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has other alignments">A</span>)
-            if (keys %{$$species_resources[$index]->{bam}} || keys %{$$species_resources[$index]->{features}{proteinAlignFeatures}}
-              || keys %{$$species_resources[$index]->{features}{dnaAlignFeatures}});
+          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has other alignments">A</span>) 
+              if (exists $$species_resources[$index]->{has_other_alignments} && $$species_resources[$index]->{has_other_alignments}==1);
         }
 
         unless ($common =~ /\./) {
@@ -1142,10 +1141,10 @@ sub get_resources {
   
   my $data;
 
-  my $is_boolean = JSON::is_bool($file_contents);  
   eval { $data = from_json($file_contents ); };
   
-  return $data->{genome} unless $@;
+#  return $data->{genome} unless $@;
+ return $data unless $@;
 }
 
 
