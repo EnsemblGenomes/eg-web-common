@@ -452,7 +452,8 @@ sub render_transcripts {
         y      => $y,
         height => $h,
         title  => $self->title($transcript, $gene),
-        href   => $self->href($gene, $transcript)
+        href   => $self->href($gene, $transcript),
+        class  => 'group',
       });
 
       my $colour_key = $self->colour_key($gene, $transcript);
@@ -666,7 +667,7 @@ sub render_transcripts {
       
       # shift the composite container by however much we're bumped
       $composite->y($composite->y - $strand * $bump_height * $row);
-      $composite->colour($highlights->{$transcript_stable_id}) if $highlights->{$transcript_stable_id} && !defined $target;
+      $composite->colour($highlights->{$transcript_stable_id}) if $config->get_option('opt_highlight_feature') != 0 && $highlights->{$transcript_stable_id} && !defined $target;
       $self->push($composite);
     }
   }
@@ -1108,7 +1109,7 @@ sub render_alignslice_transcript {
       
       # shift the composite container by however much we've bumped
       $composite->y($composite->y - $strand * $bump_height * $row);
-      $composite->colour($highlights->{$transcript_stable_id}) if $highlights->{$transcript_stable_id} && !defined $target;
+      $composite->colour($highlights->{$transcript_stable_id}) if $config->get_option('opt_highlight_feature') != 0 && $highlights->{$transcript_stable_id} && !defined $target;
       $self->push($composite);
       
       if ($target) {
@@ -1330,7 +1331,7 @@ sub render_alignslice_collapsed {
     
     # shift the composite container by however much we're bumped
     $composite->y($composite->y - $strand * $bump_height * $row);
-    $composite->colour($highlights->{$gene_stable_id}) if $highlights->{$gene_stable_id};
+    $composite->colour($highlights->{$gene_stable_id}) if $config->get_option('opt_highlight_feature') !=0 && $highlights->{$gene_stable_id};
     $self->push($composite);
   }
   
@@ -1382,8 +1383,8 @@ sub render_genes {
   my $h                = 8;
   my $join_z           = 1000;
   
-  my ($fontname, $fontsize) = $self->get_font_details('outertext');
-  my $h = ($self->get_text_width(0, 'X_y', '', 'font' => $fontname, 'ptsize' => $fontsize))[3];
+  my %font_details = $self->get_font_details('outertext', 1);
+  my $h = ($self->get_text_width(0, 'X_y', '', %font_details))[3];
   
   $self->_init_bump;
   
@@ -1520,7 +1521,7 @@ sub render_genes {
       title     => $rect->{'title'},
       gene      => $gene,
       col       => $gene_col,
-      highlight => $highlights->{$gene_stable_id},
+      highlight => $config->get_option('opt_highlight_feature') != 0 ? $highlights->{$gene_stable_id} : undef,
       type      => $gene_type
     };
     
@@ -1571,8 +1572,8 @@ sub render_genes {
     }
     
     $self->push($rect);
-        
-    if ($highlights->{$gene_stable_id}) {
+    
+    if ($config->get_option('opt_highlight_feature') != 0 && $highlights->{$gene_stable_id}) {
       $self->unshift($self->Rect({
         x         => ($start  + $addition - 1) - 1/$pix_per_bp,
         y         => $rect->y - 1,
@@ -1595,47 +1596,56 @@ sub render_genes {
     
     if ($gl_flag) {
       my $start_row = $self->_max_bump_row + 1;
+      my $image_end = $self->get_parameter('image_end');
       
       $self->_init_bump;
 
       foreach my $gr (@genes_to_label) {
-        my $w      = ($self->get_text_width(0, $gr->{'label'}, '', 'font' => $fontname, 'ptsize' => $fontsize))[2];
-        my $tglyph = $self->Text({
-          x         => ($gr->{'start'} - 1) + 4/$pix_per_bp,
+        my $x         = $gr->{'start'} - 1;
+        my $tag_width = (4 / $pix_per_bp) - 1;
+        my $w         = ($self->get_text_width(0, $gr->{'label'}, '', %font_details))[2] / $pix_per_bp;
+        my $label_x   = $x + $tag_width;
+        my $right_align;
+        
+        if ($label_x + $w > $image_end) {
+          $label_x     = $x - $w - $tag_width;
+          $right_align = 1;
+        }
+        
+        my $label = $self->Text({
+          x         => $label_x,
           y         => 0,
           height    => $h,
-          width     => $w / $pix_per_bp,
-          font      => $fontname,
+          width     => $w,
           halign    => 'left',
-          ptsize    => $fontsize,
           colour    => $gr->{'col'},
           text      => $gr->{'label'},
           title     => $gr->{'title'},
           href      => $gr->{'href'},
-          absolutey => 1
+          absolutey => 1,
+          %font_details
         });
         
-        my $bump_start = int($tglyph->{'x'} * $pix_per_bp) - 4;
-        my $bump_end = $bump_start + int($tglyph->width * $pix_per_bp) + 1;
+        my $bump_start = int($label_x * $pix_per_bp) - 4;
+        my $bump_end   = $bump_start + int($label->width * $pix_per_bp) + 1;
+        my $row        = $self->bump_row($bump_start, $bump_end);
         
-        my $row = $self->bump_row($bump_start, $bump_end);
-        
-        $tglyph->y($tglyph->{'y'} + $row * (2 + $h) + ($start_row - 1) * 6);
+        $label->y($row * (2 + $h) + ($start_row - 1) * 6);
         
         # Draw little taggy bit to indicate start of gene
         $self->push(
-          $tglyph,
+          $label,
           $self->Rect({
-            x         => $gr->{'start'} - 1,
-            y         => $tglyph->y + 2,
+            x         => $x,
+            y         => $label->y + 2,
             width     => 0,
             height    => 4,
             colour    => $gr->{'col'},
             absolutey => 1
           }),
           $self->Rect({
-            x         => $gr->{'start'} - 1,
-            y         => $tglyph->y + 2 + 4,
+            x         => $right_align ? $x - (3 / $pix_per_bp) : $x,
+            y         => $label->y + 6,
             width     => 3 / $pix_per_bp,
             height    => 0,
             colour    => $gr->{'col'},
@@ -1643,12 +1653,12 @@ sub render_genes {
           })
         );
         
-        if ($gr->{'highlight'}) {
+        if ($config->get_option('opt_highlight_feature') != 0 && $gr->{'highlight'}) {
           $self->unshift($self->Rect({
-            x         => ($gr->{'start'} - 1) - 1/$pix_per_bp,
-            y         => $tglyph->y + 1,
-            width     => ($tglyph->width + 1) + 2/$pix_per_bp,
-            height    => $tglyph->height + 2,
+            x         => $gr->{'start'} - 1 - (1 / $pix_per_bp),
+            y         => $label->y + 1,
+            width     => $label->width + 1 + (2 / $pix_per_bp),
+            height    => $label->height + 2,
             colour    => $gr->{'highlight'},
             absolutey => 1
           }));
@@ -1659,7 +1669,7 @@ sub render_genes {
     my %used_colours = map { $_->{'type'} => $_->{'col'} } @genes_to_label;
     my @legend = %used_colours;
     
-    $config->{'legend_features'}->{$self->type} = {
+    $self->{'legend'}{'gene_legend'}{$self->type} = {
       priority => $self->_pos,
       legend   => \@legend
     }
@@ -1737,6 +1747,25 @@ sub render_text {
 #============================================================================#
 
 # Get homologous gene ids for given gene
+sub get_gene_joins {
+  my ($self, $gene, $species, $join_types, $source) = @_;
+  
+  my $config     = $self->{'config'};
+  my $compara_db = $config->hub->database('compara');
+  return unless $compara_db;
+  
+  my $ma = $compara_db->get_GeneMemberAdaptor;
+  return unless $ma;
+  
+  my $qy_member = $ma->fetch_by_source_stable_id($source, $gene->stable_id);
+  return unless defined $qy_member;
+  
+  my $method = $config->get_parameter('force_homologue') || $species eq $config->{'species'} ? $config->get_parameter('homologue') : undef;
+  my $func   = $source ? 'get_homologous_peptide_ids_from_gene' : 'get_homologous_gene_ids';
+  
+  return $self->$func($species, $join_types, $compara_db->get_HomologyAdaptor, $qy_member, $method ? [ $method ] : undef);
+}
+
 sub get_homologous_gene_ids {
     my ($self, $species, $join_types, $homology_adaptor, $qy_member, $method) = @_;
     my @homologues;
@@ -1758,6 +1787,8 @@ sub get_homologous_gene_ids {
 
     return @homologues;
 }
+
+# Get homologous protein ids for given gene
 sub get_homologous_peptide_ids_from_gene {
     my ($self, $species, $join_types, $homology_adaptor, $qy_member, $method) = @_;
     my ($stable_id, @homologues, @homologue_genes);
