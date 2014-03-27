@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Name:        drupal_fetch_species_content.pl --url=http://www.ensemblgenomes.org/export/ensembl-species/plants --plugin_root=eg-plugins/plants
+# Name:        drupal_fetch_species_content.pl --url=http://www.ensemblgenomes.org/export/ensembl-species/plants --plugin_root=eg-web-plants
 # Author:      Jay Humphrey jhumphre@ebi.ac.uk EnsemblGenomes Web Team
 # Description: read a list of files and output TSV for importing them to Drupal site ensemblgenomes.org
 # Parameters:
 #   --url:  the URI of the xml feed
-#   --plugin_root: download destination directory, e.g. eg-plugins/plants)
+#   --plugin_root: download destination directory, e.g. eg-web-plants)
 
 package EG::Drupal::Fetch::Species;
 
@@ -51,8 +51,8 @@ sub new {
 sub main {
   my $self=shift;
   my ($url, $plugin_root, $noimg, $tmp, $division, $quiet, $commit, $message, $pan);
-  $plugin_root = "my-plugins";
   GetOptions('url=s' => \$url, 'd|division=s' => \$division, 'plugin_root=s' => \$plugin_root, 'noimg' => \$noimg, 'tmp=s', 'q' => \$quiet, 'c|commit=s' => \$commit, 'm|message=s' => \$message, 'pan' => \$pan);
+#  $plugin_root = "../eg-web-$division";
   if($pan){
     `mkdir -p ${plugin_root}/htdocs/ssi/species`;
     getstore("http://www.ensemblgenomes.org/export/ensembl-pan-species","${plugin_root}/htdocs/ssi/species/pan_compara_species.xml");
@@ -63,7 +63,7 @@ sub main {
     ($division)=fileparse($cwd);
   }
   if($division){
-    $plugin_root ||= "eg-plugins/$division";
+    $plugin_root ||= "eg-web-$division";
     $url ||= sprintf("http://www.ensemblgenomes.org/export/ensembl-species/%s",$division);
   }
   if(!$url){die "please specify division (-d plants), or -url\n";}
