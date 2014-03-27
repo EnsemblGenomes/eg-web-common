@@ -16,9 +16,11 @@ limitations under the License.
 
 =cut
 
-package EnsEMBL::Web::Component::Location::MultiPolyploid;
+package EnsEMBL::Web::ImageConfig::MultiPolyploid;
 
-use base qw(EnsEMBL::Web::Component::Location::MultiBottom);
+use strict;
+
+use base qw(EnsEMBL::Web::ImageConfig::MultiBottom);
 
 
 1;

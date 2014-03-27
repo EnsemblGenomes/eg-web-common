@@ -21,11 +21,11 @@ limitations under the License.
 package EnsEMBL::Web::Object::Gene;
 
 use Data::Dumper;
-
+use strict;
 use previous qw(counts availability);
 
 sub availability {
-  $self = shift;
+  my $self = shift;
   $self->PREV::availability(@_);
  
   my $obj = $self->Obj;

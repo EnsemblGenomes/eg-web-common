@@ -22,6 +22,24 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 
+use previous qw(counts availability);
+
+sub availability {
+  my $self = shift;
+  $self->PREV::availability(@_);
+  $self->{_availability}->{"has_intraspecies_alignments"} = $self->counts->{intraspecies_alignments};
+  return $self->{_availability};
+}
+
+sub counts {
+  my $self = shift;
+  $self->PREV::counts(@_);
+  my $alignments = $self->count_alignments;
+  $self->{_counts}->{"alignments"} = $alignments->{pairwise};
+  $self->{_counts}->{"intraspecies_alignments"} = $alignments->{patch};
+  return $self->{_counts};
+}
+
 sub count_alignments {
   my $self          = shift;
   my $cdb           = shift || 'DATABASE_COMPARA';
