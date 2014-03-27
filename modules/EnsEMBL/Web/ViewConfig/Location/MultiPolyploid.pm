@@ -18,6 +18,24 @@ limitations under the License.
 
 package EnsEMBL::Web::ViewConfig::Location::MultiPolyploid;
 
-use base qw(EnsEMBL::Web::ViewConfig::Location::MultiBottom);
+use base qw(EnsEMBL::Web::ViewConfig);
+
+sub init {
+  my $self = shift;
+
+  $self->set_defaults({
+    show_bottom_panel => 'yes'
+  });
+  
+  $self->add_image_config('MultiBottom', 'nodas');
+  $self->title = 'Polyploid view';
+  
+  $self->set_defaults({
+    opt_pairwise_blastz   => 'normal',
+    opt_pairwise_tblat    => 'normal',
+    opt_pairwise_lpatch   => 'normal',
+    opt_join_genes_bottom => 'off',
+  });
+}
 
 1;

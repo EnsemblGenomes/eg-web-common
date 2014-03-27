@@ -41,19 +41,16 @@ sub createObjects {
   my $hub       = $self->hub;
 
 ## EG - set up default intra-species comparisons for polyploid view
-  if ($hub->action =~ /Polyploid/) {
+  if ($hub->action =~ /Polyploid/ and !$hub->param("r1")) {
     my $primary_slice   = $object->slice;
     my $primary_species = $hub->species;
     my $alignments      = $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $primary_slice->seq_region_name);
-    my $methods         = { BLASTZ_NET => $hub->param('opt_pairwise_blastz'), LASTZ_NET => $hub->param('opt_pairwise_blastz'), TRANSLATED_BLAT_NET => $hub->param('opt_pairwise_tblat'), LASTZ_PATCH => $hub->param('opt_pairwise_lpatch'), LASTZ_RAW => $hub->param('opt_pairwise_raw') };
   
     my $i = 1;
-    foreach my $align (@$alignments) {
-      next unless $methods->{$align->{'type'}};
+    foreach my $align (sort { $a->{target_name} cmp $b->{target_name} } @$alignments) {
       next unless $align->{'class'} =~ /pairwise_alignment/;
       next unless $align->{'species'}{"$primary_species--" . $primary_slice->seq_region_name};
       
-      $hub->param("r$i", sprintf '%s:%s-%s', $align->{target_name}, $align->{start}, $align->{end});
       $hub->param("s$i", sprintf '%s--%s', $primary_species, $align->{target_name});
 
       $i++;
