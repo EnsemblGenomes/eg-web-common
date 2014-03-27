@@ -27,6 +27,15 @@ sub modify_tree {
   my $object = $self->object;
   my $summary = $self->get_node('Summary');
 
+  if ($species_defs->POLYPLOIDY) {
+    $summary->set('components', [qw(
+      gene_summary  EnsEMBL::Web::Component::Gene::GeneSummary
+      navbar        EnsEMBL::Web::Component::ViewNav
+      navbar        EnsEMBL::Web::Component::PolyploidNav
+      transcripts   EnsEMBL::Web::Component::Gene::TranscriptsImage
+    )]);
+  }
+
 #  my $splice = $self->get_node('Splice');
 #  $splice->set('components', [qw( image EnsEMBL::Web::Component::Gene::GeneSpliceImageNew )]);
 
@@ -129,11 +138,17 @@ sub modify_tree {
   if ($species_defs->POLYPLOIDY) {
     $self->get_node('Compara_Paralog')->after( 
       $self->create_node('Compara_Homoeolog', 'Homoeologues ([[counts::homoeologs]])',
-        [qw(paralogues EnsEMBL::Web::Component::Gene::ComparaHomoeologs)],
+        [qw(
+          navbar     EnsEMBL::Web::Component::PolyploidNav
+          paralogues EnsEMBL::Web::Component::Gene::ComparaHomoeologs
+        )],
         { 'availability' => 'gene database:compara core has_homoeologs', 'concise' => 'Homoeologues' }
       ),
       $self->create_node('Compara_Homoeolog/Alignment', 'Homoeologue alignment',
-        [qw( alignment EnsEMBL::Web::Component::Gene::HomologAlignment )],
+        [qw( 
+          navbar    EnsEMBL::Web::Component::PolyploidNav
+          alignment EnsEMBL::Web::Component::Gene::HomologAlignment 
+        )],
         { 'availability'  => 'gene database:compara core has_homoeologs', 'no_menu_entry' => 1 }
       )
     );
