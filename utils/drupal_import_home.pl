@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Name:        drupal_import_home.pl --url=http://dev.ensemblgenomes.org/export/ensembl-home --plugin_root=eg-plugins/plants
+# Name:        drupal_import_home.pl --url=http://dev.ensemblgenomes.org/export/ensembl-home --plugin_root=eg-web-plants
 # Author:      Jay Humphrey jhumphre@ebi.ac.uk EnsemblGenomes Web Team
 # Description: read a list of files and output TSV for importing them to Drupal site ensemblgenomes.org
 # Parameters:
 #   --root: the top of the Ensembl installation, eg /nfs/public/rw/ensembl/ensembl-genome/current/plants/
 #   --url:  the URI of the xml feed
-#   --plugin_root: download destination directory, e.g. eg-plugins/plants)
+#   --plugin_root: download destination directory, e.g. eg-web-plants)
 #   --noimg: do not download images
 
 package EG::Drupal::Fetch::Home;
@@ -64,7 +64,7 @@ sub main {
   }
   $division = lc($division) if $division;
   if($division && $release){
-    $plugin_root ||= "eg-plugins/$division";
+    $plugin_root ||= "eg-web-$division";
     $url ||= sprintf("http://www.ensemblgenomes.org/export/ensembl-home/%s/%s",$division,$release);
   }
   if(!$url){die "please specify division (-d plants) AND release (-r 20), or -url\n";}
