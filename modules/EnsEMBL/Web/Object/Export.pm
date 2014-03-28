@@ -73,9 +73,10 @@ sub features {
 
   if($params->{'probe'} && $availability->{'database:funcgen'}) {
     my $fg_db = $self->database('funcgen'); 
+## EG
     my $probe_feature_adaptor = $fg_db ? $fg_db->get_ProbeFeatureAdaptor : undef;      
     my @probe_features = $probe_feature_adaptor ? @{$probe_feature_adaptor->fetch_all_by_Slice($slice)} : ();
-    
+##    
     foreach my $pf(@probe_features){
       my $probe_details = $pf->probe->get_all_complete_names();
       my @probes = split(/:/,@$probe_details[0]);
@@ -83,23 +84,19 @@ sub features {
     }
   }
   
-  if ($params->{'gene'}) {
-    my $species_defs = $self->hub->species_defs;
-    
-    my @dbs = ('core');
-    push @dbs, 'vega'          if $species_defs->databases->{'DATABASE_VEGA'};
-    push @dbs, 'otherfeatures' if $species_defs->databases->{'DATABASE_OTHERFEATURES'};
-    
-    foreach my $db (@dbs) {
+if ($params->{'gene'}) {
+    my $dbs = $self->dbs;
+    foreach my $db (@{$dbs}) {
       foreach my $g (@{$slice->get_all_Genes(undef, $db)}) {
+        my $source = $self->gene_source($g,$db);
         foreach my $t (@{$g->get_all_Transcripts}) {
-          foreach my $e (@{$t->get_all_Exons}) {            
+          foreach my $e (@{$t->get_all_Exons}) {
             $self->feature('gene', $e, { 
                exon_id       => $e->stable_id, 
                transcript_id => $t->stable_id, 
                gene_id       => $g->stable_id, 
                gene_type     => $g->status . '_' . $g->biotype
-            }, { source => $db eq 'vega' ? 'Vega' : 'Ensembl' });
+            }, { source => $source });
           }
         }
       }
