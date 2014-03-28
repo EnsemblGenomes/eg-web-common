@@ -73,9 +73,10 @@ sub features {
 
   if($params->{'probe'} && $availability->{'database:funcgen'}) {
     my $fg_db = $self->database('funcgen'); 
+## EG
     my $probe_feature_adaptor = $fg_db ? $fg_db->get_ProbeFeatureAdaptor : undef;      
     my @probe_features = $probe_feature_adaptor ? @{$probe_feature_adaptor->fetch_all_by_Slice($slice)} : ();
-    
+##    
     foreach my $pf(@probe_features){
       my $probe_details = $pf->probe->get_all_complete_names();
       my @probes = split(/:/,@$probe_details[0]);
@@ -83,23 +84,19 @@ sub features {
     }
   }
   
-  if ($params->{'gene'}) {
-    my $species_defs = $self->hub->species_defs;
-    
-    my @dbs = ('core');
-    push @dbs, 'vega'          if $species_defs->databases->{'DATABASE_VEGA'};
-    push @dbs, 'otherfeatures' if $species_defs->databases->{'DATABASE_OTHERFEATURES'};
-    
-    foreach my $db (@dbs) {
+if ($params->{'gene'}) {
+    my $dbs = $self->dbs;
+    foreach my $db (@{$dbs}) {
       foreach my $g (@{$slice->get_all_Genes(undef, $db)}) {
+        my $source = $self->gene_source($g,$db);
         foreach my $t (@{$g->get_all_Transcripts}) {
-          foreach my $e (@{$t->get_all_Exons}) {            
+          foreach my $e (@{$t->get_all_Exons}) {
             $self->feature('gene', $e, { 
                exon_id       => $e->stable_id, 
                transcript_id => $t->stable_id, 
                gene_id       => $g->stable_id, 
                gene_type     => $g->status . '_' . $g->biotype
-            }, { source => $db eq 'vega' ? 'Vega' : 'Ensembl' });
+            }, { source => $source });
           }
         }
       }
@@ -107,6 +104,90 @@ sub features {
   }
  
   $self->misc_sets(keys %{$params->{'misc_set'}}) if $params->{'misc_set'};
+}
+
+sub gff3_features {
+  my $self         = shift;
+  my $slice        = $self->slice;
+  my $params       = $self->params;
+  my $species_defs = $self->hub->species_defs;
+  
+  # Always use the forward strand, else CDS coordinates are incorrect (Bio::EnsEMBL::Exon->coding_region_start and _end return coords for forward strand only. Thanks, Core API team.)
+  $slice = $slice->invert if $slice->strand < 0;
+  
+  $self->{'config'} = {
+    format             => 'gff3',
+    delim              => "\t",
+    ordered_attributes => {},
+    feature_order      => {},
+    feature_type_count => 0,
+    
+    # TODO: feature types
+    #    feature_map => {
+    #      dna_align          => { func => 'get_all_DnaAlignFeatures',          type => 'nucleotide_match' },
+    #      marker             => { func => 'get_all_MarkerFeatures',            type => 'region' },
+    #      repeat             => { func => 'get_all_RepeatFeatures',            type => 'repeat_region' },
+    #      assembly_exception => { func => 'get_all_AssemblyExceptionFeatures', type => '' },
+    #      ditag              => { func => 'get_all_DitagFeatures',             type => '' },
+    #      external           => { func => 'get_all_ExternalFeatures',          type => '' },
+    #      oligo              => { func => 'get_all_OligoFeatures',             type => 'oligo' },
+    #      qtl                => { func => 'get_all_QtlFeatures',               type => 'region' },
+    #      simple             => { func => 'get_all_SimpleFeatures',            type => '' },
+    #      protein_align      => { func => 'get_all_ProteinAlignFeatures',      type => 'protein_match' }
+    #    }
+  };
+
+  my ($g_id, $t_id);
+  my $dbs = $self->dbs;
+  foreach my $db (@{$dbs}) {
+    foreach my $g (@{$slice->get_all_Genes(undef, $db)}) {
+      my $properties = { source => $self->gene_source($g,$db) };
+
+      if ($params->{'gene'}) {
+        $g_id = $g->stable_id;
+## EG   
+        my $g_name = $g->display_xref ? $g->display_xref->display_id : $g_id;       
+        $self->feature('gene', $g, { ID => $g_id, Name => $g_name, biotype => $g->biotype }, $properties);
+##
+      }
+
+      foreach my $t (@{$g->get_all_Transcripts}) {
+        if ($params->{'transcript'}) {
+          $t_id = $t->stable_id;
+## EG         
+          my $t_name = $t->display_xref ? $t->display_xref->display_id : $t_id;
+          $self->feature('transcript', $t, { ID => $t_id, Parent => $g_id, Name => $t_name, biotype => $t->biotype }, $properties);
+##
+        }
+
+        if ($params->{'intron'}) {
+          for my $intron (@{$t->get_all_Introns}){
+            next unless $intron->length;
+            $self->feature('intron', $intron, { Parent => $t_id, Name => $self->id_counter('intron') }, $properties);
+          }
+        }
+
+        if ($params->{'exon'} || $params->{'cds'}) {
+          foreach my $e (@{$t->get_all_Exons}) {
+            $self->feature('exon', $e, { Parent => $t_id, Name => $e->stable_id }, $properties) if $params->{'exon'};
+ 
+            if ($params->{'cds'}) {
+              my $start = $e->coding_region_start($t);
+              next unless $start; # $start will be undef if the exon is not coding
+              $self->feature('CDS', $e, { Parent => $t_id, Name => $t->translation->stable_id }, $properties);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  my %order = reverse %{$self->{'config'}->{'feature_order'}};
+  
+  $self->string('##gff-version 3');
+  $self->string(sprintf('##sequence-region %s 1 %d', $slice->seq_region_name, $slice->seq_region_length));
+  $self->string('');
+  $self->string($self->output($order{$_})) for sort { $a <=> $b } keys %order;
 }
 
 1;
