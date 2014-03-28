@@ -58,26 +58,25 @@ Ensembl.Panel.Ontology = Ensembl.Panel.extend({
   	    ph+=20;
       }
     }
-    
+
     if (data.note) {
-      var notes = data.note.split("#");
+	var notes = data.note.split("#");
     	if (notes.length < 4) {
-	      for(var i = 0; i < notes.length; i++){
-		      var p = notes[i].split("=");
-		      this.printMenu("nodenote", "<b>"+p[0]+":</b> " + unescape(p[1]));
-		      ph+=20;
-	      }			
-	    } else {
-	      var nlist = '';
-	      for(var i = 0; i < notes.length; i++){
-		      var p = notes[i].split("=");
-		      nlist = nlist + "<p><b>"+p[0]+":</b> " + unescape(p[1]) + "</p>";
-	       }
-	    }			
+	    for(var i = 0; i < notes.length; i++){
+		var p = notes[i].split("=");
+		this.printMenu("nodenote", "<b>"+p[0]+":</b> " + unescape(p[1]));
+		ph+=20;
+	    }
+	} else {
+	    var nlist = '';
+	    for(var i = 0; i < notes.length; i++){
+		var p = notes[i].split("=");
+		nlist = nlist + "<p><b>"+p[0]+":</b> " + unescape(p[1]) + "</p>";
+	    }
 	    this.printMenu("nodenote", "<div class=\"scroll\">" + nlist + "</div>");	
 	    ph+=80;		
-	  }
-
+	}			
+    }
     if (data.ext) {
 	    this.printMenu("nodenote","<b>Extensions:</b>");
 	    var notes = data.ext.split("#");
