@@ -294,22 +294,30 @@ foreach my $spp (@valid_spp) {
       $title{'alt_pseudogene'} = $genome_container->get_attrib('pseudogene_acnt')->name() if $genome_container->get_alt_pseudogene_count();
       print STDERR "Alternate pseudogenes:$alt_gene_stats{'alt_pseudogene'}\n" if $DEBUG;
 
-      ( $gene_stats{'transcript'} ) = $genome_container->get_transcript_count() if $genome_container->get_transcript_count();
-      $title{'transcript'} = $genome_container->get_attrib('transcript')->name() if $genome_container->get_transcript_count();
-      print STDERR "Transcripts:$gene_stats{'transcript'}\n" if $DEBUG;
+      if ($genome_container->get_transcript_count()) {
+        ( $gene_stats{'transcript'} ) = $genome_container->get_transcript_count();
+        $title{'transcript'} = $genome_container->get_attrib('transcript')->name() || $genome_container->get_attrib('transcript_cnt')->name() ||
+        warn "WARN: No name for transcript! Value is ".$genome_container->get_transcript_count();
+        print STDERR "Transcripts:$gene_stats{'transcript'}\n" if $DEBUG;
+      }
 
       ( $alt_gene_stats{'alt_transcript'} ) = $genome_container->get_alt_transcript_count() if $genome_container->get_alt_transcript_count();
       $title{'alt_transcript'} = $genome_container->get_attrib('transcript')->name() if $genome_container->get_alt_transcript_count();
       print STDERR "Transcripts:$alt_gene_stats{'alt_transcript'}\n" if $DEBUG;
 
-      ($other_stats{'snps'}) = $genome_container->get_short_variation_count() if $genome_container->get_short_variation_count;
-      $title{'snps'} = $genome_container->get_attrib('short_variation_cnt')->name() if $genome_container->get_short_variation_count;
-      print STDERR "SNPs, etc:$other_stats{'snps'}\n" if $DEBUG;
+      if ($genome_container->get_short_variation_count) {
+        ($other_stats{'snps'}) = $genome_container->get_short_variation_count();
+        $title{'snps'} = $genome_container->get_attrib('short_variation_cnt')->name || $genome_container->get_attrib('SNPCount')->name ||
+        warn "WARN: No name for snps! Value is".$genome_container->get_short_variation_count;
+        print STDERR "SNPs, etc:$other_stats{'snps'}\n" if $DEBUG;
+      }
 
-      ($other_stats{'strucvar'}) = $genome_container->get_structural_variation_count() if $genome_container->get_structural_variation_count();
-      $title{'structvar'} = $genome_container->get_attrib('structural_variation_cnt')->name() if $genome_container->get_structural_variation_count();
-      print STDERR "Structural variations:$other_stats{'strucvar'}\n" if $DEBUG;
-
+      if ($genome_container->get_structural_variation_count()){
+        ($other_stats{'strucvar'}) = $genome_container->get_structural_variation_count();
+        $title{'strucvar'} = $genome_container->get_attrib('structural_variation_cnt')->name() || $genome_container->get_attrib('struct_var')->name() || 
+        warn "WARN: No name for strucvar! Value is ".$genome_container->get_structural_variation_count();
+        print STDERR "Structural variations:$other_stats{'strucvar'}\n" if $DEBUG;
+      }
 
     } #unless pre
 
