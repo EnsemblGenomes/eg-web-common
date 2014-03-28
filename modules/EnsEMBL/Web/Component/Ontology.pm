@@ -42,7 +42,7 @@ sub content {
   my $go                          = $hub->param('go');
   my $tab                         = $hub->param('tab');
 
-  my $terms_found = 0;
+
   my %clusters = $species_defs->multiX('ONTOLOGIES');
 
   return "<p>Ontology database not found.</p>" unless %clusters;
@@ -54,6 +54,8 @@ sub content {
   }
 
   my $ochart  = $object->get_ontology_chart($clusters{$oid}->{db}, $clusters{$oid}->{root}, $go);
+
+  my $terms_found = scalar( grep {$ochart->{$_}->{selected}} keys %$ochart );
 
   my $html = '<div class="tabPanel" id="ontologyTabs">';
 
