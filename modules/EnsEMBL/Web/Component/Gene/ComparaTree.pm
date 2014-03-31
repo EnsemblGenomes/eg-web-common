@@ -241,7 +241,7 @@ sub content {
     $html .= sprintf(qq{
     <div style="margin-top:1em"><b>View options:</b><br/>
     <small><ul>%s</ul></small>
-    Use the 'configure page' link in the left panel to set the default. Further options are available from menus on individual tree nodes.</div>
+    <p>Use the 'configure page' link in the left panel to set the default. Further options are available from menus on individual tree nodes.</p></div>
     }, join '', @view_links);
 
 
