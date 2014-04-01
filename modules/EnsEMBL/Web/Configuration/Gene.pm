@@ -27,6 +27,15 @@ sub modify_tree {
   my $object = $self->object;
   my $summary = $self->get_node('Summary');
 
+#  if ($species_defs->POLYPLOIDY) {
+#    $summary->set('components', [qw(
+#      gene_summary  EnsEMBL::Web::Component::Gene::GeneSummary
+#      navbar        EnsEMBL::Web::Component::ViewNav
+#      navbar        EnsEMBL::Web::Component::PolyploidNav
+#      transcripts   EnsEMBL::Web::Component::Gene::TranscriptsImage
+#    )]);
+#  }
+
 #  my $splice = $self->get_node('Splice');
 #  $splice->set('components', [qw( image EnsEMBL::Web::Component::Gene::GeneSpliceImageNew )]);
 
@@ -122,18 +131,22 @@ sub modify_tree {
   my $cdb_name = $self->hub->species_defs->COMPARA_DB_NAME || 'Comparative Genomics';
 
   $compara_menu->set('caption', $cdb_name);
-
-  # We only have homoeologues for Triticum aestivum (Plants).
-  # For other genomes we don't want this menu to be visible at all (because people don't know what they are).
-  # If we get homoeologue data for other species we should find a better way to control this.
-  if ($hub->species =~ /triticum_aestivum/i) {
+  
+  
+  # homoeologues for polyploids
+  
+  if ($species_defs->POLYPLOIDY) {
     $self->get_node('Compara_Paralog')->after( 
       $self->create_node('Compara_Homoeolog', 'Homoeologues ([[counts::homoeologs]])',
-        [qw(paralogues EnsEMBL::Web::Component::Gene::ComparaHomoeologs)],
+        [qw(
+          paralogues EnsEMBL::Web::Component::Gene::ComparaHomoeologs
+        )],
         { 'availability' => 'gene database:compara core has_homoeologs', 'concise' => 'Homoeologues' }
       ),
       $self->create_node('Compara_Homoeolog/Alignment', 'Homoeologue alignment',
-        [qw( alignment EnsEMBL::Web::Component::Gene::HomologAlignment )],
+        [qw( 
+          alignment EnsEMBL::Web::Component::Gene::HomologAlignment 
+        )],
         { 'availability'  => 'gene database:compara core has_homoeologs', 'no_menu_entry' => 1 }
       )
     );
