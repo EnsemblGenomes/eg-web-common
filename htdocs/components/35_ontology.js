@@ -1,6 +1,6 @@
 Ensembl.Panel.Ontology = Ensembl.Panel.extend({
   constructor: function (id) {
-    this.base(id);
+    this.base.apply(this, arguments);
     
     this.tabImageMatch = new RegExp(/[?;&]tab=i/);
     
@@ -9,24 +9,26 @@ Ensembl.Panel.Ontology = Ensembl.Panel.extend({
   },
 
   init: function() {
+    this.base.apply(this, arguments);
+
     var panel = this;
-    
-    $("area[id^=node]", this.elLk).each(function(){
+
+    $("area[id^=node]", panel.el).each(function(){
       $(this).click(function(){ 
         panel.nodeMenu( $(this).attr('title') ) 
         return false;
       });
     });
     
-    $("#hideMenuDialog", this.elLk).click(function(){ panel.hideMenu('dialog') }).css('cursor', 'pointer');
+    $("#hideMenuDialog", panel.el).click(function(){ panel.hideMenu('dialog') }).css('cursor', 'pointer');
     
     $(document).mousemove(function(e){
       panel.oX = e.pageX;
       panel.oY = e.pageY;
     }); 
         
-    $('#tabImage', this.elLk).click(function(){ panel.selectActiveTab('tabImage') });
-    $('#tabTable', this.elLk).click(function(){ panel.selectActiveTab('tabTable') });
+    $('#tabImage', panel.el).click(function(){ panel.selectActiveTab('tabImage') });
+    $('#tabTable', panel.el).click(function(){ panel.selectActiveTab('tabTable') });
     
     panel.selectActiveTab();
   },
@@ -58,25 +60,26 @@ Ensembl.Panel.Ontology = Ensembl.Panel.extend({
   	    ph+=20;
       }
     }
-
+    
     if (data.note) {
-	var notes = data.note.split("#");
+      var notes = data.note.split("#");
     	if (notes.length < 4) {
-	    for(var i = 0; i < notes.length; i++){
-		var p = notes[i].split("=");
-		this.printMenu("nodenote", "<b>"+p[0]+":</b> " + unescape(p[1]));
-		ph+=20;
-	    }
-	} else {
-	    var nlist = '';
-	    for(var i = 0; i < notes.length; i++){
-		var p = notes[i].split("=");
-		nlist = nlist + "<p><b>"+p[0]+":</b> " + unescape(p[1]) + "</p>";
-	    }
+	      for(var i = 0; i < notes.length; i++){
+		      var p = notes[i].split("=");
+		      this.printMenu("nodenote", "<b>"+p[0]+":</b> " + unescape(p[1]));
+		      ph+=20;
+	      }			
+	    } else {
+	      var nlist = '';
+	      for(var i = 0; i < notes.length; i++){
+		      var p = notes[i].split("=");
+		      nlist = nlist + "<p><b>"+p[0]+":</b> " + unescape(p[1]) + "</p>";
+	       }
+	    }			
 	    this.printMenu("nodenote", "<div class=\"scroll\">" + nlist + "</div>");	
 	    ph+=80;		
-	}			
-    }
+	  }
+
     if (data.ext) {
 	    this.printMenu("nodenote","<b>Extensions:</b>");
 	    var notes = data.ext.split("#");
@@ -118,7 +121,7 @@ Ensembl.Panel.Ontology = Ensembl.Panel.extend({
     pm.style.left = this.menuX();
     pm.style.visibility = 'visible';
     
-    var $id =$("#dialog", this.elLk);
+    var $id =$("#dialog", this.el);
     $id.css('top', this.menuY());
     $id.css('left', this.menuX());
     $id.height(ph);
@@ -166,12 +169,12 @@ Ensembl.Panel.Ontology = Ensembl.Panel.extend({
   
     if (xid.match(/Image/)) {
   	  Ensembl.updateURL({"tab": "i"});
-  	  $('#tabTableContent', this.elLk).css('display', 'none');
-  	  $('#tabImageContent', this.elLk).css('display', 'block');
+  	  $('#tabTableContent', this.el).css('display', 'none');
+  	  $('#tabImageContent', this.el).css('display', 'block');
     } else {
   	  Ensembl.updateURL({"tab": "t"});
-  	  $('#tabTableContent', this.elLk).css('display', 'block');
-  	  $('#tabImageContent', this.elLk).css('display', 'none');
+  	  $('#tabTableContent', this.el).css('display', 'block');
+  	  $('#tabImageContent', this.el).css('display', 'none');
     }    
   }
 });
