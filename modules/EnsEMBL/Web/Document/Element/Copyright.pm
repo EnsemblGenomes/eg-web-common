@@ -28,7 +28,7 @@ sub content {
   my $sd = $self->species_defs;
 
   return sprintf( qq(
-  <div class="twocol-left left">
+  <div class="column-two left">
 		   %s release %d - %s
 		  &copy; <span class="print_hide"><a href="http://www.ebi.ac.uk/" style="white-space:nowrap">EBI</a></span>
       <span class="screen_hide_inline">EBI</span>
