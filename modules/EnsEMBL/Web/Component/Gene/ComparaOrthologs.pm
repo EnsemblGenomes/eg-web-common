@@ -325,11 +325,11 @@ sub content {
   if ($alignview and keys %orthologue_list) {
     $html .= '<p>';
     $html .= sprintf(
-      '<a href="%s">View sequence alignments of these homologues</a>', 
+      '<a href="%s">View protein sequence alignments of all orthologues</a>', 
       $hub->url({ action => 'Compara_Ortholog', function => 'Alignment' . ($cdb =~ /pan/ ? '_pan_compara' : ''), })   
     );
     $html .= sprintf(
-      ' &nbsp;&nbsp;<a href="%s" target="_blank">Download these sequences</a>', 
+      ' &nbsp;|&nbsp; <a href="%s" target="_blank">Download protein sequences</a>', 
       $hub->url({ action => 'Compara_Ortholog', function => 'PepSequence', '_format'=>'Text' }) 
     ) if $cdb !~ /pan/;
     $html .= '</p>';
