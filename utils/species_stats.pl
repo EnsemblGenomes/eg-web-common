@@ -973,7 +973,6 @@ sub render_all_species_page {
     next if exists $phylo_tree{$species};
 
     my $common = $SD->get_config($species, "SPECIES_COMMON_NAME");
-warn "XX common=". $common;
 
     my $info = {
       'dir'     => $species,
@@ -1040,7 +1039,6 @@ warn "XX common=". $common;
 
       (my $name = $dir) =~ s/_/ /;
       my $link_text = $common =~ /\./ ? $name : $common;
-warn "XX name=$name,  $common";
 
       $html .= qq(<td style="width:8%;text-align:right;padding-bottom:1em">);
       if ($dir) {
