@@ -138,7 +138,7 @@ sub content {
   if ($alignview && keys %paralogue_list) {
     $html .= sprintf(
 ## EG - wording change
-      '<p><a href="%s">View protein sequence alignments of all paralogues</a></p>', 
+      '<p><a href="%s">View protein alignments of all paralogues</a></p>', 
 ##     
       $hub->url({ action => 'Compara_Paralog', function => 'Alignment' })
     );

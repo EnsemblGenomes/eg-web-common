@@ -21,72 +21,9 @@ $page->add_body_attr('class', 'static');
 
 my $cgi = new CGI();
 
-my $page_size = 20;
-my $masking = $cgi->param('masking');
 my $evalue = $cgi->param('evalue') || 1;
-my $qtype = $cgi->param('splicing');
 my $domain = $cgi->param('sdomain');
-my $jobid = $cgi->param('jobid');
-my $jobstatus = $cgi->param('jobstatus');
-my $section = $cgi->param('page');
-my $column = $cgi->param('order');
-
 $domain ||= $species_defs->ENA_COLLECTION_ID;
-
-#foreach my $p (sort $cgi->param()) {
-#next if ($p =~ /^_/);
-#	warn "$p => ", $cgi->param($p), "\n";
-#}
-
-#warn "STATUS: $jobstatus";
-
-
-if ($jobstatus eq 'ready') {
-    my $seq = $cgi->param('_query_sequence');
-    my $content = pageHTML($seq, 'loadResults', $jobid, $evalue, $qtype, $masking, $domain);
-    $page->content->add_panel( EnsEMBL::Web::Document::Panel->new( 'raw' => $content  ) );
-    $controller->render_page;
-    return;
-}
-
-if (my $seq = $cgi->param('_query_sequence')) {	
-    $seq =~ s/^\>.*\n//;
-
-    my $search = new ENASearch({_species_defs => $species_defs});
-    $search->collection = $domain;
-    $search->masking = 'Soft_Masking'  if ($masking && $masking eq 'on');
-    $search->splicing = 1	  if ($qtype && $qtype eq 'on');
-
-    my $jobid = $search->submit($seq);
-
-    my $content = pageHTML($seq, 'setUpdate', $jobid, $evalue, $qtype, $masking, $domain);
-
-    $content .= qq{
-<script>\$(document).ready(
-function(){
-  setUpdate('$jobid','$evalue','$qtype','$masking','$domain');
-}
-);
-</script>
-};
-
-    $page->content->add_panel( EnsEMBL::Web::Document::Panel->new( 'raw' => $content ) );
-
-    $controller->render_page;
-
-
-
-    my $pid = fork();
-    if (not defined $pid) {
-		print "resources not avilable.\n";
-    } elsif ($pid == 0) {
-     	getResults($search, $evalue);
-     	exit(0);
-    } else {
-	#    waitpid($pid,0);
-    }  
-    return;
-}
 
 my $seq = $species_defs->ENA_SAMPLE_SEQ ? ">Example Sequence\n".$species_defs->ENA_SAMPLE_SEQ : '';
 my $content = pageHTML($seq);
@@ -94,43 +31,20 @@ $page->content->add_panel( EnsEMBL::Web::Document::Panel->new( 'raw' => $content
 $controller->render_page;
 return;
 
-
-sub getResults {
-  my ($search, $maxval) = @_;
-
-  my $hitcount = 0;
-  my $status;
-
-  while (($status = $search->status) =~ /RUNNING_SEARCH|COMPLETE/) {
-      if (my @alignments = @{$search->new_alignments($maxval) || []}) {
-	$hitcount += scalar(@alignments);
-      }
-      last if ($status eq 'COMPLETE');
-  }
-#  warn " COMPLETED ($status / $hitcount)\n";
-}
-
 sub pageHTML {
-	my ($seq, $fn, $jobid, @params) = @_;
-my $html = qq{
- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-};
+    my ($seq, $jobid) = @_;
 
-my @evalues = qw(10 1 0.1 1E-3 1E-5 1E-10 1E-20 1E-40 1E-80);
-my $evalue_html = join "\n",  map { $_ eq $evalue ? "<option value=\"$_\" selected>$_</option>" : "<option value=\"$_\">$_</option>" } @evalues;
+    my @evalues = qw(10 1 0.1 1E-3 1E-5 1E-10 1E-20 1E-40 1E-80);
+    my $evalue_html = join "\n",  map { $_ eq $evalue ? "<option value=\"$_\" selected>$_</option>" : "<option value=\"$_\">$_</option>" } @evalues;
 
-#my $domain_html = $domain ? 'checked' : '';
+    my %sdomains = (
+       $species_defs->ENA_COLLECTION_ID    =>     $species_defs->SITE_NAME,
+       30 => 'Ensembl Genomes' 
+    );
 
-my %sdomains = (
-   $species_defs->ENA_COLLECTION_ID    =>     $species_defs->SITE_NAME,
-   30 => 'Ensembl Genomes' 
-);
+    my $domains_html = join "\n",  map { $_ eq $domain ? "<option value=\"$_\" selected>$sdomains{$_}</option>" : "<option value=\"$_\">$sdomains{$_}</option>" } sort keys %sdomains;
 
-my $domains_html = join "\n",  map { $_ eq $domain ? "<option value=\"$_\" selected>$sdomains{$_}</option>" : "<option value=\"$_\">$sdomains{$_}</option>" } sort keys %sdomains;
-
-my $splice_html = $qtype ? 'checked' : '';
-
-$html .= qq{
+    my $html = qq{
 <div id="enawrapper">
 <form method="post" enctype="multipart/form-data" action="#" id="blastForm" name="iform">
 <input type="hidden" name="jobid" id="jobid" value="$jobid" />
@@ -154,11 +68,8 @@ $evalue_html
 </select>
 </li>
 <li><label class="altLabel" for="splicing">Use spliced query</label>
-<input type="checkbox" name="splicing" id="splicing" $splice_html />
+<input type="checkbox" name="splicing" id="splicing" />
 </li>
-<!-- not working in ENA li><label class="altLabel" for="masking">Use soft masking</label>
-<input type="checkbox" name="masking" id="masking" />
-</li-->
 <li><label class="altLabel" for="sdomain">Search in</label>
 <select id="sdomain" class="jobSmall hashelp" name="sdomain">
 $domains_html
@@ -173,7 +84,7 @@ $domains_html
 <table>
 <tr>
 <td>
-<input type="submit" value="Submit" id="submit-button" class="jobSmall" style="float:right" onclick="resetStatus();" />
+<input type="submit" value="Submit" id="submit-button" class="jobSmall" style="float:right" />
 </td>
 <td style="width:190px;">
 <div id="progress">
@@ -193,18 +104,13 @@ $domains_html
 </tr>
 </table>
 
-};
-
-if ($fn && $fn eq 'loadResults') {
-	my $result = new ENAResult( { _jobid => $jobid, _species_defs => $species_defs } );
-	$result->fetch_alignments($column, $section, $page_size);
-	$html .= $result->render;
-}
-
-$html .= qq{
 </form>
+<div id="ena-results" style="width:100%">
+</div>
+
 </div>
 };
 
+  $html = sprintf '<div class="js_panel"><input type="hidden" class="panel_type" value="ENASearch"/>%s</div>', $html;
   return $html;
 }

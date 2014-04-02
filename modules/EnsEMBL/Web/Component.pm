@@ -157,8 +157,9 @@ sub _sort_similarity_links {
       $text .= ' <span class="small"> [Target %id: ' . $type->target_identity . '; Query %id: ' . $type->query_identity . ']</span>';
       $join_links = 1;
     }
-
-    if ($hub->species_defs->ENSEMBL_PFETCH_SERVER && $externalDB =~ /^(SWISS|SPTREMBL|LocusLink|protein_id|RefSeq|EMBL|Gene-name|Uniprot)/i && ref($object->Obj) eq 'Bio::EnsEMBL::Transcript' && $externalDB !~ /uniprot_genename/i) {
+## EG
+    if ($hub->species_defs->ENSEMBL_PFETCH_SERVER && $externalDB =~ /^(LocusLink|protein_id|RefSeq|EMBL|Gene-name|Uniprot)/i && ref($object->Obj) eq 'Bio::EnsEMBL::Transcript' && $externalDB !~ /uniprot_genename/i) {
+##     
       my $seq_arg = $display_id;
       $seq_arg    = "LL_$seq_arg" if $externalDB eq 'LocusLink';
 
@@ -171,9 +172,9 @@ sub _sort_similarity_links {
 
       $text .= qq{ [<a href="$url">align</a>] };
     }
-
-    $text .= sprintf ' [<a href="%s">Search GO</a>]', $urls->get_url('GOSEARCH', $primary_id) if $externalDB =~ /^(SWISS|SPTREMBL)/i; # add Search GO link;
-
+## EG
+    #$text .= sprintf ' [<a href="%s">Search GO</a>]', $urls->get_url('GOSEARCH', $primary_id) if $externalDB =~ /^(SWISS|SPTREMBL)/i; # add Search GO link;
+##
     if ($show_version && $type->version) {
       my $version = $type->version;
       $text .= " (version $version)";

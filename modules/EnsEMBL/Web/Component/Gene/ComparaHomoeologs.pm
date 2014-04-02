@@ -200,8 +200,8 @@ sub content {
     # PREpend
     $html = sprintf(q{
       <p>
-        <a href="%s">View protein sequence alignments of all homoeologues</a> &nbsp;|&nbsp;
-        <a href="%s">View genomic alignments of this gene to it's homoeologues</a>
+        <a href="%s">View protein alignments of all homoeologues</a> &nbsp;|&nbsp;
+        <a href="%s">View genomic alignments of all homoeologues</a>
       </p>}, 
       $hub->url({ action => 'Compara_Homoeolog', function => 'Alignment' . ($cdb =~ /pan/ ? '_pan_compara' : ''), }),
       $hub->url({'type' => 'Location', 'action' => 'MultiPolyploid'})
