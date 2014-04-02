@@ -91,7 +91,7 @@ Ensembl.Panel.ENASearch = Ensembl.Panel.extend({
 	},
 	loadResults: function(jobId, panel, order, page) {
 	    el = $('#ena-results');
-	    el.html(' Loading results ... ');
+	    el.html(' Mapping results ... ');
 	    var args = new Array();
 	    args.push("job=" + jobId);
 	    if (order) {
