@@ -90,7 +90,9 @@ Ensembl.Panel.ENASearch = Ensembl.Panel.extend({
 	    el.html('');
 	},
 	loadResults: function(jobId, panel, order, page) {
-	    el = $('#ena-results');
+ $("body").css("cursor", "progress");
+
+	    var el = $('#ena-results');
 	    el.html(' Mapping results ... ');
 	    var args = new Array();
 	    args.push("job=" + jobId);
@@ -130,6 +132,7 @@ Ensembl.Panel.ENASearch = Ensembl.Panel.extend({
 			    console.log(response);
 			}
 		});
+     $("body").css("cursor", "default");
 
 	},
 	showAlignment: function(e) {
