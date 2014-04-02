@@ -274,6 +274,7 @@ sub get_homology_matches {
       putative_gene_split       => 'putative gene split',
       contiguous_gene_split     => 'contiguous gene split',
 ## EG      
+      gene_split                => 'gene split',
       homoeolog_one2one         => '1-to-1',
       homoeolog_one2many        => '1-to-many',
       homoeolog_many2many       => 'many-to-many',

@@ -147,9 +147,7 @@ text-align:center;
 border-radius: 12px;
 background:#ffffff;
 margin-top: 12px;
-border-left: 1px solid [[MH_BG]];
-border-right: 1px solid [[MH_BG]];
-border-bottom: 1px solid [[MH_BG]];
+border: 1px solid [[MH_BG]];
 text-align:left;
 background-color: #f8f8f8;
 }

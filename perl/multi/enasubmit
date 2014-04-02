@@ -1,0 +1,68 @@
+use strict;
+use CGI qw(standard escape escapeHTML unescape header);
+use EnsEMBL::Web::RegObj;
+use EnsEMBL::Web::SpeciesDefs;
+
+use ENAResult;
+use ENASearch;
+use Data::Dumper;
+
+use vars qw( $species_defs);
+BEGIN {
+  $species_defs = $EnsEMBL::Web::RegObj::ENSEMBL_WEB_REGISTRY->species_defs;
+}
+
+my $cgi = new CGI();
+print $cgi->header(-type => 'application/json');
+
+my $args = {};
+foreach my $p ($cgi->param()) {
+	$args->{$p} = $cgi->param($p);
+}
+
+if (my $seq = $args->{'_query_sequence'}) {	
+    $seq =~ s/^\>.*\n//;
+
+    my $search = new ENASearch({_species_defs => $species_defs});
+    $search->collection = $args->{sdomain} || $species_defs->ENA_COLLECTION_ID;
+    $search->splicing = $args->{splicing} || 0;
+
+    my $jobid = $search->submit($seq);
+#    warn " JOB : $jobid ";
+
+    if ($jobid) {
+       print sprintf qq{ \{ "job": \"%s\", \"success\": 1 \} }, $jobid; 
+
+       my $pid = fork();
+       if (not defined $pid) {
+       	  warn  "resources not avilable.";
+       } elsif ($pid == 0) {
+     	  getResults($search, $args->{evalue});
+     	  exit(0);
+       } else {
+	#    waitpid($pid,0);
+       }  
+    } else {
+       print sprintf qq{ \{ "job": \"0\", \"success\": 0, \"msg\": \"ENA Service is down: Please try later\" \} }, $jobid 
+    }	     
+} else {
+       print sprintf qq{ \{ "job": \"0\", \"success\": 0, \"msg\": \"Please provide a sequence\" \} }; 
+}
+exit(0);
+
+sub getResults {
+  my ($search, $maxval) = @_;
+
+  my $hitcount = 0;
+  my $status;
+
+  while (($status = $search->status) =~ /RUNNING_SEARCH|COMPLETE/) {
+      if (my @alignments = @{$search->new_alignments($maxval) || []}) {
+	$hitcount += scalar(@alignments);
+      }
+
+#  warn " ($status / $hitcount)\n";
+      last if ($status eq 'COMPLETE');
+  }
+#  warn " COMPLETED ($status / $hitcount)\n";
+}
