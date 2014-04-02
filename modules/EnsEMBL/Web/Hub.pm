@@ -48,7 +48,8 @@ sub intra_species_alignments {
        
     my $genomedb       = $genomedb_adaptor->fetch_by_registry_name($species);
     my $source_dnafrag = $dnafrag_adaptor->fetch_by_GenomeDB_and_name($genomedb, $seq_region);
-    
+    return [] unless $source_dnafrag;
+ 
     my @comparisons;
     
     foreach my $method (qw(LASTZ_NET TRANSLATED_BLAT_NET TRANSLATED_BLAT BLASTZ_NET)) { 
