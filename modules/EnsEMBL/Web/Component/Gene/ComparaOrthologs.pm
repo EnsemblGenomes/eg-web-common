@@ -325,7 +325,7 @@ sub content {
   if ($alignview and keys %orthologue_list) {
     $html .= '<p>';
     $html .= sprintf(
-      '<a href="%s">View protein sequence alignments of all orthologues</a>', 
+      '<a href="%s">View protein alignments of all orthologues</a>', 
       $hub->url({ action => 'Compara_Ortholog', function => 'Alignment' . ($cdb =~ /pan/ ? '_pan_compara' : ''), })   
     );
     $html .= sprintf(

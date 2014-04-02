@@ -43,7 +43,7 @@ sub content {
         <a href="$url"><img src="/i/48/region_thumb.png" title="Go to Region in Detail for more options" style="border:1px solid #ccc;margin:0 16px;vertical-align:middle" /></a> Go to <a href="$url" class="no-visit">Region in Detail</a> for more tracks and navigation options (e.g. zooming)
       </div>
       <p>
-        <a href="$poyploid_url">View genomic alignments of this gene to it's homoeologues</a>
+        <a href="$poyploid_url">View genomic alignments of all homoeologues</a>
       </p>
   };
 ##  
