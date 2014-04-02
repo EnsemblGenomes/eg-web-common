@@ -37,18 +37,19 @@ if (my $odbh = DBI->connect( "dbi:mysql:$odb->{'NAME'};host=$odb->{'HOST'};port=
    
   if (my @r = @{$dbh->selectall_arrayref($sqlw)||[]}) {
 
-	  $dbh->do("DELETE FROM help_link WHERE page_url LIKE '%/Ontology/Image_%'", undef);
+	  $dbh->do("DELETE FROM help_link WHERE page_url LIKE '%/Ontology/%' AND page_url NOT LIKE '%/Ontology/Image'");
 
 	  if (my $hid = shift @{$r[0]}) {
 
-	    my $sql = qq{select ontology.namespace, ontology.name
-                   from ontology
-                   join term using (ontology_id)
-                   left join relation on (term_id=child_term_id)
-                   where relation_id is null
-                   group by ontology.ontology_id
-                   order by ontology.ontology_id
-                  };
+	    my $sql = qq{
+	      select ontology.namespace, ontology.name
+        from ontology
+        join term using (ontology_id)
+        left join relation on (term_id=child_term_id)
+        where relation_id is null
+        group by ontology.ontology_id
+        order by ontology.ontology_id
+      };
 
 	    my $sth = $odbh->prepare($sql);
 	    $sth->execute;
@@ -57,6 +58,7 @@ if (my $odbh = DBI->connect( "dbi:mysql:$odb->{'NAME'};host=$odb->{'HOST'};port=
 	    foreach my $r (@ra) {
     		$r->[0] =~ s/(-|\s)/_/g;
     		foreach my $url (qw( Transcript/Ontology Gene/Ontology )) {
+    		  print "$url/$r->[0] = $hid\n";
     		  $dbh->do("INSERT INTO help_link SET page_url = ?, help_record_id = ?", undef, "$url/$r->[0]", $hid);    		
     		}
 	    }
