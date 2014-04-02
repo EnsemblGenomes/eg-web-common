@@ -129,8 +129,6 @@ my $esite = $self->{_species_defs}->SPECIES_DISPLAY_NAME;
 
 my $sd = $self->{_species_defs};
 
-	my $t2 = time;
-
 my $registry = 'Bio::EnsEMBL::Registry';
 
 my $registry_loaded = 0;
