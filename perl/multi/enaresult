@@ -12,10 +12,14 @@ BEGIN {
 }
 
 my $cgi = new CGI();
-
+my $page = $cgi->param('page');
+my $order = $cgi->param('order');
+my $page_size = 20;
 my $job = $cgi->param('job');
-my $result = new ENAResult( { _jobid => $job, _species_defs => $species_defs } );
-print $cgi->header(-type => 'application/json');
-print sprintf qq{ \{ "job": \"%s\", "status": \"%s\", "progress": %d, "count": %d, \"success\": 1 \} }, 
-	$job, $result->status, $result->progress, $result->counter;
-return;
+
+if ($job) {
+   my $result = new ENAResult( { _jobid => $job, _species_defs => $species_defs } );
+   $result->fetch_alignments($order, $page, $page_size);
+   my $html = $result->render;
+   print $html;
+}

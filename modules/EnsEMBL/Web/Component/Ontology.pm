@@ -299,94 +299,9 @@ sub process_data {
     #EG EOF
       
     $table->add_row($row);
-#      warn "***** ", $ghash->{id}, "\n";
       foreach my $e (@{$ghash->{'extensions'} || []}) {
-#	  warn Dumper $e;
-#	  my $erow     = $e;
 	  $table->add_row($e);
       }
-  }
-  
-  return $table;  
-}
-
-sub process_data_old {
-  my ($self, $table, $data_hash, $extdb, $oid) = @_;
-  my $hub     = $self->hub;
-  my $object  = $self->object;
-  my $species = $hub->species;
-  my $species_path = $hub->species_defs->species_path($species);
-
-  foreach my $go (sort keys %$data_hash) {
-    next unless $data_hash->{$go}->{selected};
-    my $row     = {};
-    my $ghash = $data_hash->{$go} || {};
-    $ghash->{evidence}=  join ' , ', map { $_->[1] } grep { $_->[0] eq 'Evidence' } @{$ghash->{notes}||[]};
-    $ghash->{source}=  join ' , ', map { $_->[1] } grep { $_->[0] eq 'Source' } @{$ghash->{notes}||[]};
-
-    my $go_link    = $hub->get_ExtURL_link($go, $extdb, $go);
-    
-    my $info_text_html;
-    my $info_text_url;
-    my $info_text_gene;
-    my $info_text_species;
-    my $info_text_common_name;
-    my $info_text_type;
-    
-    if (my $info_text = $ghash->{'info'}) {
-     # create URL
-     if ($info_text =~ /from ([a-z]+[ _][a-z]+) (gene|translation) (\S+)/i) {
-        $info_text_gene        = $3;
-        $info_text_type        = $2;
-        $info_text_common_name = ucfirst $1;
-      } else {
-        warn "regex parse failure in EnsEMBL::Web::Component::Transcript::go()"; # parse error
-      }
-      
-      $info_text_species = $species;
-      (my $species   = $info_text_common_name) =~ s/ /_/g;
-      my $type       = $info_text_type eq 'gene' ? 'Gene' : 'Transcript';
-      my $action     = $info_text_type eq 'translation'  ? 'ProteinSummary' : 'Summary';
-      my $param_type = $info_text_type eq 'translation' ? 'p' : substr($info_text_type, 0, 1);        
-  
-      my $info_text_url = $hub->url({
-        species     => $species,
-        type        => $type,
-        action      => $action,
-        $param_type => $info_text_gene,
-        __clear     => 1,
-      });
-      $info_text_html = "[from $info_text_common_name <a href='$info_text_url'>$info_text_gene</a>]";
-    } else {
-      $info_text_html = '';
-    }
-
-    my $goslim_goa_acc  = '';
-    my $goslim_goa_desc = '';
-
-    my $goslim_goa_hash = $ghash->{goslim} || {};
-    foreach (keys %$goslim_goa_hash){
-      $goslim_goa_acc.=$hub->get_ExtURL_link($_, 'GOSLIM_GOA', $_)."<br/>";
-      $goslim_goa_desc.=$goslim_goa_hash->{$_}->{'name'}."<br/>";
-    }
-
-    $row->{'go'}          = $go_link;
-    $row->{'description'} = $ghash->{'name'};
-    $row->{'evidence'}    = $ghash->{'evidence'};
-    $row->{'desc'}        = join ', ', grep {$_} ($info_text_html, $ghash->{source});
-    $row->{'goslim_goa_acc'}   = $goslim_goa_acc;
-    $row->{'goslim_goa_title'} = $goslim_goa_desc;
-
-    my $url = $hub->url({
-             type    => 'Transcript',
-             action  => 'Ontology/Image_'.$oid,
-             oid     => $oid,
-             go      => $go
-    });
-    $row->{'ancestor_chart'} = "<a href='$url'>Ancestor chart</a>";
-    #EG EOF
-      
-    $table->add_row($row);
   }
   
   return $table;  
