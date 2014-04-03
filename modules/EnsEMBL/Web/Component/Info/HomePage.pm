@@ -174,7 +174,7 @@ sub content {
   }
 
   $html .= '<p class="taxon-id">';
-  $html .= 'Provider ' . $provider_link if $provider_link;
+  $html .= 'Data Source ' . $provider_link if $provider_link;
   $html .= sprintf q{Taxonomy ID %s}, $hub->get_ExtURL_link("$taxid", 'UNIPROT_TAXONOMY', $taxid) if $taxid;
   $html .= '</p>';
   $html .= '</div>'; #species-badge
