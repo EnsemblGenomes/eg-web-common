@@ -1,3 +1,7 @@
+.ena-sort, .ena-pager, .ena-alignment {
+  cursor:pointer;
+}
+
 #enawrapper {
 	width:100%;
 	text-align:center;
