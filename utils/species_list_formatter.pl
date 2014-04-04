@@ -38,10 +38,10 @@ my %urltemplate = (
   'Ensembl' => 'http://www.ensembl.org/%s',
 );
 
-#names	species	division	taxonomy_id	assembly	assembly_accession	genebuild	variation	pan_compara	genome_alignments	peptide_alignments other_alignments  
+#name	species	division	taxonomy_id	assembly	assembly_accession	genebuild	variation	pan_compara	genome_alignments	peptide_alignments other_alignments  url
 chomp @all_lines;
 my @headers = split(/\t/,shift(@all_lines));
-# push(@headers,'url','attributes');
+push(@headers,'url');
 print(join("\t",@headers) . "\n") if (!$pan);
 my @pan_spp;
 foreach my $line (sort @all_lines){
