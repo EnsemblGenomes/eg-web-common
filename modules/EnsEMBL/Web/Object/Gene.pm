@@ -36,6 +36,8 @@ sub availability {
     my $counts     = $self->counts($member, $pan_member);
     
     $self->{_availability}->{has_homoeologs} = $counts->{homoeologs};
+    
+    $self->{_availability}->{has_gene_supporting_evidence} = $counts->{gene_supporting_evidence};
   }
 
   return $self->{_availability};
@@ -53,6 +55,7 @@ sub _counts {
     if ($member) {
       $counts->{'homoeologs'} = $member->number_of_homoeologues;
     }
+    $counts->{'gene_supporting_evidence'} = $self->count_gene_supporting_evidence;
   }
     
   return $counts || {};
