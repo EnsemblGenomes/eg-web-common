@@ -224,7 +224,7 @@ sub _sort_similarity_links {
         id     => $link_name,
         ftype  => $link_type
       });
-      $text .= qq{  [<a href="$k_url">view all locations</a>]} unless $xref_type =~ /^ALT/;
+      $text .= qq{  [<a href="$k_url">view all locations</a>]} unless ($xref_type =~ /^ALT/ || $externalDB eq 'ENA_FEATURE_GENE' || $externalDB eq 'ENA_FEATURE_TRANSCRIPT' || $externalDB eq 'ENA_FEATURE_PROTEIN');
     }
 
     $text .= '</div>' if $join_links;
