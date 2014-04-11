@@ -102,7 +102,7 @@ Ensembl.Panel.ENASearch = Ensembl.Panel.extend({
 	    if(page) {
 		args.push("page="+page);
 	    }
-	    $.ajaxSetup({ cache: false, async : false });
+	    $.ajaxSetup({ cache: false, async : true });
 	    $.ajax({
 		    url: '/Multi/enaresult', 
 		    type: 'get', 	
