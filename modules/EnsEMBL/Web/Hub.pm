@@ -39,7 +39,9 @@ sub intra_species_alignments {
   
   if (!$self->{_intra_species_alignments}->{$cache_key}) {
   
-    my $compara_db                  = $self->database('compara');  
+    my $compara_db = $self->database('compara');  
+    return [] if !$compara_db;
+
     my $genomedb_adaptor            = $compara_db->get_adaptor('GenomeDB');
     my $genomic_align_block_adaptor = $compara_db->get_adaptor('GenomicAlignBlock');
     my $genomic_align_adaptor       = $compara_db->get_adaptor('GenomicAlign');
