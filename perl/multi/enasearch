@@ -25,7 +25,8 @@ my $evalue = $cgi->param('evalue') || 1;
 my $domain = $cgi->param('sdomain');
 $domain ||= $species_defs->ENA_COLLECTION_ID;
 
-my $seq = $species_defs->ENA_SAMPLE_SEQ ? ">Example Sequence\n".$species_defs->ENA_SAMPLE_SEQ : '';
+my $seq = $cgi->param('_query_sequence');
+$seq ||= ($species_defs->ENA_SAMPLE_SEQ ? ">Example Sequence\n".$species_defs->ENA_SAMPLE_SEQ : '');
 my $content = pageHTML($seq);
 $page->content->add_panel( EnsEMBL::Web::Document::Panel->new( 'raw' => $content ) );
 $controller->render_page;

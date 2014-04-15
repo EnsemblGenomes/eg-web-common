@@ -51,7 +51,7 @@ sub load_configured_mw    { shift->load_file_format('mw');    }
 
 sub _add_mw_track {
   my ($self, %args) = @_;
-  
+
   my $renderers = $args{'source'}{'renderers'} || [
     'off',     'Off',
     'tiling',  'On',
@@ -60,8 +60,12 @@ sub _add_mw_track {
   my $options = {
     external => 'external',
     sub_type => 'mw',
-    colour   => $args{'menu'}{'colour'} || $args{'source'}{'colour'} || 'red',
+    strand      => $args{source}{strand} || 'f'
   };
+
+  foreach my $arg (sort keys %{$args{source}}) {
+      $options->{$arg} = $args{source}->{$arg};
+  }
   
   $self->_add_file_format_track(
     format    => 'MW', 

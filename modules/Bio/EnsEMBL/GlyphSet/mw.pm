@@ -65,7 +65,7 @@ sub render_normal {
 
 use Inline C => Config => INC => "-I$SiteDefs::MWIGGLE_DIR",
                           LIBS => "-L$SiteDefs::MWIGGLE_DIR -lmw",
-                          DIRECTORY => "$SiteDefs::ENSEMBL_SERVERROOT/cbuild";
+                          DIRECTORY => "$SiteDefs::ENSEMBL_WEBROOT/cbuild";
 
 use Inline C => <<'END';
 
@@ -187,19 +187,12 @@ sub features {
     $sample_size = 1;
     $lbin = $slength;
   }
- if (0) {
-  warn "ppbp : $ppbp\n";
-  warn "slength : $slength\n";
-  warn "pcx : $pcx";
-  warn "bpx : $bpx\n";
-  warn "lbin : $lbin\n";
-  warn "sample_size =  " . $sample_size . "\n";
-}
+
   my $url = $self->my_config('url');
   my $region = sprintf("%s:%d-%d", $slice->seq_region_name, $slice->start, $slice->end);
- 
-  warn "URL : $url \n";
-  warn "region : $region (win $pcx)\n";
+
+#  warn "URL : $url \n";
+#  warn "region : $region (win $pcx)\n";
   $pcx = $slength  if ($slength < $pcx);
   my $tracks = '';#'0,1';# unless defined $tracks;
 
@@ -213,7 +206,7 @@ sub get_trackinfo {
 
     my $tinfo = {}; 
     foreach (@{tracks($url)||[]}) {
-       $tinfo->{ $_->{id} } = $_;
+	$tinfo->{ $_->{id} } = $_;
     }
     return $tinfo;
 }
@@ -244,7 +237,7 @@ sub draw_track_name {
     colour    => $colour,
     absolutey => 1,
     absolutex => 1,
-'zindex' => 10,
+    'zindex' => 10,
     'title' => "Description is empty",
     %font_details,
   }));
@@ -333,7 +326,15 @@ sub draw_axis {
 
 sub render_wiggle {
   my ($self, $options) = @_;
-  
+
+# If the track is configured f or r - we display all tracks on the selected strand
+# otherwise each track is displayed on its strand
+
+  my $strand  = $self->strand();
+  my $strand_flag   = $self->my_config('strand');  
+  return if ( $strand_flag eq 'f' && $strand != 1 ) || ( $strand_flag eq 'r'  && $strand == 1 );
+  my $default_colour = 'darkseagreen';
+
   if (my @values  = @{$self->features}) {
       my $row_height  = $self->{'height'} || $self->my_config('height') || 50;
       my $slice           = $self->{'container'};
@@ -341,20 +342,33 @@ sub render_wiggle {
       my $scale = 3;
       my $ppbp = $self->scalex;
 
+
       my $tracks = $self->get_trackinfo();
-#      warn Dumper $tracks;
+
+      my @tcolour = @{$self->my_config('track_colour') || []};
 
       my $i = 0;
       my $colours = ['pink', 'blue', 'blue', 'green'];
       foreach my $track (@values) {
+	  my $tstrand = $tracks->{$i}->{strand} || -1;
+	  $tstrand = 1 if ($tstrand > 1);
+
+	  if ($strand_flag eq 'b') {	      
+	      if ($tstrand != $strand) {
+		  $i++;
+		  next;
+	      }
+	  }
+
 	  my $max = (sort {$b <=> $a} @$track)[0];
 	  my $min = (sort {$b <=> $a} @$track)[-1];
 #	  warn sprintf("Range : %.3f.. %.3f\n", $min, $max);
 
 	  my $label           = $tracks->{$i}->{'desc'} || $tracks->{$i}->{'name'} || $options->{'description'}   || "My Track $i";
-	  my $colour          = $options->{'score_colour'}  || $self->my_colour('score') || 'blue';
+#	  my $colour          = $options->{'score_colour'}  || $self->my_colour('score') || 'blue';
 	  my $axis_colour     = $options->{'axis_colour'}   || $self->my_colour('axis')  || 'red';
 	  $axis_colour = 'lightblue';
+
 
 #	  $self->draw_track_name($label, $colour, 10, 10);	  
 
@@ -365,11 +379,10 @@ sub render_wiggle {
 
 	  my $offset          = $self->_offset;
 
-	  $colour = $options->{'score_colour'}  || 'darkseagreen';
+	  my $colour = $tcolour[$i] || $self->my_config('score_colour') || $default_colour;
 
 	  my $j = 0;
 	  my $range = abs($max - $min);
-# warn "$i : ", (join ' ', @$track), "\n\n" ;
 	  foreach my $cvrg (@$track) {
 	      if( my $title = $cvrg ) {
 		  my $y = $cvrg > 0 ? int(($max - $cvrg) * $row_height / $range + 0.4) : $zero;
@@ -399,94 +412,6 @@ sub render_wiggle {
       $self->no_features unless @values;
   }
 
-}
-
-sub render_wiggle_old {
-  my ($self, %options) = @_;
-  
-  if (my @values  = @{$self->features}) {
-      my $slice = $self->{'container'};
-      my $smax = 100;
-      my $scale = 3;
-      my $ppbp = $self->scalex;
-
-      # text stuff
-      my($font, $fontsize) = $self->get_font_details( $self->can('fixed') ? 'fixed' : 'innertext' );
-      my($tmp1, $tmp2, $font_w, $font_h) = $self->get_text_width(0, 'X', '', 'font' => $font, 'ptsize' => $fontsize);
-      my $text_fits = $font_w * $slice->length <= int($slice->length * $ppbp);
-      my $colour = 'pink';
-
-      foreach my $track (@values) {
-	  my $max = (sort {$b <=> $a} @$track)[0];
-	  my $min = (sort {$b <=> $a} @$track)[-1];
-	  warn sprintf("Range : %.3f.. %.3f\n", $min, $max);
-	  
-	  my $i = 0;
-
-	  foreach my $cvrg (@$track) {
-	      my $title = $cvrg;
-	      my $sval;
-
-	      if ($cvrg > $max) { $cvrg = $max }; 
-
-	      my $sval   = $smax * $cvrg / $max;
-	      
-	      my $y = int($smax/$scale - $sval/$scale +0.5);
-	      my $h1 = int($smax/$scale - $y );
-
-	      # coverage rectangle          
-	      $self->push($self->Rect({
-		  'x'      => $i,
-		  'y'      => $self->{_yoffset} + $y,
-		  'width'  => 0.97,
-		  'height' => $h1,
-		  'colour' => $colour,
-		  'absolutex' => $ppbp < 1 ? 1 : 0,
-		  'title' => $title,
-				      }));
-
-	      $i++;
-	  }
-
-	  $self->push($self->Rect({
-	      'x'      => 0,
-	      'y'      => $self->{_yoffset} + $smax / $scale + 1,
-	      'width'  => $slice->length,
-	      'height' => 0,
-	      'colour' => 'background1',
-				  }));
-      
-
-	  my $display_max_score = sprintf("%.3f", $max);
-
-	  my( $fontname_i, $fontsize_i ) = $self->get_font_details( 'innertext' );
-	  my @res_i = $self->get_text_width(0, $display_max_score, '', 'font'=>$fontname_i, 'ptsize' => $fontsize_i );
-	  my $textheight_i = $res_i[3];
-	  my $ppbp = $self->scalex;
-	  
-	  $self->push( $self->Text({
-	      'text'          => $display_max_score,
-	      'width'         => $res_i[2],
-	      'textwidth'     => $res_i[2],
-	      'font'          => $fontname_i,
-	      'ptsize'        => $fontsize_i,
-	      'halign'        => 'right',
-	      'valign'        => 'top',
-	      'colour'        => $self->my_colour('consensus_max'),
-	      'height'        => $textheight_i,
-	      'y'             => $self->{_yoffset} + 1,
-	      'x'             => -4 - $res_i[2],
-	      'absolutey'     => 1,
-	      'absolutex'     => 1,
-	      'absolutewidth' => 1,
-				   }));
-
-	  $self->{_yoffset} +=  int($smax/$scale) + 5;
-      }
-  } else {
-      $self->no_features unless @values;
-  }
-  return;
 }
 
 sub _offset {

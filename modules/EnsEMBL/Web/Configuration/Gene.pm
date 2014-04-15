@@ -79,8 +79,8 @@ sub modify_tree {
   }
 
   my $evidence_node = $self->get_node('Evidence');
-  $evidence_node->set('caption', 'Supporting evidence ([[counts::supporting_evidence]])');
-  $evidence_node->set('availability', 'gene has_supporting_evidence');
+  $evidence_node->set('caption', 'Supporting evidence ([[counts::gene_supporting_evidence]])');
+  $evidence_node->set('availability', 'gene has_gene_supporting_evidence');
 
   my $compara_menu  = $self->get_node('Compara');
   my $genetree = $self->get_node('Compara_Tree');
