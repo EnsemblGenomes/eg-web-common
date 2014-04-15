@@ -65,7 +65,7 @@ sub render_normal {
 
 use Inline C => Config => INC => "-I$SiteDefs::MWIGGLE_DIR",
                           LIBS => "-L$SiteDefs::MWIGGLE_DIR -lmw",
-                          DIRECTORY => "$SiteDefs::ENSEMBL_SERVERROOT/cbuild";
+                          DIRECTORY => "$SiteDefs::ENSEMBL_WEBROOT/cbuild";
 
 use Inline C => <<'END';
 
