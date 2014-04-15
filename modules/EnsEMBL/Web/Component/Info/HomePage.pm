@@ -547,7 +547,7 @@ sub _variation_text {
     }
 
     my $site = $species_defs->ENSEMBL_SITETYPE;
-    $html .= qq(<p><a href="/info/docs/variation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about variation in $site</a></p>);
+    $html .= qq(<p><a href="http://ensemblgenomes.org/info/data/variation" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about variation in $site</a></p>);
 
     if ($species_defs->ENSEMBL_FTP_URL) {
       my @links;
@@ -610,7 +610,7 @@ sub _funcgen_text {
     if ($self->_other_text('regulation', $species)) {
       $html .= qq(<p><a href="/$species/Info/Annotation#regulation" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about regulation in $display_name</a></p>);
     }
-    $html .= qq(<p><a href="/info/docs/microarray_probe_set_mapping.html" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about the $site microarray annotation strategy</a></p>);
+    $html .= qq(<p><a href="http://ensemblgenomes.org/info/data/microarray_mapping" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about the $site microarray annotation strategy</a></p>);
 
     # EG add a link to about_[spp]#regulation
     my $display_name = $species_defs->SPECIES_SCIENTIFIC_NAME;
