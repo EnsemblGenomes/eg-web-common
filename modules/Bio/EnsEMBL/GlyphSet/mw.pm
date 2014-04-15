@@ -327,6 +327,9 @@ sub draw_axis {
 sub render_wiggle {
   my ($self, $options) = @_;
 
+# If the track is configured f or r - we display all tracks on the selected strand
+# otherwise each track is displayed on its strand
+
   my $strand  = $self->strand();
   my $strand_flag   = $self->my_config('strand');  
   return if ( $strand_flag eq 'f' && $strand != 1 ) || ( $strand_flag eq 'r'  && $strand == 1 );
@@ -350,8 +353,7 @@ sub render_wiggle {
 	  my $tstrand = $tracks->{$i}->{strand} || -1;
 	  $tstrand = 1 if ($tstrand > 1);
 
-	  if ($strand_flag eq 'b') {
-	      
+	  if ($strand_flag eq 'b') {	      
 	      if ($tstrand != $strand) {
 		  $i++;
 		  next;
@@ -377,7 +379,7 @@ sub render_wiggle {
 
 	  my $offset          = $self->_offset;
 
-	  my $colour = $tcolour[$i] || $self->my_colour('score_colour') || $default_colour;
+	  my $colour = $tcolour[$i] || $self->my_config('score_colour') || $default_colour;
 
 	  my $j = 0;
 	  my $range = abs($max - $min);
