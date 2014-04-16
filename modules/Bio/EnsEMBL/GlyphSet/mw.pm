@@ -63,8 +63,8 @@ sub render_normal {
 }
 
 
-use Inline C => Config => INC => "-I$SiteDefs::MWIGGLE_DIR",
-                          LIBS => "-L$SiteDefs::MWIGGLE_DIR -lmw",
+use Inline C => Config => INC => "-I$SiteDefs::MWIGGLE_DIR/src",
+                          LIBS => "-L$SiteDefs::MWIGGLE_DIR/lib -lmw",
                           DIRECTORY => "$SiteDefs::ENSEMBL_WEBROOT/cbuild";
 
 use Inline C => <<'END';
@@ -132,7 +132,7 @@ AV* tracks(char *fname) {
           hv_store(ht, "desc", 4, newSVpv(t->desc, strlen(t->desc)), 0);
           av_push(res, newRV((SV*)ht));
           i++;
-      } while (t->id);
+      } while (t->id < 10000);
       free(tracks);
   }
   return res;
