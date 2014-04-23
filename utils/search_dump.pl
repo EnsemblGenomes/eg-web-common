@@ -255,7 +255,7 @@ sub dumpGene {
 
   my ( $dataset, $conf ) = @_;
 
-  foreach my $DB (qw(core otherfeatures)) {
+  foreach my $DB (qw(otherfeatures)) {
     my $SNPDB     = $novariation ? undef : eval { $conf->{variation}->{$release} };
     my $FUNCGENDB = eval { $conf->{funcgen}->{$release} };
     my $DBNAME    = $conf->{$DB}->{$release} or warn "$dataset $DB $release: no database not found";
@@ -511,9 +511,9 @@ sub dumpGene {
         }      
         
         if ($format eq 'solr') {
-  	  p geneLineTSV( $species, $dataset, $gene_data, $counter );
+  	      p geneLineTSV( $species, $dataset, $gene_data, $counter );
         } else {
-  	  p geneLineXML( $species, $dataset, $gene_data, $counter );
+  	      p geneLineXML( $species, $dataset, $gene_data, $counter );
         }
       };
       
@@ -528,7 +528,7 @@ sub dumpGene {
           "SELECT g.gene_id, t.transcript_id, tr.translation_id,
              g.stable_id AS gsid, t.stable_id AS tsid, tr.stable_id AS trsid,
              g.description, ed.db_display_name, x.dbprimary_acc,x.display_label AS xdlgene, 
-             ad.display_label, ad.description, g.source, g.status, g.biotype,
+             ad.display_label, ad.description, ad.web_data, g.source, g.status, g.biotype,
              sr.name AS seq_region_name, g.seq_region_start, g.seq_region_end
            FROM (gene AS g,
              analysis_description AS ad,
@@ -555,12 +555,19 @@ sub dumpGene {
             $transcript_stable_id,               $translation_stable_id,
             $gene_description,                   $extdb_db_display_name,
             $xref_primary_acc,                   $xref_display_label,
-            $analysis_description_display_label, $analysis_description,
+            $analysis_description_display_label, $analysis_description, $web_data,
             $gene_source,                        $gene_status,
             $gene_biotype,                       $seq_region_name,
             $seq_region_start,                   $seq_region_end
           ) = @$row;
-      
+          
+          if ($web_data) {
+            $web_data = eval $web_data;
+            if ( ref($web_data) eq 'HASH' ) {
+              next if $web_data->{exclude_from_search};
+            }
+          }
+
           if ( $old{'gene_id'} != $gene_id ) {
             
             # output old gene if we have one
@@ -644,7 +651,7 @@ sub dumpGene {
             }
           }
         }
-        $output_gene->(\%old);
+        $output_gene->(\%old) if $old{'gene_id'}; 
       }
       footer( $counter->() );
     }
