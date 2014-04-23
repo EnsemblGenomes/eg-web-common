@@ -815,7 +815,7 @@ sub geneLineXML {
 <field name="gene_synonym">$_</field>}
       } map {encode_entities($_)} keys %$unique_synonyms ) )  
     . qq{
-<field name="databse">$database</field>      
+<field name="database">$database</field>      
 </additional_fields>};
 
   $counter->();
