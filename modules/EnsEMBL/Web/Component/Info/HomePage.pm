@@ -612,11 +612,6 @@ sub _funcgen_text {
     }
     $html .= qq(<p><a href="http://ensemblgenomes.org/info/data/microarray_mapping" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about the $site microarray annotation strategy</a></p>);
 
-    # EG add a link to about_[spp]#regulation
-    my $display_name = $species_defs->SPECIES_SCIENTIFIC_NAME;
-    if ($self->_other_text('regulation', $species)) {
-      $html .= qq(<p><a href="/$species/Info/Annotation#regulation" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about regulation in $display_name</a></p>);
-    }
   }
 
   return $html;
