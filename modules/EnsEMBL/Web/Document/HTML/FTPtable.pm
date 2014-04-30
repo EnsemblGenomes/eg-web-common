@@ -45,7 +45,7 @@ sub render {
     embl      => 'Ensembl Genomes database dumps in EMBL nucleotide sequence database format',
     genbank   => 'Ensembl Genomes database dumps in GenBank nucleotide sequence database format',
     gtf       => 'Gene sets for each species in GTF format. These files include annotations of both coding and non-coding genes',
-    gff3      => 'Gene sets for each species in GFF3 format. These files include annotations of both coding and non-coding genes',
+    gff3      => 'Gene sets and other features for each species in GFF3 format. These files include genes, transcripts and repeat features',
     emf       => 'Alignments of resequencing data from the Compara database',
     gvf       => 'Variation data in GVF format',
     vcf       => 'Variation data in VCF format',
