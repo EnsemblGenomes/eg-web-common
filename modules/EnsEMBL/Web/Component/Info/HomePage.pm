@@ -551,9 +551,10 @@ sub _variation_text {
 
     if ($species_defs->ENSEMBL_FTP_URL) {
       my @links;
-      foreach my $format (qw/gvf vcf vep/){
+      foreach my $format (qw/gvf vcf/){
         push(@links, sprintf('<a href="%s/release-%s/%s/%s/" class="nodeco _ht" title="Download (via FTP) all <em>%s</em> variants in %s format">%s</a>', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, $format, lc $species, $display_name, uc $format,uc $format));
       }
+      push(@links, sprintf('<a href="%s/release-%s/vep/%s_vep_%s.tar.gz" class="nodeco _ht" title="Download (via FTP) all <em>%s</em> variants in VEP format">VEP</a>', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, lc $species, $ensembl_version, $display_name));
       my $links = join(" - ", @links);
       $html .= qq[<p><img src="${img_url}24/download.png" alt="" class="homepage-link" />Download all variants - $links</p>];
     }
