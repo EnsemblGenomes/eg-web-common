@@ -102,7 +102,7 @@ gtf        => qq{<a rel="external"  title="$title{'gtf'}" href="$ftp_base_path_s
 gff3       => qq{<a rel="external"  title="$title{'gff3'}" href="$ftp_base_path_stub/gff3/$sp_dir">GFF3</a>},
 mysql      => join('<br/>',@mysql),
 tsv        => qq{<a rel="external"  title="$title{'tsv'}" href="$ftp_base_path_stub/tsv/$sp_dir/">TSV</a>},
-vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/vep/$sp_dir">VEP</a>},
+vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/vep/">VEP</a>},
     };
     my $db_hash = $hub->databases_species($spp, 'variation');
     if ($db_hash->{variation}) {
@@ -137,6 +137,7 @@ vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_s
       {key => 'gff3',     sort=>'none', title => 'GFF3'},   
       {key => 'gvf',      sort=>'none', title => 'GVF'},    
       {key => 'vcf',      sort=>'none', title => 'VCF'},    
+      {key => 'vep',      sort=>'none', title => 'VEP'},
     ],
     \@rows,
     { data_table=>1, exportable=>0 }
