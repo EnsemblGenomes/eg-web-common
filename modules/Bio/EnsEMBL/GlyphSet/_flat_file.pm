@@ -147,6 +147,63 @@ sub features {
   }
   
   return %results;
+
+  warn Dumper(\%results);
 }
+
+
+## EG gradient
+
+sub render_gradient {
+  my $self = shift;
+  
+  $self->{'renderer_no_join'} = 1;
+  $self->{'legend'}{'gradient_legend'} = 1; # instruct to draw legend  
+  $self->SUPER::render_normal(8, 0);
+  
+  # Add text line showing name and score range
+  
+  my %features = $self->features;
+  my $fconf    = $features{url}->[1];
+  my $label    = sprintf '%s  %.2f - %.2f', $self->my_config('name'), $fconf->{min_score}, $fconf->{max_score};
+  my %font     = $self->get_font_details('innertext', 1);
+  
+  my (undef, undef, $width, $height) = $self->get_text_width(0,  $label, '', %font); 
+  
+  $self->push($self->Text({
+    text      => $label,
+    width     => $width,
+    halign    => 'left',
+    valign    => 'bottom',
+    colour    => $self->my_config('colour'),
+    y         => 7,
+    height    => $height,
+    x         => 1,
+    absolutey => 1,
+    absolutex => 1,
+    %font,
+  })); 
+}
+
+sub href {
+  return ''; # this causes the zmenu content to be supressed (leaving only title)
+}
+
+sub feature_title {
+  my ($self, $f) = @_;
+  return sprintf '%.2f', $f->score; # the score is all that we want to show
+}
+
+sub feature_group {
+  my ($self, $f) = @_;
+  my $name = '';
+  if ($f->can('hseqname')) {
+    ($name = $f->hseqname) =~ s/(\..*|T7|SP6)$//; # this regexp will remove the differences in names between the ends of BACs/FOSmids.
+  }
+  return $name;
+}
+
+## EG /gradient
+
 
 1;
