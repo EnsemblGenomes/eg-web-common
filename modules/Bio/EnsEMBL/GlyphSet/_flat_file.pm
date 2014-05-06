@@ -135,6 +135,14 @@ sub features {
       $features = $T->{'features'};
     }
 
+    # this config is for the gradient renderer
+    $T->{'config'}->{'useScore'} = 2;
+    if (my $colours = $self->species_defs->GRADIENT_COLOURS) {
+      for (0..$#{ $colours }) {
+        $T->{'config'}->{"cgColour$_"} = $colours->[$_];
+      }
+    }
+
     $results{$key} = [$features, $T->{'config'}];
   }
   
