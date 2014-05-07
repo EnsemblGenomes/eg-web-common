@@ -5,3 +5,7 @@
 #masthead div.dropdown.clade            { width: 300px }
 #masthead div.dropdown.clade ul         { max-height: 400px; overflow-x: hidden; overflow-y: auto}
 #masthead div.dropdown.clade ul li      { width: default; float: none; }
+#masthead div.dropdown.clade ul li      { width: default; float: none; }
+
+#masthead .logo_holder { top: 11px }
+

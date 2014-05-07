@@ -45,7 +45,7 @@ sub render {
     embl      => 'Ensembl Genomes database dumps in EMBL nucleotide sequence database format',
     genbank   => 'Ensembl Genomes database dumps in GenBank nucleotide sequence database format',
     gtf       => 'Gene sets for each species in GTF format. These files include annotations of both coding and non-coding genes',
-    gff3      => 'Gene sets for each species in GFF3 format. These files include annotations of both coding and non-coding genes',
+    gff3      => 'Gene sets and other features for each species in GFF3 format. These files include genes, transcripts and repeat features',
     emf       => 'Alignments of resequencing data from the Compara database',
     gvf       => 'Variation data in GVF format',
     vcf       => 'Variation data in VCF format',
@@ -102,7 +102,7 @@ gtf        => qq{<a rel="external"  title="$title{'gtf'}" href="$ftp_base_path_s
 gff3       => qq{<a rel="external"  title="$title{'gff3'}" href="$ftp_base_path_stub/gff3/$sp_dir">GFF3</a>},
 mysql      => join('<br/>',@mysql),
 tsv        => qq{<a rel="external"  title="$title{'tsv'}" href="$ftp_base_path_stub/tsv/$sp_dir/">TSV</a>},
-vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/vep/$sp_dir">VEP</a>},
+vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/vep/">VEP</a>},
     };
     my $db_hash = $hub->databases_species($spp, 'variation');
     if ($db_hash->{variation}) {
@@ -137,6 +137,7 @@ vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_s
       {key => 'gff3',     sort=>'none', title => 'GFF3'},   
       {key => 'gvf',      sort=>'none', title => 'GVF'},    
       {key => 'vcf',      sort=>'none', title => 'VCF'},    
+      {key => 'vep',      sort=>'none', title => 'VEP'},
     ],
     \@rows,
     { data_table=>1, exportable=>0 }

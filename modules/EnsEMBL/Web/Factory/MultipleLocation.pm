@@ -38,22 +38,34 @@ sub createObjects {
   # Redirect if we need to generate a new url
   return if $self->generate_url($object->slice);
   
-  my $hub       = $self->hub;
+  my $hub = $self->hub;
 
-## EG - set up default intra-species comparisons for polyploid view
-  if ($hub->action =~ /Polyploid/ and !$hub->param("r1")) {
-    my $primary_slice   = $object->slice;
-    my $primary_species = $hub->species;
-    my $alignments      = $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $primary_slice->seq_region_name);
-  
-    my $i = 1;
-    foreach my $align (sort { $a->{target_name} cmp $b->{target_name} } @$alignments) {
-      next unless $align->{'class'} =~ /pairwise_alignment/;
-      next unless $align->{'species'}{"$primary_species--" . $primary_slice->seq_region_name};
-      
-      $hub->param("s$i", sprintf '%s--%s', $primary_species, $align->{target_name});
+## EG - default comparisons
+  my $species_defs = $hub->species_defs;
 
-      $i++;
+  if (!$hub->param("r1")) {
+    if ($hub->action =~ /Polyploid/) {
+      # set up default intra-species comparisons for polyploid view
+      my $primary_slice   = $object->slice;
+      my $primary_species = $hub->species;
+      my $alignments      = $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $primary_slice->seq_region_name);
+    
+      my $i = 1;
+      foreach my $align (sort { $a->{target_name} cmp $b->{target_name} } @$alignments) {
+        next unless $align->{'class'} =~ /pairwise_alignment/;
+        next unless $align->{'species'}{"$primary_species--" . $primary_slice->seq_region_name};
+        
+        $hub->param("s$i", sprintf '%s--%s', $primary_species, $align->{target_name});
+        $i++;
+      }
+    } else { 
+      # if we have got default species, and this is not a self referral (i.e. from species selector)
+      if ($species_defs->DEFAULT_COMPARISON_SPECIES and $hub->referer->{ENSEMBL_ACTION} ne 'Multi') {
+        my @species = @{ $species_defs->DEFAULT_COMPARISON_SPECIES };
+        for my $i (1..@species) {
+          $hub->param("s$i", $species[$i-1]);
+        }
+      }
     }
   }
 ##  
