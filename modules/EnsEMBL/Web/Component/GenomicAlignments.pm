@@ -58,7 +58,9 @@ sub content {
   if($species){
     my $loc=$species_defs->SAMPLE_DATA->{LOCATION_PARAM};
     my $table = $self->align_table($species,$loc,$data{$species},'position:absolute; z-index:1; width:40% !important;');
-    return sprintf(qq{<a rel="%s_aligns" class="toggle no_img closed" href="#" title="expand"><span class="closed"><small>Show</small>&raquo;</span><span class="open">&laquo;<small>Hide</small></span></a>%s}, $species, $table);
+    exists $data{$species}
+      ? return sprintf(qq{<a rel="%s_aligns" class="toggle no_img closed" href="#" title="expand"><span class="closed"><small>Show</small>&raquo;</span><span class="open">&laquo;<small>Hide</small></span></a>%s}, $species, $table)
+      : return '';
   }
   my @rows;
   foreach my $sp1 ( sort keys %data){
