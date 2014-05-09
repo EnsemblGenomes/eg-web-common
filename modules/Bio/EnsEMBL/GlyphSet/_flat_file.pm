@@ -20,7 +20,7 @@ package Bio::EnsEMBL::GlyphSet::_flat_file;
 
 use strict;
 
-use List::Util qw(reduce);
+use List::Util qw(reduce min max);
 
 use EnsEMBL::Web::Text::FeatureParser;
 use EnsEMBL::Web::TmpFile::Text;
@@ -44,9 +44,12 @@ sub features {
   $parser->filter($container->seq_region_name, $container->start, $container->end);
   
   $self->{'parser'} = $parser;
- 
-  my $data; 
-  if ($sub_type eq 'url') {
+  
+  my $data;
+  if ($sub_type eq 'single_feature') {
+    $parser->parse($self->my_config('data'), $self->my_config('format'));
+  }
+  elsif ($sub_type eq 'url') {
     my $response = EnsEMBL::Web::Tools::Misc::get_url_content($self->my_config('url'));
     
     if ($data = $response->{'content'}) {
@@ -66,6 +69,7 @@ sub features {
     $parser->parse($data, $self->my_config('format'));
   }
 
+## EG  
   # if no tracks found, filter by synonym name
   unless ($parser->{'tracs'}){
 
@@ -78,7 +82,8 @@ sub features {
       last if $parser->{'tracs'};
     }
   }
- 
+##
+
   ## Now we translate all the features to their rightful co-ordinates
   while (my ($key, $T) = each (%{$parser->{'tracks'}})) {
     $_->map($container) for @{$T->{'features'}};
@@ -135,75 +140,73 @@ sub features {
       $features = $T->{'features'};
     }
 
-    # this config is for the gradient renderer
-    $T->{'config'}->{'useScore'} = 2;
-    if (my $colours = $self->species_defs->GRADIENT_COLOURS) {
-      for (0..$#{ $colours }) {
-        $T->{'config'}->{"cgColour$_"} = $colours->[$_];
-      }
-    }
-
     $results{$key} = [$features, $T->{'config'}];
   }
   
   return %results;
-
-  warn Dumper(\%results);
 }
 
-
-## EG gradient
+## pval
 
 sub render_gradient {
   my $self = shift;
-  
-  $self->{'renderer_no_join'} = 1;
-  $self->{'legend'}{'gradient_legend'} = 1; # instruct to draw legend  
-  $self->SUPER::render_normal(8, 0);
-  
-  # Add text line showing name and score range
-  
-  my %features = $self->features;
-  my $fconf    = $features{url}->[1];
-  my $label    = sprintf '%s  %.2f - %.2f', $self->my_config('name'), $fconf->{min_score}, $fconf->{max_score};
-  my %font     = $self->get_font_details('innertext', 1);
-  
-  my (undef, undef, $width, $height) = $self->get_text_width(0,  $label, '', %font); 
-  
-  $self->push($self->Text({
-    text      => $label,
-    width     => $width,
-    halign    => 'left',
-    valign    => 'bottom',
-    colour    => $self->my_config('colour'),
-    y         => 7,
-    height    => $height,
-    x         => 1,
-    absolutey => 1,
-    absolutex => 1,
-    %font,
-  })); 
-}
 
-sub href {
-  return ''; # this causes the zmenu content to be supressed (leaving only title)
-}
+  my %data = $self->features;
+  
+  return 0 unless keys %data;
+  
+  foreach my $key ($self->sort_features_by_priority(%data)) {
+    my ($features, $config)     = @{$data{$key}};
+    
+    my $log3_curve = sub {
+      my $score = shift;
+      return 1 if $score == 0;
+      return 0 if $score == 1;
+      return ( log(1 / $score) / log(3) ) / 10;
+    };
 
-sub feature_title {
-  my ($self, $f) = @_;
-  return sprintf '%.2f', $f->score; # the score is all that we want to show
-}
+    my $log2_curve = sub {
+      my $score = shift;
+      return 1 if $score == 0;
+      return 0 if $score == 1;
+      return ( log(1 / $score) / log(2) ) / 10;
+    };
 
-sub feature_group {
-  my ($self, $f) = @_;
-  my $name = '';
-  if ($f->can('hseqname')) {
-    ($name = $f->hseqname) =~ s/(\..*|T7|SP6)$//; # this regexp will remove the differences in names between the ends of BACs/FOSmids.
+    $self->draw_gradient($features, { 
+      min_score         => 0,
+      max_score         => 1,
+      key_labels        => [ 0, 0.05, 1 ],
+      gradient_function => $log2_curve,
+      decimal_places    => 5,
+      caption           => $config->{'description'},
+    });
   }
-  return $name;
 }
 
-## EG /gradient
+## gradient
 
+sub render_gradientX {
+  my $self = shift;
+
+  my %data = $self->features;
+  
+  return 0 unless keys %data;
+  
+  foreach my $key ($self->sort_features_by_priority(%data)) {
+    my ($features, $config)     = @{$data{$key}};
+    
+    my ($min_score, $max_score) = split ':', $config->{'viewLimits'};
+    $min_score = $config->{'min_score'} unless $min_score;
+    $max_score = $config->{'max_score'} unless $max_score;
+
+    $self->draw_gradient($features, { 
+      min_score => $min_score,
+      max_score => $max_score,
+      caption   => $config->{'description'},
+    });
+  }
+}
+
+##
 
 1;
