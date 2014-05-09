@@ -22,55 +22,6 @@ use strict;
 
 use List::Util qw(min max);
 
-use base qw(Bio::EnsEMBL::GlyphSet);
-
-sub draw_error {}
-
-sub render_compact        { return $_[0]->_render;           }
-sub render_tiling         { return $_[0]->_render('wiggle'); }
-sub render_tiling_feature { return $_[0]->_render('both');   }
-
-sub render_text {
-  my ($self, $wiggle) = @_;
-  my $container    = $self->{'container'};
-  my $feature_type = $self->my_config('caption');
-  my $method       = $self->can('export_feature') ? 'export_feature' : '_render_text';
-  my $export;
-  
-  if ($wiggle ne 'wiggle') {
-    my $element_features = $self->can('element_features') ?  $self->element_features : [];
-    my $strand           = $self->strand;
-    my $strand_flag      = $self->my_config('strand');
-    my $length           = $container->length;
-    my @features         = sort { $a->[1] <=> $b->[1] } map { ($strand_flag ne 'b' || $strand == $_->{'strand'}) && $_->{'start'} <= $length && $_->{'end'} >= 1 ? [ $_, $_->{'start'} ] : () } @$element_features;
-     
-    foreach (@features) {
-      my $f = $_->[0];
-      
-      $export .= $self->$method($f, $feature_type, undef, {
-        seqname => $f->{'hseqname'}, 
-        start   => $f->{'start'} + ($f->{'hstrand'} > 0 ? $f->{'hstart'} : $f->{'hend'}),
-        end     => $f->{'end'}   + ($f->{'hstrand'} > 0 ? $f->{'hstart'} : $f->{'hend'}),
-        strand  => '.',
-        frame   => '.'
-      });
-    }
-  }
-  
-  if ($wiggle) {
-    my $score_features = $self->can('score_features') ? $self->score_features : [];
-    my $name           = $container->seq_region_name;
-    
-    foreach my $f (@$score_features) {
-      my $pos = $f->seq_region_pos;
-      
-      $export .= $self->$method($f, $feature_type, undef, { seqname => $name, start => $pos, end => $pos });
-    }
-  }
-  
-  return $export;
-}
-
 sub _render {
   ## Show both map and features
   
@@ -103,82 +54,196 @@ sub _render {
   return 1;
 }
 
-sub draw_block_features {
-  ### Predicted features
-  ### Draws the predicted features track
-  ### Arg1: arrayref of Feature objects
-  ### Arg2: colour of the track
-  ### Returns 1
+sub min_max_score {
+  my ($self, $features) = @_;
 
-  my ($self, $features, $colour, $score, $display_summit, $display_pwm) = @_;
-  my $length     = $self->{'container'}->length;
-  my $pix_per_bp = $self->scalex;
-  my $h          = 8;
-  
-  foreach my $f (@$features) {
-    my $start    = $f->start;  
-    my $end      = $f->end;
-       $start    = 1 if $start < 1;
-       $end      = $length if $end > $length;
-    my $midpoint = $f->summit;
-    my $y        = $self->_offset;
-    
-    $self->push($self->Rect({
-      x         => $start -1,
-      y         => $y,
-      height    => $h,
-      width     => $end - $start,
-      absolutey => 1, # in pix rather than bp
-      colour    => $colour,
-      href      => $self->block_features_zmenu($f, $score),
-      class     => 'group',
-    }));
-    
-    if ($display_pwm) {
-      my @loci = @{$f->get_underlying_structure}; 
-      my $end  = pop @loci;
-      my ($start, @mf_loci) = @loci;
+  my $viewLimits = $self->my_config('viewLimits');
+  my $min_score;
+  my $max_score;
 
-      while (my ($mf_start, $mf_end) = splice @mf_loci, 0, 2) {  
-        my $mf_length = ($mf_end - $mf_start) + 1;
-        
-        $self->push($self->Rect({
-          x         => $mf_start - 1,
-          y         => $y,
-          height    => $h,
-          width     => $mf_length,
-          absolutey => 1,  # in pix rather than bp
-          colour    => 'black',
-        }));
-      }        
-    }
+  if ($viewLimits) {
+    ($min_score, $max_score) = split ':', $viewLimits;
+  } else {
+    $min_score = $features->[0]{'score'};
+    $max_score = $features->[0]{'score'};
     
-    if ($length <= 20000 && $midpoint && $display_summit) {
-      $midpoint -= $self->{'container'}->start;
-      
-      if ($midpoint > 0 && $midpoint < $length) {
-        $self->push($self->Triangle({ # Upward pointing triangle
-          width     => 4 / $pix_per_bp,
-          height    => 4,
-          direction => 'up',
-          mid_point => [ $midpoint, $h + $y ],
-          colour    => 'black',
-          absolutey => 1,
-        }), $self->Triangle({ # Downward pointing triangle
-          width     => 4 / $pix_per_bp,
-          height    => 4,
-          direction => 'down',
-          mid_point => [ $midpoint, $h + $y - 9 ],
-          colour    => 'black',
-          absolutey => 1,
-        }));
-      }
+    foreach my $feature (@$features) {
+      $min_score = min($min_score, $feature->{'score'});
+      $max_score = max($max_score, $feature->{'score'});
     }
   }
 
-  $self->_offset($h + 6);
+  return $min_score, $max_score;
+}
+
+# gradient drawing code was adapted from Bio::EnsEMBL::GlyphSet::_alignment::render_normal
+sub draw_gradient {
+  my ($self, $features, $parameters) = @_; 
+
+  # params
+
+  my $max_score         = $parameters->{max_score} || 1000;
+  my $min_score         = $parameters->{min_score} || 0;
+  my @gradient_colours  = @{ $parameters->{gradient_colours} || [qw(white red)] };
+  my $gradient_function = $parameters->{gradient_function} || sub { return $_[0] }; # score to gradient mapping 
+  my $bump              = !$parameters->{no_bump};
+  my $key_labels        = $parameters->{key_labels} || [$min_score, $max_score];
+  my $decimal_places    = $parameters->{decimal_places} || 2;
+  my $caption           = $parameters->{caption} || $self->my_config('name');
   
-  return 1;
+  # create gradient 
+
+  my $colour_grades      = 20;
+  my @gradient           = $self->{config}->colourmap->build_linear_gradient($colour_grades, \@gradient_colours);
+  my $gradient_min_score = min($gradient_function->($min_score), $gradient_function->($max_score));
+  my $gradient_max_score = max($gradient_function->($min_score), $gradient_function->($max_score));
+  my $score_per_grade    = ($gradient_max_score - $gradient_min_score) / $colour_grades;
+  
+  my $grade_from_score = sub {
+    my $score = shift;
+    my $gradient_score = min( max( $gradient_function->($score), $gradient_min_score ), $gradient_max_score );
+    my $grade = $gradient_score >= $gradient_max_score ? $colour_grades - 1 : int(($gradient_score - $gradient_min_score) / $score_per_grade);    
+    return $grade
+  };
+
+  # draw...
+
+  my $show_key          = 1;
+  my $h                 = 8;
+  my $length            = $self->{'container'}->length;
+  my $pix_per_bp        = $self->scalex;
+  my %font              = $self->get_font_details('innertext', 1);
+  my $depth             = $bump ? 6 : 0;
+  my $y_offset          = 0;
+  my $features_drawn    = 0;
+  my $features_bumped   = 0;
+
+  # caption
+
+  my (undef, undef, $text_width, $text_height) = $self->get_text_width(0, $caption, '', %font); 
+   
+  $self->push($self->Text({
+    text      => $caption,
+    width     => $text_width,
+    height    => $text_height,
+    halign    => 'left',
+    valign    => 'bottom',
+    colour    => 'black',
+    y         => $y_offset,
+    x         => 1,
+    absolutey => 1,
+    absolutex => 1,
+    %font,
+  })); 
+
+  $y_offset += $text_height;
+
+  # features
+
+  $self->_init_bump(undef, $depth);
+ 
+  foreach my $f (sort {$a->{start} <=> $b->{start}} @$features) {
+    my $start      = max($f->{start}, 1);
+    my $end        = min($f->{end}, $length);
+    my $bump_start = int( $pix_per_bp * $start ) - 1;
+    my $bump_end   = int( $pix_per_bp * $end );
+    my $row        = 0;
+    my $colour     = $gradient[ $grade_from_score->($f->{score}) ];
+
+    if ($bump) { 
+      
+      $row = $self->bump_row($bump_start, $bump_end);
+      
+      if ($row > $depth) {
+        $features_bumped++;
+        next;
+      }
+    }
+        
+    my $composite = $self->Composite({
+      x      => $start - 1,
+      y      => 0,
+      width  => 0,
+      height => $h,
+      href  => '',
+      title => sprintf "%.${decimal_places}f", $f->{score},
+      #title => $f->{score} . " | " . $gradient_function->($f->{score}) . " | " . $grade_from_score->($f->{score}),
+      class => 'group',
+    });
+
+    $composite->push($self->Rect({
+      x            => $start - 1,
+      y            => 0,
+      width        => $end - $start + 1,
+      height       => $h,
+      colour       => $colour,
+      label_colour => 'black',
+      #absolutey    => 1,
+    }));
+    
+    $composite->y( $y_offset + ($row * ($h + 1)) );
+    $self->push($composite);
+
+    $features_drawn = 1;
+  }
+
+  $y_offset += $h * ($bump ? $self->_max_bump_row() : 1);
+
+  # gradient key
+
+  if ($show_key) {
+    my $x_offset    = -10;
+    my $y_offset    = 18;
+    my $width       = 95;
+    my $blocks      = $colour_grades; 
+    my $block_size  = int( $width / $blocks );
+    my $grade_label = { map { $grade_from_score->($_) => $_ } @$key_labels };
+
+    foreach my $i (1..$blocks) {
+        
+      my $x = $x_offset - $width + ($block_size * ($i - 1));
+
+      $self->push($self->Rect({
+        height        => $block_size,
+        width         => $block_size,
+        colour        => $gradient[$i],
+        y             => $y_offset,
+        x             => $x,
+        absolutey     => 1,
+        absolutex     => 1,
+        absolutewidth => 1,
+      }));
+
+      if (defined $grade_label->{$i-1}) {
+        
+        my $label = $grade_label->{$i-1} || 'O';
+        $label = sprintf '%.2f', $grade_label->{$i-1} if $label > int($label);
+
+        my (undef, undef, $text_width, $text_height) = $self->get_text_width(0, $label || 'X', '', %font);
+
+        $self->push($self->Text({
+          text          => $label,
+          height        => $text_height,
+          width         => $text_width,
+          halign        => 'left',
+          valign        => 'bottom',
+          colour        => 'black',
+          y             => $y_offset + ($text_height / 2) + 1,
+          x             => $x - ($text_width / 2),
+          absolutey     => 1,
+          absolutex     => 1,
+          absolutewidth => 1,
+          %font,
+        }));
+      }
+
+    }
+  }
+
+  # caption 
+
+  $self->errorTrack(sprintf q{No features from '%s' in this region}, $caption) unless $features_drawn || $self->{'no_empty_track_message'} || $self->{'config'}->get_option('opt_empty_tracks') == 0;
+  $self->errorTrack(sprintf(q{%s features from '%s' omitted}, $features_bumped, $caption), undef, $y_offset) if $self->get_parameter('opt_show_bumped') && $features_bumped;
 }
 
 sub draw_wiggle_plot {
@@ -190,9 +255,6 @@ sub draw_wiggle_plot {
   my ($self, $features, $parameters, $colours, $labels) = @_; 
   my $slice         = $self->{'container'};
   my $row_height    = $self->{'height'} || $self->my_config('height') || 60;
-## EG
-  $row_height = $row_height * $self->species_defs->BIGWIG_HEIGHT if $self->species_defs->BIGWIG_HEIGHT;
-##  
   my $max_score     = $parameters->{'max_score'};
   my $min_score     = $parameters->{'min_score'};
   my $axis_style    = $parameters->{'graph_type'} eq 'line' ? 0 : 1;
@@ -376,7 +438,9 @@ sub draw_wiggle_plot {
     text      => $label,
     width     => [ $self->get_text_width(0, $label, '', %font) ]->[2],
     halign    => 'left',
-    colour    => $colour,
+## EG    
+    colour    => 'black',
+##    
     y         => $bottom_offset,
     height    => $textheight,
     x         => 1,
@@ -388,197 +452,6 @@ sub draw_wiggle_plot {
   $self->_offset($row_height + $textheight);
   
   return 1;
-}
-
-sub draw_wiggle_points {
-  my ($self, $features, $slice, $parameters, $top_offset, $pix_per_score, $colour, $zero_offset) = @_;
-  my $hrefs     = $parameters->{'hrefs'};
-  my $points    = $parameters->{'graph_type'} eq 'points';
-  my $max_score = max($parameters->{'max_score'}, 0);
-  my $zero      = $top_offset + $zero_offset;
-  
-  foreach my $f (@$features) {
-    my ($start, $end, $score, $min_score, $height, $width, $x);
-    my $href        = ref $f ne 'HASH' && $f->can('id') ? $hrefs->{$f->id} : '';
-    my $this_colour = $colour;
-    
-    if ($parameters->{'use_feature_colours'} && $f->can('external_data')) {
-      my $data        = $f->external_data;
-         $this_colour = $data->{'item_colour'}[0] if $data && $data->{'item_colour'} && ref($data->{'item_colour'}) eq 'ARRAY';
-    }
-    
-    # Data is from a Funcgen result set collection, windowsize > 0
-    if (ref $f eq 'HASH') {
-      $start = $f->{'start'} < 1 ? 1 : $f->{'start'};
-      $end   = $f->{'end'}   > $slice->length  ? $slice->length : $f->{'end'};
-      $score = $f->{'score'};
-    } else {
-      $start = $f->start < 1 ? 1 : $f->start; 
-      $end   = $f->end   > $slice->length ? $slice->length : $f->end;  
-
-      if ($f->isa('Bio::EnsEMBL::Variation::ReadCoverageCollection')) {
-        $score     = $f->read_coverage_max;
-        $min_score = $f->read_coverage_min;
-      } else {
-        $score = $f->can('score') ? $f->score || 0 : $f->can('scores') ? $f->scores->[0] : 0;
-      }
-    }
-    
-    # alter colour if the intron supporting feature has a name of non_canonical
-    if (ref $f ne 'HASH' && $f->can('display_id') && $f->can('analysis') && $f->analysis->logic_name =~ /_intron/) {
-      my $can_type    = [ split /:/, $f->display_id ]->[-1];
-         $this_colour = $parameters->{'non_can_score_colour'} || $colour if $can_type && length $can_type > 3 && substr('non canonical', 0, length $can_type) eq $can_type;
-    }
-    
-    $x     = $start - 1;
-    $width = $end - $start + 1;
-    
-    foreach ([ $score, $this_colour ], $min_score ? [ $min_score, 'steelblue' ] : ()) {
-      $height = ($max_score ? min($_->[0], $max_score) : $_->[0]) * $pix_per_score;
-      
-      $self->push($self->Rect({
-        y         => $zero - max($height, 0),
-        height    => $points ? 0 : abs $height,
-        x         => $x,
-        width     => $width,
-        absolutey => 1,
-        colour    => $_->[1],
-        title     => $parameters->{'no_titles'} ? undef : sprintf('%.2f', $_->[0]),
-        href      => $href,
-      }));
-    }
-  }
-
-  return 1;
-} 
-
-sub draw_wiggle_points_as_line {
-  my ($self, $features, $slice, $parameters, $top_offset, $pix_per_score, $colour, $zero_offset) = @_;
-  my $slice          = $self->{'container'};
-  my $vclen          = $slice->length; 
-  my $im_width       = $self->{'config'}->image_width;
-  my $window_size    = ref $features->[0] eq 'HASH' ? 10 : $features->[0]->window_size;
-     $features       = [ sort { $a->start <=> $b->start } @$features ] if $window_size == 0;
-  my $previous_f     = $features->[0]; 
-  my $previous_x     = ($previous_f->{'end'} + $previous_f->{'start'}) / 2;
-  my $previous_score = $previous_f->{'score'};
-
-  if ($window_size == 0) {
-    $previous_score = $previous_f->scores->[0];
-    $previous_x     = ($previous_f->end + $previous_f->start) / 2;
-  }
-  
-  my $previous_y = $previous_score < 0 ? 0 : -$previous_score * $pix_per_score;
-     $previous_y = $top_offset + $zero_offset + $previous_y;
-
-  for (my $i = 1; $i <= @$features; $i++) {    
-    my $f             = $features->[$i];
-    my $current_x     = ($f->{'end'} + $f->{'start'}) / 2; 
-    my $current_score = $f->{'score'}; 
-    
-    if ($window_size == 0) {
-      next if ref $f eq 'HASH';
-      
-      $current_score = $f->scores->[0];
-      $current_x     = ($f->end + $f->start) / 2; 
-    }
-    
-    my $current_y = $current_score < 0 ? 0 : -$current_score * $pix_per_score;
-    my $width     = 1 - (($current_x - $previous_x) + 1); 
-    
-    next if $width >= 1;
-    
-    my $y_coord = $top_offset + $zero_offset + $current_y;
-    my $height  = 1 - ($y_coord - $previous_y);    
-
-    next unless $current_x <= $vclen; 
-    
-    $self->push($self->Line({
-      x         => $current_x,
-      y         => $y_coord,
-      width     => $width,
-      height    => $height,
-      colour    => $colour,
-      absolutey => 1,
-    }));
-  
-    $previous_x     = $current_x;
-    $previous_y     = $y_coord;
-    $previous_f     = $f;
-    $previous_score = $current_score;  
-  }
-}
-
-sub draw_track_name {
-  ### Predicted features
-  ### Draws the name of the predicted features track
-  ### Arg1: arrayref of Feature objects
-  ### Arg2: colour of the track
-  ### Returns 1
-
-  my ($self, $name, $colour, $x_offset, $y_offset, $no_offset) = @_; 
-  my $x  = $x_offset || 1;  
-  my $y  = $self->_offset; 
-     $y += $y_offset if $y_offset;
-     
-  my %font_details = $self->get_font_details('innertext', 1); 
-  my @res_analysis = $self->get_text_width(0, $name, '', %font_details);
-
-  $self->push($self->Text({
-    x         => $x,
-    y         => $y,
-    text      => $name,
-    height    => $res_analysis[3],
-    width     => $res_analysis[2],
-    halign    => 'left',
-    valign    => 'bottom',
-    colour    => $colour,
-    absolutey => 1,
-    absolutex => 1,
-    %font_details,
-  }));
-
-  $self->_offset($res_analysis[3]) unless $no_offset;
-  
-  return 1;
-}
-
-sub display_no_data_error {
-  my ($self, $error_string) = @_;
-  my $height = $self->errorTrack($error_string, 0, $self->_offset);
-  $self->_offset($height + 4); 
-}
-
-sub draw_space_glyph {
-  ### Draws a an empty glyph as a spacer
-  ### Arg1 : (optional) integer for space height,
-  ### Returns 1
-
-  my ($self, $space) = @_;
-  $space ||= 9;
-
-  $self->push($self->Space({
-    height    => $space,
-    width     => 1,
-    y         => $self->_offset,
-    x         => 0,
-    absolutey => 1,  # puts in pix rather than bp
-    absolutex => 1,
-  }));
-  
-  $self->_offset($space);
-  
-  return 1;
-}
-
-sub _offset {
-  ### Arg1 : (optional) number to add to offset
-  ### Description: Getter/setter for offset
-  ### Returns : integer
-
-  my ($self, $offset) = @_;
-  $self->{'offset'} += $offset if $offset;
-  return $self->{'offset'} || 0;
 }
 
 1;
