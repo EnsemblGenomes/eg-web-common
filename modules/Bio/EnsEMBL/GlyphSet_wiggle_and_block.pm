@@ -136,7 +136,7 @@ sub draw_gradient {
     %font,
   })); 
 
-  $y_offset += $text_height;
+  $y_offset += $text_height + 2;
 
   # features
 
@@ -166,8 +166,8 @@ sub draw_gradient {
       width  => 0,
       height => $h,
       href  => '',
-      title => sprintf "%.${decimal_places}f", $f->{score},
-      #title => $f->{score} . " | " . $gradient_function->($f->{score}) . " | " . $grade_from_score->($f->{score}),
+      #title => sprintf "%.${decimal_places}f", $f->{score},
+      title => $f->{score} . " | " . $gradient_function->($f->{score}) . " | " . $grade_from_score->($f->{score}),
       class => 'group',
     });
 
@@ -178,7 +178,6 @@ sub draw_gradient {
       height       => $h,
       colour       => $colour,
       label_colour => 'black',
-      #absolutey    => 1,
     }));
     
     $composite->y( $y_offset + ($row * ($h + 1)) );
@@ -240,7 +239,7 @@ sub draw_gradient {
     }
   }
 
-  # caption 
+  # messages 
 
   $self->errorTrack(sprintf q{No features from '%s' in this region}, $caption) unless $features_drawn || $self->{'no_empty_track_message'} || $self->{'config'}->get_option('opt_empty_tracks') == 0;
   $self->errorTrack(sprintf(q{%s features from '%s' omitted}, $features_bumped, $caption), undef, $y_offset) if $self->get_parameter('opt_show_bumped') && $features_bumped;
@@ -353,7 +352,28 @@ sub draw_wiggle_plot {
     
     $self->_offset($y_offset);
   }
-  
+
+## EG - move caption to top
+  # Add line of text
+  $self->push($self->Text({
+    text      => $label,
+    width     => [ $self->get_text_width(0, $label, '', %font) ]->[2],
+    halign    => 'left',
+    colour    => 'black',
+    y         => 0,
+    height    => $textheight,
+    x         => 1,
+    absolutey => 1,
+    absolutex => 1,
+    %font,
+  })); 
+
+  if (!$labels) { # only change offset if not already done for gutter label
+    $top_offset += $textheight;
+    $self->_offset($textheight);
+  }
+##
+
   # Draw max and min score
   if ($parameters->{'axis_label'} ne 'off') {
     my $height        = [ $self->get_text_width(0, 1, '', %font) ]->[3];
@@ -363,7 +383,7 @@ sub draw_wiggle_plot {
     $pix_per_score = $bottom_offset / (($max_score - ($min_score < 0 ? $min_score : 0)) || 1);
     $zero_offset   = $max_score * $pix_per_score;
     
-    foreach ([ $max_score, $top_offset ], [ $min_score, $top_offset+$zero_offset ]) {
+    foreach ([ $max_score, $top_offset ], [ $min_score, $top_offset + $bottom_offset ]) {
       my $text  = sprintf '%.2f', $_->[0];
       my $width = [ $self->get_text_width(0, $text, '', %font) ]->[2];
       
@@ -432,25 +452,7 @@ sub draw_wiggle_plot {
   } else {
     $self->draw_wiggle_points($features, $slice, $parameters, $top_offset, $pix_per_score, $colour, $zero_offset);  
   }
-  
-  # Add line of text
-  $self->push($self->Text({
-    text      => $label,
-    width     => [ $self->get_text_width(0, $label, '', %font) ]->[2],
-    halign    => 'left',
-## EG    
-    colour    => 'black',
-##    
-    y         => $bottom_offset,
-    height    => $textheight,
-    x         => 1,
-    absolutey => 1,
-    absolutex => 1,
-    %font,
-  })); 
-  
-  $self->_offset($row_height + $textheight);
-  
+    
   return 1;
 }
 
