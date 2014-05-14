@@ -146,46 +146,7 @@ sub features {
   return %results;
 }
 
-## pval
-
 sub render_gradient {
-  my $self = shift;
-
-  my %data = $self->features;
-  
-  return 0 unless keys %data;
-  
-  foreach my $key ($self->sort_features_by_priority(%data)) {
-    my ($features, $config)     = @{$data{$key}};
-    
-    my $log3_curve = sub {
-      my $score = shift;
-      return 1 if $score == 0;
-      return 0 if $score == 1;
-      return ( log(1 / $score) / log(3) ) / 10;
-    };
-
-    my $log2_curve = sub {
-      my $score = shift;
-      return 1 if $score == 0;
-      return 0 if $score == 1;
-      return ( log(1 / $score) / log(2) ) / 10;
-    };
-
-    $self->draw_gradient($features, { 
-      min_score         => 0,
-      max_score         => 1,
-      key_labels        => [ 0, 0.05, 1 ],
-      gradient_function => $log2_curve,
-      decimal_places    => 5,
-      caption           => $config->{'description'},
-    });
-  }
-}
-
-## gradient
-
-sub render_gradientX {
   my $self = shift;
 
   my %data = $self->features;
@@ -203,10 +164,30 @@ sub render_gradientX {
       min_score => $min_score,
       max_score => $max_score,
       caption   => $config->{'description'},
+      no_bump   => 1
     });
   }
 }
 
-##
+sub render_pvalue {
+  my $self = shift;
+
+  my %data = $self->features;
+  
+  return 0 unless keys %data;
+  
+  foreach my $key ($self->sort_features_by_priority(%data)) {
+    my ($features, $config)     = @{$data{$key}};
+
+    $self->draw_gradient($features, { 
+      min_score      => 0,
+      max_score      => 1,
+      key_labels     => [ 0, 0.05, 1 ],
+      transform      => 'log2',
+      decimal_places => 5,
+      caption        => $config->{'description'},
+    });
+  }
+}
 
 1;

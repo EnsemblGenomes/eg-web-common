@@ -80,29 +80,41 @@ sub min_max_score {
 sub draw_gradient {
   my ($self, $features, $parameters) = @_; 
 
+  # pre-defined transform functions
+
+  my %transforms = (
+    default => sub { return $_[0] },
+    log2 => sub {
+      my $score = shift;
+      return 1 if $score == 0;
+      return 0 if $score == 1;
+      return ( log(1 / $score) / log(2) ) / 10;
+    }
+  );
+
   # params
 
-  my $max_score         = $parameters->{max_score} || 1000;
-  my $min_score         = $parameters->{min_score} || 0;
-  my @gradient_colours  = @{ $parameters->{gradient_colours} || [qw(white red)] };
-  my $gradient_function = $parameters->{gradient_function} || sub { return $_[0] }; # score to gradient mapping 
-  my $bump              = !$parameters->{no_bump};
-  my $key_labels        = $parameters->{key_labels} || [$min_score, $max_score];
-  my $decimal_places    = $parameters->{decimal_places} || 2;
-  my $caption           = $parameters->{caption} || $self->my_config('name');
+  my $max_score        = $parameters->{max_score} || 1000;
+  my $min_score        = $parameters->{min_score} || 0;
+  my @gradient_colours = @{ $parameters->{gradient_colours} || [qw(white red)] };
+  my $transform        = $transforms{ $parameters->{transform} || 'default' };
+  my $bump             = !$parameters->{no_bump};
+  my $key_labels       = $parameters->{key_labels} || [$min_score, $max_score];
+  my $decimal_places   = $parameters->{decimal_places} || 2;
+  my $caption          = $parameters->{caption} || $self->my_config('name');
   
   # create gradient 
 
-  my $colour_grades      = 20;
-  my @gradient           = $self->{config}->colourmap->build_linear_gradient($colour_grades, \@gradient_colours);
-  my $gradient_min_score = min($gradient_function->($min_score), $gradient_function->($max_score));
-  my $gradient_max_score = max($gradient_function->($min_score), $gradient_function->($max_score));
-  my $score_per_grade    = ($gradient_max_score - $gradient_min_score) / $colour_grades;
+  my $colour_grades       = 20;
+  my @gradient            = $self->{config}->colourmap->build_linear_gradient($colour_grades, \@gradient_colours);
+  my $transform_min_score = min($transform->($min_score), $transform->($max_score));
+  my $transform_max_score = max($transform->($min_score), $transform->($max_score));
+  my $score_per_grade     = ($transform_max_score - $transform_min_score) / $colour_grades;
   
   my $grade_from_score = sub {
     my $score = shift;
-    my $gradient_score = min( max( $gradient_function->($score), $gradient_min_score ), $gradient_max_score );
-    my $grade = $gradient_score >= $gradient_max_score ? $colour_grades - 1 : int(($gradient_score - $gradient_min_score) / $score_per_grade);    
+    my $gradient_score = min( max( $transform->($score), $transform_min_score ), $transform_max_score );
+    my $grade = $gradient_score >= $transform_max_score ? $colour_grades - 1 : int(($gradient_score - $transform_min_score) / $score_per_grade);    
     return $grade
   };
 
@@ -166,8 +178,8 @@ sub draw_gradient {
       width  => 0,
       height => $h,
       href  => '',
-      #title => sprintf "%.${decimal_places}f", $f->{score},
-      title => $f->{score} . " | " . $gradient_function->($f->{score}) . " | " . $grade_from_score->($f->{score}),
+      title => sprintf "%.${decimal_places}f", $f->{score},
+      #title => $f->{score} . " | " . $transform->($f->{score}) . " | " . $grade_from_score->($f->{score}),
       class => 'group',
     });
 
@@ -215,7 +227,7 @@ sub draw_gradient {
 
       if (defined $grade_label->{$i-1}) {
         
-        my $label = $grade_label->{$i-1} || 'O';
+        my $label = $grade_label->{$i-1};
         $label = sprintf '%.2f', $grade_label->{$i-1} if $label > int($label);
 
         my (undef, undef, $text_width, $text_height) = $self->get_text_width(0, $label || 'X', '', %font);

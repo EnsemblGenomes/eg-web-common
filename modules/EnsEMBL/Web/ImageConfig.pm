@@ -28,6 +28,7 @@ sub _add_bigwig_track {
     'tiling',  'Wiggle plot',
 ## EG    
     'gradient', 'Gradient',
+    'pvalue',   'P-value',
 ##    
   ];
  
@@ -613,7 +614,7 @@ sub _user_track_settings {
   if ($style =~ /^(wiggle|WIG)$/) {
     $strand         = 'r';
 ## EG
-    @user_renderers = ('off', 'Off', 'tiling', 'Wiggle plot', 'gradient', 'Gradient');
+    @user_renderers = ('off', 'Off', 'tiling', 'Wiggle plot', 'gradient', 'Gradient', 'pvalue', 'P-value');
 ##
   } else {
     $strand         = uc($format) eq 'VEP_INPUT' ? 'f' : 'b'; 

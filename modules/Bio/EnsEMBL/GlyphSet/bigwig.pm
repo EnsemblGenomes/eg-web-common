@@ -100,8 +100,6 @@ sub draw_features {
   return 0;
 }
 
-## EG gradient
-
 sub render_gradient {
   my $self = shift;
   
@@ -117,9 +115,22 @@ sub render_gradient {
     gradient_colours => $self->species_defs->GRADIENT_COLOURS || [qw(yellow green blue)],
     no_bump          => 1,
   });
-
 }
 
-##
+sub render_pvalue {
+  my $self = shift;
+  
+  my $slice    = $self->{'container'};
+  my $max_bins = min($self->{'config'}->image_width, $slice->length);
+  my $features = $self->wiggle_features($max_bins);
+
+  $self->draw_gradient($features, { 
+    min_score      => 0,
+    max_score      => 1,
+    key_labels     => [ 0, 0.05, 1 ],
+    transform      => 'log2',
+    decimal_places => 5,
+  });
+}
 
 1;
