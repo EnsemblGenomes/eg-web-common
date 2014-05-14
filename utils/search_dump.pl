@@ -255,7 +255,7 @@ sub dumpGene {
 
   my ( $dataset, $conf ) = @_;
 
-  foreach my $DB (qw(otherfeatures)) {
+  foreach my $DB (qw(core otherfeatures)) {
     my $SNPDB     = $novariation ? undef : eval { $conf->{variation}->{$release} };
     my $FUNCGENDB = eval { $conf->{funcgen}->{$release} };
     my $DBNAME    = $conf->{$DB}->{$release} or warn "$dataset $DB $release: no database not found";

@@ -41,6 +41,9 @@ use Getopt::Long;
 use JSON;
 use List::MoreUtils qw /first_index any/;
 use HTML::Entities qw(encode_entities);
+use lib "$LibDirs::SERVERROOT/ensemblgenomes-api/modules";
+use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
+
 
 
 use vars qw( $SERVERROOT $PRE $PLUGIN_ROOT $SCRIPT_ROOT $DEBUG $FUDGE $NOINTERPRO $NOSUMMARY $help $info @user_spp $allgenetypes $coordsys $list $pan_comp_species $ena $nogenebuild
@@ -907,7 +910,7 @@ sub render_all_species_page {
   my ($valid_species) = @_;
 
   my $sitename = $SD->SITE_NAME;
-  my $species_resources = get_resources();
+  my $species_resources = get_resources($valid_species);
 
   # taxon order:
   my $species_info = {};
@@ -1059,13 +1062,11 @@ sub render_all_species_page {
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has a variation database">V</span>)
             if (exists $$species_resources[$index]->{has_variations} && $$species_resources[$index]->{has_variations} == 1);
 
-          my $compara = $$species_resources[$index]->{compara};
-          my $is_pan_compara = any { (exists $_->{is_pan_compara} && $_->{is_pan_compara} == 1) } @$compara;
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Is in pan-taxonomic compara">P</span>)
-              if $is_pan_compara;
+              if (exists $$species_resources[$index]->{has_pan_compara} && $$species_resources[$index]->{has_pan_compara} ==1);
 
-          my $is_compara = any { (exists$_->{is_dna_compara} && $_->{is_dna_compara}==1 ) } @$compara;
-          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has whole genome DNA alignments">G</span>) if $is_compara;
+          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has whole genome DNA alignments">G</span>) 
+            if (exists $$species_resources[$index]->{has_dna_compara} && $$species_resources[$index]->{has_dna_compara} ==1);
 
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has other alignments">A</span>) 
               if (exists $$species_resources[$index]->{has_other_alignments} && $$species_resources[$index]->{has_other_alignments}==1);
@@ -1144,16 +1145,33 @@ sub render_all_species_page {
 }
 
 sub get_resources {
-  open FILE, "<".$SiteDefs::ENSEMBL_SERVERROOT."/eg-web-common/htdocs/species_metadata.json";
-  my $file_contents = do { local $/; <FILE> };
-  close FILE;
-  
-  my $data;
+  my $valid_species = shift;
 
-  eval { $data = from_json($file_contents ); };
-  
-#  return $data->{genome} unless $@;
- return $data unless $@;
+  my $sitename = $SD->SITE_NAME;
+  $sitename =~ s/\s//g;
+
+  my $dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(
+#    -USER=>'anonymous',
+#    -PORT=>4157,
+#    -HOST=>'mysql.ebi.ac.uk',
+#    -DBNAME=>'ensemblgenomes_info_22'
+    -USER=>$SD->DATABASE_DBUSER,
+    -PORT=>$SD->DATABASE_HOST_PORT,
+    -HOST=>$SD->DATABASE_HOST,
+    -DBNAME=>'ensemblgenomes_info_22'
+  );
+  my $gdba = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC=>$dbc);
+
+  my $data;  
+  for my $genome (@{$gdba->fetch_all_by_division($sitename)}) {
+    push @$data, { 
+      species => $genome->species,
+      has_pan_compara => $genome->has_pan_compara,
+      has_other_alignments => $genome->has_other_alignments,
+      has_dna_compara => $genome->has_genome_alignments,
+      has_variations=>$genome->has_variations};
+  }
+  return $data unless $@;
 }
 
 
