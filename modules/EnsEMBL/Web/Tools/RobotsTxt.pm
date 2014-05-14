@@ -61,13 +61,12 @@ sub create {
   print O join "\n", sort keys %ignore;
   close O;
 
-  my $server_root = $sd->ENSEMBL_SERVERROOT;
   unless(open FH, ">$root/robots.txt") {
     warn _box("UNABLE TO CREATE ROBOTS.TXT FILE IN $root/");
     return;
   }
 
-  if(-e "$server_root/htdocs/sitemaps/sitemap-index.xml" and hostname =~ /(ves-oy|ves-pg)/) {
+  if(-e( $sd->ENSEMBL_WEBROOT . '/htdocs/sitemaps/sitemap-index.xml' )and hostname =~ /(ves-oy|ves-pg)/) {
 
     # If we have a sitemap we need a less-restrictive robots.txt, so
     # that the crawler can use the sitemap.
