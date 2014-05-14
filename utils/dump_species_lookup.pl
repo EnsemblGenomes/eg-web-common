@@ -15,8 +15,7 @@ foreach (qw( Fungi Metazoa Plants Protists )) {
   $genomes{$_->species} = $_ for @{ $gdba->fetch_all_by_division("Ensembl$_") };
 }
 
-$genomes{$_->species} = $_ for @{ $gdba->fetch_all_with_peptide_compara };
-$genomes{$_->species} = $_ for @{ $gdba->fetch_all_with_pan_compara };
+$genomes{$_->species} = $_ for @{ $gdba->fetch_all_with_compara };
 
 my @sorted = sort {$a->division cmp $b->division || $a->species cmp $b->species} values %genomes;
 
@@ -29,7 +28,7 @@ say '[ENSEMBL_SPECIES_SITE]';
 say sprintf('%s = %s', $_->species, fudge_division($_->division)) for @sorted;
 
 
-# Fudge to convert EnsemblBacteria -> bacteria 
+# Fudge to convert EnsemblBacteria -> bacteria etc.
 sub fudge_division {
   my $division = shift;
   return 'ensembl' if $division eq 'Ensembl';
