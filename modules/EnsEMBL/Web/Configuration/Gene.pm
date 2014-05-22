@@ -235,6 +235,7 @@ sub modify_tree {
   $compara_menu->after($pancompara_menu);
   
   # S4 DAS
+  $self->delete_node('Expression');
   foreach my $logic_name (qw(S4_EXPRESSION S4_LITERATURE S4_PUBMED)) {
     if (my $source = $hub->get_das_by_logic_name($logic_name)) {
       $compara_menu->before($self->create_node("das/$logic_name", $logic_name,
