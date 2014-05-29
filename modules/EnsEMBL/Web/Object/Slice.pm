@@ -63,4 +63,53 @@ sub munge_gaps {
   return undef;
 }
 
+# Sequence Align View ---------------------------------------------------
+
+sub get_individuals {
+  ### SequenceAlignView
+  ### Arg (optional) : type string
+  ###  - "default"   : returns samples checked by default
+  ###  - "reseq"     : returns all resequencing sames
+  ###  - "reference" : returns the reference (golden path name)
+  ###  - "display"   : returns all samples (for dropdown list) with default ones first
+  ### Description    : returns selected samples (by default)
+  ### Returns list
+
+  my $self    = shift;
+  my $options = shift;
+  my $individual_adaptor;
+  
+  eval {
+   $individual_adaptor = $self->variation_adaptor->get_IndividualAdaptor;
+  };
+  
+  if ($@) {
+    warn "Error getting individual adaptor off variation adaptor " . $self->variation_adaptor;
+    return ();
+  }
+  
+  if ($options eq 'default') {
+    return sort  @{$individual_adaptor->get_default_strains};
+  } elsif ($options eq 'reseq') {
+## EG - fetch_all_strains_with_coverage was dropped for 75, but will be back for 76!
+#    return @{$individual_adaptor->fetch_all_strains_with_coverage};
+    return @{$individual_adaptor->fetch_all_strains};
+##
+  } elsif ($options eq 'reference') {
+    return $individual_adaptor->get_reference_strain_name || $self->species;
+  }
+
+  my %default_pops;
+  map { $default_pops{$_} = 1 } @{$individual_adaptor->get_default_strains};
+  my %db_pops;
+  
+  foreach (sort  @{$individual_adaptor->get_display_strains}) {
+    next if $default_pops{$_};
+    $db_pops{$_} = 1;
+  }
+
+  return (sort keys %default_pops), (sort keys %db_pops) if $options eq 'display'; # return list of pops with default first
+  return ();
+}
+
 1;
