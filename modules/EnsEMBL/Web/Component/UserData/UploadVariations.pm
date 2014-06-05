@@ -55,22 +55,22 @@ sub content {
       alleles, and predicts the effects of each of these on overlapping
       transcripts and regulatory regions annotated in Ensembl. The tool accepts
       substitutions, insertions and deletions as input, see <a
-      href="/info/docs/tools/vep/vep_formats.html" target="_blank">data
+      href="http://www.ensembl.org/info/docs/tools/vep/vep_formats.html" target="_blank">data
       formats</a>.</p>
       
       <p>Upload is limited to $variation_limit variants; lines after the limit
       will be ignored. Users with more than $variation_limit variations can
       split files into smaller chunks, use the standalone <a
-      href="/info/docs/tools/vep/script/index.html"
+      href="http://www.ensembl.org/info/docs/tools/vep/script/index.html"
       target="_blank">perl script</a> or the <a
-      href="/info/docs/api/variation/variation_tutorial.html#Consequence"
+      href="http://www.ensembl.org/info/docs/api/variation/variation_tutorial.html#Consequence"
       target="_blank">variation API</a>. See also <a
-      href="/info/docs/tools/vep/index.html" target="_blank">full
+      href="http://www.ensembl.org/info/docs/tools/vep/index.html" target="_blank">full
       documentation</a></p>
       
       <p><b>NB:</b> Ensembl now by default uses Sequence Ontology terms to
       describe variation consequences. See <a
-      href="/info/genome/variation/predicted_data.html#consequences">this page</a>
+      href="http://www.ensembl.org/info/genome/variation/predicted_data.html#consequences">this page</a>
       for details</p>
   )});
   my $subheader = 'Input file';
@@ -87,7 +87,7 @@ sub content {
   $form->add_element('type' => 'SubHeader', 'value' => $subheader);
   
 ## EG - use species selector instead of simple dropdown
-   my $select = $form->add_element(
+  my $select = $form->add_element(
     'type'    => 'DropDown',
     'name'    => 'species',
     'label'   => "Species",
@@ -98,9 +98,13 @@ sub content {
   );
   $select->set_attribute('class', $select->get_attribute('class') . ' species-selector');
 ##
-  
-  my $example = qq(1  881907  881906  -/C  +
-5  140532  140532  T/C  +);
+
+## EG  
+#  my $example = qq(1  881907  881906  -/C  +
+#5  140532  140532  T/C  +);
+  my $example = '';
+##
+
 
   $form->add_element( type => 'Hidden', name => 'variation_limit', 'value' => $variation_limit);
   $form->add_element( type => 'String', name => 'name', label => 'Name for this data (optional)' );
