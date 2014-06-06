@@ -196,17 +196,25 @@ sub content {
   
   my $table = $self->new_table($columns, \@rows, { data_table => 1, sorting => [ 'Species asc', 'Type asc' ], id => 'homoeologues' });
   
-  if ($alignview && keys %homoeologue_list) {
-    # PREpend
-    $html = sprintf(q{
-      <p>
-        <a href="%s">View protein alignments of all homoeologues</a> &nbsp;|&nbsp;
-        <a href="%s">View genomic alignments of all homoeologues</a>
-      </p>}, 
-      $hub->url({ action => 'Compara_Homoeolog', function => 'Alignment' . ($cdb =~ /pan/ ? '_pan_compara' : ''), }),
+  if ($alignview and keys %homoeologue_list) {
+    $html .= '<p>';
+    $html .= sprintf(
+      '<a href="%s">View protein alignments of all homoeologues</a>', 
+      $hub->url({ action => 'Compara_Homoeolog', function => 'Alignment' . ($cdb =~ /pan/ ? '_pan_compara' : ''), })   
+    );
+    $html .= sprintf(
+      ' &nbsp;|&nbsp; <a href="%s">View genomic alignments of all homoeologues</a>', 
       $hub->url({'type' => 'Location', 'action' => 'MultiPolyploid'})
-    ).$html;
-    
+    );
+    $html .= sprintf(
+      ' &nbsp;|&nbsp; <a href="%s" target="_blank">Download all protein sequences</a>', 
+      $hub->url({ action => 'Compara_Homoeolog', function => 'PepSequence', _format => 'Text' }) 
+    ) if $cdb !~ /pan/;
+    $html .= sprintf(
+      ' &nbsp;|&nbsp; <a href="%s" target="_blank">Download all DNA sequences</a>', 
+      $hub->url({ action => 'Compara_Homoeolog', function => 'PepSequence', _format => 'Text', seq => 'cds' }) 
+    ) if $cdb !~ /pan/;
+    $html .= '</p>';
   }
   
   $html .= $table->render;

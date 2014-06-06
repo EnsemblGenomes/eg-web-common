@@ -25,6 +25,7 @@ use strict;
 use Bio::AlignIO;
 
 use EnsEMBL::Web::Constants;
+use base qw(EnsEMBL::Web::Component::Gene);
 
 sub content {
   my $self         = shift;
@@ -45,36 +46,7 @@ sub content {
     $homologies = $database->get_HomologyAdaptor->fetch_all_by_Member($qm);
   };
  
-  my ($match_type, %desc_mapping);
-  
-  if ($hub->action eq 'Compara_Ortholog') {
-    $match_type = 'Orthologue';
-    %desc_mapping = (
-      ortholog_one2one          => '1 to 1 orthologue',
-      apparent_ortholog_one2one => '1 to 1 orthologue (apparent)',
-      ortholog_one2many         => '1 to many orthologue',
-      ortholog_many2many        => 'many to many orthologue',
-      possible_ortholog         => 'possible orthologue',
-    );
-  } 
-## EG  
-  elsif ($hub->action eq 'Compara_Homoeolog') {
-    $match_type = 'Homoeologue';
-    %desc_mapping = (
-      homoeolog_one2one         => '1-to-1',
-      homoeolog_one2many        => '1-to-many',
-      homoeolog_many2many       => 'many-to-many',
-    );
-  } 
-##  
-  else {
-    $match_type = 'Paralogue';
-    %desc_mapping = (
-      within_species_paralog    => 'paralogue (within species)',
-      putative_gene_split       => 'putative gene split',
-      contiguous_gene_split     => 'contiguous gene split',
-    );
-  }
+  my ($match_type, $desc_mapping) = $self->homolog_type;
  
   my $homology_types = EnsEMBL::Web::Constants::HOMOLOGY_TYPES;
   
@@ -82,7 +54,7 @@ sub content {
 
     ## filter out non-required types
     my $homology_desc  = $homology_types->{$homology->{'_description'}} || $homology->{'_description'};
-    next unless $desc_mapping{$homology_desc};      
+    next unless $desc_mapping->{$homology_desc};      
 
     my $sa;
     
@@ -142,7 +114,7 @@ sub content {
       
       next unless $flag;
       
-      my $homology_desc_mapped = $desc_mapping{$homology_desc} ? $desc_mapping{$homology_desc} : 
+      my $homology_desc_mapped = $desc_mapping->{$homology_desc} ? $desc_mapping->{$homology_desc} : 
                                  $homology_desc ? $homology_desc : 'no description';
 
       $html .= "<h2>$match_type type: $homology_desc_mapped</h2>";

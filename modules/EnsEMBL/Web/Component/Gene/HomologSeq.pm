@@ -51,11 +51,19 @@ sub content {
     $homologies = $database->get_HomologyAdaptor->fetch_all_by_Member($qm);
   };
 
+  my ($match_type, $desc_mapping) = $self->homolog_type;
+   
+  my $homology_types = EnsEMBL::Web::Constants::HOMOLOGY_TYPES;
+
   my $members = {};
 
   foreach my $homology (@{$homologies}) {
     
     my $sa;
+
+    ## filter out non-required types
+    my $homology_desc  = $homology_types->{$homology->{'_description'}} || $homology->{'_description'};
+    next unless $desc_mapping->{$homology_desc};    
 
     eval {
       $sa = $homology->get_SimpleAlign($cds ? (-SEQ_TYPE => 'cds') : ());

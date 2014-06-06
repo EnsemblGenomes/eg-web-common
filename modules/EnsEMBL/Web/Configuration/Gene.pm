@@ -200,10 +200,12 @@ sub modify_tree {
       'no_menu_entry' => 1 }
   ));
 
-  $ol_node->append($self->create_subnode('Compara_Ortholog/PepSequence', 'Orthologue Sequences',
-    [qw( alignment EnsEMBL::Web::Component::Gene::HomologSeq )],
-					 { 'availability'  => 'gene database:compara core has_orthologs', 'no_menu_entry' => 1 }
-					 ));
+  for (qw(Ortholog Paralog Homoeolog)) {
+    $ol_node->append($self->create_subnode("Compara_$_/PepSequence", "${_}ue Sequences",
+      [qw( alignment EnsEMBL::Web::Component::Gene::HomologSeq )],
+  	  { 'availability'  => 'gene database:compara core has_' . lc($_) . 's', 'no_menu_entry' => 1 }
+  	));
+  }
 
   $pancompara_menu->append($ol_node);
 
