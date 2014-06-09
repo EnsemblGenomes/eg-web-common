@@ -105,17 +105,6 @@ sub _sort_similarity_links {
   my @mapped_ontologies = @{$hub->species_defs->SPECIES_ONTOLOGIES || ['GO']};
   my $ontologies = join '|', @mapped_ontologies, 'goslim_goa';
 
-  my $ena_present = 0; # Flag to identify whether ENA links are present
-  foreach my $type (sort {
-    $b->priority        <=> $a->priority        ||
-    $a->db_display_name cmp $b->db_display_name ||
-    $a->display_id      cmp $b->display_id
-  } @similarity_links) {
-    if ($type->database eq 'ENA_FEATURE_GENE' || $type->database eq 'ENA_FEATURE_TRANSCRIPT' || $type->database eq 'ENA_FEATURE_PROTEIN') {
-      $ena_present = 1;
-    }
-  }
-
   foreach my $type (sort {
     $b->priority        <=> $a->priority        ||
     $a->db_display_name cmp $b->db_display_name ||
@@ -238,7 +227,7 @@ sub _sort_similarity_links {
         id     => $link_name,
         ftype  => $link_type
       });
-      $text .= qq{  [<a href="$k_url">view all locations</a>]} unless ($xref_type =~ /^ALT/ || $ena_present == 1);
+      $text .= qq{  [<a href="$k_url">view all locations</a>]} unless ($xref_type =~ /^ALT/ || $externalDB eq 'ENA_FEATURE_GENE' || $externalDB eq 'ENA_FEATURE_TRANSCRIPT' || $externalDB eq 'ENA_FEATURE_PROTEIN');
     }
 
     $text .= '</div>' if $join_links;
