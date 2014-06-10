@@ -48,8 +48,11 @@ sub intra_species_alignments {
     my $mlss_adaptor                = $compara_db->get_adaptor('MethodLinkSpeciesSet');
     my $dnafrag_adaptor             = $compara_db->get_adaptor('DnaFrag');
        
-    my $genomedb       = $genomedb_adaptor->fetch_by_registry_name($species);
-    my $source_dnafrag = $dnafrag_adaptor->fetch_by_GenomeDB_and_name($genomedb, $seq_region);
+    my ($genomedb, $source_dnafrag);
+    eval {  
+      $genomedb = $genomedb_adaptor->fetch_by_registry_name($species);
+      $source_dnafrag = $dnafrag_adaptor->fetch_by_GenomeDB_and_name($genomedb, $seq_region);
+    }
     return [] unless $source_dnafrag;
  
     my @comparisons;
