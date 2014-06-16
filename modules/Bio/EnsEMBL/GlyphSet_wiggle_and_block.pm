@@ -187,7 +187,7 @@ sub draw_gradient {
       x            => $start - 1,
       y            => 0,
       width        => $end - $start + 1,
-      height       => $h,
+      height       => $h-1,
       colour       => $colour,
       label_colour => 'black',
     }));

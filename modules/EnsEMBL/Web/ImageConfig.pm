@@ -371,7 +371,7 @@ sub _add_bed_track {
   my $source = $args{'source'};
    my $description = $source->{'description'} || 
      sprintf('Data retrieved from an external webserver. This data and comes from URL: %s', encode_entities($source->{'source_url'}));
-  $self->_add_flat_file_track($menu, 'url', 'url_'.$source->{'source_name'}, $source->{'source_name'},
+  $self->_add_flat_file_track($menu, 'url', $args{'key'}, $source->{'source_name'},
      $description,
      url     => $source->{'source_url'},
      format  => $source->{'format'},
@@ -385,7 +385,7 @@ sub _add_bedgraph_track {
    my $source = $args{'source'};
    my $description = $source->{'description'} || 
      sprintf('Data retrieved from an external webserver. This data and comes from URL: %s', encode_entities($source->{'source_url'}));
-   $self->_add_flat_file_track($menu, 'url', 'url_'.$source->{'source_name'}, $source->{'source_name'},
+   $self->_add_flat_file_track($menu, 'url', $args{'key'}, $source->{'source_name'},
       $description,
       url     => $source->{'source_url'},
       format  => 'BEDGRAPH',
@@ -393,7 +393,6 @@ sub _add_bedgraph_track {
       display => $source->{'display'} || 'tiling',
       description => $description
    );
-
 }
 
 sub load_user_tracks {
@@ -798,7 +797,6 @@ sub update_from_url {
             viewLimits => $viewLimits,
 ##
           );
-
           $self->update_track_renderer("url_$code", $renderer);
         }       
       } elsif ($type eq 'das') {

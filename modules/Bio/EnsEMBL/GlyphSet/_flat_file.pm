@@ -30,6 +30,38 @@ use Bio::EnsEMBL::Variation::Utils::Constants;
 
 use base qw(Bio::EnsEMBL::GlyphSet::_alignment Bio::EnsEMBL::GlyphSet_wiggle_and_block);
 
+sub draw_features {
+  my ($self, $wiggle) = @_; 
+  my %data = $self->features;
+  
+  return 0 unless keys %data;
+  
+  if ($wiggle) {
+    foreach my $key ($self->sort_features_by_priority(%data)) {
+      my ($features, $config)     = @{$data{$key}};
+      my $graph_type              = ($config->{'useScore'} && $config->{'useScore'} == 4) || ($config->{'graphType'} && $config->{'graphType'} eq 'points') ? 'points' : 'bar';
+      my ($min_score, $max_score) = split ':', $config->{'viewLimits'};
+      
+      $min_score = $config->{'min_score'} unless $min_score;
+      $max_score = $config->{'max_score'} unless $max_score;
+
+      $self->draw_wiggle_plot($features, { 
+        min_score    => $min_score,
+        max_score    => $max_score, 
+        score_colour => $config->{'color'},
+        axis_colour  => 'black',
+## EG        
+        description  => $config->{'name'},
+##
+        graph_type   => $graph_type,
+        use_feature_colours => (lc($config->{'itemRgb'}||'') eq 'on'),
+      });
+    }
+  }
+  
+  return 1;
+}
+
 sub features {
   my $self         = shift;
   my $container    = $self->{'container'};
@@ -141,8 +173,14 @@ sub features {
     }
 
     $results{$key} = [$features, $T->{'config'}];
+
+## EG
+    if (my $description = $T->{'config'}->{'description'}) {
+      $self->append_hover_label_description( $description );
+    }
+##      
   }
-  
+
   return %results;
 }
 
@@ -163,7 +201,7 @@ sub render_gradient {
     $self->draw_gradient($features, { 
       min_score => $min_score,
       max_score => $max_score,
-      caption   => $config->{'description'},
+      caption   => $config->{'name'},
       no_bump   => 1
     });
   }
@@ -185,9 +223,28 @@ sub render_pvalue {
       key_labels     => [ 0, 0.05, 1 ],
       transform      => 'log2',
       decimal_places => 5,
-      caption        => $config->{'description'},
+      caption        => $config->{'name'},
     });
   }
 }
+
+## EG - really, really, really nasty hack to put the the track description into the hover
+##      label pop-up by making lots of assumptions about object internals
+
+sub append_hover_label_description {
+  my ($self, $description) = @_;
+  
+  my $species  = $self->{config}->{hub}->species;
+  my $track_id = $self->{my_config}->{id};
+  my $label_id = $species . '_' . $track_id;
+  
+  # add html markup for url links (regex from http://blog.mattheworiordan.com/post/13174566389/url-regular-expression-for-links-with-or-without-the)
+  my $url_regex   = qr/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/;
+  my $description = join ' ', map {$_ =~ $url_regex ? qq(<a href="$_">$_</a>") : $_ } split(/\s/, $description);
+
+  $self->{config}->{hover_labels}->{$label_id}->{desc} .= "<p>$description</p>";
+}
+
+##
 
 1;
