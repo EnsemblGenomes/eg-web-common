@@ -36,7 +36,7 @@ my ($sp, $site, $server) = @ARGV;
 
 # preconfigure this
 my $dir = "/nfs/public/rw/ensembl/ensembl-genomes/release-22/$site";
-my $dir = "/homes/jk/ensembl/master";
+my $dir = "/homes/jk/ensembl/branch_76";
 
 # sample species used to copy over a config file and to add new species
 # in the config files after these.
@@ -45,18 +45,17 @@ my %sample_species = (
         fungi    => 'Aspergillus_fumigatus',
         protists => 'Giardia_lamblia',
         metazoa  => 'Daphnia_pulex',
+        plants   => 'Oryza_meridionalis',
 );
 
 #ensembl-webcode/eg-web-ensembl-configs/
-my $file=  -e $dir.'/ensembl-webcode/eg-web-ensembl-configs/'.$server.'/conf/ini-files/MULTI.ini' ?
-        $dir.'/ensembl-webcode/eg-web-ensembl-configs/'.$server.'/conf/ini-files/MULTI.ini' :
+my $file=  -e $dir.'/ensembl-webcode/configs/'.$server.'/conf/ini-files/MULTI.ini' ?
+        $dir.'/ensembl-webcode/configs/'.$server.'/conf/ini-files/MULTI.ini' :
         $dir.'/ebi-plugins/'.$server.'/conf/ini-files/MULTI.ini';
 
 # cheking if database for a new species exists
 
 my $conf = Config::Tiny->read($file);
-use Data::Dumper;
-#print "conf=".Dumper($conf);
 
 my $dbh = DBI->connect('dbi:mysql:information_schema;host='
         .$conf->{DATABASE_WEBSITE}->{HOST}.';port='.$conf->{DATABASE_WEBSITE}->{PORT},
@@ -126,8 +125,8 @@ delete $conf->{general}->{ONTOLOGY_SUBSETS};                        # Delete a v
 # Saving config
 $conf->write($new_species_config_name);
 
-my $file2 =  -e $dir.'/ensembl-webcode/eg-web-ensembl-configs/eg-hx/conf/ini-files/DEFAULTS.ini' ?
-        $dir.'/ensembl-webcode/eg-web-ensembl-configs/eg-hx/conf/ini-files/DEFAULTS.ini' :
+my $file2 =  -e $dir.'/ensembl-webcode/configs/eg-hx/conf/ini-files/DEFAULTS.ini' ?
+        $dir.'/ensembl-webcode/configs/eg-hx/conf/ini-files/DEFAULTS.ini' :
         $dir.'/ebi-plugins/eg-hx/conf/ini-files/DEFAULTS.ini';
 
 $conf = Config::Tiny->read($file2);
