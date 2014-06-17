@@ -17,6 +17,7 @@ use DBI;
 use strict;
 use warnings;
 use Config::Tiny;
+use Data::Dumper;
 
 ############################################################################
 # Script can be used for fungi and protists.
