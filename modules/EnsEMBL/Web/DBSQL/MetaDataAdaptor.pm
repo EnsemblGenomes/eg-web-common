@@ -26,18 +26,20 @@ use Bio::EnsEMBL::DBSQL::DBConnection;
 use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
 
 sub new {
-  my ($class, $db_info) = @_;
+  my ($class, $args) = @_;
+
+  # use DATABASE_METADATA if passed a hub object
+  my $db = ref $args eq 'EnsEMBL::Web::Hub' ? $args->species_defs->multidb->{'DATABASE_METADATA'} : $args;
 
   my $self = {
-    NAME => $db_info->{NAME},
-    HOST => $db_info->{HOST},
-    PORT => $db_info->{PORT},
-    USER => $db_info->{USER},
-    PASS => $db_info->{PASS},
+    NAME => $db->{NAME},
+    HOST => $db->{HOST},
+    PORT => $db->{PORT},
+    USER => $db->{USER},
+    PASS => $db->{PASS},
   };
-  bless $self, $class;
-  
-  return $self;
+
+  return bless $self, $class;
 }
 
 sub db {
