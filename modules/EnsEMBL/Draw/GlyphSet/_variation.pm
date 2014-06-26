@@ -28,8 +28,8 @@ sub highlight {
   my %highlights;
   @highlights{$self->highlights} = (1);
 
-  if ($self->{'config'}->core_objects->{'variation'}){
-    my $var_id = $self->{'config'}->core_objects->{'variation'}->name;
+  if ($self->{'config'}->core_object->{'variation'}){
+    my $var_id = $self->{'config'}->core_object->{'variation'}->name;
     $var_id =~ s/rs//;  
     $highlights{$var_id} = 1;
   }
