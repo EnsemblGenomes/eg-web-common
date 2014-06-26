@@ -133,7 +133,7 @@ sub content {
     $short_tabs .= qq{<li class="$entry->{'class'} short_tab"$style[0]>$short_link</li>};
     $long_tabs  .= qq{<li class="$entry->{'class'} long_tab"$style[1]>$long_link</li>};
     
-    $self->active = $name if $entry->{'class'} =~ /\bactive\b/;
+    $self->active($name) if $entry->{'class'} =~ /\bactive\b/;
   }
   
   $content  = $short_tabs . $long_tabs;
