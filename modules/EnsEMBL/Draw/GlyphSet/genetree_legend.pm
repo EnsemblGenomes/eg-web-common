@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::genetree_legend;
+package EnsEMBL::Draw::GlyphSet::genetree_legend;
 
 use strict;
 

@@ -16,13 +16,13 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::bigbed;
+package EnsEMBL::Draw::GlyphSet::bigbed;
 
 use strict;
 use warnings;
 no warnings 'uninitialized';
 
-use base qw(Bio::EnsEMBL::GlyphSet::_alignment Bio::EnsEMBL::GlyphSet_wiggle_and_block);
+use base qw(EnsEMBL::Draw::GlyphSet::_alignment EnsEMBL::Draw::GlyphSet_wiggle_and_block);
 
 sub features {
   my ($self, $options) = @_;

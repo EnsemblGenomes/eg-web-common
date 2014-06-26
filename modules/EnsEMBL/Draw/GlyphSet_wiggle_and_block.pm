@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet_wiggle_and_block;
+package EnsEMBL::Draw::GlyphSet_wiggle_and_block;
 
 use strict;
 
@@ -76,7 +76,7 @@ sub min_max_score {
   return $min_score, $max_score;
 }
 
-# gradient drawing code was adapted from Bio::EnsEMBL::GlyphSet::_alignment::render_normal
+# gradient drawing code was adapted from EnsEMBL::Draw::GlyphSet::_alignment::render_normal
 sub draw_gradient {
   my ($self, $features, $parameters) = @_; 
 

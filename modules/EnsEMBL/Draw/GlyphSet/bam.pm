@@ -16,9 +16,9 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::bam;
+package EnsEMBL::Draw::GlyphSet::bam;
 use strict;
-use base qw(Bio::EnsEMBL::GlyphSet::sequence);
+use base qw(EnsEMBL::Draw::GlyphSet::sequence);
 
 # get the alignment features
 sub features {

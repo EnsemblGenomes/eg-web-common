@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::snp_fake;
+package EnsEMBL::Draw::GlyphSet::snp_fake;
 
 sub _init {
   my $self   = shift;

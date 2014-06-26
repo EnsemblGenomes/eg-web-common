@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::snp_join;
+package EnsEMBL::Draw::GlyphSet::snp_join;
 
 sub _init {
   my $self        = shift; 

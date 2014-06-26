@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::P_protdas;
+package EnsEMBL::Draw::GlyphSet::P_protdas;
 
 use strict;
 
@@ -26,7 +26,7 @@ use Bio::EnsEMBL::ExternalData::DAS::Stylesheet;
 use Bio::EnsEMBL::ExternalData::DAS::Feature;
 use HTML::Entities qw(encode_entities decode_entities);
 
-use base qw(Bio::EnsEMBL::GlyphSet);
+use base qw(EnsEMBL::Draw::GlyphSet);
 
 use List::MoreUtils qw{all};
 
@@ -153,7 +153,7 @@ sub _init {
   }
 }
 
-## The features sub is a direct copy of Bio::EnsEMBL::GlyphSet::_das::features 
+## The features sub is a direct copy of EnsEMBL::Draw::GlyphSet::_das::features 
 ## with the strand-specific stuff removed. The feature data returned is more 
 ## complex than we need for the simple renderer above, but it has been 
 ## preserved for future use.

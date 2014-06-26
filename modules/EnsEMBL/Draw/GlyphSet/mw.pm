@@ -16,10 +16,10 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::mw;
+package EnsEMBL::Draw::GlyphSet::mw;
 use strict;
 
-use base qw(Bio::EnsEMBL::GlyphSet);
+use base qw(EnsEMBL::Draw::GlyphSet);
 
 use Data::Dumper;
 

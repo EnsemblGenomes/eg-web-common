@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::_variation;
+package EnsEMBL::Draw::GlyphSet::_variation;
 
 sub highlight {
   my $self = shift; 

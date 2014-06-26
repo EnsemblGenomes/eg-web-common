@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet_transcript;
+package EnsEMBL::Draw::GlyphSet_transcript;
 
 use strict;
 

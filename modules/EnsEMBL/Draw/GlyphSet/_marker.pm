@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::_marker;
+package EnsEMBL::Draw::GlyphSet::_marker;
 
 ## This is here to fix https://www.ebi.ac.uk/panda/jira/browse/VB-2047
 ## I've sent a patch to Ensembl webteam - hopefully we can drop this plugin for E73

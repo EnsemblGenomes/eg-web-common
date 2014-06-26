@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::gsv_transcript;
+package EnsEMBL::Draw::GlyphSet::gsv_transcript;
 
 sub _init {
   my ($self) = @_; 

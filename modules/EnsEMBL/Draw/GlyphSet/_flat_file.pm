@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::_flat_file;
+package EnsEMBL::Draw::GlyphSet::_flat_file;
 
 use strict;
 
@@ -28,7 +28,7 @@ use EnsEMBL::Web::Tools::Misc;
 
 use Bio::EnsEMBL::Variation::Utils::Constants;
 
-use base qw(Bio::EnsEMBL::GlyphSet::_alignment Bio::EnsEMBL::GlyphSet_wiggle_and_block);
+use base qw(EnsEMBL::Draw::GlyphSet::_alignment EnsEMBL::Draw::GlyphSet_wiggle_and_block);
 
 sub draw_features {
   my ($self, $wiggle) = @_; 

@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::bigwig;
+package EnsEMBL::Draw::GlyphSet::bigwig;
 
 use strict;
 
@@ -24,7 +24,7 @@ use List::Util qw(min max);
 use Bio::EnsEMBL::SimpleFeature;
 use Bio::EnsEMBL::ExternalData::BigFile::BigWigAdaptor;
 
-use base qw(Bio::EnsEMBL::GlyphSet::_alignment  Bio::EnsEMBL::GlyphSet_wiggle_and_block);
+use base qw(EnsEMBL::Draw::GlyphSet::_alignment  EnsEMBL::Draw::GlyphSet_wiggle_and_block);
 
 # get the alignment features
 sub wiggle_features {

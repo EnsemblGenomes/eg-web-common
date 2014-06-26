@@ -16,12 +16,12 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::vcf;
+package EnsEMBL::Draw::GlyphSet::vcf;
 use strict;
 
-#use base qw(Bio::EnsEMBL::GlyphSet_simple);
+#use base qw(EnsEMBL::Draw::GlyphSet_simple);
 
-use base qw(Bio::EnsEMBL::GlyphSet::_variation);
+use base qw(EnsEMBL::Draw::GlyphSet::_variation);
 use Bio::EnsEMBL::ExternalData::VCF::VCFAdaptor;
 use Bio::EnsEMBL::Variation::OverlapConsequence;
 

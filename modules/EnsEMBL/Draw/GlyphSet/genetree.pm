@@ -16,11 +16,11 @@ limitations under the License.
 
 =cut
 
-package Bio::EnsEMBL::GlyphSet::genetree;
+package EnsEMBL::Draw::GlyphSet::genetree;
 
 use strict;
 
-use base qw(Bio::EnsEMBL::GlyphSet);
+use base qw(EnsEMBL::Draw::GlyphSet);
 
 sub fixed { 
   # ...No idea what this method is for...
