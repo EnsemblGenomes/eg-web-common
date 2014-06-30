@@ -81,8 +81,8 @@ sub content {
     $html .= sprintf '<h3>GeneTree%s</h3>%s', $link, $self->new_twocol(
       ['Number of genes',             scalar(@$leaves)                                                  ],
       ['Number of speciation nodes',  $self->get_num_nodes_with_tag($tree, 'node_type', 'speciation')   ],
-      ['Number of duplication',       $self->get_num_nodes_with_tag($tree, 'node_type', 'duplication')  ],
-      ['Number of ambiguous',         $self->get_num_nodes_with_tag($tree, 'node_type', 'dubious')      ],
+      ['Number of duplication nodes',       $self->get_num_nodes_with_tag($tree, 'node_type', 'duplication')  ],
+      ['Number of ambiguous nodes',         $self->get_num_nodes_with_tag($tree, 'node_type', 'dubious')      ],
       ['Number of gene split events', $self->get_num_nodes_with_tag($tree, 'node_type', 'gene_split')   ],
       @highlight_map ? [ $hitags->render, $hitags_types ] : undef
     )->render;
