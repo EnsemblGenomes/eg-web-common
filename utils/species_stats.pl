@@ -42,8 +42,9 @@ use JSON;
 use List::MoreUtils qw /first_index any/;
 use HTML::Entities qw(encode_entities);
 use lib "$LibDirs::SERVERROOT/ensemblgenomes-api/modules";
-use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
+use lib "$LibDirs::SERVERROOT/eg-web-common/modules";
 
+use EnsEMBL::Web::DBSQL::MetaDataAdaptor;
 
 
 use vars qw( $SERVERROOT $PRE $PLUGIN_ROOT $SCRIPT_ROOT $DEBUG $FUDGE $NOINTERPRO $NOSUMMARY $help $info @user_spp $allgenetypes $coordsys $list $pan_comp_species $ena $nogenebuild
@@ -91,6 +92,7 @@ BEGIN{
   eval{ require SiteDefs };
   if ($@){ die "Can't use SiteDefs.pm - $@\n"; }
   map{ unshift @INC, $_ } @SiteDefs::ENSEMBL_LIB_DIRS;
+#$SiteDefs::ENSEMBL_SERVERROOT.'/eg-web-common';
 }
 
 use constant STATS_PATH => qq(%s/htdocs/ssi/species/);
@@ -985,6 +987,7 @@ sub render_all_species_page {
       'strain' => $SD->get_config($species, "SPECIES_STRAIN") || '',
       'group' => $group,
       'taxid' => $SD->get_config($species, "TAXONOMY_ID") || '',
+      'usual_name' => $SD->get_config($species, "SPECIES_USUAL_NAME") || '',
     };
     $species{$common} = $info;
   }
@@ -995,7 +998,7 @@ sub render_all_species_page {
     <div class="column-wrapper"><div class="box-left" style="width:auto"><h2>$sitename Species</h2></div>
   );
 
-  $html .= qq(<div class="box-left tinted-box round-box unbordered" style="width:70%"><fieldset><legend>Key</legend>);
+  $html .= qq(<div class="box-left tinted-box round-box unbordered" style="width:70%"><fieldset><legend>Data Codes</legend>);
   $html .= qq(<a style="font-size:1.1em;font-weight:bold;text-decoration:none;" href="#">Species</a> <span title="Has a variation database" style="color:red; cursor:default;">V</span>&nbsp;<span title="Is in pan-taxonomic compara" style="color:red; cursor:default;">P</span>&nbsp;<span title="Has whole genome DNA alignments" style="color:red; cursor:default;">G</span>&nbsp;<span title="Has other alignments" style="color:red; cursor:default;">A</span><p>Provider | <i>Scientific name</i> | Taxonomy ID</p>);
 #  my @species = sort keys %species;
   $html .= qq(<p><font color="red">V</font> - has a variation database, <font color="red">P</font> - is in pan-taxonomic compara,
@@ -1043,22 +1046,25 @@ sub render_all_species_page {
       (my $name = $dir) =~ s/_/ /;
       my $link_text = $common =~ /\./ ? $name : $common;
 
-      $html .= qq(<td style="width:8%;text-align:right;padding-bottom:1em">);
+      $html .= qq(<td style="width:5%;text-align:right;padding-bottom:1em">);
       if ($dir) {
         $html .= qq(<img class="species-img" style="width:40px;height:40px" src="/i/species/48/$dir.png" alt="$name">);
       }
       else {
         $html .= '&nbsp;';
       }
-      $html .= qq(</td><td style="width:25%;padding:2px;padding-bottom:1em">);
+      $html .= qq(</td><td style="width:28%;padding:2px;padding-bottom:1em">);
 
       if ($dir) {
         if ($info->{'status'} eq 'pre') {
           $html .= qq(<a href="http://pre.ensembl.org/$dir/" style="$link_style" rel="external">$link_text</a> (preview - assembly only));
+          $html .= qq( ($info->{'usual_name'})) if $info->{'usual_name'};
+          $html .= $info->{'strain'} ? " <small>$info->{'strain'}</small>" : '';
         }
         else {
           $html .= qq(<a href="/$dir/Info/Index/"  style="$link_style">$link_text</a>);
-
+          $html .= qq( ($info->{'usual_name'})) if $info->{'usual_name'};
+          $html .= $info->{'strain'} ? " <small>$info->{'strain'}</small>" : '';
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has a variation database">V</span>)
             if (exists $$species_resources[$index]->{has_variations} && $$species_resources[$index]->{has_variations} == 1);
 
@@ -1076,10 +1082,8 @@ sub render_all_species_page {
           my $provider = $info->{'provider'};
           my $url  = $info->{'provider_url'};
 
-          my $strain = $info->{'strain'} ? " $info->{'strain'}" : '';
-          $name .= $strain;
-
           if ($provider) {
+            $html .= "<br>Data Source: ";
             if (ref $provider eq 'ARRAY') {
               my @urls = ref $url eq 'ARRAY' ? @$url : ($url);
               my $phtml;
@@ -1094,17 +1098,17 @@ sub render_all_species_page {
                 }
               }
 
-              $html .= qq{<br />$phtml | <i>$name</i>};
+              $html .= qq{$phtml};              
             } else {
               if ($url) {
                 $url = "http://$url" unless ($url =~ /http/);
-                $html .= qq{<br /><a href="$url" title="Provider: $provider">$provider</a> | <i>$name</i>};
+                $html .= qq{<a href="$url" title="Provider: $provider">$provider</a> };                
               } else {
-                $html .= qq{<br />$provider | <i>$name</i>};
+                $html .= qq{$provider };                
               }
             }
           } else {
-              $html .= qq{<br /><i>$name</i>};
+#              $html .= qq{<br /><i>$name</i>};
           }
         }
         if($info->{'taxid'}){
@@ -1150,16 +1154,22 @@ sub get_resources {
   my $sitename = $SD->SITE_NAME;
   $sitename =~ s/\s//g;
 
-  my $dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(
+  my $eg_info = $SD->get_config('MULTI', 'databases')->{DATABASE_METADATA};
+  my $dbc = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($eg_info);
+  unless ($dbc) {
+    warn "Can't get configuration for ensemble_info_% database from MULTI.ini. Exiting";
+    exit;
+  }
+  my $gdba = $dbc->genome_info_adaptor;
+
+#  use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
+#  my $dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(
 #    -USER=>'anonymous',
 #    -PORT=>4157,
 #    -HOST=>'mysql.ebi.ac.uk',
 #    -DBNAME=>'ensemblgenomes_info_22'
-    -USER=>$SD->DATABASE_DBUSER,
-    -PORT=>$SD->DATABASE_HOST_PORT,
-    -HOST=>$SD->DATABASE_HOST,
-    -DBNAME=>'ensemblgenomes_info_22'
-  );
+#  );
+  
   my $gdba = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC=>$dbc);
 
   my $data;  
