@@ -1058,13 +1058,17 @@ sub render_all_species_page {
       if ($dir) {
         if ($info->{'status'} eq 'pre') {
           $html .= qq(<a href="http://pre.ensembl.org/$dir/" style="$link_style" rel="external">$link_text</a> (preview - assembly only));
+          $html .= qq(<nobr>);
           $html .= qq( ($info->{'usual_name'})) if $info->{'usual_name'};
           $html .= $info->{'strain'} ? " <small>$info->{'strain'}</small>" : '';
+          $html .= qq(</nobr>);
         }
         else {
           $html .= qq(<a href="/$dir/Info/Index/"  style="$link_style">$link_text</a>);
+          $html .= qq(<nobr>);
           $html .= qq( ($info->{'usual_name'})) if $info->{'usual_name'};
           $html .= $info->{'strain'} ? " <small>$info->{'strain'}</small>" : '';
+          $html .= qq(</nobr>);
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has a variation database">V</span>)
             if (exists $$species_resources[$index]->{has_variations} && $$species_resources[$index]->{has_variations} == 1);
 
@@ -1111,10 +1115,10 @@ sub render_all_species_page {
 #              $html .= qq{<br /><i>$name</i>};
           }
         }
-        if($info->{'taxid'}){
-          (my $uniprot_url = $SD->ENSEMBL_EXTERNAL_URLS->{'UNIPROT_TAXONOMY'}) =~ s/###ID###/$info->{taxid}/;
-          $html .= sprintf(' | <a href="%s" title="Taxonomy ID: %s">%s</a>',$uniprot_url, $info->{'taxid'}, $info->{'taxid'});
-        }
+#        if($info->{'taxid'}){
+#          (my $uniprot_url = $SD->ENSEMBL_EXTERNAL_URLS->{'UNIPROT_TAXONOMY'}) =~ s/###ID###/$info->{taxid}/;
+#          $html .= sprintf(' | <a href="%s" title="Taxonomy ID: %s">%s</a>',$uniprot_url, $info->{'taxid'}, $info->{'taxid'});
+#        }
       }
       else {
         $html .= '&nbsp;';
@@ -1169,8 +1173,8 @@ sub get_resources {
 #    -HOST=>'mysql.ebi.ac.uk',
 #    -DBNAME=>'ensemblgenomes_info_22'
 #  );
-  
-  my $gdba = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC=>$dbc);
+#  
+#  my $gdba = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC=>$dbc);
 
   my $data;  
   for my $genome (@{$gdba->fetch_all_by_division($sitename)}) {
