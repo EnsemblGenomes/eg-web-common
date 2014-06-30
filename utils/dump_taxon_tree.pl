@@ -16,10 +16,20 @@
 #
 # Dump species taxonomy tree static files for EG taxon selector interface
 #
-# E.g.
-# dump_taxon_tree.pl --host <host> --port <port> --user <user> --pass <pass>
-#                    --plugin-dir <dir> [--dump_binary] [--root <node-name>]
+# E.g. dump tree for all species in a site:
 #
+# perl ensembl-webcode/utils/dump_ensembl_valid_species.pl | 
+#   perl eg-web-common/utils/dump_taxon_tree.pl --host <host> --port <port> 
+#   --user <user> --pass <pass> --plugin-dir <dir> [--dump_binary] 
+#   [--root <node-name>]
+#
+# E.g. dump tree for specific species:
+#
+# perl eg-web-common/utils/dump_taxon_tree.pl --host <host> --port <port> 
+#   --user <user> --pass <pass> --plugin-dir <dir> [--dump_binary] 
+#   [--root <node-name>] species1 species2 species3 ...
+#
+#------------------------------------------------------------------------------
 
 use strict;
 use Data::Dumper;
@@ -48,13 +58,11 @@ GetOptions(
   "user=s"       => \$user,
   "pass=s"       => \$pass,
   "plugin-dir=s" => \$plugin_dir,
-  "dump-binary" => \$dump_binary,
+  "dump-binary"  => \$dump_binary,
   "root=s"       => \$root_name,
 );
 
 die "Please specifiy -plugin-dir" unless $plugin_dir;
-
-my @db_args = ( -host => $host, -port => $port, -user => $user, -pass => $pass );
 
 if ($dump_binary) {
   # Dump EnsEMBL::Web::TaxonTree storable file (needed for Bacteria gene families)
@@ -62,6 +70,25 @@ if ($dump_binary) {
   eval('use EnsEMBL::Web::TaxonTree'); 
   die "Could not load EnsEMBL::Web::TaxonTree, it is required for storable dump ($@)" if $@;
 }
+
+my @db_args = ( -host => $host, -port => $port, -user => $user, -pass => $pass );
+
+# try to get species from args or from a pipe
+my @species_args = @ARGV;
+if (!@species_args) {
+  if (-t STDIN) { 
+    print "This script expects a list of valid species, either as arguments or from a pipe\n";
+    exit;
+  } 
+  while (<STDIN>) { # read from pipe
+    chomp;
+    push (@species_args, $_) if $_;
+  }
+}
+die 'Need a list of species!' if !@species_args;
+my %species = map {lc($_) => 1} @species_args; 
+
+print "\nDumping taxon tree for " . scalar(keys %species) . " species...\n";
 
 #------------------------------------------------------------------------------
 
@@ -92,8 +119,7 @@ print "getting db adaptors...\n";
 Bio::EnsEMBL::Registry->load_registry_from_db(@db_args);
 Bio::EnsEMBL::Registry->set_disconnect_when_inactive;
 
-my %valid = map {lc($_) => 1} split /\n/, `$LibDirs::WEBROOT/utils/dump_ensembl_valid_species.pl`; 
-my @dbas  = grep { $valid{$_->species} } @{ Bio::EnsEMBL::Registry->get_all_DBAdaptors(-group => 'core') };
+my @dbas  = grep { $species{$_->species} } @{ Bio::EnsEMBL::Registry->get_all_DBAdaptors(-group => 'core') };
 
 #------------------------------------------------------------------------------
 
@@ -136,7 +162,6 @@ if (%$custom_nodes) {
 print "dumping JavaScript...\n"; 
 
 my ($dynatree) = node_to_dynatree($root);
-warn Dumper $dynatree;
 my $json       = to_json($dynatree->{children}, {pretty => 1, allow_nonref => 1});
 my $filename   = "$plugin_dir/htdocs/taxon_tree_data.js";
 
