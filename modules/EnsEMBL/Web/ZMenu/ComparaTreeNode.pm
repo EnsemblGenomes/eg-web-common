@@ -26,6 +26,7 @@ use URI::Escape qw(uri_escape);
 use IO::String;
 use Bio::AlignIO;
 use EnsEMBL::Web::TmpFile::Text;
+use Data::Dumper;
 
 use base qw(EnsEMBL::Web::ZMenu);
 
@@ -395,6 +396,31 @@ sub content {
       })
     });
   }
+}
+
+# Takes a compara tree and dumps the alignment and tree as text files.
+# Returns the urls of the files that contain the trees
+sub dump_tree_as_text {
+  my $self = shift;
+  my $tree = shift || die 'Need a ProteinTree object';
+
+  my $var;
+  my $file_fa = EnsEMBL::Web::TmpFile::Text->new(extension => 'fa', prefix => 'gene_tree');
+  my $file_nh = EnsEMBL::Web::TmpFile::Text->new(extension => 'nh', prefix => 'gene_tree');
+  my $format  = 'fasta';
+  my $align   = $tree->get_SimpleAlign(-APPEND_SP_SHORT_NAME => 1);
+  my $aio     = Bio::AlignIO->new(-format => $format, -fh => IO::String->new($var));
+
+  $align = $align->remove_gaps('-', 1);	# Uses a method in Bio::SimpleAlign to remove the columns which are gaps across all sequences
+  $aio->write_aln($align); # Write the fasta alignment using BioPerl
+   
+  print $file_fa $var;
+  print $file_nh $tree->newick_format('full_web');
+  
+  $file_fa->save;
+  $file_nh->save;
+  
+  return ($file_fa->URL, $file_nh->URL);
 }
 
 
