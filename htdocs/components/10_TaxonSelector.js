@@ -217,19 +217,19 @@ Ensembl.Panel.TaxonSelector = Ensembl.Panel.extend({
   updateConfiguration: function() {
     var panel = this;
     var items = panel.getSelectedItems();
-    
+
     if (panel.selectionLimit && items.length > panel.selectionLimit) {
     
       alert('Too many items selected.\nPlease select a maximum of ' + panel.selectionLimit + ' items.');
       return false;
     
     } else {     
-      
+      var html = '';
       for (var i = 0; i < items.length; i++) {
-        $('<input type="hidden" name="' + this.urlParam + '" value="' + items[i].key + '" />').appendTo(this.elLk.form);
+        html += '<input type="hidden" name="' + this.urlParam + '" value="' + items[i].key + '" />';
       }
-      this.elLk.form.submit();
-      
+      $(html).appendTo(this.elLk.form);
+      this.elLk.form.submit();      
       return true;
     }
   }
