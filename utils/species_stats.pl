@@ -533,7 +533,7 @@ foreach my $spp (@valid_spp) {
 
     my @other_stats_keys = keys %other_stats;
     # sometimes we get the only key 'fgeneshpred' and its value is undef and we don't want to show the 'Other' seciton.
-    if( (scalar @other_stats_keys > 1) || ( scalar @other_stats_keys == 1 && defined $other_stats{$other_stats_keys[0]}) ){
+    if( (scalar @other_stats_keys > 1) || ( scalar @other_stats_keys == 1 && $title{$other_stats_keys[0]} && defined $other_stats{$other_stats_keys[0]}) ){
 
       print STATS qq(
         <h3>Other</h3>
