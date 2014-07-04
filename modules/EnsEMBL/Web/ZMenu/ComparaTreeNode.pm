@@ -363,7 +363,7 @@ sub content {
     }
     
     # Subtree dumps
-    my ($url_align, $url_tree) = $self->dump_tree_as_text($node);
+    my ($url_align, $url_tree, $url_multi_align) = $self->dump_tree_as_text($node);
     
     $self->add_entry({
       type  => 'View Sub-tree',
@@ -375,10 +375,18 @@ sub content {
     
     $self->add_entry({
       type  => 'View Sub-tree',
+      label => 'Alignment: ClustalW',
+      link  => $url_multi_align,
+      extra => { external => 1 },
+      order => 15
+    });
+    
+    $self->add_entry({
+      type  => 'View Sub-tree',
       label => 'Tree: New Hampshire',
       link  => $url_tree,
       extra => { external => 1 },
-      order => 15
+      order => 16
     });
     
     # Jalview
@@ -386,7 +394,7 @@ sub content {
       type  => 'View Sub-tree',
       label => 'Expand for Jalview',
       link_class => 'expand',
-      order => 16,
+      order => 17,
       link  => $hub->url({
         type     => 'ZMenu',
         action   => 'Gene',
@@ -403,24 +411,28 @@ sub content {
 sub dump_tree_as_text {
   my $self = shift;
   my $tree = shift || die 'Need a ProteinTree object';
-
-  my $var;
+  
+  my $var_fasta; my $var_clustalw;
   my $file_fa = EnsEMBL::Web::TmpFile::Text->new(extension => 'fa', prefix => 'gene_tree');
   my $file_nh = EnsEMBL::Web::TmpFile::Text->new(extension => 'nh', prefix => 'gene_tree');
-  my $format  = 'fasta';
+  my $file_aln = EnsEMBL::Web::TmpFile::Text->new(extension => 'txt', prefix => 'gene_tree');
   my $align   = $tree->get_SimpleAlign(-APPEND_SP_SHORT_NAME => 1);
-  my $aio     = Bio::AlignIO->new(-format => $format, -fh => IO::String->new($var));
-
+  my $aio     = Bio::AlignIO->new(-format => 'fasta', -fh => IO::String->new($var_fasta));
+  my $maio    = Bio::AlignIO->new(-format => 'clustalw', -fh => IO::String->new($var_clustalw));
+  
   $align = $align->remove_gaps('-', 1);	# Uses a method in Bio::SimpleAlign to remove the columns which are gaps across all sequences
   $aio->write_aln($align); # Write the fasta alignment using BioPerl
-   
-  print $file_fa $var;
+  $maio->write_aln($align); # Write the ClustalW alignment using BioPerl
+  
+  print $file_fa $var_fasta;
+  print $file_aln $var_clustalw;
   print $file_nh $tree->newick_format('full_web');
   
   $file_fa->save;
   $file_nh->save;
+  $file_aln->save;
   
-  return ($file_fa->URL, $file_nh->URL);
+  return ($file_fa->URL, $file_nh->URL, $file_aln->URL);
 }
 
 
