@@ -31,19 +31,7 @@ sub content {
   
   my $slice        = $object->slice;
   my $image_config = $hub->get_imageconfig('contigviewbottom');
-
-  my $extension = int (($slice->end - $slice->start) * 0.1);
-  my $start = $slice->start - $extension;
-  my $end = $slice->end + $extension;
-  my $length = $end -$start + 1;
   
-  $image_config->set_parameters({
-    container_width => $length,
-    image_width     => $image_width || 800, # hack at the moment
-    slice_number    => '1|3'
-  });
-
-
   ## Force display of individual low-weight markers on pages linked to from Location/Marker
   if (my $marker_id = $hub->param('m')) {
     $image_config->modify_configs(
@@ -51,22 +39,39 @@ sub content {
       { marker_id => $marker_id }
     );
   }
+
+  my $length = $slice->end -$slice->start + 1;
+
+  # adding 10% length at either end of the feature view if REGION_EXTENSION_VIEW is set in MULTI.ini
+  my $k = $hub->species_defs->get_config('MULTI', 'REGION_EXTENSION_VIEW') || '';
+
+  if ($k && $k < 1) {
+    my $extension = int (($slice->end - $slice->start) * $k);
+    my $start = $slice->start - $extension;
+    my $end = $slice->end + $extension;
+    $length = $end -$start + 1;
   
-  my $sl1 = Bio::EnsEMBL::Slice->new(-COORD_SYSTEM      =>  $slice->coord_system(),
+
+    $slice = Bio::EnsEMBL::Slice->new(-COORD_SYSTEM      =>  $slice->coord_system(),
                                         -SEQ_REGION_NAME => $slice->seq_region_name,
                                         -SEQ_REGION_LENGTH  => $length,
                                         -START              => $start,
                                         -END                => $end,
                                         -STRAND             => $slice->strand,
                                         -ADAPTOR            => $slice->adaptor);
+  }
 
   # Add multicell configuration
-  $image_config->{'data_by_cell_line'} = $self->new_object('Slice', $sl1, $object->__data)->get_cell_line_data($image_config) if keys %{$hub->species_defs->databases->{'DATABASE_FUNCGEN'}{'tables'}{'cell_type'}{'ids'}};
+  $image_config->set_parameters({
+      container_width => $length,
+      image_width     => $image_width || 800, # hack at the moment
+      slice_number    => '1|3'
+  });
+  $image_config->{'data_by_cell_line'} = $self->new_object('Slice', $slice, $object->__data)->get_cell_line_data($image_config) if keys %{$hub->species_defs->databases->{'DATABASE_FUNCGEN'}{'tables'}{'cell_type'}{'ids'}};
   $image_config->_update_missing($object);
   
   my $info = $self->_add_object_track($image_config);
-
-  my $image = $self->new_image($sl1, $image_config, $object->highlights);
+  my $image = $self->new_image($slice, $image_config, $object->highlights);
 
 	return if $self->_export_image($image);
 
