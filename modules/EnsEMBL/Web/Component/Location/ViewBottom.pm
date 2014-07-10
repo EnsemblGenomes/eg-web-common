@@ -45,7 +45,7 @@ sub content {
   # adding 10% length at either end of the feature view if REGION_EXTENSION_VIEW is set in MULTI.ini
   my $k = $hub->species_defs->get_config('MULTI', 'REGION_EXTENSION_VIEW') || '';
 
-  if ($k && $k < 1) {
+  if ( $hub->param('t') && $k && $k < 1) {
     my $extension = int (($slice->end - $slice->start) * $k);
     my $start = $slice->start - $extension;
     my $end = $slice->end + $extension;
