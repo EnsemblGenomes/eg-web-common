@@ -31,6 +31,7 @@ use FindBin qw($Bin);
 use lib $Bin;
 use LibDirs;
 use utils::Tool;
+use JSON;
 
 my (
   $host,    $user,        $pass,   $port,     $species, $ind,
@@ -71,6 +72,11 @@ if ($format eq 'solr') {
     $novariation = 1;
     $nogenetrees = 1;
     $nogzip = 1;
+    $ind = 'Gene';
+    $noortholog = 1;
+}
+elsif ($format eq 'json') {
+    $novariation = 1;
     $ind = 'Gene';
     $noortholog = 1;
 }
@@ -151,6 +157,7 @@ Usage: perl $0 <options>
   -nogzip       Don't compress output as it's written.
   -help         This message.
   -inifile      First take the arguments from this file. Then overwrite with what is provided in the command line
+  -format       Format of output: xml, json, solr (tsv)
 
 EOF
 }
@@ -193,7 +200,7 @@ sub get_databases {
 sub footer {
   my ($ecount) = @_;
 
-  unless ($format eq 'solr') { 
+  if ($format eq 'xml') { 
   p("</entries>");
   p("<entry_count>$ecount</entry_count>");
   p("</database>");
@@ -455,7 +462,7 @@ sub dumpGene {
       my $ortholog_lookup_pan = get_ortholog_lookup($conf, $production_name, 'pan_homology');
       
       (my $filename = "Gene_${species}_${DB}") =~ s/[\W]/_/g;
-      my $file = "$dir/$filename." . ($format eq 'solr' ? 'tsv' : 'xml');
+      my $file = "$dir/$filename." . ($format eq 'solr' ? 'tsv' : $format);
       $file .= ".gz" unless $nogzip;
       my $start_time = time;
     
@@ -475,7 +482,7 @@ sub dumpGene {
         $fh->open( "$file", "wb9" ) || die("Can't open compressed stream to $file: $!");
       }
       
-      header( $DBNAME, $dataset, $DB ) unless $format eq 'solr';
+      header( $DBNAME, $dataset, $DB ) if $format eq 'xml';
   
       # prepare the gene output sub
       # this is called when ready to ouput the gene line
@@ -512,7 +519,11 @@ sub dumpGene {
         
         if ($format eq 'solr') {
   	      p geneLineTSV( $species, $dataset, $gene_data, $counter );
-        } else {
+        }
+        elsif ($format eq 'json') {
+    	      p geneLineJSON( $species, $dataset, $gene_data, $counter );
+        }
+        else {
   	      p geneLineXML( $species, $dataset, $gene_data, $counter );
         }
       };
@@ -658,6 +669,47 @@ sub dumpGene {
       
     warn "FINISHED dumpGene ($DB)\n";
   } #$DB loop
+}
+
+sub geneLineJSON {
+  my ( $species, $dataset, $xml_data, $counter ) = @_;
+
+  if (!$xml_data->{'gene_stable_id'}) {
+    warn "gene id not set" ;
+    return;
+  }
+
+  my %data;
+  $data{gene_id}     = $xml_data->{gene_stable_id};
+  $data{biotype}     = $xml_data->{biotype};
+  $data{name}        = $xml_data->{display_name};
+  $data{description} = $xml_data->{description};
+  $data{system_name} = $xml_data->{'system_name'};
+  $data{species}     = $species;
+  if ($xml_data->{location} =~ m/^(.+):(\d+)-(\d+)$/) {
+      $data{location}{seq_region} = $1;
+      $data{location}{start}      = $2 + 0;
+      $data{location}{end}        = $3 + 0;
+  }
+  $data{xrefs}       = $xml_data->{external_identifiers};
+  $data{taxon_id}    = $xml_data->{'taxon_id'}+0;
+  $data{genetrees}   = $xml_data->{'genetrees'};
+
+  @{$data{domains}}  = keys %{$xml_data->{'domains'}};
+
+  while (my ($db,$hsh) = each %{$data{xrefs}}) {
+      if ($SKIP_XREF{$db}) {
+          delete $data{xrefs}{$db};
+          next;
+      }
+      my @k = keys %$hsh;
+      $data{xrefs}{$db} = \@k;
+  }
+
+  my $json = encode_json \%data;
+
+  $counter->();
+  return $json;
 }
 
 sub geneLineXML {
