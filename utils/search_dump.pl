@@ -32,6 +32,11 @@ use lib $Bin;
 use LibDirs;
 use utils::Tool;
 use JSON;
+use Readonly;
+
+Readonly my %SKIP_XREF = map { $_, 1 } qw( 
+    ENA_FEATURE_PROTEIN ENA_FEATURE_TRANSCRIPT ENA_FEATURE_GENE
+);
 
 my (
   $host,    $user,        $pass,   $port,     $species, $ind,
