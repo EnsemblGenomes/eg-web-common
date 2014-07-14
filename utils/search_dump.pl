@@ -911,13 +911,13 @@ sub get_genetree_lookup {
       my $compara_dbh = DBI->connect( "$dsn:$dbname", $user, $pass ) or die "DBI::error";
 
       my $sql =
-        "SELECT m2.stable_id AS gene, gtr.stable_id AS genetree
-         FROM member m
-         JOIN gene_tree_node gtn ON gtn.member_id = m.member_id
-         JOIN gene_tree_root gtr ON gtr.root_id = gtn.root_id
-         JOIN member m2 ON m2.member_id = m.gene_member_id
+        "SELECT gm.stable_id AS gene, gtr.stable_id AS genetree
+         FROM seq_member sm
+         JOIN gene_tree_node gtn USING(seq_member_id)
+         JOIN gene_tree_root gtr USING(root_id)
+         JOIN gene_member gm USING(gene_member_id)
          WHERE gtr.stable_id IS NOT NULL
-         ORDER BY m2.stable_id";
+         ORDER BY gm.stable_id";
 
       #warn "$sql\n";
 
