@@ -428,6 +428,7 @@ var ontology_data = {
     my $tid = $term->{id};
     
     my $def = $term->{def};    
+    $def =~ s/\\\"/\*/g;
     $def =~ s/\"//;
     $def =~ s/\".+//;
     my $source = '';
