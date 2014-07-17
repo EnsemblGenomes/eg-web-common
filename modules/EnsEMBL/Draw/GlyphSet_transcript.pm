@@ -23,25 +23,6 @@ use strict;
 use List::Util qw(min max);
 use Clone qw(clone);
 
-sub get_gene_joins {
-    my ($self, $gene, $species, $join_types, $source) = @_;
-
-    my $config     = $self->{'config'};
-    my $compara_db = $config->hub->database('compara');
-    return unless $compara_db;
-
-    my $ma = $compara_db->get_MemberAdaptor;
-    return unless $ma;
-
-    my $qy_member = $ma->fetch_by_source_stable_id($source, $gene->stable_id);
-    return unless defined $qy_member;
-
-    my $method = $config->get_parameter('force_homologue') || $species eq $config->{'species'} ? $config->get_parameter('homologue') : undef;
-    my $func   = $source ? 'get_homologous_peptide_ids_from_gene' : 'get_homologous_gene_ids';
-
-    return $self->$func($species, $join_types, $compara_db->get_HomologyAdaptor, $qy_member, $method ? [ $method ] : undef);
-}
-
 sub render_collapsed {
   my ($self, $labels) = @_;
 
@@ -109,12 +90,7 @@ sub render_collapsed {
     my @exons      = map { $_->start > $length || $_->end < 1 ? () : $_ } @{$exons->{$gene_stable_id}}; # Get all the exons which overlap the region for this gene
     my $colour_key = $self->colour_key($gene);
     my $colour     = $self->my_colour($colour_key);
-# EG
-#   my $label      = $self->my_colour($colour_key, 'text');
-    my $label = $self->colour_label($gene);
-## 
-
-    $used_colours{$label} = $colour;
+    $self->use_legend(\%used_colours,$colour_key);  
     
     my $composite = $self->Composite({
       y      => $y,
@@ -173,8 +149,8 @@ sub render_collapsed {
             
             $self->join_tag($composite2, "$gene_stable_id:$_->[0]$target", 0.5, 0.5, $_->[1], 'line', $join_z);
             
-            $config->{'legend_features'}{'joins'}{'priority'} ||= 1000;
-            $config->{'legend_features'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
+            $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+            $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
           }
           
           push @gene_tags, map { join '=', $_->stable_id, $gene_stable_id } @{$self->filter_by_target($alt_alleles, $previous_target)};
@@ -186,8 +162,8 @@ sub render_collapsed {
             
             $self->join_tag($composite2, "$_->[0]:$gene_stable_id$target", 0.5, 0.5, $_->[1], 'line', $join_z);
             
-            $config->{'legend_features'}{'joins'}{'priority'} ||= 1000;
-            $config->{'legend_features'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
+            $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+            $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
           }
           
           push @gene_tags, map { join '=', $gene_stable_id, $_->stable_id } @{$self->filter_by_target($alt_alleles, $next_target)};
@@ -196,8 +172,8 @@ sub render_collapsed {
         $self->join_tag($composite2, $_, 0.5, 0.5, $alt_alleles_col, 'line', $join_z) for @gene_tags; # join alt_alleles
         
         if (@gene_tags) {
-          $config->{'legend_features'}{'joins'}{'priority'} ||= 1000;
-          $config->{'legend_features'}{'joins'}{'legend'}{'Alternative alleles'} = $alt_alleles_col;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{'Alternative alleles'} = $alt_alleles_col;
         }
       }
     }
@@ -246,18 +222,18 @@ sub render_collapsed {
 
   if ($transcript_drawn) {
     my $type = $self->my_config('name');
-    my %legend_old = @{$config->{'legend_features'}{$type}{'legend'}||[]};
+    my %legend_old = @{$self->{'legend'}{'gene_legend'}{$type}{'legend'} || []};
     
     $used_colours{$_} = $legend_old{$_} for keys %legend_old;
     
     my @legend = %used_colours;
     
-    $config->{'legend_features'}{$type} = {
+    $self->{'legend'}{'gene_legend'}{$type} = {
       priority => $self->_pos,
       legend   => \@legend
     };
   } elsif ($config->get_option('opt_empty_tracks') != 0) {
-    $self->errorTrack(sprintf 'No %s in this region', $self->error_track_name);
+    $self->error_no_track_on_strand($self->error_track_name, $strand);
   }
 }
 
@@ -384,44 +360,38 @@ sub render_transcripts {
       
 
       if ($previous_species) {
-    my ($peptide_id, $homologues, $homologue_genes) = $self->get_gene_joins($gene, $previous_species, $join_types, 'ENSEMBLGENE');
-
-    if ($peptide_id) {
-        push @{$tags{$peptide_id}}, map {[ "$_->[0]:$peptide_id",     $_->[1] ]} @$homologues;
-        push @{$tags{$peptide_id}}, map {[ "$gene_stable_id:$_->[0]", $_->[1] ]} @$homologue_genes;
-    }
-
-    push @gene_tags, map { join '=', $_->stable_id, $tsid } @{$self->filter_by_target(\@transcripts, $previous_target)};
-
-    for (@$homologues) {
-        $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
-        $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
-    }
+        my ($peptide_id, $homologues, $homologue_genes) = $self->get_gene_joins($gene, $previous_species, $join_types, 'ENSEMBLGENE');
+        
+        if ($peptide_id) {
+          push @{$tags{$peptide_id}}, map {[ "$_->[0]:$peptide_id",     $_->[1] ]} @$homologues;
+          push @{$tags{$peptide_id}}, map {[ "$gene_stable_id:$_->[0]", $_->[1] ]} @$homologue_genes;
+        }
+        
+        push @gene_tags, map { join '=', $_->stable_id, $tsid } @{$self->filter_by_target(\@transcripts, $previous_target)};
+        
+        for (@$homologues) {
+          $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
+        }
       }
-
+      
       if ($next_species) {
-    my ($peptide_id, $homologues, $homologue_genes) = $self->get_gene_joins($gene, $next_species, $join_types, 'ENSEMBLGENE');
-
-    if ($peptide_id) {
-        push @{$tags{$peptide_id}}, map {[ "$peptide_id:$_->[0]",     $_->[1] ]} @$homologues;
-        push @{$tags{$peptide_id}}, map {[ "$_->[0]:$gene_stable_id", $_->[1] ]} @$homologue_genes;
-    }
-
-    push @gene_tags, map { join '=', $tsid, $_->stable_id } @{$self->filter_by_target(\@transcripts, $next_target)};
-
-    for (@$homologues) {
-        $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
-        $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
-    }
+        my ($peptide_id, $homologues, $homologue_genes) = $self->get_gene_joins($gene, $next_species, $join_types, 'ENSEMBLGENE');
+        
+        if ($peptide_id) {
+          push @{$tags{$peptide_id}}, map {[ "$peptide_id:$_->[0]",     $_->[1] ]} @$homologues;
+          push @{$tags{$peptide_id}}, map {[ "$_->[0]:$gene_stable_id", $_->[1] ]} @$homologue_genes;
+        }
+        
+        push @gene_tags, map { join '=', $tsid, $_->stable_id } @{$self->filter_by_target(\@transcripts, $next_target)};
+        
+        for (@$homologues) {
+          $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
+        }
       }
-
-
     }
     
-# EG     
-#   my $thash;
-##
-
     my @sorted_transcripts = map $_->[1], sort { $b->[0] <=> $a->[0] } map [ $_->start * $gene_strand, $_ ], @{$transcripts->{$gene_stable_id}};
     
     foreach my $transcript (@sorted_transcripts) {
@@ -458,11 +428,9 @@ sub render_transcripts {
 
       my $colour_key = $self->colour_key($gene, $transcript);
       my $colour     = $self->my_colour($colour_key);
-# EG #my $label      = $self->my_colour($colour_key, 'text');
-      my $label = $self->colour_label($gene, $transcript);
-# /EG 
-      ($colour, $label) = ('orange', 'Other') unless $colour;
-      $used_colours{$label} = $colour;
+      my $label      = $self->my_colour($colour_key, 'text');
+      $self->use_legend(\%used_colours,$colour?$colour_key:undef);
+
 # EG
       my $coding_start = defined $transcript->coding_region_start ? $transcript->coding_region_start : -1e6;
       my $coding_end   = defined $transcript->coding_region_end   ? $transcript->coding_region_end   : -1e6;
@@ -473,12 +441,12 @@ sub render_transcripts {
         $self->join_tag($composite2, $_->[0], 0.5, 0.5, $_->[1], 'line', $join_z) for @{$tags{$transcript->translation->stable_id}||[]};
       }
       
-      if ($transcript->stable_id eq $tsid) {
+      if ($transcript_stable_id eq $tsid) {
         $self->join_tag($composite2, $_, 0.5, 0.5, $alt_alleles_col, 'line', $join_z) for @gene_tags;
         
         if (@gene_tags) {
-          $config->{'legend_features'}{'joins'}{'priority'} ||= 1000;
-          $config->{'legend_features'}{'joins'}{'legend'}{'Alternative alleles'} = $alt_alleles_col;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{'Alternative alleles'} = $alt_alleles_col;
         }
       }
 # EG: render multiple translations
@@ -861,7 +829,7 @@ sub render_transcripts {
       legend   => \@legend
       };
   } elsif ($config->get_option('opt_empty_tracks') != 0) {
-      $self->errorTrack(sprintf 'No %s in this region', $self->error_track_name);
+      $self->error_no_track_on_strand($self->error_track_name, $strand);
   }
 
 }
@@ -935,12 +903,8 @@ sub render_alignslice_transcript {
       
       my $colour_key = $self->colour_key($gene, $transcript);    
       my $colour     = $self->my_colour($colour_key);
-# EG  my $label      = $self->my_colour($colour_key, 'text');
-      my $label = $self->colour_label($gene, $transcript);
-#
-      
-      ($colour, $label) = ('orange', 'Other') unless $colour;
-      $used_colours{$label} = $colour; 
+      my $label      = $self->my_colour($colour_key, 'text');
+      $self->use_legend(\%used_colours,$colour?$colour_key:undef);
       
       my $coding_start = defined $transcript->coding_region_start ? $transcript->coding_region_start :  -1e6;
       my $coding_end   = defined $transcript->coding_region_end   ? $transcript->coding_region_end   :  -1e6;
@@ -985,7 +949,7 @@ sub render_alignslice_transcript {
               width        => $box_end - $box_start + 1,
               height       => 3 * $h/4,
               bordercolour => $colour,
-              absolutey    => 1
+              absolutey    => 1,
             }));
           }
           
@@ -1002,7 +966,7 @@ sub render_alignslice_transcript {
               width     => $filled_end - $filled_start + 1,
               height    => $h,
               colour    => $colour,
-              absolutey => 1
+              absolutey => 1,
             }));
           }
         } 
@@ -1024,10 +988,6 @@ sub render_alignslice_transcript {
         my $intron;
         if(($start_point>$end_point) && ($gene->slice->end == $end_point) && ($gene->slice->start != $start_point)) {
             $addition = $reg_end - $start_point + 1;
-          #if ($exon->slice->is_circular) {
-          #   $addition = 0;
-          #}
-
         } else {
             $addition = 0;
         }
@@ -1161,18 +1121,18 @@ sub render_alignslice_transcript {
 
   if ($transcript_drawn) {
     my $type = $self->my_config('name');
-    my %legend_old = @{$config->{'legend_features'}{$type}{'legend'}||[]};
+    my %legend_old = @{$self->{'legend'}{'gene_legend'}{$type}{'legend'}||[]};
     
     $used_colours{$_} = $legend_old{$_} for keys %legend_old;
     
     my @legend = %used_colours;
     
-    $config->{'legend_features'}{$type} = {
+    $self->{'legend'}{'gene_legend'}{$type} = {
       priority => $self->_pos,
       legend   => \@legend
     };
   } elsif ($config->get_option('opt_empty_tracks') != 0) {
-    $self->errorTrack(sprintf 'No %s in this region', $self->error_track_name);
+    $self->error_no_track_on_strand($self->error_track_name, $strand);
   }
 }
 
@@ -1223,14 +1183,9 @@ sub render_alignslice_collapsed {
     });
     
     my $colour_key = $self->colour_key($gene);    
-# EG    
     my $colour     = $self->my_colour($colour_key);
-    my $label      = $self->colour_label($gene);
-## 
-    
-    ($colour, $label) = ('orange', 'Other') unless $colour;
-    
-    $used_colours{$label} = $colour;
+    my $label      = $self->my_colour($colour_key, 'text');
+    $self->use_legend(\%used_colours,$colour?$colour_key:undef);
     
     my @exons;
     
@@ -1337,15 +1292,15 @@ sub render_alignslice_collapsed {
   
   if ($transcript_drawn) {
     my $type = $self->my_config('name');
-    my %legend_old = @{$config->{'legend_features'}{$type}{'legend'}||[]};
+    my %legend_old = @{$self->{'legend'}{'gene_legend'}{$type}{'legend'}||[]};
     $used_colours{$_} = $legend_old{$_} for keys %legend_old;
     my @legend = %used_colours;
-    $config->{'legend_features'}{$type} = {
+    $self->{'legend'}{'gene_legend'}{$type} = {
       priority => $self->_pos,
       legend   => \@legend
     };
   } elsif ($config->get_option('opt_empty_tracks') != 0) {
-    $self->errorTrack(sprintf 'No %s in this region', $self->error_track_name);
+    $self->error_no_track_on_strand($self->error_track_name, $strand);
   }
 }
 
@@ -1521,6 +1476,7 @@ sub render_genes {
       title     => $rect->{'title'},
       gene      => $gene,
       col       => $gene_col,
+      colkey    => $colour_key,      
       highlight => $config->get_option('opt_highlight_feature') != 0 ? $highlights->{$gene_stable_id} : undef,
       type      => $gene_type
     };
@@ -1543,8 +1499,8 @@ sub render_genes {
           
           $self->join_tag($rect, "$gene_stable_id:$_->[0]$target", 0.5, 0.5, $_->[1], 'line', $join_z);
           
-          $config->{'legend_features'}{'joins'}{'priority'} ||= 1000;
-          $config->{'legend_features'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
+          $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
         }
         
         push @gene_tags, map { join '=', $_->stable_id, $gene_stable_id } @{$self->filter_by_target($alt_alleles, $previous_target)};
@@ -1556,8 +1512,8 @@ sub render_genes {
           
           $self->join_tag($rect, "$_->[0]:$gene_stable_id$target", 0.5, 0.5, $_->[1], 'line', $join_z);
           
-          $config->{'legend_features'}{'joins'}{'priority'} ||= 1000;
-          $config->{'legend_features'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
+          $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{$_->[2]} = $_->[1];
         }
         
         push @gene_tags, map { join '=', $gene_stable_id, $_->stable_id } @{$self->filter_by_target($alt_alleles, $next_target)};
@@ -1566,8 +1522,8 @@ sub render_genes {
       $self->join_tag($rect, $_, 0.5, 0.5, $alt_alleles_col, 'line', $join_z) for @gene_tags; # join alt_alleles
       
       if (@gene_tags) {
-        $config->{'legend_features'}{'joins'}{'priority'} ||= 1000;
-        $config->{'legend_features'}{'joins'}{'legend'}{'Alternative alleles'} = $alt_alleles_col;
+        $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+        $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{'Alternative alleles'} = $alt_alleles_col;
       }
     }
     
@@ -1666,7 +1622,9 @@ sub render_genes {
       }
     }
     
-    my %used_colours = map { $_->{'type'} => $_->{'col'} } @genes_to_label;
+    my %used_colours;
+    $self->use_legend(\%used_colours,$_->{'colkey'}) for @genes_to_label;
+
     my @legend = %used_colours;
     
     $self->{'legend'}{'gene_legend'}{$self->type} = {
@@ -1674,235 +1632,9 @@ sub render_genes {
       legend   => \@legend
     }
   } elsif ($config->get_option('opt_empty_tracks') != 0) {
-    $self->errorTrack(sprintf 'No %s in this region', $self->error_track_name);
+    $self->error_no_track_on_strand($self->error_track_name, $strand);
   }
 }
-
-sub render_text {
-  my $self = shift;
-  my ($feature_type, $collapsed) = @_;
-  
-  my $container   = $self->{'container'}{'ref'} || $self->{'container'};
-  my $length      = $container->length;
-  my $strand      = $self->strand;
-  my $strand_flag = $self->my_config('strand') || 'b';
-  my $target      = $self->get_parameter('single_Transcript');
-  my $target_gene = $self->get_parameter('single_Gene');
-  my ($genes)     = $self->features;
-  my $export;
-  
-  foreach my $gene (@$genes) {
-    my $gene_id = $gene->can('stable_id') ? $gene->stable_id : undef;
-    
-    next if $target_gene && $gene_id ne $target_gene;
-    
-    my $gene_type   = $gene->status . '_' . $gene->biotype;
-    my $gene_name   = $gene->can('display_xref') && $gene->display_xref ? $gene->display_xref->display_id : undef;
-    my $gene_source = $gene->source;
-    
-    if ($feature_type eq 'gene') {
-      $export .= $self->_render_text($gene, 'Gene', { 
-        headers => [ 'gene_id', 'gene_name', 'gene_type' ],
-        values  => [ $gene_id, $gene_name, $gene_type ]
-      });
-    } else {
-      my $exons = {};
-      
-      foreach my $transcript (@{$gene->get_all_Transcripts}) {
-        next if $transcript->start > $length || $transcript->end < 1;
-        
-        my $transcript_id = $transcript->stable_id;
-        
-        next if $target && ($transcript_id ne $target); # For exon_structure diagram only given transcript
-        
-        my $transcript_name = 
-          $transcript->can('display_xref') && $transcript->display_xref ? $transcript->display_xref->display_id : 
-          $transcript->can('analysis') && $transcript->analysis ? $transcript->analysis->logic_name : 
-          undef;
-        
-        foreach (sort { $a->start <=> $b->start } @{$transcript->get_all_Exons}) {
-          next if $_->start > $length || $_->end < 1;
-          
-          if ($collapsed) {
-            my $stable_id = $_->stable_id;
-            
-            next if $exons->{$stable_id};
-            
-            $exons->{$stable_id} = 1;
-          }
-           
-          $export .= $self->export_feature($_, $transcript_id, $transcript_name, $gene_id, $gene_name, $gene_type, $gene_source);
-        }
-      }
-    }
-  }
-  
-  return $export;
-}
-
-#============================================================================#
-#
-# The following three subroutines are designed to get homologous peptide ids
-# 
-#============================================================================#
-
-# Get homologous gene ids for given gene
-sub get_gene_joins {
-  my ($self, $gene, $species, $join_types, $source) = @_;
-  
-  my $config     = $self->{'config'};
-  my $compara_db = $config->hub->database('compara');
-  return unless $compara_db;
-  
-  my $ma = $compara_db->get_GeneMemberAdaptor;
-  return unless $ma;
-  
-  my $qy_member = $ma->fetch_by_source_stable_id($source, $gene->stable_id);
-  return unless defined $qy_member;
-  
-  my $method = $config->get_parameter('force_homologue') || $species eq $config->{'species'} ? $config->get_parameter('homologue') : undef;
-  my $func   = $source ? 'get_homologous_peptide_ids_from_gene' : 'get_homologous_gene_ids';
-  
-  return $self->$func($species, $join_types, $compara_db->get_HomologyAdaptor, $qy_member, $method ? [ $method ] : undef);
-}
-
-sub get_homologous_gene_ids {
-    my ($self, $species, $join_types, $homology_adaptor, $qy_member, $method) = @_;
-    my @homologues;
-
-    foreach my $homology (@{$homology_adaptor->fetch_all_by_Member_paired_species($qy_member, $species, $method)}) {
-  my $colour_key = $join_types->{$homology->description};
-
-  next if $colour_key eq 'hidden';
-
-  my $colour = $self->my_colour($colour_key . '_join');
-  my $label  = $self->my_colour($colour_key . '_join', 'text');
-
-  foreach my $member (@{$homology->get_all_GeneMembers}) {
-      next if $member->stable_id eq $qy_member->stable_id;
-
-      push @homologues, [ $member->stable_id, $colour, $label ];
-  }
-    }
-
-    return @homologues;
-}
-
-# Get homologous protein ids for given gene
-sub get_homologous_peptide_ids_from_gene {
-    my ($self, $species, $join_types, $homology_adaptor, $qy_member, $method) = @_;
-    my ($stable_id, @homologues, @homologue_genes);
-
-    foreach my $homology (@{$homology_adaptor->fetch_all_by_Member_paired_species($qy_member, $species, $method)}) {
-  my $colour_key = $join_types->{$homology->description};
-
-  next if $colour_key eq 'hidden';
-
-  my $colour = $self->my_colour($colour_key . '_join');
-  my $label  = $self->my_colour($colour_key . '_join', 'text');
-
-  foreach my $member (@{$homology->get_all_Members}) {
-      my $gene_member = $member->gene_member;
-
-      if ($gene_member->stable_id eq $qy_member->stable_id) {
-    $stable_id = $member->stable_id;
-      } else {
-    push @homologues,      [ $member->stable_id,      $colour, $label ];
-    push @homologue_genes, [ $gene_member->stable_id, $colour         ];
-      }
-  }
-    }
-
-    return ($stable_id, \@homologues, \@homologue_genes);
-}
-
-sub get_homologous_gene_ids_old {
-  my ($self, $gene, $species, $join_types) = @_;
-  
-  my $compara_db = $self->{'config'}->hub->database('compara');
-  return unless $compara_db;
-  
-  my $ma = $compara_db->get_MemberAdaptor;
-  return unless $ma;
-  
-  my $qy_member = $ma->fetch_by_source_stable_id(undef, $gene->stable_id);
-  return unless defined $qy_member;
-  
-  my $config = $self->{'config'};
-  my $ha     = $compara_db->get_HomologyAdaptor;
-  my $method = $species eq $config->{'species'} ? $config->get_parameter('homologue') : undef;
-  my @homologues;
-  
-  # $config->get_parameter('homologue') may be undef, so can't just do [ $config->get_parameter('homologue') ] because [ undef ] as an argument breaks fetch_all_by_Member_paired_species
-  foreach my $homology (@{$ha->fetch_all_by_Member_paired_species($qy_member, $species, $method ? [ $method ] : undef)}) {
-    my $colour_key = $join_types->{$homology->description};
-    
-    next if $colour_key eq 'hidden';
-    
-    my $colour = $self->my_colour($colour_key . '_join');
-    my $label  = $self->my_colour($colour_key . '_join', 'text');
-    
-    foreach my $member_attribute (@{$homology->get_all_Member_Attribute}) {
-      my ($member, $attribute) = @$member_attribute;
-      
-      next if $member->stable_id eq $qy_member->stable_id;
-      
-      push @homologues, [ $member->stable_id, $colour, $label ];
-    }
-  }
-  
-  return @homologues;
-}
-
-# Get homologous protein ids for given gene
-sub get_homologous_peptide_ids_from_gene_old {
-  my ($self, $gene, $species, $join_types) = @_;
-  
-  my $compara_db = $gene->adaptor->db->get_adaptor('compara');
-  return unless $compara_db;
-  
-  my $ma = $compara_db->get_MemberAdaptor;
-  return unless $ma;
-  
-  my $qy_member = $ma->fetch_by_source_stable_id('ENSEMBLGENE', $gene->stable_id);
-  return unless defined $qy_member;
-  
-  my $config  = $self->{'config'}; 
-  my $ha      = $compara_db->get_HomologyAdaptor;
-  my $method = $species eq $config->{'species'} ? $config->get_parameter('homologue') : undef;
-  my @homologues;
-  my @homologue_genes;
-  
-  my $stable_id = undef;
-  my $peptide_id = undef;
-  
-  foreach my $homology (@{$ha->fetch_all_by_Member_paired_species($qy_member, $species, $method ? [ $method ] : undef)}) {
-    my $colour_key = $join_types->{$homology->description};
-    
-    next if $colour_key eq 'hidden';
-    
-    my $colour = $self->my_colour($colour_key . '_join');
-    my $label  = $self->my_colour($colour_key . '_join', 'text');
-    
-    foreach my $member_attribute (@{$homology->get_all_Member_Attribute}) {
-      my ($member, $attribute) = @$member_attribute;
-      
-      if ($member->stable_id eq $qy_member->stable_id) {
-        unless ($stable_id) {
-          my $T = $ma->fetch_by_dbID($peptide_id = $attribute->peptide_member_id);
-          $stable_id = $T->stable_id;
-        }
-      } else {
-        push @homologues, [ $attribute->peptide_member_id, $colour, $label ];
-        push @homologue_genes, [ $member->stable_id, $colour ];
-      }
-    }
-  }
-  
-  return ($stable_id, $peptide_id, \@homologues, \@homologue_genes);
-}
-
-
 
 sub feature_label {
   my $self       = shift;
@@ -2099,8 +1831,8 @@ sub _render_operon_genes{
         
         for (@$homologues) {
           (my $legend = $_->[2]) =~ s/_multi/ 1-to-many or many-to-many/;
-          $config->{'legend_features'}{'joins'}{'priority'} ||= 1000;
-          $config->{'legend_features'}{'joins'}{'legend'}{ucfirst $legend} = $_->[1];
+          $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{ucfirst $legend} = $_->[1];
         }
       }
       
@@ -2113,8 +1845,8 @@ sub _render_operon_genes{
         
         for (@$homologues) {
           (my $legend = $_->[2]) =~ s/_multi/ 1-to-many or many-to-many/;
-          $config->{'legend_features'}{'joins'}{'priority'} ||= 1000;
-          $config->{'legend_features'}{'joins'}{'legend'}{ucfirst $legend} = $_->[1];
+          $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{ucfirst $legend} = $_->[1];
         }
       }
     }
@@ -2179,8 +1911,8 @@ sub _render_operon_genes{
         $self->join_tag($composite2, $_, 0.5, 0.5, $alt_alleles_col, 'line', $join_z) for @gene_tags;
         
         if (@gene_tags) {
-          $config->{'legend_features'}{'joins'}{'priority'} ||= 1000;
-          $config->{'legend_features'}{'joins'}{'legend'}{'Alternative alleles'} = $alt_alleles_col;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'priority'} ||= 1000;
+          $self->{'legend'}{'gene_legend'}{'joins'}{'legend'}{'Alternative alleles'} = $alt_alleles_col;
         }
       }
       
