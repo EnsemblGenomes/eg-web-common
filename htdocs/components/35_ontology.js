@@ -75,9 +75,9 @@ Ensembl.Panel.Ontology = Ensembl.Panel.extend({
 		      var p = notes[i].split("=");
 		      nlist = nlist + "<p><b>"+p[0]+":</b> " + unescape(p[1]) + "</p>";
 	       }
-	    }			
-	    this.printMenu("nodenote", "<div class=\"scroll\">" + nlist + "</div>");	
-	    ph+=80;		
+              this.printMenu("nodenote", "<div class=\"scroll\">" + nlist + "</div>");
+              ph+=80
+            }
 	  }
 
     if (data.ext) {
