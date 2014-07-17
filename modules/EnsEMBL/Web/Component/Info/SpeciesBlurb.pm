@@ -77,6 +77,9 @@ sub content {
 # $self->cut_tagged_section(\$html,'about');
 ## EG END
 
+  ## Link to Wikipedia
+  $html .= $self->_wikipedia_link; 
+
   $html .= '
     </div>
   </div>
@@ -119,4 +122,21 @@ sub cut_tagged_section{
   $$ptr =~ s/^(.*?)<!--\s*\{$tag\}\s*-->(.*)<!--\s*\{$tag\}\s*-->(.*)$/\1\3/msg;
   return 1; 
 }
+
+sub _wikipedia_link {
+  my $self = shift;
+  my $url  = $self->hub->species_defs->WIKIPEDIA_URL;
+  my $html = '';
+
+  if ($url) {
+    $html .= qq(<h2>More information</h2>
+<p>General information about this species can be found in 
+<a href="$url" rel="external">Wikipedia</a>.
+</p>); 
+  }
+
+  return $html;
+}
+
+
 1;
