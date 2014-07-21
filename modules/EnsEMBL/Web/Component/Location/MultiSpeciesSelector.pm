@@ -34,19 +34,19 @@ sub content_ajax {
   my $start           = $object->seq_region_start;
   my $end             = $object->seq_region_end;
 ## EG  
-  #my $intra_species   = ($hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'INTRA_SPECIES_ALIGNMENTS'} || {})->{'REGION_SUMMARY'}{$primary_species};
+  my @intra_species   = grep $start < $_->{'end'} && $end > $_->{'start'}, @{ $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $object->seq_region_name) };
 ##
   my $chromosomes     = $species_defs->ENSEMBL_CHROMOSOMES;
   my (%species, %included_regions);
 
 ## EG  
-  foreach my $alignment (grep $start < $_->{'end'} && $end > $_->{'start'}, @{$hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $object->seq_region_name)}) {
+  foreach my $alignment (@intra_species) {
 ##
     my $type = lc $alignment->{'type'};
     my ($s)  = grep /--$alignment->{'target_name'}$/, keys %{$alignment->{'species'}};
     my ($sp, $target) = split '--', $s;
     s/_/ /g for $type, $target;
-    
+
     $species{$s} = $species_defs->species_label($sp, 1) . (grep($target eq $_, @$chromosomes) ? ' chromosome' : '') . " $target - $type";
   }
   
@@ -88,10 +88,21 @@ sub content_ajax {
     my ($chr) = split ':', $params->{"r$shown{$primary_species}"};
     $species{$primary_species} = "$species_label - chromosome $chr";
   }
-  
+
   $self->{'all_options'}      = \%species;
   $self->{'included_options'} = \%shown;
-  
+
+## EG-2183 - hack: prefix with sub_genome group key  
+  foreach my $alignment (@intra_species) {
+    if (my $sub_genome = $alignment->{target_sub_genome}) {
+      my $old_key = "$primary_species--$alignment->{target_name}";
+      my $new_key = "$sub_genome~~$old_key";
+      $self->{'all_options'}->{$new_key}      = delete $self->{'all_options'}->{$old_key}      if exists $self->{'all_options'}->{$old_key};
+      $self->{'included_options'}->{$new_key} = delete $self->{'included_options'}->{$old_key} if exists $self->{'included_options'}->{$old_key};
+    }
+  }
+##
+
   $self->SUPER::content_ajax;
 }
 

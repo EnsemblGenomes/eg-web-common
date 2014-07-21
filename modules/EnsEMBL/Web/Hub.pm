@@ -92,7 +92,21 @@ sub intra_species_alignments {
           }
         }
       }
-      
+
+      # EG-2183 - get sub-genome components for polyploidy genomes
+      my %target_sub_genomes;
+      if ($self->species_defs->POLYPLOIDY) {
+        my $dbh         = $self->database('core')->dbc->db_handle;
+        my $sub_genomes = $dbh->selectall_arrayref(
+          "SELECT sr.name, sra.value FROM seq_region sr
+           JOIN seq_region_attrib sra USING (seq_region_id)
+           JOIN attrib_type at USING (attrib_type_id)
+           WHERE sr.name IN ('" . join("', '", keys %dnafrag_group)  . "')
+           AND at.code = 'genome_component'"
+        );        
+        %target_sub_genomes = map {$_->[0] => $_->[1]} @{$sub_genomes};     
+      }
+
       foreach my $target_name (keys %dnafrag_group) {
         my $group_id    = $dnafrag_group{$target_name};
         my $target_info = $group_info{$group_id};        
@@ -110,10 +124,11 @@ sub intra_species_alignments {
           'type'        => $mlss->method->type,
           'class'       => $mlss->method->class,
           'homologue'   => undef, ## Not implemented for EG
+          'target_sub_genome' => $target_sub_genomes{$target_name},
         };
       }
     } 
-    
+
     $self->{_intra_species_alignments}->{$cache_key} = \@comparisons;
   }
   
