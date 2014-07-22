@@ -34,33 +34,44 @@ Ensembl.Panel.MultiSpeciesSelector = Ensembl.Panel.MultiSelector.extend({
     var groups    = {};
     var counts    = {};
 
+    parseClassName = function(className) {
+      var parts = className.split('~~');
+      var data  = {};
+      if (parts.length > 1) {
+        data['displayGroup'] = parts[0];
+        data['group']        = parts[0].replace(/\s/g, '_');
+        data['className']    = parts[1];
+      } else {
+        data['className']    = parts[0];
+      }
+      return data;
+    }
+
     // count grouped items
     listItems.each(function() {
-      var parts = this.className.split('~~');
-      if (parts.length > 1) {
-        var group = parts[0];
-        if (group in counts) {
-          counts[group]++;
+      var item = parseClassName(this.className);
+      if ('group' in item) {
+        if (item.group in counts) {
+          counts[item.group]++;
         } else {
-          counts[group] = 1;
+          counts[item.group] = 1;
         }
       }
     });
 
-    // replace list items with groups and store the original items for later 
+    // bunch items into groups and store the original items for later 
     listItems.each(function() {
-      var parts = this.className.split('~~');
-      if (parts.length > 1) {
-        var group     = parts[0];
-        var className = parts[1]; // original name wirth group stripped
-
+      var item = parseClassName(this.className);
+      if ('group' in item) {
+        var group = item.group;
+        
         if (!(group in groups)) {
           groups[group] = $('<ul>');
           regions = counts[group] > 1 ? 'regions' : 'region';
-          $(this).parent().append($('<li class="group_' + group + '"><span class="switch"></span><span>' + group + ' (' + counts[group] + ' ' + regions + ')</span></li>'));
+          $(this).parent().append($('<li class="group_' + group + '"><span class="switch"></span><span>' + item.displayGroup + ' (' + counts[group] + ' ' + regions + ')</span></li>'));
         }      
 
-        $(this).attr('class', className);
+        $(this).attr('class', item.className);
         groups[group].append(this);        
       }
     });
@@ -69,15 +80,14 @@ Ensembl.Panel.MultiSpeciesSelector = Ensembl.Panel.MultiSelector.extend({
   },
 
   unMungeGroups: function () {
-    var listItems = $(".multi_selector_list li[class^='group']", this.el);
+    var listItems = $(".multi_selector_list li[class^='group_']", this.el);
     var groups    = this.mungedGroups;
 
-    // replace list items with groups and store the original items for later 
+    // re-instate the items and drop the groups
     listItems.each(function() {
       var group = this.className.replace('group_', '');
       var list = $(this).parent();
       groups[group].children().each(function() {
-        console.log(this.className);
         list.append(this);
       });
       $(this).remove();

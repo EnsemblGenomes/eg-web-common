@@ -92,11 +92,11 @@ sub content_ajax {
   $self->{'all_options'}      = \%species;
   $self->{'included_options'} = \%shown;
 
-## EG-2183 - hack: prefix with sub_genome group key  
+## EG-2183 - HACK: prefix with sub_genome group name  
   foreach my $alignment (@intra_species) {
     if (my $sub_genome = $alignment->{target_sub_genome}) {
       my $old_key = "$primary_species--$alignment->{target_name}";
-      my $new_key = "$sub_genome~~$old_key";
+      my $new_key = "$species_label $sub_genome~~$old_key";
       $self->{'all_options'}->{$new_key}      = delete $self->{'all_options'}->{$old_key}      if exists $self->{'all_options'}->{$old_key};
       $self->{'included_options'}->{$new_key} = delete $self->{'included_options'}->{$old_key} if exists $self->{'included_options'}->{$old_key};
     }
