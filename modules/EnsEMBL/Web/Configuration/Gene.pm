@@ -106,7 +106,6 @@ sub modify_tree {
   $compara_align->before($compara_align_image);
   #
 
-
   my $var_menu     = $self->get_node('Variation');
 
   my $r   = ($reg_name && $start && $end) ? $reg_name.':'.$start.'-'.$end : $gene->seq_region_name.':'.$gene->start.'-'.$gene->end;
@@ -137,7 +136,7 @@ sub modify_tree {
   
   if ($species_defs->POLYPLOIDY) {
     $self->get_node('Compara_Paralog')->after( 
-      $self->create_node('Compara_Homoeolog', 'Homoeologues ([[counts::homoeologs]])',
+      $self->create_node('Compara_Homoeolog', 'Homoeologues',
         [qw(
           paralogues EnsEMBL::Web::Component::Gene::ComparaHomoeologs
         )],
@@ -187,7 +186,7 @@ sub modify_tree {
 
 
   my $ol_node = $self->create_node(
-    'Compara_Ortholog/pan_compara',   "Orthologues ([[counts::orthologs_pan]])",
+    'Compara_Ortholog/pan_compara',   "Orthologues",
     [qw(orthologues EnsEMBL::Web::Component::Gene::ComparaOrthologs)],
     { 'availability' => 'gene database:compara_pan_ensembl core has_orthologs_pan',
       'concise'      => 'Orthologues' }
