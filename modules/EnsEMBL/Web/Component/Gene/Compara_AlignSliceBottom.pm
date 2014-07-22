@@ -56,7 +56,7 @@ sub content {
   
   my $align_details = $species_defs->multi_hash->{'DATABASE_COMPARA'}->{'ALIGNMENTS'}->{$align};
 
-  return $self->_error('Unknown alignment', '<p>The alignment you have select does not exist in the current database.</p>') unless $align_details;
+  return $self->_error('Unknown alignment', '<p>The alignment you have selected does not exist in the current database.</p>') unless $align_details;
   
   my $primary_species = $hub->species;
   
@@ -69,22 +69,17 @@ sub content {
   }
   
   my $image_width     = $self->image_width;
-# my $slice           = $object->slice;
-  my ($slices)        = $self->get_slices($slice, $align_params, $primary_species);
+  my $slice           = $object->slice;
+  my ($slices)        = $self->object->get_slices({
+                                              'slice' => $slice, 
+                                              'align' => $align_params, 
+                                              'species' => $primary_species
+                        });
   my %aligned_species = map { $_->{'name'} => 1 } @$slices;
   my $i               = 1;
-  my (@skipped, @missing, @images, $html, $info);
+  my (@images, $html);
   
-  foreach (keys %{$align_details->{'species'}}) {
-    next if $_ eq $primary_species;
-    
-    if ($align_details->{'class'} !~ /pairwise/ && ($hub->param(sprintf 'species_%d_%s', $align, lc) || 'off') eq 'off') {
-      push @skipped, $_;
-    } elsif (!$aligned_species{$_} && $_ ne 'ancestral_sequences') {
-      push @missing, $_;
-    }
-  }
-  
+  my ($caption_height,$caption_img_offset) = (0,-24);
   foreach (@$slices) {
     my $species      = $_->{'name'} eq 'Ancestral_sequences' ? 'Multi' : $_->{'name'}; # Cheating: set species to Multi to stop errors due to invalid species.
     my $image_config = $hub->get_imageconfig('alignsliceviewbottom', "alignsliceviewbottom_$i", $species);
@@ -93,7 +88,8 @@ sub content {
       container_width => $_->{'slice'}->length,
       image_width     => $image_width || 800, # hack at the moment
       slice_number    => "$i|3",
-      compara         => $i == 1 ? 'primary' : 'secondary'
+      compara         => $i == 1 ? 'primary' : 'secondary',
+      more_slices     => $i != @$slices,
     });
     
     my ($species_name, $slice_name) = split ':', $_->{'name'};
@@ -101,8 +97,14 @@ sub content {
     my $panel_caption = $species_defs->get_config($species_name, 'SPECIES_COMMON_NAME') || 'Ancestral sequences';
     $panel_caption   .= " $slice_name" if $slice_name;
 
-    $image_config->get_node('alignscalebar')->set('caption', $panel_caption);
-    
+    my $asb = $image_config->get_node('alignscalebar');
+    $asb->set('caption', $panel_caption);
+    $asb->set('caption_position', 'bottom');
+    $asb->set('caption_img',"f:24\@$caption_img_offset:".$_->{'name'});
+    $asb->set('caption_height',$caption_height);
+    $caption_img_offset = -20;
+    $caption_height = 28;
+
     foreach (grep $options{$_}, keys %options) {
       my $node = $image_config->get_node("alignment_compara_$align_details->{'id'}_$_");
       $node->set('display', $options{$_}) if $node;
@@ -121,28 +123,13 @@ sub content {
   $image->set_button('drag', 'title' => 'Click or drag to centre display');
   
   $html .= $image->render;
-  
-  if (scalar @skipped) {  
-    $info .= sprintf(
-      '<p>The following %d species in the alignment are not shown in the image. Use the "<strong>Configure this page</strong>" on the left to show them.<ul><li>%s</li></ul></p>', 
-      scalar @skipped, 
-      join "</li>\n<li>", sort map $species_defs->species_label($_), @skipped
-    );
-  }
-  
-  if (scalar @missing) {
-    if ($align_details->{'class'} =~ /pairwise/) {
-      $info .= sprintf '<p>%s has no alignment in this region</p>', $species_defs->species_label($missing[0]);
-    } else {
-      $info .= sprintf(
-        '<p>The following %d species have no alignment in this region:<ul><li>%s</li></ul></p>', 
-        scalar @missing, 
-        join "</li>\n<li>", sort map $species_defs->species_label($_), @missing
-      );
-    }
-  }
-  
-  $html .= $self->_info('Notes', $info) if $info;
+
+  my $alert_box = $self->check_for_align_problems({
+                                'align'   => $align, 
+                                'species' => $primary_species, 
+                                'cdb'     => $hub->param('cdb') || 'compara',
+                                });
+  $html .=  $alert_box;
   
   return $html;
 }
