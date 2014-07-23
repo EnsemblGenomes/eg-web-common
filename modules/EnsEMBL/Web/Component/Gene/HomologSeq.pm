@@ -101,7 +101,7 @@ sub content {
   
   foreach my $member_id (keys %{$members}) {
     my $member = $members->{$member_id};
-    my $sequence = eval{ $cds ? $member->sequence_cds : $member->get_Translation->seq };
+    my $sequence = eval { $cds ? $member->other_sequence('cds') : $member->get_Translation->seq };
     warn "Caught exception: $@" if $@;
     next unless $sequence;
     
