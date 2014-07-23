@@ -41,9 +41,9 @@ sub handler_species {
   # Parse the initial path segments, looking for valid ENSEMBL_TYPE values
   my $seg    = shift @path_segments;
   my $script = $SiteDefs::OBJECT_TO_SCRIPT->{$seg};
-  
-  if ($seg eq 'Component' || $seg eq 'ZMenu' || $seg eq 'Config' || $seg eq 'Json') {
-    $type   = shift @path_segments if $SiteDefs::OBJECT_TO_SCRIPT->{$path_segments[0]} || $seg eq 'ZMenu' || $seg eq 'Json';
+
+  if ($seg eq 'Component' || $seg eq 'ZMenu' || $seg eq 'Config' || $seg eq 'Json' || $seg eq 'Download') {
+    $type   = shift @path_segments if $SiteDefs::OBJECT_TO_SCRIPT->{$path_segments[0]} || $seg eq 'ZMenu' || $seg eq 'Json' || $seg eq 'Download';
     $plugin = shift @path_segments if $seg eq 'Component';
   } else {
     $type = $seg;
