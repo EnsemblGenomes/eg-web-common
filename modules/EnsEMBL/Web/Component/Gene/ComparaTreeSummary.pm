@@ -55,7 +55,8 @@ sub content {
     my @collapsed_clades     = grep { $_ =~ /^group_/ && $hub->param($_) eq 'collapse' } $hub->param;
     my @highlights           = $gene && $member ? ($gene->stable_id, $member->genome_db->dbID) : (undef, undef);
     my $hidden_genes_counter = 0;
-    my $link                 = $hub->type eq 'GeneTree' ? '' : sprintf(' <a title="stable link to the tree" href="%s" >%s</a>', $hub->url({ species => 'Multi', type => 'GeneTree/Image', action => undef, gt => $tree_stable_id,  __clear => 1 }), $tree_stable_id);
+    my $type                 = $cdb =~ /^compara_pan/ ? 'GeneTree/Image/pan_compara' : 'GeneTree/Image';
+    my $link                 = $hub->type eq 'GeneTree' ? '' : sprintf(' <a title="stable link to the tree" href="%s" >%s</a>', $hub->url({ species => 'Multi', type => $type, action => undef, gt => $tree_stable_id,  __clear => 1 }), $tree_stable_id);
 
     my ($hidden_genome_db_ids, $highlight_species, $highlight_genome_db_id);
 
