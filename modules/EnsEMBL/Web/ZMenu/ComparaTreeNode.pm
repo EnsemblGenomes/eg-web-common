@@ -364,10 +364,10 @@ sub content {
     
     # Subtree dumps
     my ($url_align, $url_tree, $url_multi_align) = $self->dump_tree_as_text($node);
-    
+
     $self->add_entry({
       type  => 'View Sub-tree',
-      label => 'Alignment: FASTA',
+      label => 'Alignment: Download sub-tree sequences (FASTA)',
       link  => $url_align,
       extra => { external => 1 },
       order => 14
@@ -375,10 +375,26 @@ sub content {
     
     $self->add_entry({
       type  => 'View Sub-tree',
-      label => 'Alignment: ClustalW',
+      label => 'Alignment: Extract sub-tree alignment from larger tree (fast)',
       link  => $url_multi_align,
       extra => { external => 1 },
       order => 15
+    });
+    
+    my $url_ondemand = $hub->url ({
+        action   => 'Compara_Tree/Tree_Alignment',
+        type     => 'GeneTree',
+        gt       => $node->tree->stable_id,
+        cdb      => $cdb,
+        node     => uri_escape($node_id)
+      });
+
+    $self->add_entry({
+      type  => 'View Sub-tree',
+      label => 'Alignment: Independently align sequences in sub-tree (slow)',
+      link  => $url_ondemand,
+      extra => { external => 1 },
+      order => 16
     });
     
     $self->add_entry({
@@ -386,7 +402,7 @@ sub content {
       label => 'Tree: New Hampshire',
       link  => $url_tree,
       extra => { external => 1 },
-      order => 16
+      order => 17
     });
     
     # Jalview
@@ -394,7 +410,7 @@ sub content {
       type  => 'View Sub-tree',
       label => 'Expand for Jalview',
       link_class => 'expand',
-      order => 17,
+      order => 18,
       link  => $hub->url({
         type     => 'ZMenu',
         action   => 'Gene',
