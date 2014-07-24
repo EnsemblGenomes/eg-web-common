@@ -75,9 +75,9 @@ my $db_to_parser_sub = {
 };
 
 sub new {
-	my $class = shift;
-	my $self  = bless( {}, ref($class) || $class );
-	my $args  = {@_};
+my ($class, $args) = @_;
+
+my $self = bless {'_hub' => $args}, $class;
 
 	foreach my $par_name ( keys(%$DEFAULT_PARAMS) ) {
 		$self->{$par_name} = $DEFAULT_PARAMS->{$par_name};
