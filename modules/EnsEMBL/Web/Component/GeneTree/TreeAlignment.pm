@@ -50,15 +50,21 @@ sub content {
   my $node         = $database->get_GeneTreeNodeAdaptor->fetch_node_by_node_id($node_id);
   my $num_seq      = $node->num_leaves;
   my $url          = "http://www.ebi.ac.uk/Tools/services/rest/clustalo/";
+  my $result       = 0;
   my $html;
   
-  if(defined($hub->param('jobid'))) {
+  if(defined($hub->param('precomputed'))) {
+    my $output = $self->getSequence($node, 'clustalw');
+    $html .= "$output";
+    $result = 1;
+  } elsif(defined($hub->param('jobid'))) {
     # Request has a job ID, so we need to check the job status to determine what to display
     my $job_id = $hub->param('jobid');
     my $status = $self->restStatus($url, $job_id);
     if($status =~ m/^FINISHED/i) {
       my $output = $self->restResult($url, $job_id, 'aln-clustal');
-	  $html .= "<p><pre>$output</pre></p>";
+	  $html .= "$output";
+      $result = 1;
     } elsif($status =~ m/^RUNNING/i || $status =~ m/^CREATED/i) {
       $html .= $self->pendingText($job_id, $node_id);
     } elsif($status =~ m/^NOT_FOUND/i) {
@@ -72,7 +78,7 @@ sub content {
     }
   } elsif(defined($hub->param('submit'))) {
     # User has submitted form, so submit the request to REST service
-    my $seq = $self->getSequence($node);
+    my $seq = $self->getSequence($node, 'fasta');
     my %params = (
       'email' => 'eg-webteam@ebi.ac.uk',
       'stype' => 'protein',
@@ -99,16 +105,27 @@ sub content {
     $html .= qq(<tr><td colspan=3><input type="submit" name="submit" value="Submit" /></td></tr>);
     $html .= qq(</table></form>);
   }
-  
+
+  if($result == 1) {
+    my $var_output;
+    my $file = EnsEMBL::Web::TmpFile::Text->new(extension => 'txt', prefix => 'gene_tree');
+    print $file $html;
+    $file->save;
+    my $temp_url = $file->URL;
+    my $html_prefix = $self->tool_buttons($temp_url);
+    $html = qq($html_prefix<p><pre>$html</pre></p>);
+  }
+
   return $html;
   
 }
 
 sub getSequence {
-  my ($self, $node) = @_;
-  my $ams = $node->get_AlignedMemberSet;
+  my ($self, $node, $out_type) = @_;
+  my $align = $node->get_SimpleAlign(-APPEND_SP_SHORT_NAME => 1);
   my $seq;
-  $ams->print_sequences_to_file(-fh => IO::String->new($seq), -format => "fasta", -id_type => "VER");
+  my $maio = Bio::AlignIO->new(-format => $out_type, -fh => IO::String->new($seq));
+  $maio->write_aln($align);
   return $seq;
 }
 
@@ -149,7 +166,6 @@ sub restResult {
   $ua->env_proxy;
   my $response = $ua->get("$url/result/$job_id/$type");
   my $output = $response->content();
-  $output =~ s/\n/<br \/>/g;
   return $output;
 }
 
@@ -160,17 +176,22 @@ sub pendingText {
   my $target_url = $hub->url ({
     action   => 'Compara_Tree/Tree_Alignment',
     type     => 'GeneTree',
-    function => 'TreeAlignment',
     cdb      => $hub->param('cdb'),
     node     => uri_escape($node_id),
     jobid    => uri_escape($job_id)
   });
   $html .= qq(<p>Submitted as job number $job_id</p>);
   $html .= qq(<p>Status: Running<br /><a id="RefreshAlign" href="$target_url">Status will update automatically every 30 seconds, click to check now</a></p>);
-  $html .= qq(<p>To access the alignment results at a later time (up to one week from job submission), use the following address: $SiteDefs::ENSEMBL_BASE_URL$target_url</p>);
+  $html .= qq(<p>To access the alignment results at a later time (up to one week from job submission), use the following address: <input type="text" value="$SiteDefs::ENSEMBL_BASE_URL$target_url" style="width:350px" /></p>);
   $html .= qq(<p class="spinner"></p>);
   $html .= "<script>window.setTimeout(function(){ document.getElementById(\"RefreshAlign\").click(); }, 30000);</script>";
   return $html;
+}
+
+sub tool_buttons {
+  my ($self, $url) = @_;
+  my $hub  = $self->hub;
+  my $html = sprintf('<div class="other_tool"><p><a class="seq_export export" href="%s">Download alignment</a></p></div>', $url);
 }
 
 1;
