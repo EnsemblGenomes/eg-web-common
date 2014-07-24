@@ -373,10 +373,19 @@ sub content {
       order => 14
     });
     
+    my $url_precomputed = $hub->url ({
+        action   => 'Compara_Tree/Tree_Alignment',
+        type     => 'GeneTree',
+        gt       => $node->tree->stable_id,
+        cdb      => $cdb,
+        precomputed => 'true',
+        node     => uri_escape($node_id)
+      });
+    
     $self->add_entry({
       type  => 'View Sub-tree',
       label => 'Alignment: Extract sub-tree alignment from larger tree (fast)',
-      link  => $url_multi_align,
+      link  => $url_precomputed,
       extra => { external => 1 },
       order => 15
     });
