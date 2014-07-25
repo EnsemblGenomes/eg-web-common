@@ -3,19 +3,24 @@ use strict;
 use warnings;
 use Data::Dumper;
 use FindBin qw($Bin);
-use lib "$Bin/../../ensembl/modules";
-use lib "$Bin/../../ensemblgenomes-api/modules";
-use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
+use lib $Bin;
+use LibDirs;
+#use LoadPlugins;
 
-my $gdba = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->build_adaptor();
+use EnsEMBL::Web::Hub; 
+use EnsEMBL::Web::DBSQL::MetaDataAdaptor;
+
+my $hub                 = EnsEMBL::Web::Hub->new;
+my $meta_data_adaptor   = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($hub);
+my $genome_info_adaptor = $meta_data_adaptor->genome_info_adaptor;
 
 my %genomes;
 
-foreach (qw( Fungi Metazoa Plants Protists )) {
-  $genomes{$_->species} = $_ for @{ $gdba->fetch_all_by_division("Ensembl$_") };
+foreach (qw( Bacteria Fungi Metazoa Plants Protists  )) {
+  $genomes{$_->species} = $_ for @{ $genome_info_adaptor->fetch_all_by_division("Ensembl$_") };
 }
 
-$genomes{$_->species} = $_ for @{ $gdba->fetch_all_with_compara };
+$genomes{$_->species} = $_ for @{ $genome_info_adaptor->fetch_all_with_compara };
 
 my @sorted = sort {$a->division cmp $b->division || $a->species cmp $b->species} values %genomes;
 
