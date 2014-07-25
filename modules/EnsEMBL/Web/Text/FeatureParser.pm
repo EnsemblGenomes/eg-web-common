@@ -1,6 +1,6 @@
 =head1 LICENSE
 
-Copyright [2009-2014] EMBL-European Bioinformatics Institute
+Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,20 +28,19 @@ use EnsEMBL::Web::Root;
 use List::MoreUtils;
 use Carp qw(cluck);
 use Data::Dumper;
-use EnsEMBL::Web::SpeciesDefs;
 
 sub parse { 
   my ($self, $data, $format) = @_;
+  ## Make sure format is given as uppercase
+  $format = uc($format);
   $format = 'BED' if $format eq 'BEDGRAPH';
   return 'No data supplied' unless $data;
-  #use Carp qw(cluck); cluck $format;
 
   my $error = $self->check_format($data, $format);
   if ($error) {
     return $error;
   }
   else {
-    $format = uc($self->format); 
     my $filter = $self->filter;
 
     ## Some complex formats need extra parsing capabilities
@@ -50,12 +49,11 @@ sub parse {
       bless $self, $sub_package;
     }
     ## Create an empty feature that gives us access to feature info
-    my $feature_class = 'EnsEMBL::Web::Text::Feature::'.uc($format);  
+    my $feature_class = 'EnsEMBL::Web::Text::Feature::'.$format;  
     my $empty = $feature_class->new();
     my $count;
     my $current_max = 0;
     my $current_min = 0;
-    my $valid_coords = $self->{'valid_coords'}; 
 
     ## On upload, keep track of current location so we can find nearest feature
     my ($current_index, $current_region, $current_start, $current_end);    
@@ -120,10 +118,10 @@ sub parse {
         }
         if ($columns && scalar(@$columns)) {   
           my ($chr, $start, $end) = $empty->coords($columns); 
-          #$chr =~ s/chr//
+          #$chr =~ s/[cC]hr//
           
           ## EG - only strip the chr prefix if we don't have an exact chr name match
-          $chr =~ s/chr// unless grep {$_ eq $chr} @{$self->drawn_chrs};
+          $chr =~ s/[cC]hr// unless grep {$_ eq $chr} @{$self->drawn_chrs};
           
           ## We currently only do this on initial upload (by passing current location)  
           $self->{'_find_nearest'}{'done'} = $self->_find_nearest(
@@ -141,13 +139,6 @@ sub parse {
                       }
             ) unless $self->{'_find_nearest'}{'done'};
           
-          if (keys %$valid_coords && scalar(@$columns) >1 && $format !~ /snp|pileup|vcf/i) { 
-            ## We only validate on chromosomal coordinates, to prevent errors on vertical code
-            next unless $valid_coords->{$chr}; ## Chromosome is valid and has length
-            next unless $start > 0 && $end <= $valid_coords->{$chr};
-          
-          } 
-
           ## Optional - filter content by location
           if ($filter->{'chr'}) {
             next unless ($chr eq $filter->{'chr'} || $chr eq 'chr'.$filter->{'chr'}); 
@@ -225,7 +216,7 @@ sub parse_track_def {
     #$chr =~ s/chr//;
     
     ## EG - only strip the chr prefix if we don't have an exact chr name match
-    $chr =~ s/chr// unless grep {$_ eq $chr} @{$self->drawn_chrs};
+    $chr =~ s/[cC]hr// unless grep {$_ eq $chr} @{$self->drawn_chrs};
     
     $config->{'chrom'} = $chr;
   }
@@ -237,12 +228,30 @@ sub parse_track_def {
   return $config;
 }
 
+sub add_track {
+  my ($self, $config) = @_;
+
+  if (defined $self->{'tracks'}{ $config->{'name'} }) {
+    ## Just reset config
+    my $old_config = $self->{'tracks'}{ $self->current_key }{'config'};
+    while (my($k, $v) = each(%$config)) {
+      $old_config->{$k} = $v;
+    }
+    $self->{'tracks'}{ $self->current_key }{'config'} = $old_config;
+  }
+  else {
+    $self->current_key($config->{'name'});
+    $self->{'tracks'}{ $self->current_key } = { 'features' => [], 'config' => $config };
+    $self->_set_track_colour($config);
+  }
+}
+
 sub store_density_feature {
   my ( $self, $chr, $start, $end ) = @_;
   #$chr =~ s/chr//;  
   
   ## EG - only strip the chr prefix if we don't have an exact chr name match
-  $chr =~ s/chr// unless grep {$_ eq $chr} @{$self->drawn_chrs};
+  $chr =~ s/[cC]hr// unless grep {$_ eq $chr} @{$self->drawn_chrs};
   
   if (!$self->{'tracks'}{$self->current_key}) {
     $self->add_track();
