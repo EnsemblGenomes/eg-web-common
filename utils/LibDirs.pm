@@ -40,7 +40,12 @@ BEGIN {
   unshift @INC, "$WEBROOT/conf";
   
   require SiteDefs;
-  map{ unshift @INC, $_ } @SiteDefs::ENSEMBL_LIB_DIRS;  
+  map{ unshift @INC, $_ } (
+    "$SERVERROOT/eg-web-common/modules",
+    "$SERVERROOT/ensemblgenomes-api/modules",
+    @SiteDefs::ENSEMBL_LIB_DIRS,
+  );
+
   
   # Find the webroot by stepping up the dir tree looking for 
   # the dir containing 'ensembl-webcode'
