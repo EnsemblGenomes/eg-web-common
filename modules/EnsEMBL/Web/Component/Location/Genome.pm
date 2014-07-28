@@ -62,7 +62,7 @@ sub content {
   my $html;
   my $chromosomes  = $self->hub->species_defs->ENSEMBL_CHROMOSOMES || [];
   if (!scalar @$chromosomes) {
-    $html = $self->_info('Fragmented assembly', '<p>This genome has yet to be assembled into chromosomes</p>');
+    $html = $self->_info('Unassembled genome', '<p>This genome has yet to be assembled into chromosomes</p>');
   }
 
   #configure two Vega tracks in one
@@ -371,7 +371,7 @@ sub _render_features {
       $title .= " associated with $assoc_name" if $assoc_name;
     }
   }
-  else {
+  elsif ($mapped_features) {
     $title = 'Location of your feature';
     $title .= 's' if $has_userdata > 1;
   }
@@ -494,7 +494,7 @@ sub _render_features {
     }
 
   } elsif (!scalar @$chromosomes) {
-    $html .= $self->_info('Fragmented assembly', '<p>This genome has yet to be assembled into chromosomes</p>');
+    $html .= $self->_info('Unassembled genome', '<p>This genome has yet to be assembled into chromosomes</p>');
   }
 
   ## Create HTML tables for features, if any
