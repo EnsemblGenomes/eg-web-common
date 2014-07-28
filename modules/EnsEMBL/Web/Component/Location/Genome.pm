@@ -371,7 +371,7 @@ sub _render_features {
       $title .= " associated with $assoc_name" if $assoc_name;
     }
   }
-  else {
+  elsif ($mapped_features) {
     $title = 'Location of your feature';
     $title .= 's' if $has_userdata > 1;
   }
