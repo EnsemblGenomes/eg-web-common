@@ -139,7 +139,7 @@ sub content {
   $content  = $short_tabs . $long_tabs;
   $content  = qq{<ul class="tabs">$content</ul>} if $content;
   $content .= $self->species_list                if $self->{'species_list'};
-  $content .= $self->history                     if $history;
+  $content .= join '', values %{$self->dropdown} if $history;
   
   return $content;
 }
