@@ -16,8 +16,6 @@ limitations under the License.
 
 =cut
 
-# $Id: ComparaTreeNode.pm,v 1.13 2013-12-11 12:04:38 jk10 Exp $
-
 package EnsEMBL::Web::ZMenu::ComparaTreeNode;
 
 use strict;
@@ -57,8 +55,7 @@ sub content {
 
   if ($is_leaf and $is_supertree) {
     my $child = $node->adaptor->fetch_node_by_node_id($node->{_subtree}->root_id);
-    $node->add_tag('taxon_name', $child->get_tagvalue('taxon_name'));
-    $node->add_tag('taxon_id', $child->get_tagvalue('taxon_id'));
+    $node->add_tag('species_tree_node_id', $child->get_tagvalue('species_tree_node_id'));
     my $members = $node->adaptor->fetch_all_AlignedMember_by_root_id($child->node_id);
     $node->{_sub_leaves_count} = scalar(@$members);
     my $link_gene = $members->[0];
@@ -69,9 +66,11 @@ sub content {
   }
 
   my $tagvalues       = $node->get_tagvalue_hash;
-  my $taxon_id        = $tagvalues->{'taxon_id'};
+  my $species_tree_node_id = $node->_species_tree_node_id();
+  my $speciesTreeNode      = $tree->adaptor->db->get_SpeciesTreeNodeAdaptor->fetch_node_by_node_id($species_tree_node_id);
+  my $taxon_id             = $speciesTreeNode->taxon_id;
      $taxon_id        = $node->genome_db->taxon_id if !$taxon_id && $is_leaf && not $is_supertree;
-  my $taxon_name      = $tagvalues->{'taxon_name'};
+  my $taxon_name           = $speciesTreeNode->node_name;
      $taxon_name      = $node->genome_db->taxon->name if !$taxon_name && $is_leaf && not $is_supertree;
   my $taxon_mya       = $hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'TAXON_MYA'}->{$taxon_id};
   my $taxon_alias     = $hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'TAXON_NAME'}->{$taxon_id};
@@ -104,13 +103,12 @@ sub content {
     order => 4
   }) unless $is_root || $is_leaf || $is_supertree;
 
-  if (defined $tagvalues->{'lost_taxon_id'}) {
-    my $lost_taxa = $tagvalues->{'lost_taxon_id'};
-       $lost_taxa = [ $lost_taxa ] if ref $lost_taxa ne 'ARRAY';
+  if (defined $tagvalues->{'lost_species_tree_node_id'}) {
+    my $lost_taxa = $node->lost_taxa;
        
     $self->add_entry({
       type  => 'Lost taxa',
-      label => join(', ', map {$hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'TAXON_NAME'}->{$_} || "taxon_id: $_"}  @$lost_taxa ),
+      label => join(', ', map { $hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'TAXON_NAME'}->{$_->taxon_id} || $_->node_name }  @$lost_taxa ),
       order => 5.6
     });
   }
@@ -128,17 +126,21 @@ sub content {
 
   # Expand all nodes
   if (grep $_ != $node_id, keys %collapsed_ids) {
+
+    my %subnodes = map {($_->node_id => 1)} @{$node->get_all_nodes};
+    my $collapse = join ',', (grep {not $subnodes{$_}} (keys %collapsed_ids));
+
     $self->add_entry({
-      type  => 'Image',
-      label => 'expand all sub-trees',
-	    link_class => 'update_panel',
-      order => 8,
-      extra => { update_params => '<input type="hidden" class="update_url" name="collapse" value="none" />' },
-      link  => $hub->url('Component',{
+      type          => 'Image',
+      label         => 'expand all sub-trees',
+      link_class    => 'update_panel',
+      order         => 8,
+      update_params => '<input type="hidden" class="update_url" name="collapse" value="none" />',
+      link          => $hub->url('Component', {
         type     => $hub->type,
         action   => $action,
         ht       => $ht,
-        collapse => 'none'
+        collapse => $collapse
       })
     });
   }
@@ -150,12 +152,12 @@ sub content {
     my $collapse = join ',', keys %collapsed_ids, @adjacent_subtree_ids;
     
     $self->add_entry({
-      type  => 'Image',
-      label => 'collapse other nodes',
-      link_class => 'update_panel',
-      order => 10,
-      extra => { update_params => qq{<input type="hidden" class="update_url" name="collapse" value="$collapse" />} },
-      link  => $hub->url('Component',{
+      type          => 'Image',
+      label         => 'collapse other nodes',
+      link_class    => 'update_panel',
+      order         => 10,
+      update_params => qq{<input type="hidden" class="update_url" name="collapse" value="$collapse" />},
+      link          => $hub->url('Component', {
         type     => $hub->type,
         action   => $action,
         ht       => $ht,
@@ -208,12 +210,12 @@ sub content {
       my $collapse = join ',', @collapse_node_ids;
       
       $self->add_entry({
-        type  => 'Image',
-        label => 'show all paralogs',
-        link_class => 'update_panel',
-        order => 11,
-        extra => { update_params => qq{<input type="hidden" class="update_url" name="collapse" value="$collapse" />} },
-      link  => $hub->url('Component',{
+        type          => 'Image',
+        label         => 'show all paralogs',
+        link_class    => 'update_panel',
+        order         => 11,
+        update_params => qq{<input type="hidden" class="update_url" name="collapse" value="$collapse" />},
+        link          => $hub->url('Component', {
           type     => $hub->type,
           action   => $action,
           ht       => $ht,
@@ -229,8 +231,8 @@ sub content {
       my $label;
          $label = 'Dubious duplication' if $node_type eq 'dubious';
          $label = sprintf 'Duplication (%d%s confid.)', 100 * ($tagvalues->{'duplication_confidence_score'} || 0), '%' if $node_type eq 'duplication';
-      	 $label = 'Speciation' if $node_type eq 'speciation';
-      	 $label = 'Gene split' if $node_type eq 'gene_split';
+         $label = 'Speciation' if $node_type eq 'speciation';
+         $label = 'Gene split' if $node_type eq 'gene_split';
       
       $self->add_entry({
         type  => 'Type',
@@ -258,13 +260,11 @@ sub content {
        });
 
       # Link to TreeFam Tree
+      my $tree_tagvalues  = $tree->get_tagvalue_hash;
       my $treefam_tree = 
-        $tagvalues->{'treefam_id'}          || 
-        $tagvalues->{'part_treefam_id'}     || 
-        $tagvalues->{'cont_treefam_id'}     || 
-        $tagvalues->{'dev_treefam_id'}      || 
-        $tagvalues->{'dev_part_treefam_id'} || 
-        $tagvalues->{'dev_cont_treefam_id'} || 
+        $tree_tagvalues->{'treefam_id'}          || 
+        $tree_tagvalues->{'part_treefam_id'}     || 
+        $tree_tagvalues->{'cont_treefam_id'}     || 
         undef;
       
       if (defined $treefam_tree) {
@@ -273,11 +273,11 @@ sub content {
           
           if ($treefam_link) {
             $self->add_entry({
-              type  => 'Maps to TreeFam',
-              label => $treefam_id,
-              link  => $treefam_link,
-              extra => { external => 1 },
-              order => 6
+              type     => 'Maps to TreeFam',
+              label    => $treefam_id,
+              link     => $treefam_link,
+              external => 1,
+              order    => 6
             });
           }
         }
@@ -298,12 +298,12 @@ sub content {
       
       # Expand this node
       $self->add_entry({
-        type  => 'Image',
-        label => 'expand this sub-tree',
-        link_class => 'update_panel',
-        order => 7,
-        extra => { update_params => qq{<input type="hidden" class="update_url" name="collapse" value="$collapse" />} },
-        link  => $hub->url('Component',{
+        type          => 'Image',
+        label         => 'expand this sub-tree',
+        link_class    => 'update_panel',
+        order         => 7,
+        update_params => qq{<input type="hidden" class="update_url" name="collapse" value="$collapse" />},
+        link          => $hub->url('Component', {
           type     => $hub->type,
           action   => $action,
           ht       => $ht,
@@ -315,12 +315,12 @@ sub content {
       
       # Collapse this node
       $self->add_entry({
-        type  => 'Image',
-        label => 'collapse this node',
-        link_class => 'update_panel',
-        order => 9,
-        extra => { update_params => qq{<input type="hidden" class="update_url" name="collapse" value="$collapse" />} },
-        link  => $hub->url('Component',{
+        type          => 'Image',
+        label         => 'collapse this node',
+        link_class    => 'update_panel',
+        order         => 9,
+        update_params => qq{<input type="hidden" class="update_url" name="collapse" value="$collapse" />},
+        link          => $hub->url('Component', {
           type     => $hub->type,
           action   => $action,
           ht       => $ht,
@@ -369,7 +369,7 @@ sub content {
       type  => 'View Sub-tree',
       label => 'Alignment: Download sub-tree sequences (FASTA)',
       link  => $url_align,
-      extra => { external => 1 },
+      external => 1 ,
       order => 14
     });
     
@@ -410,7 +410,7 @@ sub content {
       type  => 'View Sub-tree',
       label => 'Tree: New Hampshire',
       link  => $url_tree,
-      extra => { external => 1 },
+      external => 1,
       order => 17
     });
     
