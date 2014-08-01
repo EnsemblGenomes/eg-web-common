@@ -19,5 +19,5 @@
 ***********************************************************************/
 
 
-.dataTables_wrapper, .toggleTable_wrapper { margin: 0 0 0px; clear: both; }
+.toggleTable_wrapper_no_margin { margin: 0 0 0px; clear: both; }
 

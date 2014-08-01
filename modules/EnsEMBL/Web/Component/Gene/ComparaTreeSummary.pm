@@ -157,7 +157,7 @@ sub highlight_types_selector {
   }
   if(scalar keys %types  < 2){ return "";}#only one type, no filters needed
   my $meta = $self->dom->create_element('div', {class=>'ht_table'});
-  my $form = $meta->append_child('div',{class=>sprintf('toggleable toggleTable_wrapper %s', $hide ? 'hide':'')});
+  my $form = $meta->append_child('div',{class=>sprintf('toggleable toggleTable_wrapper_no_margin %s', $hide ? 'hide':'')});
   $form->append_child('span',{inner_HTML=>'Shown terms: '});
   for my $db_name (keys %types){
     $form->append_child('input',{name=>'ht_table',class=>'table_filter',type=>'checkbox', checked=>1, value=>"type_$db_name"});
