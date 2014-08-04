@@ -41,6 +41,10 @@ use Getopt::Long;
 use JSON;
 use List::MoreUtils qw /first_index any/;
 use HTML::Entities qw(encode_entities);
+use lib "$LibDirs::SERVERROOT/ensemblgenomes-api/modules";
+use lib "$LibDirs::SERVERROOT/eg-web-common/modules";
+
+use EnsEMBL::Web::DBSQL::MetaDataAdaptor;
 
 
 use vars qw( $SERVERROOT $PRE $PLUGIN_ROOT $SCRIPT_ROOT $DEBUG $FUDGE $NOINTERPRO $NOSUMMARY $help $info @user_spp $allgenetypes $coordsys $list $pan_comp_species $ena $nogenebuild
@@ -88,6 +92,7 @@ BEGIN{
   eval{ require SiteDefs };
   if ($@){ die "Can't use SiteDefs.pm - $@\n"; }
   map{ unshift @INC, $_ } @SiteDefs::ENSEMBL_LIB_DIRS;
+#$SiteDefs::ENSEMBL_SERVERROOT.'/eg-web-common';
 }
 
 use constant STATS_PATH => qq(%s/htdocs/ssi/species/);
@@ -453,9 +458,10 @@ foreach my $spp (@valid_spp) {
       print STATS qq(</table>);
 
       if ($eg_plugins) {
-        my $hub = new EnsEMBL::Web::Hub;
+        my $hub      = new EnsEMBL::Web::Hub;
         my $interpro = $hub->url({'action' => 'IPtop500'});
-        print STATS qq(<a href="../$interpro">Table of top 500 InterPro hits</a><br><br>);
+        my $url      = $SD->species_path($spp) . "/Info/$interpro";
+        print STATS qq(<a href="$url">Table of top 500 InterPro hits</a><br><br>);
       }
 
 
@@ -527,7 +533,8 @@ foreach my $spp (@valid_spp) {
     $db->dbc->db_handle->disconnect; # prevent too many connections
 
     my @other_stats_keys = keys %other_stats;
-    if(@other_stats_keys){
+    # sometimes we get the only key 'fgeneshpred' and its value is undef and we don't want to show the 'Other' seciton.
+    if( (scalar @other_stats_keys > 1) || ( scalar @other_stats_keys == 1 && $title{$other_stats_keys[0]} && defined $other_stats{$other_stats_keys[0]}) ){
 
       print STATS qq(
         <h3>Other</h3>
@@ -907,7 +914,7 @@ sub render_all_species_page {
   my ($valid_species) = @_;
 
   my $sitename = $SD->SITE_NAME;
-  my $species_resources = get_resources();
+  my $species_resources = get_resources($valid_species);
 
   # taxon order:
   my $species_info = {};
@@ -982,6 +989,7 @@ sub render_all_species_page {
       'strain' => $SD->get_config($species, "SPECIES_STRAIN") || '',
       'group' => $group,
       'taxid' => $SD->get_config($species, "TAXONOMY_ID") || '',
+      'usual_name' => $SD->get_config($species, "SPECIES_USUAL_NAME") || '',
     };
     $species{$common} = $info;
   }
@@ -992,8 +1000,8 @@ sub render_all_species_page {
     <div class="column-wrapper"><div class="box-left" style="width:auto"><h2>$sitename Species</h2></div>
   );
 
-  $html .= qq(<div class="box-left tinted-box round-box unbordered" style="width:70%"><fieldset><legend>Key</legend>);
-  $html .= qq(<a style="font-size:1.1em;font-weight:bold;text-decoration:none;" href="#">Species</a> <span title="Has a variation database" style="color:red; cursor:default;">V</span>&nbsp;<span title="Is in pan-taxonomic compara" style="color:red; cursor:default;">P</span>&nbsp;<span title="Has whole genome DNA alignments" style="color:red; cursor:default;">G</span>&nbsp;<span title="Has other alignments" style="color:red; cursor:default;">A</span><p>Provider | <i>Scientific name</i> | Taxonomy ID</p>);
+  $html .= qq(<div class="box-left tinted-box round-box unbordered" style="width:70%"><fieldset><legend>Data Codes</legend>);
+#  $html .= qq(<a style="font-size:1.1em;font-weight:bold;text-decoration:none;" href="#">Species</a> <span title="Has a variation database" style="color:red; cursor:default;">V</span>&nbsp;<span title="Is in pan-taxonomic compara" style="color:red; cursor:default;">P</span>&nbsp;<span title="Has whole genome DNA alignments" style="color:red; cursor:default;">G</span>&nbsp;<span title="Has other alignments" style="color:red; cursor:default;">A</span><p>Provider | <i>Scientific name</i> | Taxonomy ID</p>);
 #  my @species = sort keys %species;
   $html .= qq(<p><font color="red">V</font> - has a variation database, <font color="red">P</font> - is in pan-taxonomic compara,
      <font color="red">G</font> - has whole genome DNA alignments, <font color="red">A</font> - has other alignments</p>);
@@ -1040,32 +1048,37 @@ sub render_all_species_page {
       (my $name = $dir) =~ s/_/ /;
       my $link_text = $common =~ /\./ ? $name : $common;
 
-      $html .= qq(<td style="width:8%;text-align:right;padding-bottom:1em">);
+      $html .= qq(<td style="width:5%;text-align:right;padding-bottom:1em">);
       if ($dir) {
         $html .= qq(<img class="species-img" style="width:40px;height:40px" src="/i/species/48/$dir.png" alt="$name">);
       }
       else {
         $html .= '&nbsp;';
       }
-      $html .= qq(</td><td style="width:25%;padding:2px;padding-bottom:1em">);
+      $html .= qq(</td><td style="width:28%;padding:2px;padding-bottom:1em">);
 
       if ($dir) {
         if ($info->{'status'} eq 'pre') {
           $html .= qq(<a href="http://pre.ensembl.org/$dir/" style="$link_style" rel="external">$link_text</a> (preview - assembly only));
+          $html .= qq(<nobr>);
+          $html .= qq( ($info->{'usual_name'})) if $info->{'usual_name'};
+          $html .= $info->{'strain'} ? " <small>$info->{'strain'}</small>" : '';
+          $html .= qq(</nobr>);
         }
         else {
           $html .= qq(<a href="/$dir/Info/Index/"  style="$link_style">$link_text</a>);
-
+          $html .= qq(<nobr>);
+          $html .= qq( ($info->{'usual_name'})) if $info->{'usual_name'};
+          $html .= $info->{'strain'} ? " <small>$info->{'strain'}</small>" : '';
+          $html .= qq(</nobr>);
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has a variation database">V</span>)
             if (exists $$species_resources[$index]->{has_variations} && $$species_resources[$index]->{has_variations} == 1);
 
-          my $compara = $$species_resources[$index]->{compara};
-          my $is_pan_compara = any { (exists $_->{is_pan_compara} && $_->{is_pan_compara} == 1) } @$compara;
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Is in pan-taxonomic compara">P</span>)
-              if $is_pan_compara;
+              if (exists $$species_resources[$index]->{has_pan_compara} && $$species_resources[$index]->{has_pan_compara} ==1);
 
-          my $is_compara = any { (exists$_->{is_dna_compara} && $_->{is_dna_compara}==1 ) } @$compara;
-          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has whole genome DNA alignments">G</span>) if $is_compara;
+          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has whole genome DNA alignments">G</span>) 
+            if (exists $$species_resources[$index]->{has_dna_compara} && $$species_resources[$index]->{has_dna_compara} ==1);
 
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has other alignments">A</span>) 
               if (exists $$species_resources[$index]->{has_other_alignments} && $$species_resources[$index]->{has_other_alignments}==1);
@@ -1075,10 +1088,8 @@ sub render_all_species_page {
           my $provider = $info->{'provider'};
           my $url  = $info->{'provider_url'};
 
-          my $strain = $info->{'strain'} ? " $info->{'strain'}" : '';
-          $name .= $strain;
-
           if ($provider) {
+            $html .= "<br>Data Source: ";
             if (ref $provider eq 'ARRAY') {
               my @urls = ref $url eq 'ARRAY' ? @$url : ($url);
               my $phtml;
@@ -1093,23 +1104,23 @@ sub render_all_species_page {
                 }
               }
 
-              $html .= qq{<br />$phtml | <i>$name</i>};
+              $html .= qq{$phtml};              
             } else {
               if ($url) {
                 $url = "http://$url" unless ($url =~ /http/);
-                $html .= qq{<br /><a href="$url" title="Provider: $provider">$provider</a> | <i>$name</i>};
+                $html .= qq{<a href="$url" title="Provider: $provider">$provider</a> };                
               } else {
-                $html .= qq{<br />$provider | <i>$name</i>};
+                $html .= qq{$provider };                
               }
             }
           } else {
-              $html .= qq{<br /><i>$name</i>};
+#              $html .= qq{<br /><i>$name</i>};
           }
         }
-        if($info->{'taxid'}){
-          (my $uniprot_url = $SD->ENSEMBL_EXTERNAL_URLS->{'UNIPROT_TAXONOMY'}) =~ s/###ID###/$info->{taxid}/;
-          $html .= sprintf(' | <a href="%s" title="Taxonomy ID: %s">%s</a>',$uniprot_url, $info->{'taxid'}, $info->{'taxid'});
-        }
+#        if($info->{'taxid'}){
+#          (my $uniprot_url = $SD->ENSEMBL_EXTERNAL_URLS->{'UNIPROT_TAXONOMY'}) =~ s/###ID###/$info->{taxid}/;
+#          $html .= sprintf(' | <a href="%s" title="Taxonomy ID: %s">%s</a>',$uniprot_url, $info->{'taxid'}, $info->{'taxid'});
+#        }
       }
       else {
         $html .= '&nbsp;';
@@ -1144,16 +1155,39 @@ sub render_all_species_page {
 }
 
 sub get_resources {
-  open FILE, "<".$SiteDefs::ENSEMBL_SERVERROOT."/eg-web-common/htdocs/species_metadata.json";
-  my $file_contents = do { local $/; <FILE> };
-  close FILE;
-  
-  my $data;
+  my $valid_species = shift;
 
-  eval { $data = from_json($file_contents ); };
-  
-#  return $data->{genome} unless $@;
- return $data unless $@;
+  my $sitename = $SD->SITE_NAME;
+  $sitename =~ s/\s//g;
+
+  my $eg_info = $SD->get_config('MULTI', 'databases')->{DATABASE_METADATA};
+  my $dbc = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($eg_info);
+  unless ($dbc) {
+    warn "Can't get configuration for ensemble_info_% database from MULTI.ini. Exiting";
+    exit;
+  }
+  my $gdba = $dbc->genome_info_adaptor;
+
+#  use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
+#  my $dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(
+#    -USER=>'anonymous',
+#    -PORT=>4157,
+#    -HOST=>'mysql.ebi.ac.uk',
+#    -DBNAME=>'ensemblgenomes_info_22'
+#  );
+#  
+#  my $gdba = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC=>$dbc);
+
+  my $data;  
+  for my $genome (@{$gdba->fetch_all_by_division($sitename)}) {
+    push @$data, { 
+      species => $genome->species,
+      has_pan_compara => $genome->has_pan_compara,
+      has_other_alignments => $genome->has_other_alignments,
+      has_dna_compara => $genome->has_genome_alignments,
+      has_variations=>$genome->has_variations};
+  }
+  return $data unless $@;
 }
 
 
