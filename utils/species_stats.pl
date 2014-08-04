@@ -453,9 +453,10 @@ foreach my $spp (@valid_spp) {
       print STATS qq(</table>);
 
       if ($eg_plugins) {
-        my $hub = new EnsEMBL::Web::Hub;
+        my $hub      = new EnsEMBL::Web::Hub;
         my $interpro = $hub->url({'action' => 'IPtop500'});
-        print STATS qq(<a href="../$interpro">Table of top 500 InterPro hits</a><br><br>);
+        my $url      = $SD->species_path($spp) . "/Info/$interpro";
+        print STATS qq(<a href="$url">Table of top 500 InterPro hits</a><br><br>);
       }
 
 
