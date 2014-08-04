@@ -460,7 +460,7 @@ foreach my $spp (@valid_spp) {
       if ($eg_plugins) {
         my $hub = new EnsEMBL::Web::Hub;
         my $interpro = $hub->url({'action' => 'IPtop500'});
-        print STATS qq(<a href="../$interpro">Table of top 500 InterPro hits</a><br><br>);
+        print STATS qq(<a href="/Info/$interpro">Table of top 500 InterPro hits</a><br><br>);
       }
 
 
