@@ -126,7 +126,7 @@ sub content {
   });
   
   # Protein coding transcripts only
-  if ($translation) {
+  if ($translation and ref $transcript ne 'Bio::EnsEMBL::PredictionTranscript') {
     $self->add_entry({
       type     => 'Protein product',
       label    => $translation->stable_id || $stable_id,
