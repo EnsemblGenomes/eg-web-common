@@ -16,8 +16,8 @@ my $genome_info_adaptor = $meta_data_adaptor->genome_info_adaptor;
 
 my %genomes;
 
-foreach (qw( Bacteria Fungi Metazoa Plants Protists  )) {
-  $genomes{$_->species} = $_ for @{ $genome_info_adaptor->fetch_all_by_division("Ensembl$_") };
+foreach my $division (qw( Ensembl EnsemblBacteria EnsemblFungi EnsemblMetazoa EnsemblPlants EnsemblProtists )) {
+  $genomes{$_->species} = $_ for @{ $genome_info_adaptor->fetch_all_by_division($division) };
 }
 
 $genomes{$_->species} = $_ for @{ $genome_info_adaptor->fetch_all_with_compara };
