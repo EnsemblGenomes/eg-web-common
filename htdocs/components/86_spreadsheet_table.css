@@ -21,3 +21,5 @@
 
 .toggleTable_wrapper_no_margin { margin: 0 0 0px; clear: both; }
 
+.col_toggle { white-space: nowrap }; /* EG - ENSEMBL-3313 */
+
