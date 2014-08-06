@@ -127,7 +127,7 @@ vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_s
     [
       {key=>'species',    sort=>'html', title=>'Species'},
       {key => 'dna',      sort=>'none', title => 'DNA'},    
-      {key => 'cdna',     sort=>'none', title => 'CDNA'},   
+      {key => 'cdna',     sort=>'none', title => 'cDNA'},   
       {key => 'prot',     sort=>'none', title => 'Protein'},    
       {key => 'embl',     sort=>'none', title => 'EMBL'},   
       {key => 'genbank',  sort=>'none', title => 'GENBANK'},
