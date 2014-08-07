@@ -46,14 +46,16 @@ sub draw_features {
       $max_score = $config->{'max_score'} unless $max_score;
 
       $self->draw_wiggle_plot($features, { 
-        min_score    => $min_score,
-        max_score    => $max_score, 
-        score_colour => $config->{'color'},
-        axis_colour  => 'black',
+        min_score           => $min_score,
+        max_score           => $max_score, 
+        score_colour        => $config->{'color'},
+        axis_colour         => 'black',
 ## EG        
-        description  => $config->{'name'},
+        description         => $config->{'name'},
+        has_pos_infinity    => $config->{'has_pos_infinity'},
+        has_neg_infinity    => $config->{'has_neg_infinity'},        
 ##
-        graph_type   => $graph_type,
+        graph_type          => $graph_type,
         use_feature_colours => (lc($config->{'itemRgb'}||'') eq 'on'),
       });
     }
