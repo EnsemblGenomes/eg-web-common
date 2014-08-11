@@ -29,7 +29,6 @@ sub init {
   
   $self->{'colours'}{$_} = $self->species_defs->colour($_) for qw(variation haplotype);
 
-
   $self->set_parameters({
     title            => 'Variation Image',
     show_labels      => 'yes',  # show track names on left-hand side
@@ -59,6 +58,8 @@ sub init {
     { menu => 'no' }
   );
   
+  # $self->get_node('variation_legend')->remove;
+  # $self->get_node('gene_legend')->remove;
 
   my $func = $self->{'code'} ne $self->{'type'} ? "init_$self->{'code'}" : "init_configurator";
   $self->$func if $self->can($func);
@@ -85,11 +86,8 @@ sub init_gene {
   my @tracks;
 
   push @tracks, [ 'contig', 'Contigs', 'contig', { display => 'off', strand => 'r', description => 'Track showing underlying assembly contigs' }];
- 
   push @tracks, [ 'seq', 'Sequence', 'sequence', { display => 'normal', strand => 'b', bump_width => 0, threshold => 0.2, colourset => 'seq',      description => 'Track showing sequence in both directions' }] if $length < 201;  #Sequence only displayed for less than 0.2Kb
- 
   push @tracks, [ 'codon_seq', 'Translated sequence', 'codonseq', { display => 'off', strand => 'b', bump_width => 0, threshold => 0.5, colourset => 'codonseq', description => 'Track showing 6-frame translation of sequence' }]   if $length < 501;  #Translated sequence only displayed for less than 0.5Kb
- 
   push @tracks, [ 'codons',    'Start/stop codons',   'codons',   { display => 'off', strand => 'b', threshold => 50,  colourset => 'codons',   description => 'Track indicating locations of start and stop codons in region' }];
 
   $self->add_tracks( 'sequence', (@tracks));
@@ -106,7 +104,7 @@ sub init_gene {
   );
     
   $self->get_node('gsv_domain')->remove;
-  
+ 
   $self->modify_configs(
     [ 'variation_feature_variation' ],
     { display => 'normal', caption => 'Variations', strand => 'b' }

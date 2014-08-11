@@ -49,11 +49,15 @@ sub content {
   my $context      = $object->param( 'context' ) || 100;
   my $extent       = $context eq 'FULL' ? 1000 : $context;
 
+  unless ($object->isa('EnsEMBL::Web::Object::Gene') || $object->isa('EnsEMBL::Web::Object::LRG')){
+    $object = $self->hub->core_object('gene');
+  }
+
   $object->get_gene_slices(                                                   
     undef,
     [ 'gene',        'normal', '33%'  ],
     [ 'transcripts', 'munged', $extent ],
-			    );
+	);
 
   my $start_difference =  $object->__data->{'slices'}{'transcripts'}[1]->start - $object->__data->{'slices'}{'gene'}[1]->start;
   $start_difference = $start_difference > 0 ? $start_difference : $start_difference * -1;
@@ -220,6 +224,11 @@ sub nav_url {
 
   my $hub    = $self->hub;
   my $object = $self->object;
+
+  unless ($object->isa('EnsEMBL::Web::Object::Gene') || $object->isa('EnsEMBL::Web::Object::LRG')){
+    $object = $self->hub->core_object('gene');
+  }
+
 
   my $start_difference =  $object->__data->{'slices'}{'transcripts'}[1]->start - $object->__data->{'slices'}{'gene'}[1]->start;
   $start_difference = $start_difference > 0 ? $start_difference : $start_difference * -1;
