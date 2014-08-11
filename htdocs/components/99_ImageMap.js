@@ -32,7 +32,7 @@ Ensembl.Panel.ImageMap =  Ensembl.Panel.ImageMap.extend({
   makeImageMap: function () {
     var panel = this;
     
-    var highlight = !!(window.location.pathname.match(/\/Location\/|\/Variation_Gene\/Image/) && !this.vdrag);
+    var highlight = !!(window.location.pathname.match(/\/Location\/|\/Variation_(Gene|Transcript)\/Image/) && !this.vdrag);
     var rect      = [ 'l', 't', 'r', 'b' ];
     var speciesNumber, c, r, start, end, scale;
 

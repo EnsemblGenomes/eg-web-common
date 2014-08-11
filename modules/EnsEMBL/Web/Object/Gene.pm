@@ -63,7 +63,9 @@ sub _counts {
 
 sub store_TransformedTranscripts {
   my $self = shift;
+## EG  
   my $offset = shift;  
+##
 
   $offset ||= $self->__data->{'slices'}{'transcripts'}->[1]->start -1;
 
@@ -111,8 +113,9 @@ sub store_TransformedTranscripts {
 sub store_TransformedDomains {
     my $self = shift;
     my $key  = shift;
+## EG    
     my $offset = shift;
-
+##
     my %domains;
 
     $offset ||= $self->__data->{'slices'}{'transcripts'}->[1]->start -1;
@@ -137,80 +140,22 @@ sub store_TransformedDomains {
     }
 }
 
-
-sub get_munged_slice2 {
-    my $self = shift;
-    my $ori     = shift;
-    my $slice   = shift;
-    my $CONTEXT = 'FULL'; 
-
-    $slice    = $slice->invert if $ori && $slice->strand != $ori;
-    $slice = $slice->expand($CONTEXT, $CONTEXT);
-
-    my $gene_stable_id = $self->stable_id;
-
-    my $length = $slice->length();
+sub get_Slice {
+  my ($self, $context, $ori) = @_;
+## EG
+  # HORRIBLE HACK: if we've got a variation zoom slice, serve it instead of the original slice
+  my $slice;
+  if ($self->{_variation_zoom_slice}) {
+    $slice   = $self->{_variation_zoom_slice};
+    $context = 'FULL';
+  } else {
+    $slice   = $self->Obj->feature_Slice;
+    $context = $slice->length * $1 / 100 if $context =~ /(\d+)%/;
+  }
+##  
+  $slice    = $slice->invert if $ori && $slice->strand != $ori;
   
-    my $EXTENT  = $CONTEXT eq 'FULL' ? 1000 : $CONTEXT;
-  ## first get all the transcripts for a given gene...                                           
-    my @ANALYSIS = ( $self->get_db() eq 'core' ? (lc($self->species_defs->AUTHORITY)||'ensembl') : 'otter' );
-    @ANALYSIS = qw(ensembl havana ensembl_havana_gene) if $ENV{'ENSEMBL_SPECIES'} eq 'Homo_sapiens';
-  # my $features = [map { @{ $slice->get_all_Genes($_)||[]} } @ANALYSIS ];                                                                                                                               
-    my $features = $slice->get_all_Genes( undef, $self->param('opt_db') );
-    my @lengths;
-
-    @lengths = ( $length );
-
-  ## @lengths contains the sizes of gaps and exons(+- context)                                                                                                                         
-    my $collapsed_length = 0;
-    my $flag = 0;
-    my $subslices = [];
-    my $pos = 0;
-    foreach(@lengths,0) {
-	if ($flag=1-$flag) {
-	    push @$subslices, [ $pos+1, 0, 0 ] ;
-	    $collapsed_length += $_;
-	} else {
-	    $subslices->[-1][1] = $pos;
-	}
-	$pos+=$_;
-    }
-  ## compute the width of the slice image within the display                                                                                                                                            
-  my $PIXEL_WIDTH =
-    ($self->param('image_width')||800) -
-        ( $self->param( 'label_width' ) || 100 ) -
-	3 * ( $self->param( 'margin' )      ||   5 );
-
-  ## Work out the best size for the gaps between the "exons"                                                                                                                                             
-    my $fake_intron_gap_size = 11;
-    my $intron_gaps  = ((@lengths-1)/2);
-
-    if( $intron_gaps * $fake_intron_gap_size > $PIXEL_WIDTH * 0.75 ) {
-	$fake_intron_gap_size = int( $PIXEL_WIDTH * 0.75 / $intron_gaps );
-    }
-  ## Compute how big this is in base-pairs                                                                                                                                                         
-    my $exon_pixels  = $PIXEL_WIDTH - $intron_gaps * $fake_intron_gap_size;
-    my $scale_factor = $collapsed_length / $exon_pixels;
-    my $padding      = int($scale_factor * $fake_intron_gap_size) + 1;
-    $collapsed_length += $padding * $intron_gaps;
-
-  ## Compute offset for each subslice                                                                                                                                               
-    my $start = 0;
-    foreach(@$subslices) {
-	$_->[2] = $start - $_->[0];
-	$start += $_->[1]-$_->[0]-1 + $padding;
-    }
-
-    return [ 'munged', $slice, $subslices, $collapsed_length ];
-}
-
-sub getVariationsOnSlice {
-    my( $self, $slice, $subslices, $gene, $so_terms, $no_munge) = @_;
-    my $sliceObj = $self->new_object('Slice', $slice, $self->__data);
-    my ($count_snps, $filtered_snps, $context_count) = $sliceObj->getFakeMungedVariationFeatures($subslices,$gene,$no_munge);
-    $self->__data->{'sample'}{"snp_counts"} = [$count_snps, scalar @$filtered_snps];
-    $self->__data->{'SNPS'} = $filtered_snps;
-    return ($count_snps, $filtered_snps, $context_count);
+  return $slice->expand($context, $context);
 }
 
 ## EG - remove status from gene type
