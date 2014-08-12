@@ -29,6 +29,8 @@ sub modify {
   $self->load_configured_bed;
   $self->load_configured_bedgraph;
   $self->load_configured_mw;
+
+  $self->get_node('fg_methylation_legend')->remove;
 } 
 
 1;
