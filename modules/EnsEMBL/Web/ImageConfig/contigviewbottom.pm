@@ -30,7 +30,8 @@ sub modify {
   $self->load_configured_bedgraph;
   $self->load_configured_mw;
 
-  $self->get_node('fg_methylation_legend')->remove;
+  my $ml = $self->get_node('fg_methylation_legend');
+  $ml->remove if $ml;
 } 
 
 1;
