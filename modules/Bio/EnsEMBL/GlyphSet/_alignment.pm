@@ -290,7 +290,7 @@ sub render_normal {
         }
       }
 ## EG - temporary fix for https://github.com/Ensembl/ensembl-webcode/pull/71      
-      if ($config and ($config->{'useScore'}) {
+      if ($config and $config->{'useScore'}) {
 ##      
         if ($feat[0][2]->can('score')) {
           my $score = $feat[0][2]->score || 0;
