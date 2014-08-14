@@ -41,45 +41,31 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
   },
 
   populateRegion: function () {
-    var variationGene = !!window.location.pathname.match(/\/Variation_Gene\/Image/);
+    var variationGene = !!window.location.pathname.match(/\/Variation_(Gene|Transcript)\/Image/);
     
-    if (variationGene) {
-      var min   = this.start;
-      var max   = this.end;
-      console.log(min, max);
-      var menu  = [ '<a class="location_change" href="' + this.variationZoomURL(1, min, max) + '">Centre here</a>' ];
-      var caption;
-      
-      if (this.coords.r) {
-        var scale = (max - min + 1) / (this.areaCoords.r - this.areaCoords.l);
-        var start = Math.floor(min + (this.coords.s - this.areaCoords.l) * scale);
-        var end   = Math.floor(min + (this.coords.s + this.coords.r - this.areaCoords.l) * scale);
-        
-        if (start > end) {
-          var tmp = start;
-          start = end;
-          end   = tmp;
-        }
-        
-        if (start < min) {
-          start = min;
-        }
-        
-        if (end > max) {
-          end = max;
-        }
-        
-        caption = 'Region: ' + this.chr + ':' + start + '-' + end;
-        
-        menu.unshift('<a class="location_change" href="' + this.baseURL.replace(/%s/, this.chr + ':' + start + '-' + end) + '">Jump to region (' + (end - start) + ' bp)</a>');
-      } else {
-        caption = 'Location: ' + this.chr + ':' + this.location;
-      }
-      
-      this.buildMenu(menu, caption);
-    } else {
-      this._populateRegion();
+    if (!variationGene || !this.coords.r) {
+      return this._populateRegion();
     }
+
+    var min   = this.start;
+    var max   = this.end;
+    var scale = (max - min + 1) / (this.areaCoords.r - this.areaCoords.l);
+    var start = Math.floor(min + (this.coords.s - this.areaCoords.l) * scale);
+    var end   = Math.floor(min + (this.coords.s + this.coords.r - this.areaCoords.l) * scale);
+    
+    if (start > end) {
+      var tmp = start;
+      start = end;
+      end   = tmp;
+    }
+
+    start = Math.max(start, min);
+    end   = Math.min(end,   max);
+
+    this.buildMenu(
+      [ '<a class="location_change" href="' + this.baseURL.replace(/%s/, this.chr + ':' + start + '-' + end) + '">Jump to region (' + (end - start) + ' bp)</a>' ],
+      'Region: ' + this.chr + ':' + start + '-' + end
+    );
   },
   
   _populateRegion: function () {
