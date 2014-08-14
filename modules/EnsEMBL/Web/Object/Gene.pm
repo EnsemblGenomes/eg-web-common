@@ -244,7 +244,10 @@ sub get_homology_matches {
         $homology_list{$display_spp}{$homologue->stable_id} = { 
           homology_desc       => $desc_mapping{$homology_desc} || 'no description',
           description         => $homologue->description       || 'No description',
-          display_id          => $homologue->display_label     || 'Novel Ensembl prediction',
+## EG - ENSEMBL-3342         
+          display_id          => $homologue->display_label     || '',
+          #display_id          => $homologue->display_label     || 'Novel Ensembl prediction',
+##          
           homology_subtype    => $homology_subtype,
           spp                 => $display_spp,
           query_perc_id       => $query_perc_id,
