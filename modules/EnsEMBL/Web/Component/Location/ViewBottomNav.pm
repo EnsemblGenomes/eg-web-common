@@ -105,6 +105,7 @@ sub nav_url {
     ($s, $e) = (1, $e - $s || 1) if $s < 1;
     ($s, $e) = ($max - ($e - $s), $max) if $e > $max;
     
+    $s = 1  if $s < 1;
     $s = $e if $s > $e;
   }
 ##                                            
