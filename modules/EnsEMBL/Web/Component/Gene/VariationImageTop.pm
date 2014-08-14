@@ -22,7 +22,7 @@ package EnsEMBL::Web::Component::Gene::VariationImageTop;
 
 use strict;
 
-use base qw(EnsEMBL::Web::Component::Gene);
+use base qw(EnsEMBL::Web::Component);
 
 sub _init {
   my $self = shift;
@@ -38,27 +38,33 @@ sub caption {
 sub _content {
   my $self    = shift;
   my $no_snps = shift;
+  my $ic_type = shift || 'gene_variation'; 
+  my $hub     = $self->hub;
   my $object  = $self->object;
   my $image_width  = $self->image_width || 800;  
   my $context      = $object->param( 'context' ) || 100; 
   my $extent       = $context eq 'FULL' ? 1000 : $context;
   my $hub          = $self->hub;
+  my $config_type;
 
-  # Padding-----------------------------------------------------------
-  # Get 4 configs - and set width to width of context config
-  # Get two slice -  gene (4/3x) transcripts (+-EXTENT)
-  my $Configs;
-  $Configs->{'gene'} = $hub->get_imageconfig('gene_variation', 'gene_top');
-  $Configs->{'gene'}->set_parameters({ 'image_width' => $image_width, 'context' => $context, 'slice_number' => '1|1' });
+  if ($object->isa('EnsEMBL::Web::Object::Gene') || $object->isa('EnsEMBL::Web::Object::LRG')){
+    $config_type = 'gene_variation';
+  } else {
+    $object = $self->hub->core_object('gene');
+    $config_type = $ic_type;
+  }
+
+  my $config = $hub->get_imageconfig($config_type, 'gene_top');
+  $config->set_parameters({ 'image_width' => $image_width, 'context' => $context, 'slice_number' => '1|1' });
   
-   $object->get_gene_slices( ## Written...
-    $Configs->{'gene'},
+  $object->get_gene_slices( ## Written...
+    $config,
     [ 'gene',        'normal', '33%'  ],
     [ 'transcripts', 'munged', $extent ]
   );
 
   my $transcript_slice = $object->__data->{'slices'}{'transcripts'}[1]; 
-  my $sub_slices       =  $object->__data->{'slices'}{'transcripts'}[2];  
+  my $sub_slices       = $object->__data->{'slices'}{'transcripts'}[2];  
 
   # Fake SNPs -----------------------------------------------------------
   # Grab the SNPs and map them to subslice co-ordinate
@@ -72,10 +78,10 @@ sub _content {
        $_->[2]->end   + $start_difference,
        $_->[2]] } @$snps;
 
-  $Configs->{'gene'}->{'filtered_fake_snps'} = \@fake_filtered_snps unless $no_snps;
+  $config->{'filtered_fake_snps'} = \@fake_filtered_snps unless $no_snps;
 
   ## -- Render image ------------------------------------------------------ ##
-  my $image = $self->new_image($object->__data->{'slices'}{'gene'}[1], $Configs->{'gene'});
+  my $image = $self->new_image($object->__data->{'slices'}{'gene'}[1], $config);
 
   return if $self->_export_image($image, 'no_text');
 

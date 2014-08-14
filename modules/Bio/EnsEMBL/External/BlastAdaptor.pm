@@ -829,9 +829,7 @@ AND    chr_end   >= ? );
    my @hsps = ();
    foreach my $row( @{$sth->fetchall_arrayref()} ){
      # Retrieve HSP and reset token
-## EG     
-     my $hsp = _thaw( $row->[0] );
-##     
+     my $hsp = thaw( $row->[0] );
      my $hsp_id = $row->[1];
      $hsp->token( join( '!!', $hsp_id, $use_date  ) );
      push @hsps, $hsp;

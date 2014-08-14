@@ -30,7 +30,7 @@ sub content {
       <a href="http://www.ensemblgenomes.org/info/about/contact">Contact&nbsp;Us</a> | 
       <a href="http://www.ebi.ac.uk/Information/termsofuse.html">EMBL-EBI Terms of use</a> | 
       <a href="http://www.ebi.ac.uk/Information/Privacy.html">Privacy</a> | 
-      <a href="/info/about/cookies.html">Cookies</a> | 
+      <a href="http://www.ensemblgenomes.org/info/about/cookies">Cookies</a> | 
       <a href="/info/website/help/index.html">Help</a> 
     </div>) 
   ;
