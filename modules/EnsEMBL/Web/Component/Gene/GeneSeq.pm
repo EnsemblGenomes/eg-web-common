@@ -1,6 +1,6 @@
 =head1 LICENSE
 
-Copyright [2009-2014] EMBL-European Bioinformatics Institute
+Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,27 +16,15 @@ limitations under the License.
 
 =cut
 
-# $Id: TextSequence.pm,v 1.8 2013-09-05 13:07:16 nl2 Exp $
+package EnsEMBL::Web::Component::Gene::GeneSeq;
 
-package EnsEMBL::Web::Component::TextSequence;
+sub content_buttons {
+  my $self = shift;
+  my $hub=$self->hub;
 
-use strict;
-  
-
-sub tool_buttons {
-  my ($self, $blast_seq, $peptide) = @_;
-  
-  return unless $self->html_format;
-  
-  my $hub  = $self->hub;
-  my $html = sprintf('
-    <div class="other_tool">
-      <p><a class="seq_export export" href="%s">Download view as RTF</a></p>
-    </div>', 
-    $self->ajax_url('rtf', { filename => join('_', $hub->type, $hub->action, $hub->species, $self->object->Obj->stable_id), _format => 'RTF' })
-  );
-  
-  if ($blast_seq && $hub->species_defs->ENSEMBL_BLAST_ENABLED) {
+  my $slice = $self->object->slice;
+  my $seq = $slice->{'seq'} || $slice->seq(1);
+  if ($seq && $hub->species_defs->ENSEMBL_BLAST_ENABLED) {
     $html .= sprintf('
       <div class="other_tool">
         <p><a class="seq_blast find" href="#">BLAST this sequence</a></p>
@@ -48,11 +36,10 @@ sub tool_buttons {
           </fieldset>
         </form>
       </div>',
-      $blast_seq, $hub->species, $peptide ? '<input type="hidden" name="query" value="peptide" /><input type="hidden" name="database" value="peptide" />' : ''
+      $seq, $hub->species, ''
     );
   }
-
-  if ($self->hub->species_defs->ENSEMBL_ENASEARCH_ENABLED && $blast_seq) {
+  if ($self->hub->species_defs->ENSEMBL_ENASEARCH_ENABLED && $seq) {
     $html .= sprintf('
       <div class="other_tool">
         <p><a class="seq_ena find" href="#">Search Ensembl Genomes with this sequence</a></p>
@@ -64,12 +51,9 @@ sub tool_buttons {
           </fieldset>
         </form>
       </div>',
-      $blast_seq
+      $seq
     );
   }
-
-  
-  return $html;
 }
 
 1;
