@@ -329,7 +329,7 @@ sub content {
       });
     }
 
-    my $comparison_view_link = 1;
+    my $comparison_view_link = $object->availability->{has_pairwise_alignments};
     $comparison_view_link = 0 if ($cdb =~ /pan/);
 
     if ($leaf_count <= 10) {
