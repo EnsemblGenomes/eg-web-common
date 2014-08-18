@@ -40,26 +40,34 @@ sub content {
     );
   }
 
-  my $length = $slice->end -$slice->start + 1;
-
-  # adding 10% length at either end of the feature view if REGION_EXTENSION_VIEW is set in MULTI.ini
-  my $k = $hub->species_defs->get_config('MULTI', 'REGION_EXTENSION_VIEW') || '';
-
-  if ( $hub->param('t') && $k && $k < 1) {
-    my $extension = int (($slice->end - $slice->start) * $k);
-    my $start = $slice->start - $extension;
-    my $end = $slice->end + $extension;
-    $length = $end -$start + 1;
+## EG - ENSEMBL-2911 add flanking if we are looking at a single feature 
+##      and REGION_EXTENSION_VIEW is set in MULTI.ini
+  my $t         = $hub->param('t');
+  my $extension = $hub->species_defs->get_config('MULTI', 'REGION_EXTENSION_VIEW');
   
+  if ($t and $extension and $extension < 1) {
+      
+    my $transcript = $hub->get_adaptor('get_TranscriptAdaptor')->fetch_by_stable_id($t);
 
-    $slice = Bio::EnsEMBL::Slice->new(-COORD_SYSTEM      =>  $slice->coord_system(),
-                                        -SEQ_REGION_NAME => $slice->seq_region_name,
-                                        -SEQ_REGION_LENGTH  => $length,
-                                        -START              => $start,
-                                        -END                => $end,
-                                        -STRAND             => $slice->strand,
-                                        -ADAPTOR            => $slice->adaptor);
+    if ($transcript->start == $slice->start and $transcript->end == $slice->end) {
+      my $flank = int (($slice->end - $slice->start) * $extension);
+      my $start = $slice->start - $flank;
+      my $end   = $slice->end + $flank;
+    
+      $slice = Bio::EnsEMBL::Slice->new(
+        -COORD_SYSTEM      => $slice->coord_system,
+        -SEQ_REGION_NAME   => $slice->seq_region_name,
+        -SEQ_REGION_LENGTH => $end - $start + 1,
+        -START             => $start,
+        -END               => $end,
+        -STRAND            => $slice->strand,
+        -ADAPTOR           => $slice->adaptor
+      );
+    }
   }
+##
+
+  my $length = $slice->end - $slice->start + 1;
 
   # Add multicell configuration
   $image_config->set_parameters({

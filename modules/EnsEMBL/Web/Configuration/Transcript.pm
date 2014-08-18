@@ -51,6 +51,25 @@ sub modify_tree {
     }
   }
 
+  # Zoomable variation image
+
+  # $var_menu->append($self->create_node('Variation_Transcript/Image', 'Variation image',
+  #   [qw( variationimage EnsEMBL::Web::Component::Transcript::VariationImage )],
+  #   { 'availability' => 'transcript database:variation core' }
+  # ));
+
+  my $variation_image = $self->get_node('Variation_Transcript/Image');
+  
+  $variation_image->set('components', [qw( 
+    imagetop EnsEMBL::Web::Component::Transcript::VariationImageTop
+    imagenav EnsEMBL::Web::Component::Transcript::VariationImageNav
+    image EnsEMBL::Web::Component::Transcript::VariationImage 
+  )]);
+  
+  $variation_image->set('availability', 'transcript database:variation core');
+
+  # Ontology
+
   my $go_menu = $self->get_node('GO');
   $self->delete_node('Ontology/Image');
   $self->delete_node('Ontology/Table');

@@ -40,6 +40,7 @@ sub render {
   my %title = (
     dna       => 'Masked and unmasked genome sequences associated with the assembly (contigs, chromosomes etc.)',
     cdna      => 'cDNA sequences for protein-coding genes',
+    ncrna     => 'Non-coding RNA sequences',
     prot      => 'Protein sequences for protein-coding genes',
     rna       => 'Non-coding RNA gene predictions',
     embl      => 'Ensembl Genomes database dumps in EMBL nucleotide sequence database format',
@@ -95,6 +96,7 @@ sub render {
 species    => qq{<strong><i>$sp_name</i></strong>},
 dna        => qq{<a rel="external"  title="$title{'dna'}" href="$ftp_base_path_stub/fasta/$sp_dir/dna/">FASTA</a> (DNA)},
 cdna       => qq{<a rel="external"  title="$title{'cdna'}" href="$ftp_base_path_stub/fasta/$sp_dir/cdna/">FASTA</a> (cDNA)},
+ncrna      => qq{<a rel="external"  title="$title{'ncrna'}" href="$ftp_base_path_stub/fasta/$sp_dir/ncrna/">FASTA</a> (ncRNA)},
 prot       => qq{<a rel="external"  title="$title{'prot'}" href="$ftp_base_path_stub/fasta/$sp_dir/pep/">FASTA</a> (protein)},
 embl       => qq{<a rel="external"  title="$title{'embl'}" href="$ftp_base_path_stub/embl/} . $sp_dir . qq{/">EMBL</a>},
 genbank    => qq{<a rel="external"  title="$title{'genbank'}" href="$ftp_base_path_stub/genbank/} . $sp_dir . qq{/">GenBank</a>},
@@ -127,7 +129,8 @@ vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_s
     [
       {key=>'species',    sort=>'html', title=>'Species'},
       {key => 'dna',      sort=>'none', title => 'DNA'},    
-      {key => 'cdna',     sort=>'none', title => 'cDNA'},   
+      {key => 'cdna',     sort=>'none', title => 'cDNA'},
+      {key => 'ncrna',    sort=>'none', title => 'ncRNA'},   
       {key => 'prot',     sort=>'none', title => 'Protein'},    
       {key => 'embl',     sort=>'none', title => 'EMBL'},   
       {key => 'genbank',  sort=>'none', title => 'GENBANK'},

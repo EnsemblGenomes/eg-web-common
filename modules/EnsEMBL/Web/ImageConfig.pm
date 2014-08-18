@@ -378,7 +378,7 @@ sub _add_bed_track {
   $self->_add_flat_file_track($menu, 'url', $args{'key'}, $source->{'source_name'},
      $description,
      url     => $source->{'source_url'},
-     format  => $source->{'format'},
+     format  => $source->{'format'} || 'bed',
      display => $source->{'display'} || 'normal',
      description => $description
   );

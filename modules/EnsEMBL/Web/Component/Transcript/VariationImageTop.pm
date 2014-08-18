@@ -16,22 +16,15 @@ limitations under the License.
 
 =cut
 
-# $Id: contigviewbottom.pm,v 1.7 2013-11-27 14:23:52 ek3 Exp $
+# $Id: VariationImageTop.pm,v 1.1 2012-07-30 13:24:52 it2 Exp $
 
-package EnsEMBL::Web::ImageConfig::contigviewbottom;
+package EnsEMBL::Web::Component::Transcript::VariationImageTop;
 
-use strict;
+use base qw(EnsEMBL::Web::Component::Gene::VariationImageTop);
 
-sub modify {
-  my $self = shift;
-  
-  $self->load_configured_bam;
-  $self->load_configured_bed;
-  $self->load_configured_bedgraph;
-  $self->load_configured_mw;
-
-  my $ml = $self->get_node('fg_methylation_legend');
-  $ml->remove if $ml;
-} 
+sub content {
+  return $_[0]->_content(0, 'transcript_variation');
+}
 
 1;
+

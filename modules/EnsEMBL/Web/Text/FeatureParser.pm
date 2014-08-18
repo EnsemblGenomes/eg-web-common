@@ -18,10 +18,8 @@ limitations under the License.
 
 package EnsEMBL::Web::Text::FeatureParser;
 
-use strict;
-use warnings;
-no warnings "uninitialized";
-
+### This object parses data supplied by the user and identifies 
+### sequence locations for use by other Ensembl objects
 sub parse { 
   my ($self, $data, $format) = @_;
   ## Make sure format is given as uppercase
@@ -34,6 +32,7 @@ sub parse {
     return $error;
   }
   else {
+    $format = uc($self->format);
     my $filter = $self->filter;
 
     ## Some complex formats need extra parsing capabilities
