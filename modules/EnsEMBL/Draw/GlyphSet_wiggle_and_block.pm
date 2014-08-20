@@ -522,8 +522,8 @@ sub draw_wiggle_points {
 
 ## EG - ENSEMBL-3226 support infinity         
       if ($_->[0] =~ /INF/) {
-        $height = $max_score * $pix_per_score                         if $_->[0] = 'INF';
-        $height = min($parameters->{'min_score'}, 0) * $pix_per_score if $_->[0] = '-INF';
+        $height = $max_score * $pix_per_score                         if $_->[0] eq 'INF';
+        $height = min($parameters->{'min_score'}, 0) * $pix_per_score if $_->[0] eq '-INF';
       } else{ 
         $height = ($max_score ? min($_->[0], $max_score) : $_->[0]) * $pix_per_score;
       }
