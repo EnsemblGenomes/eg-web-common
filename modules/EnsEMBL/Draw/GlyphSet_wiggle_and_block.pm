@@ -86,8 +86,9 @@ sub draw_gradient {
     default => sub { return $_[0] },
     log2 => sub {
       my $score = shift;
+      $score = 0 if $score < 0;
       return 1 if $score == 0;
-      return 0 if $score == 1;
+      return 0 if $score == 1;   
       return ( log(1 / $score) / log(2) ) / 10;
     }
   );
@@ -278,7 +279,7 @@ sub draw_wiggle_plot {
   my $textheight    = [ $self->get_text_width(0, $label, '', %font) ]->[3];  
   my $pix_per_score = $max_score == $min_score ? $self->label->height : $row_height / max($max_score - $min_score, 1);
   my $top_offset    = 0;
-  my $initial_offset= $self->_offset;
+  my $initial_offset= 0;
   my $bottom_offset = $max_score == $min_score ? 0 : (($max_score - ($min_score < 0 ? $min_score : 0)) || 1) * $pix_per_score;
   my $zero_offset   = $max_score * $pix_per_score;
 
@@ -463,11 +464,11 @@ sub draw_wiggle_plot {
       if ($parameters->{'graph_type'} eq 'line') {
         $self->draw_wiggle_points_as_line($feature_set, $slice, $parameters, $initial_offset + $top_offset, $pix_per_score, $colour, $zero_offset);
       } else {
-        $self->draw_wiggle_points($feature_set, $slice, $parameters, $top_offset, $pix_per_score, $colour, $zero_offset);
+        $self->draw_wiggle_points($feature_set, $slice, $parameters, $initial_offset + $top_offset, $pix_per_score, $colour, $zero_offset);
       }
     }
   } else {
-    $self->draw_wiggle_points($features, $slice, $parameters, $top_offset, $pix_per_score, $colour, $zero_offset);  
+    $self->draw_wiggle_points($features, $slice, $parameters, $initial_offset + $top_offset, $pix_per_score, $colour, $zero_offset);  
   }
     
   return 1;
@@ -480,6 +481,7 @@ sub draw_wiggle_points {
   my $max_score = max($parameters->{'max_score'}, 0);
   my $zero      = $top_offset + $zero_offset;
   
+   my $count = 1;
   foreach my $f (@$features) {
     my ($start, $end, $score, $min_score, $height, $width, $x);
     my $href        = ref $f ne 'HASH' && $f->can('id') ? $hrefs->{$f->id} : '';
@@ -515,10 +517,18 @@ sub draw_wiggle_points {
     
     $x     = $start - 1;
     $width = $end - $start + 1;
-    
+   
     foreach ([ $score, $this_colour ], $min_score ? [ $min_score, 'steelblue' ] : ()) {
-      $height = ($max_score ? min($_->[0], $max_score) : $_->[0]) * $pix_per_score;
-      
+
+## EG - ENSEMBL-3226 support infinity         
+      if ($_->[0] =~ /INF/) {
+        $height = $max_score * $pix_per_score                         if $_->[0] = 'INF';
+        $height = min($parameters->{'min_score'}, 0) * $pix_per_score if $_->[0] = '-INF';
+      } else{ 
+        $height = ($max_score ? min($_->[0], $max_score) : $_->[0]) * $pix_per_score;
+      }
+##
+
       $self->push($self->Rect({
         y         => $zero - max($height, 0),
         height    => $points ? 0 : abs $height,
@@ -526,9 +536,9 @@ sub draw_wiggle_points {
         width     => $width,
         absolutey => 1,
 ## EG - ENSEMBL-3226 support infinity        
-        colour    => $_->[0] eq 'INF' ? 'black' : $_->[1],
-## EG        
-        title     => $parameters->{'no_titles'} ? undef : sprintf('%.2f', $_->[0]),
+        colour    => $_->[0] =~ /INF/ ? 'black' : $_->[1],      
+        title     => $parameters->{'no_titles'} ? undef : $self->score_title($_->[0]),
+## EG         
         href      => $href,
       }));
     }
@@ -536,5 +546,12 @@ sub draw_wiggle_points {
 
   return 1;
 } 
+
+sub score_title {
+  my ($self, $score) = @_;
+  return 'Infinite value'           if $score eq 'INF';
+  return 'Negavtive infinite value' if $score eq '-INF';
+  return sprintf('%.2f', $score);
+}
 
 1;
