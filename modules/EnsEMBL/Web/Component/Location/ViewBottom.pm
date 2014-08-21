@@ -46,23 +46,10 @@ sub content {
   my $extension = $hub->species_defs->get_config('MULTI', 'REGION_EXTENSION_VIEW');
   
   if ($t and $extension and $extension < 1) {
-      
     my $transcript = $hub->get_adaptor('get_TranscriptAdaptor')->fetch_by_stable_id($t);
-
     if ($transcript->start == $slice->start and $transcript->end == $slice->end) {
       my $flank = int (($slice->end - $slice->start) * $extension);
-      my $start = $slice->start - $flank;
-      my $end   = $slice->end + $flank;
-    
-      $slice = Bio::EnsEMBL::Slice->new(
-        -COORD_SYSTEM      => $slice->coord_system,
-        -SEQ_REGION_NAME   => $slice->seq_region_name,
-        -SEQ_REGION_LENGTH => $end - $start + 1,
-        -START             => $start,
-        -END               => $end,
-        -STRAND            => $slice->strand,
-        -ADAPTOR           => $slice->adaptor
-      );
+      $slice = $slice->expand($flank, $flank);     
     }
   }
 ##
