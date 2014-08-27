@@ -72,6 +72,11 @@ sub init {
   );
 ## EG
 
+## EG
+  my $ml = $self->get_node('fg_methylation_legend');
+  $ml->remove if $ml;
+##
+
 }
 
 
