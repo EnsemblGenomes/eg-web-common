@@ -46,8 +46,8 @@ sub content {
   my $extension = $hub->species_defs->get_config('MULTI', 'REGION_EXTENSION_VIEW');
   
   if ($t and $extension and $extension < 1) {
-    my $transcript = $hub->get_adaptor('get_TranscriptAdaptor')->fetch_by_stable_id($t);
-    if ($transcript->start == $slice->start and $transcript->end == $slice->end) {
+    my $transcript = $hub->get_adaptor('get_TranscriptAdaptor', $hub->param('db'))->fetch_by_stable_id($t);
+    if ($transcript and $transcript->start == $slice->start and $transcript->end == $slice->end) {
       my $flank = int (($slice->end - $slice->start) * $extension);
       $slice = $slice->expand($flank, $flank);     
     }
