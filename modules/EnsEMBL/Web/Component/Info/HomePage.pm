@@ -184,8 +184,8 @@ sub content {
   $html .= '</div>'; #box-left
   $html .= '<div class="box-right">';
   
-  if ($hub->species_defs->multidb->{'DATABASE_PRODUCTION'}{'NAME'}) {
-    $html .= '<div class="round-box info-box unbordered">' . $self->_whatsnew_text . '</div>';
+  if ($hub->species_defs->multidb->{'DATABASE_PRODUCTION'}{'NAME'} and my $whatsnew_text = $self->_whatsnew_text) {
+    $html .= '<div class="round-box info-box unbordered">' . $whatsnew_text . '</div>';
   } elsif (my $ack_text = $self->_other_text('acknowledgement', $species)) {
     $html .= '<div class="plain-box round-box unbordered">' . $ack_text . '</div>';
   }
