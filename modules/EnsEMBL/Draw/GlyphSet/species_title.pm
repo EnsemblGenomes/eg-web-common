@@ -30,7 +30,7 @@ sub _init {
   my ($self) = @_;
   return if $self->strand != 1;
 
-  my( $fontname, $fontsize ) = $self->get_font_details('text');
+  my( $fontname, $fontsize ) = $self->get_font_details('legend');
 
   my $species      = $self->my_config('species') || $self->{config}->{species};
   my $display_name = $self->species_defs->species_display_label($species);
