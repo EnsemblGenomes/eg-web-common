@@ -39,17 +39,20 @@ sub _init {
   my $pix_per_bp   = $self->scalex; 
   my $gutter_width = 118;
 
-  $self->push( Sanger::Graphics::Glyph::Text->new({
-    'x'         => -$gutter_width / $pix_per_bp, 
-    'y'         => 2,
-    'height'    => $h,
-    'halign'    => 'left',
-    'font'      => $fontname,
-    'ptsize'    => $fontsize,
-    'colour'    => 'black',
-    'text'      => $display_name,
-    'absolutey' => 1,
-  }) );
+  $self->push(Sanger::Graphics::Glyph::Text->new({
+    x         => -$gutter_width / $pix_per_bp, 
+    y         => 2,
+    height    => $h,
+    halign    => 'left',
+    font      => $fontname,
+    ptsize    => $fontsize,
+    colour    => 'black',
+    text      => $display_name,
+    absolutey => 1,
+  }));
+
+  # spacer
+  $self->push( Sanger::Graphics::Glyph::Rect->new( { x => 0, y => $h + 2, height => 2, absolutey => 1 } ) );
 }
 
 1;
