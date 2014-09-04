@@ -33,6 +33,7 @@ sub _init {
   my( $fontname, $fontsize ) = $self->get_font_details('text');
 
   my $species      = $self->my_config('species') || $self->{config}->{species};
+  my $display_name = $self->species_defs->species_display_label($species);
   my @res          = $self->get_text_width( 0, 'X', '', font => $fontname, ptsize => $fontsize );
   my $h            = $res[3];
   my $pix_per_bp   = $self->scalex; 
@@ -46,7 +47,7 @@ sub _init {
     'font'      => $fontname,
     'ptsize'    => $fontsize,
     'colour'    => 'black',
-    'text'      => $species,
+    'text'      => $display_name,
     'absolutey' => 1,
   }) );
 }
