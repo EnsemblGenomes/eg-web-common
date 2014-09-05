@@ -30,18 +30,27 @@ sub _init {
   my ($self) = @_;
   return if $self->strand != 1;
 
-  my( $fontname, $fontsize ) = $self->get_font_details('legend');
-
   my $species      = $self->my_config('species') || $self->{config}->{species};
   my $display_name = $self->species_defs->species_display_label($species);
-  my @res          = $self->get_text_width( 0, 'X', '', font => $fontname, ptsize => $fontsize );
-  my $h            = $res[3];
   my $pix_per_bp   = $self->scalex; 
-  my $gutter_width = 118;
+  my $gutter_width = 120;
+  my $padding      = 4; 
 
-  $self->push(Sanger::Graphics::Glyph::Text->new({
+  my ($fontname, $fontsize) = $self->get_font_details('legend');
+  my (undef, undef, $w, $h) = $self->get_text_width( 0, $display_name, '', font => $fontname, ptsize => $fontsize );
+
+  $self->push($self->Rect({ 
     x         => -$gutter_width / $pix_per_bp, 
-    y         => 2,
+    y         => 0,
+    height    => $h + $padding * 2, 
+    width     => ($w + $padding * 2) / $pix_per_bp,
+    absolutey => 1,
+    colour    => 'gainsboro',
+  }));
+
+  $self->push($self->Text({
+    x         => ($padding - $gutter_width) / $pix_per_bp, 
+    y         => $padding / 2,
     height    => $h,
     halign    => 'left',
     font      => $fontname,
@@ -50,9 +59,6 @@ sub _init {
     text      => $display_name,
     absolutey => 1,
   }));
-
-  # spacer
-  $self->push( Sanger::Graphics::Glyph::Rect->new( { x => 0, y => $h + 2, height => 2, absolutey => 1 } ) );
 }
 
 1;
