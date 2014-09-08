@@ -78,7 +78,9 @@ sub init {
     [ 'ruler',     '', 'ruler',         { display => 'normal', strand => 'b', name => 'Ruler',     description => 'Shows the length of the region being displayed' }],
     [ 'draggable', '', 'draggable',     { display => 'normal', strand => 'b', menu => 'no' }],
     [ 'nav',       '', 'navigation',    { display => 'normal', strand => 'b', menu => 'no' }],
-    [ 'title',     '', 'species_title', { display => 'normal', strand => 'b', menu => 'no', text => 'XXXXXXX' }],
+## EG ENSEMBL-2967 - add species label     
+    [ 'title',     '', 'species_title', { display => 'normal', strand => 'b', menu => 'no' }],
+##    
   );
   
   $_->set('display', 'off') for grep $_->id =~ /^chr_band_/, $self->get_node('decorations')->nodes; # Turn off chromosome bands by default
