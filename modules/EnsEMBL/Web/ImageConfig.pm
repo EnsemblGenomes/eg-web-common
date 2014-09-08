@@ -20,6 +20,152 @@ package EnsEMBL::Web::ImageConfig;
 
 use strict;
 
+## EG ENSEMBL-2967 - abbreviate long species names
+sub _abbreviate_species_name {
+  my ($self, $name, $threshold) = @_;
+
+  $threshold ||= 15;
+
+  if (length $name > $threshold) {
+    my @words = split /\s/, $name; 
+    if (@words == 2) {
+      $name = substr($words[0], 0, 1) . '. ' . $words[1];
+    } elsif (@words > 2) {
+      $name = join '. ', substr(shift @words, 0, 1), substr(shift @words, 0, 1), join(' ', @words);
+    }
+  }
+
+  return $name;
+}
+##
+
+sub add_alignments {
+  my ($self, $key, $hashref, $species) = @_;
+  
+  return unless grep $self->get_node($_), qw(multiple_align pairwise_tblat pairwise_blastz pairwise_other conservation);
+  
+  my $species_defs = $self->species_defs;
+  
+  return if $species_defs->ENSEMBL_SITETYPE eq 'Pre';
+  
+  my $alignments = {};
+  my $self_label = $species_defs->species_label($species, 'no_formatting');
+  my $static     = $species_defs->ENSEMBL_SITETYPE eq 'Vega' ? '/info/data/comparative_analysis.html' : '/info/docs/compara/analyses.html';
+ 
+  foreach my $row (values %{$hashref->{'ALIGNMENTS'}}) {
+    next unless $row->{'species'}{$species};
+    
+    if ($row->{'class'} =~ /pairwise_alignment/) {
+      my ($other_species) = grep { !/^$species$|ancestral_sequences$/ } keys %{$row->{'species'}};
+         $other_species ||= $species if scalar keys %{$row->{'species'}} == 1;
+      my $other_label     = $species_defs->species_label($other_species, 'no_formatting');
+
+
+
+      my ($menu_key, $description, $type);
+      
+      if ($row->{'type'} =~ /(B?)LASTZ_(\w+)/) {
+        next if $2 eq 'PATCH';
+        
+        $menu_key    = 'pairwise_blastz';
+        $type        = sprintf '%sLASTz %s', $1, lc $2;
+        $description = "$type pairwise alignments";
+      } elsif ($row->{'type'} =~ /TRANSLATED_BLAT/) {
+        $type        = '';
+        $menu_key    = 'pairwise_tblat';
+        $description = 'Trans. BLAT net pairwise alignments';
+      } else {
+        $type        = ucfirst lc $row->{'type'};
+        $type        =~ s/\W/ /g;
+        $menu_key    = 'pairwise_align';
+        $description = 'Pairwise alignments';
+      }
+      
+      $description  = qq{<a href="$static" class="cp-external">$description</a> between $self_label and $other_label"};
+      $description .= " $1" if $row->{'name'} =~ /\((on.+)\)/;
+
+      $alignments->{$menu_key}{$row->{'id'}} = {
+        db                         => $key,
+        glyphset                   => '_alignment_pairwise',
+        name                       => $other_label . ($type ?  " - $type" : ''),
+## EG ENSEMBL-2967       
+        caption                    => $self->_abbreviate_species_name($other_label),
+##        
+        type                       => $row->{'type'},
+        species                    => $other_species,
+        method_link_species_set_id => $row->{'id'},
+        description                => $description,
+        order                      => $other_label,
+        colourset                  => 'pairwise',
+        strand                     => 'r',
+        display                    => 'off',
+        renderers                  => [ 'off', 'Off', 'compact', 'Compact', 'normal', 'Normal' ],
+      };
+    } else {
+      my $n_species = grep { $_ ne 'ancestral_sequences' } keys %{$row->{'species'}};
+      
+      my %options = (
+        db                         => $key,
+        glyphset                   => '_alignment_multiple',
+        short_name                 => $row->{'name'},
+        type                       => $row->{'type'},
+        species_set_id             => $row->{'species_set_id'},
+        method_link_species_set_id => $row->{'id'},
+        class                      => $row->{'class'},
+        colourset                  => 'multiple',
+        strand                     => 'f',
+      );
+      
+      if ($row->{'conservation_score'}) {
+        my ($program) = $hashref->{'CONSERVATION_SCORES'}{$row->{'conservation_score'}}{'type'} =~ /(.+)_CONSERVATION_SCORE/;
+        
+        $options{'description'} = qq{<a href="/info/docs/compara/analyses.html#conservation">$program conservation scores</a> based on the $row->{'name'}};
+        
+        $alignments->{'conservation'}{"$row->{'id'}_scores"} = {
+          %options,
+          conservation_score => $row->{'conservation_score'},
+          name               => "Conservation score for $row->{'name'}",
+          caption            => "$n_species way $program scores",
+          order              => sprintf('%12d::%s::%s', 1e12-$n_species*10, $row->{'type'}, $row->{'name'}),
+          display            => 'off',
+          renderers          => [ 'off', 'Off', 'tiling', 'Tiling array' ],
+        };
+        
+        $alignments->{'conservation'}{"$row->{'id'}_constrained"} = {
+          %options,
+          constrained_element => $row->{'constrained_element'},
+          name                => "Constrained elements for $row->{'name'}",
+          caption             => "$n_species way $program elements",
+          order               => sprintf('%12d::%s::%s', 1e12-$n_species*10+1, $row->{'type'}, $row->{'name'}),
+          display             => 'off',
+          renderers           => [ 'off', 'Off', 'compact', 'On' ],
+        };
+      }
+      
+      $alignments->{'multiple_align'}{$row->{'id'}} = {
+        %options,
+        name        => $row->{'name'},
+        caption     => $row->{'name'},
+        order       => sprintf('%12d::%s::%s', 1e12-$n_species*10-1, $row->{'type'}, $row->{'name'}),
+        display     => 'off',
+        renderers   => [ 'off', 'Off', 'compact', 'On' ],
+        description => qq{<a href="/info/docs/compara/analyses.html#conservation">$n_species way whole-genome multiple alignments</a>.; } . 
+                       join('; ', sort map { $species_defs->species_label($_, 'no_formatting') } grep { $_ ne 'ancestral_sequences' } keys %{$row->{'species'}}),
+      };
+    } 
+  }
+  
+  foreach my $menu_key (keys %$alignments) {
+    my $menu = $self->get_node($menu_key);
+    next unless $menu;
+    
+    foreach my $key_2 (sort { $alignments->{$menu_key}{$a}{'order'} cmp  $alignments->{$menu_key}{$b}{'order'} } keys %{$alignments->{$menu_key}}) {
+      my $row = $alignments->{$menu_key}{$key_2};
+      $menu->append($self->create_track("alignment_${key}_$key_2", $row->{'caption'}, $row));
+    }
+  }
+}
+
 sub _add_bigwig_track {
   my ($self, %args) = @_;
   
