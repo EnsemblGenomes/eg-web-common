@@ -157,9 +157,11 @@ if (@dbas) {
     $species_insert_sth = $dbh->prepare("INSERT INTO species(name,taxonomy_id) values (?,?)");
    
     #statements used when populating stable_id_lookup table
-    $stable_id_insert_sth = $dbh->prepare("INSERT INTO stable_id_lookup VALUES(?,?,?,?)");
-    $archive_id_insert_sth = $dbh->prepare("INSERT INTO archive_id_lookup VALUES(?,?,?,?)");
-   
+## EG ENSEMBL-3256 - not used because of batch insert
+#    $stable_id_insert_sth = $dbh->prepare("INSERT INTO stable_id_lookup VALUES(?,?,?,?)");
+#    $archive_id_insert_sth = $dbh->prepare("INSERT INTO archive_id_lookup VALUES(?,?,?,?)");
+##
+
 } else {
     die("No DBAdaptors found on ". join(',',@host) ." for db version $db_version\n");
 }
@@ -326,56 +328,37 @@ sub insert_ids {
     my $lookup_db_species_id = shift;
     my $id_type = shift;
 
-
     my @ids = @$ids;
 
-    my @species_id;
-    my @db_type;
-    my @object_type;
+## EG ENSEMBL-3256 - insert in batches to speed things up (at the expense of detailed error reporting)
+    my %sql_templates = (
+      stable  => 'INSERT INTO stable_id_lookup (stable_id, species_id, db_type, object_type) VALUES ',
+      archive => 'INSERT INTO archive_id_lookup (archive_id, species_id, db_type, object_type) VALUES ',
+    );
 
-    for (1..@ids) {
-        push @species_id, $lookup_db_species_id;
-        push @db_type, $dba->group();
-        push @object_type, $object;
-    }
+    my $sql = $sql_templates{$id_type};
+    return unless $sql;
 
-    my $tuples;
-    my @tuple_status;
-    if ($id_type eq 'stable') {
-      eval {
-      $tuples = $stable_id_insert_sth->execute_array(
-      { ArrayTupleStatus => \@tuple_status },
-           \@ids,
-           \@species_id,
-           \@db_type,
-           \@object_type,
-       );
-      };
-    } elsif ($id_type eq 'archive') {
-      eval {
-      $tuples = $archive_id_insert_sth->execute_array(
-      { ArrayTupleStatus => \@tuple_status },
-           \@ids,
-           \@species_id,
-           \@db_type,
-           \@object_type,
-       );
-      };
-    }
+    my $quoted_lookup_id = $dbh->quote($lookup_db_species_id);
+    my $quoted_group     = $dbh->quote($dba->group);
+    my $quoted_object    = $dbh->quote($object);
 
-    if ($tuples) {
-        printf STDOUT "Successfully inserted %d %s ids for %s (%d), db type : %s, object type : %s\n", scalar @ids, $id_type, $dba->species(), $species_id[0], $dba->group(), $object;
-    }
-    else {
-     for my $tuple (0..@ids-1) {
-          my $status = $tuple_status[$tuple];
-          $status = [0, "Skipped"] unless defined $status;
-          next unless ref $status;
-          printf STDERR "Failed to insert (%s, %s, %s, %s): %s\n",
-          $ids[$tuple], $species_id[$tuple], $db_type[$tuple], $object_type[$tuple], $status->[1];
-     }
-    }
+    my @tuples;
+    push(@tuples, sprintf(q{(%s, %s, %s, %s)}, $dbh->quote($_), $quoted_lookup_id, $quoted_group, $quoted_object)) for @ids;
 
+    my $batch_size = 10000;
+    my $errors = 0;
+    while (@tuples) {
+      eval { $dbh->do( $sql . join(',', splice(@tuples, 0, $batch_size)) ) };
+      if ($@) {
+        print STDOUT "Batch insert error: $@";
+        $errors ++;
+      }
+    }  
+
+    printf STDOUT "Inserted %d %s ids in batches of %d for %s (%d), db type : %s, object type : %s\n", scalar @ids, $id_type, $batch_size, $dba->species(), $lookup_db_species_id, $dba->group(), $object
+    printf "$errors batches had errors\n" if $errors;
+##
 }
 
 
