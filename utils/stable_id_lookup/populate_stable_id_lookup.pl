@@ -308,7 +308,9 @@ while (my $dba = shift @dbas) {
             }
         }
     }
-
+## EG ENSEMBL-3256 - explicitly close connection to avoid 'too many connections' errors      
+    $dba->dbc->db_handle->disconnect;
+##    
 }
 
 $species_sth->finish() if ($species_sth);
@@ -347,17 +349,11 @@ sub insert_ids {
     push(@tuples, sprintf(q{(%s, %s, %s, %s)}, $dbh->quote($_), $quoted_lookup_id, $quoted_group, $quoted_object)) for @ids;
 
     my $batch_size = 10000;
-    my $errors = 0;
     while (@tuples) {
       eval { $dbh->do( $sql . join(',', splice(@tuples, 0, $batch_size)) ) };
-      if ($@) {
-        print STDOUT "Batch insert error: $@";
-        $errors ++;
-      }
     }  
 
-    printf STDOUT "Inserted %d %s ids in batches of %d for %s (%d), db type : %s, object type : %s\n", scalar @ids, $id_type, $batch_size, $dba->species(), $lookup_db_species_id, $dba->group(), $object
-    printf "$errors batches had errors\n" if $errors;
+    printf STDOUT "Inserted %d %s ids in batches of %d for %s (%d), db type : %s, object type : %s\n", scalar @ids, $id_type, $batch_size, $dba->species(), $lookup_db_species_id, $dba->group(), $object;
 ##
 }
 
