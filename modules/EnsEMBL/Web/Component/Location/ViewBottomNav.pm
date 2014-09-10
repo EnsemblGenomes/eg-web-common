@@ -118,4 +118,41 @@ sub nav_url {
   });
 }
 
+sub ramp {
+  my ($self, $ramp_entries, $wd, @url_params) = @_;
+
+  my $scale = $self->hub->species_defs->ENSEMBL_MAX_ZOOM_OUT_LEVEL || $self->hub->species_defs->ENSEMBL_GENOME_SIZE || 1;
+  my $x     = 0;
+  my (@ramp, @mp);
+
+  foreach (@$ramp_entries) {
+    $_->[1] *= $scale;
+    push @mp, sqrt($x * $_->[1]);
+    $x = $_->[1];
+  }
+
+  push @mp, 1e30;
+
+  my $l = shift @mp;
+
+  my $img_url = $self->img_url;
+
+  foreach (@$ramp_entries) {
+    my $r = shift @mp;
+
+    push @ramp, [
+      '<a href="%s" name="%d" class="ramp%s" title="%d bp" style="height:%dpx"></a>',
+      $self->ramp_url($_->[1], @url_params),
+      $_->[1],
+      $wd > $l && $wd <= $r ? ' selected' : '',
+      $_->[1],
+      $_->[0]
+    ];
+
+    $l = $r;
+  }
+
+  return $self->{'update'} ? \@ramp : join '', map { sprintf shift @$_, @$_ } @ramp;
+}
+
 1;
