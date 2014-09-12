@@ -406,7 +406,7 @@ sub _init {
         $txt->{'href'} = $self->_url({
           species  => $f->{'_species'},
           type     => 'Gene',
-          action   => 'ComparaTree',
+          action   => 'Compara_Tree',
           __clear  => 1,
           g        => $f->{'_gene'}
         });
