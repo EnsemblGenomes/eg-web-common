@@ -47,8 +47,8 @@ sub update_conf {
   $SiteDefs::OBJECT_TO_SCRIPT->{'Info'} = 'AltPage';
   
   $SiteDefs::ENSEMBL_BLASTSCRIPT       = $SiteDefs::ENSEMBL_SERVERROOT."/utils/parse_blast.pl";
-  $SiteDefs::ENSEMBL_BLAST_ENABLED     = 1;   
-  $SiteDefs::ENSEMBL_ENASEARCH_ENABLED = 1;
+  $SiteDefs::ENSEMBL_BLAST_ENABLED     = 0;   
+  $SiteDefs::ENSEMBL_ENASEARCH_ENABLED = 0;
   $SiteDefs::ENSEMBL_LOGINS            = 1;
   
   $SiteDefs::APACHE_BIN   = '/usr/sbin/httpd';
@@ -68,7 +68,27 @@ sub update_conf {
     username  => $SiteDefs::ENSEMBL_USERDB_USER || $SiteDefs::DATABASE_WRITE_USER,
     password  => $SiteDefs::ENSEMBL_USERDB_PASS || $SiteDefs::DATABASE_WRITE_PASS,
   };
+
+
+  # Entries as added to the tools db ticket_type_name table
+  $SiteDefs::ENSEMBL_TOOLS_LIST = [ 'Blast' => 'BLAST/BLAT', 'VEP' => 'Variant Effect Predictor', 'AssemblyConverter' => 'Assembly Converter' ];
+
+  # Which dispatcher to be used for the jobs (provide the appropriate values in your plugins)
+  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'EGDispatcher', 'VEP' => 'EGDispatcher', 'AssemblyConverter' => 'EGDispatcher' };
+
+
+  # Path to CrossMap
+  $SiteDefs::ASSEMBLY_CONVERTER_BIN_PATH = '/localsw/CrossMap-0.1.3/usr/local/bin/CrossMap.py';
+
+  # Command line options for VEP filter script
+  $SiteDefs::ENSEMBL_VEP_FILTER_SCRIPT_OPTIONS = {
+    '-host'         => undef,
+    '-user'         => undef,
+    '-port'         => undef,
+    '-pass'         => undef
+  };
 }
+
 
 1;
 
