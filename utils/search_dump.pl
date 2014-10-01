@@ -361,7 +361,18 @@ sub dumpGene {
         print "Fetching $type xrefs...\n";
               
         my $xrefs = [];
-        if ($type ne 'Translation') {
+        if ($type eq 'Translation') {
+
+            # Interpro
+            $xrefs = $dbh->selectall_arrayref(
+              "SELECT pf.translation_id, x.display_label, x.dbprimary_acc, ed.db_name, es.synonym, x.description
+               FROM (protein_feature AS pf, interpro AS i, xref AS `x`, external_db AS ed)
+               LEFT JOIN external_synonym AS es ON es.xref_id = x.xref_id
+               WHERE pf.hit_name = i.id AND i.interpro_ac = x.dbprimary_acc 
+               AND x.external_db_id = ed.external_db_id AND ed.db_name = 'Interpro'"
+            );
+
+        } else { 
           
           my $table = lc($type);
           
@@ -656,8 +667,8 @@ sub dumpGene {
               foreach my $K ( keys %{ $xrefs{'Translation'}{$translation_id}{$db} } ) {
                 $old{'external_identifiers'}{$db}{$K} = 1;
               }
-            }
-          
+            } 
+
           } else {
           
             $old{'transcript_stable_ids'}{$transcript_stable_id}   = 1;
@@ -1001,12 +1012,12 @@ sub get_ortholog_lookup {
     SELECT
       m1.stable_id , m2.stable_id, gdb2.name
     FROM 
-      genome_db gdb1  JOIN member m1 USING (genome_db_id)
-      JOIN homology_member hm1 USING (member_id)
+      genome_db gdb1  JOIN gene_member m1 USING (genome_db_id)
+      JOIN homology_member hm1 USING (gene_member_id)
       JOIN homology h USING (homology_id)
       JOIN homology_member hm2 USING (homology_id)
-      JOIN member m2 ON (hm2.member_id = m2.member_id)
-      JOIN genome_db gdb2 on (m2.genome_db_id = gdb2.genome_db_id)
+      JOIN gene_member m2 ON (hm2.gene_member_id = m2.gene_member_id)
+      JOIN genome_db gdb2 ON (m2.genome_db_id = gdb2.genome_db_id)
     WHERE
       gdb1.name = "$species" 
       AND m2.source_name = "ENSEMBLGENE"
