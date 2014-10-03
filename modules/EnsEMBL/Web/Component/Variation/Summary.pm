@@ -70,7 +70,7 @@ sub study {
     my $ext_ref = $study->[$_]->{external_reference};
     $study_link = $self->hub->get_ExtURL_link("PMID: $ext_ref", 'EUROPE_PMC', $ext_ref) if $ext_ref =~ /^(\d+)$/;
 
-    my $study_line        = sprintf '<a href="%s" class="constant">%s</a>', $study->[$_]->{ext_ref}, $study->[$_]->{name};
+    my $study_line        = sprintf '<a href="%s" class="constant">%s</a>', $study->[$_]->{url}, $study->[$_]->{name};
     push @return, $study_line.' | '.$study->[$_]->{description}.' ['.$study_link.']' if $study->[$_]->{description} && $study_link;
   }
   return @return ? ['Study', join ',<br><br>', @return] : ();

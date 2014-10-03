@@ -157,7 +157,7 @@ sub get_ontology_chart {
           my ($linkage, $xref) = @{$e || []};
           next unless $xref; 
           my ($id, $db, $db_name, $db_id) =  ($xref->display_id, $xref->dbname, $xref->db_display_name, $xref->primary_id);
-          push @{$chart{$go}->{notes}}, ["Source", $self->hub->get_ExtURL_link("$db_name:$id", $db, $db_id) ];
+          push @{$chart{$go}->{notes}}, ["Source", "$db_name: " . $self->hub->get_ExtURL_link("$id", $db, $db_id) ];
       }
     }
     $chart{$go}->{selected} = 1;          
