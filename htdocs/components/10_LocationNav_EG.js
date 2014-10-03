@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
+
+
 Ensembl.Panel.LocationNav = Ensembl.Panel.LocationNav.extend({
   
 // EG double-arrow buttons move two windows instaed of 1e6  
   updateButtons: function() { // update button hrefs (and loc) at cur. pos
     var panel = this;
-    var r = this.currentLocation();
-    var width = r[2]-r[1]+1;
-    $('.left_2',panel.el).attr('href',panel.arrow(-width * 2)); 
+    var rs = this.currentLocations();
+    var width = rs['r'][2]-rs['r'][1]+1;
+    $('.left_2',panel.el).attr('href',panel.arrow(-width * 2));
     $('.left_1',panel.el).attr('href',panel.arrow(-width));
     $('.zoom_in',panel.el).attr('href',panel.zoom(0.5));
     $('.zoom_out',panel.el).attr('href',panel.zoom(2));
-    $('.right_1',panel.el).attr('href',panel.arrow(width)); 
-    $('.right_2',panel.el).attr('href',panel.arrow(width * 2)); 
-    $('#loc_r',panel.el).val(r[0]+':'+r[1]+'-'+r[2]);
+    $('.right_1',panel.el).attr('href',panel.arrow(width));
+    $('.right_2',panel.el).attr('href',panel.arrow(width * 2));
+    $('#loc_r',panel.el).val(rs['r'][0]+':'+rs['r'][1]+'-'+rs['r'][2]);
   }
 //    
 
