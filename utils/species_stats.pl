@@ -532,9 +532,9 @@ foreach my $spp (@valid_spp) {
 
     $db->dbc->db_handle->disconnect; # prevent too many connections
 
-    my @other_stats_keys = keys %other_stats;
-    # sometimes we get the only key 'fgeneshpred' and its value is undef and we don't want to show the 'Other' seciton.
-    if( (scalar @other_stats_keys > 1) || ( scalar @other_stats_keys == 1 && $title{$other_stats_keys[0]} && defined $other_stats{$other_stats_keys[0]}) ){
+    # only use keys that we have titles for
+    my @other_stats_keys = grep {$title{$_}} (keys %other_stats);
+    if(@other_stats_keys){
 
       print STATS qq(
         <h3>Other</h3>
@@ -550,7 +550,7 @@ foreach my $spp (@valid_spp) {
           <td class="data">$title{$key}:</td>
           <td class="value">$other_stats{$key}</td>
           </tr>
-        ) if $title{$key};
+        );
       }
 
       print STATS '</table>';

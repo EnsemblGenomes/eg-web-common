@@ -43,28 +43,53 @@ sub createObjects {
 ## EG - default comparisons
   my $species_defs = $hub->species_defs;
 
-  if (!$hub->param("r1")) {
-    if ($hub->action =~ /Polyploid/) {
-      # set up default intra-species comparisons for polyploid view
-      my $primary_slice   = $object->slice;
-      my $primary_species = $hub->species;
-      my $alignments      = $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $primary_slice->seq_region_name);
-    
+  if ($hub->action =~ /Polyploid/) {
+    my $primary_slice   = $object->slice;
+    my $primary_species = $hub->species; 
+    my $alignments      = $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $primary_slice->seq_region_name);
+    my %align_species;
+
+    foreach my $align (sort { $a->{target_name} cmp $b->{target_name} } @$alignments) {
+      next unless $align->{'class'} =~ /pairwise_alignment/;
+      next unless $align->{'species'}{"$primary_species--" . $primary_slice->seq_region_name};
+      my $sp = sprintf('%s--%s', $primary_species, $align->{target_name});
+      $align_species{$sp} = 1;
+    }
+
+    my $already_configured = !!$hub->param("s1");
+
+    # check if current configured species are valid for polyploid view
+    if ($already_configured) {
       my $i = 1;
-      foreach my $align (sort { $a->{target_name} cmp $b->{target_name} } @$alignments) {
-        next unless $align->{'class'} =~ /pairwise_alignment/;
-        next unless $align->{'species'}{"$primary_species--" . $primary_slice->seq_region_name};
-        
-        $hub->param("s$i", sprintf '%s--%s', $primary_species, $align->{target_name});
-        $i++;
+      while (my $s = $hub->param("s$i")) {
+        $already_configured = 0 if !$align_species{$s};
+        $i ++;
       }
-    } else { 
-      # if we have got default species, and this is not a self referral (i.e. from species selector)
-      if ($species_defs->DEFAULT_COMPARISON_SPECIES and $hub->referer->{ENSEMBL_ACTION} ne 'Multi') {
-        my @species = @{ $species_defs->DEFAULT_COMPARISON_SPECIES };
-        for my $i (1..@species) {
-          $hub->param("s$i", $species[$i-1]);
+      $already_configured = 0 if scalar keys %align_species != $i-1;
+      if (!$already_configured) {
+        # clear old params
+        my $i = 1;
+        while ($hub->param("s$i")) {
+          $hub->delete_param("s$i", "r$i");
+          $i ++;
         }
+      }
+    }  
+
+    if (!$already_configured) {
+      # set up default intra-species comparisons for polyploid view
+      my $i = 1;
+      for (keys %align_species) {
+        $hub->param("s$i", $_);
+        $i ++;
+      }
+    }
+  } elsif (!$hub->param("r1")) { 
+    # if we have got default species, and this is not a self referral (i.e. from species selector)
+    if ($species_defs->DEFAULT_COMPARISON_SPECIES and $hub->referer->{ENSEMBL_ACTION} ne 'Multi') {
+      my @species = @{ $species_defs->DEFAULT_COMPARISON_SPECIES };
+      for my $i (1..@species) {
+        $hub->param("s$i", $species[$i-1]);
       }
     }
   }
