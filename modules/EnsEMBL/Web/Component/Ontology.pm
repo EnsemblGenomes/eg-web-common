@@ -197,7 +197,7 @@ sub ontology_chart {
     my $extlinks = $oMap->{$oname} ? $oMap->{$oname}->{extlinks}  : {};
 
     my $bm_filter = $oMap->{$oname} ? $oMap->{$oname}->{biomart_filter}  : '';
-    if ($bm_filter &&  $species_defs->GENOMIC_UNIT !~ /bacteria/ &&  $species_defs->GENOMIC_UNIT !~ /parasite/) {
+    if ($bm_filter &&  $species_defs->GENOMIC_UNIT && $species_defs->GENOMIC_UNIT !~ /bacteria|parasite/) {
 	my $vschema = sprintf qq{%s_mart_%s}, $species_defs->GENOMIC_UNIT, $SiteDefs::SITE_RELEASE_VERSION;
 	my (@species) = split /_/, $object->species;
 	my $attr_prefix = lc(substr($species[0], 0, 1).$species[1]."_eg_gene");
