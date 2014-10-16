@@ -34,3 +34,25 @@ div.taxon_selector_list div.vscroll_container {
 	border-right: #ccc 1px solid;
 }
 
+div.taxon_selector_form div.checkboxes {
+  display:none;
+}
+
+div.taxon_selector_form div.list-wrapper {
+  border:#CCCCCC 1px solid;
+  padding:6px;
+  background-color:#FFFFFF;
+  width:576px;
+}
+
+div.taxon_selector_form div.list {
+  max-height:80px;
+  overflow-y:scroll;
+  padding: 2px 4px;
+  border:#CCCCCC 1px solid;
+}
+
+div.taxon_selector_form div.links {
+  padding: 3px 0;
+}
+

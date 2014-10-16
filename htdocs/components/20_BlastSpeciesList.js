@@ -6,16 +6,10 @@ Ensembl.Panel.BlastSpeciesList = Ensembl.Panel.extend({
   },
   
   init: function () {  
- 		var panel = this;
- 		panel.base();
- 		panel.elLk.blastForm = $('form[name=settings]');
- 		panel.elLk.list 		 = $('select', this.el);
- 		panel.elLk.modalLink = $('.modal_link', this.el)
- 		
- 		panel.elLk.blastForm.submit(function(){
- 			// ensure all species are selected
-			$('option', panel.elLk.list).attr("selected", "selected");
-		});
+ 		this.base();
+ 		this.elLk.checkboxes = $('.checkboxes', this.el);
+ 		this.elLk.list 		   = $('.list', this.el);
+ 		this.elLk.modalLink  = $('.modal_link', this.el);
   },
   
   updateTaxonSelection: function(items) {
@@ -23,14 +17,15 @@ Ensembl.Panel.BlastSpeciesList = Ensembl.Panel.extend({
   	var key;
   	
   	// empty and re-populate the species list
-  	$('option', panel.elLk.list).remove();
+  	panel.elLk.list.empty();
+    panel.elLk.checkboxes.empty();
   	$.each(items, function(index, item){
   		key = item.key.charAt(0).toUpperCase() + item.key.substr(1); // ucfirst
-  		//$(panel.elLk.list).append(new Option(item.kye, item.key)); // this fails in IE - see http://bugs.jquery.com/ticket/1641
-  		$(panel.elLk.list).append('<option value="' + key + '">' + key + '</option>'); // this works in IE 
+  		$(panel.elLk.list).append(item.title + '<br />');
+      $(panel.elLk.checkboxes).append('<input type="checkbox" name="species" value="' + key + '" checked>' + item.title + '<br />'); 
   	}); 
   	
-  	// update the modal link href
+  	// update the modal link href in the form
   	var modalBaseUrl = panel.elLk.modalLink.attr('href').split('?')[0];
   	var keys = $.map(items, function(item){ return item.key; });
   	var queryString = $.param({s: keys}, true);

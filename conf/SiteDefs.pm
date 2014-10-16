@@ -24,7 +24,7 @@ use Data::Dumper;
 sub update_conf {
   map {delete($SiteDefs::__species_aliases{$_}) } keys %SiteDefs::__species_aliases;
   
-  $SiteDefs::SITE_RELEASE_VERSION = 23;
+  $SiteDefs::SITE_RELEASE_VERSION = 24;
   $SiteDefs::SITE_RELEASE_DATE = 'August 2014';
   
   $SiteDefs::SITE_MISSION = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
@@ -68,6 +68,19 @@ sub update_conf {
     username  => $SiteDefs::ENSEMBL_USERDB_USER || $SiteDefs::DATABASE_WRITE_USER,
     password  => $SiteDefs::ENSEMBL_USERDB_PASS || $SiteDefs::DATABASE_WRITE_PASS,
   };
+
+  # TOOLS
+
+  # Database key name for tools db as defined in MULTI.ini
+  $SiteDefs::ENSEMBL_ORM_DATABASES->{'ticket'} = 'DATABASE_WEB_TOOLS';
+
+  # Which dispatcher to be used for the jobs (provide the appropriate values in your plugins)
+  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'NcbiBlast', 'VEP' => '', 'AssemblyConverter' => '' };
+
+  # Flag to enable/disable BLAST, VEP, Assembly Converter
+  $SiteDefs::ENSEMBL_BLAST_ENABLED  = 1;
+  $SiteDefs::ENSEMBL_VEP_ENABLED    = 0;
+  $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
 }
 
 1;
