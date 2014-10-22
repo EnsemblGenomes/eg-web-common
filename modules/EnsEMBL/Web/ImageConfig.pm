@@ -370,8 +370,7 @@ sub add_sequence_variationsXXX {
     $menu->append($variation_sets);
   
     foreach my $toplevel_set (sort { $a->{'name'} cmp $b->{'name'} && (scalar @{$a->{'subsets'}} ? 1 : 0) <=> (scalar @{$b->{'subsets'}} ? 1 : 0) } values %{$hashref->{'variation_set'}{'supersets'}}) { 
-      my $name          = $toplevel_set->{'name'};
-warn "SET NAME $name";         
+      my $name          = $toplevel_set->{'name'};      
       my $caption       = $name . (scalar @{$toplevel_set->{'subsets'}} ? ' (all data)' : '');
       (my $key = $name) =~ s/\W/_/g;
       
