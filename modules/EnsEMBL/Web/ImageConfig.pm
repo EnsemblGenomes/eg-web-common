@@ -228,7 +228,93 @@ sub _add_vcf_track {
   $menu->append($track) if $track;
 }
 
-sub add_sequence_variations {
+# adds variation tracks the old, hacky way
+sub add_sequence_variations_default {
+  my ($self, $key, $hashref, $options) = @_;
+  my $menu = $self->get_node('variation');
+  my $sequence_variation = ($menu->get_node('variants')) ? $menu->get_node('variants') : $self->create_submenu('variants', 'Sequence variants');
+
+  if (!$menu->get_node('variants')) {
+    my $title = 'Sequence variants (all sources)';
+
+    $sequence_variation->append($self->create_track("variation_feature_$key", $title, {
+      %$options,
+      sources     => undef,
+      description => 'Sequence variants from all sources',
+    }));
+  }
+
+  foreach my $key_2 (sort keys %{$hashref->{'source'}{'counts'} || {}}) {
+    next unless $hashref->{'source'}{'counts'}{$key_2} > 0;
+    next if     $hashref->{'source'}{'somatic'}{$key_2} == 1;
+    
+    # EG/1KG fix for ESP tracks:
+    my $vf_track = {};
+    $vf_track->{caption} = $key_2 =~ /^ESP$/ ? 'Exome Sequencing Project' : $key_2;
+    $vf_track->{sources} = $key_2 =~ /^ESP$/ ? 'NHLBI GO Exome Sequencing Project' : $key_2;
+
+    $sequence_variation->append($self->create_track("variation_feature_${key}_$key_2", $vf_track->{caption}." variations", {
+      %$options,
+      caption     => $vf_track->{caption},
+      sources     => [ $vf_track->{sources} ],
+      description => $hashref->{'source'}{'descriptions'}{$key_2},
+    }));
+    # EG/1KG
+  }
+  
+  $menu->append($sequence_variation) if (!$menu->get_node('variants'));
+
+  # add in variation sets
+  if ($hashref->{'variation_set'}{'rows'} > 0 ) {
+    my $variation_sets = $self->create_submenu('variation_sets', 'Variation sets');
+    
+    $menu->append($variation_sets);
+    
+    foreach my $toplevel_set (
+      sort { !!scalar @{$a->{'subsets'}} <=> !!scalar @{$b->{'subsets'}} } 
+      sort { $a->{'name'} =~ /^failed/i  <=> $b->{'name'} =~ /^failed/i  } 
+      sort { $a->{'name'} cmp $b->{'name'} } 
+      values %{$hashref->{'variation_set'}{'supersets'}}
+    ) {
+      my $name          = $toplevel_set->{'name'};
+      my $caption       = $name . (scalar @{$toplevel_set->{'subsets'}} ? ' (all data)' : '');
+      my $key           = $toplevel_set->{'short_name'};
+      my $set_variation = scalar @{$toplevel_set->{'subsets'}} ? $self->create_submenu("set_variation_$key", $name) : $variation_sets;
+      
+      $set_variation->append($self->create_track("variation_set_$key", $caption, {
+        %$options,
+        caption     => $caption,
+        sources     => undef,
+        sets        => [ $key ],
+        set_name    => $name,
+        description => $toplevel_set->{'description'},
+      }));
+      
+      # add in sub sets
+      if (scalar @{$toplevel_set->{'subsets'}}) {
+        foreach my $subset_id (sort @{$toplevel_set->{'subsets'}}) {
+          my $sub_set             = $hashref->{'variation_set'}{'subsets'}{$subset_id};
+          my $sub_set_name        = $sub_set->{'name'}; 
+          my $sub_set_description = $sub_set->{'description'};
+          my $sub_set_key         = $sub_set->{'short_name'};
+          
+          $set_variation->append($self->create_track("variation_set_$sub_set_key", $sub_set_name, {
+            %$options,
+            caption     => $sub_set_name,
+            sources     => undef,
+            sets        => [ $sub_set_key ],
+            set_name    => $sub_set_name,
+            description => $sub_set_description
+          }));
+        }
+       
+        $variation_sets->append($set_variation);
+      }
+    }
+  }
+}
+
+sub add_sequence_variationsXXX {
   my ($self, $key, $hashref) = @_;
   my $menu = $self->get_node('variation');
     
@@ -283,8 +369,9 @@ sub add_sequence_variations {
     
     $menu->append($variation_sets);
   
-    foreach my $toplevel_set (sort { $a->{'name'} cmp $b->{'name'} && (scalar @{$a->{'subsets'}} ? 1 : 0) <=> (scalar @{$b->{'subsets'}} ? 1 : 0) } values %{$hashref->{'variation_set'}{'supersets'}}) {
+    foreach my $toplevel_set (sort { $a->{'name'} cmp $b->{'name'} && (scalar @{$a->{'subsets'}} ? 1 : 0) <=> (scalar @{$b->{'subsets'}} ? 1 : 0) } values %{$hashref->{'variation_set'}{'supersets'}}) { 
       my $name          = $toplevel_set->{'name'};
+warn "SET NAME $name";         
       my $caption       = $name . (scalar @{$toplevel_set->{'subsets'}} ? ' (all data)' : '');
       (my $key = $name) =~ s/\W/_/g;
       
