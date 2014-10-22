@@ -94,6 +94,8 @@ sub _configure_external_resources {
   }
 }
 
+sub _get_WUBLAST_source_file { shift->_get_NCBIBLAST_source_file(@_) }
+
 sub _get_NCBIBLAST_source_file {
   my ($self, $source_type) = @_;
 

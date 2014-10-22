@@ -43,63 +43,119 @@ sub CONFIGURATION_FIELDS {
         'label'               => 'E-value threshold',
         'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(1e-200 1e-100 1e-50 1e-10 1e-5 1e-4 1e-3 1e-2 1e-1 1.0 10 100 1000 10000) ]
       },
-
     ],
 
     'scoring'             => [
 
-      'matrix'              => {
+      # NCBI
+      # 'matrix'              => {
+      #   'type'                => 'dropdown',
+      #   'label'               => 'Scoring matrix to use',
+      #   'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(BLOSUM45 BLOSUM50 BLOSUM62 BLOSUM80 BLOSUM90 PAM30 PAM70 PAM250) ]
+      # },
+
+      # # WUBLAST
+      # 'matrix'              => {
+      #   'type'                => 'dropdown',
+      #   'label'               => 'Scoring matrix to use',
+      #   'values'              => [ 
+      #     map { 'value' => lc($_), 'caption' => $_ }, 
+      #     qw(internal identity PuPy BLOSUM62 BLOSUM30 BLOSUM35 BLOSUM40 BLOSUM45 BLOSUM50 BLOSUM65 BLOSUM70 BLOSUM75 BLOSUM80 BLOSUM85 BLOSUM90 BLOSUM100 Gonnet),
+      #     map {'PAM' . ($_ * 10)} 1..50  
+      #   ]
+      # },
+
+      # NCBI only
+      # 'dropoff'             => {
+      #   'type'                => 'dropdown',
+      #   'label'               => 'Dropoff',
+      #   'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(0 2 4 6 8 10) ]
+      # },
+
+      # 'match_scores'        => {
+      #   'type'                => 'dropdown',
+      #   'label'               => 'Match/mismatch scores',
+      #   'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(2,-7 1,-3 2,-5 1,-2 2,-3 1,-1 5,-4 4,-5) ]
+      # },
+
+      # 'gapopen'             => {
+      #   'type'                => 'dropdown',
+      #   'label'               => 'Penalty for opening a gap',
+      #   'values'              => [ map { 'value' => $_, 'caption' => ($_ == -1 ? 'default' : $_) }, (-1, (0..21), 25) ]
+      # },
+
+      # 'gapext'              => {
+      #   'type'                => 'dropdown',
+      #   'label'               =>  'Penalty for extending a gap',
+      #   'values'              => [ map { 'value' => $_, 'caption' => ($_ == -1 ? 'default' : $_) }, (-1, (1..6), 8, 10) ]
+      # },
+
+      # 'gapalign'            => {
+      #   'type'                => 'checklist',
+      #   'label'               => 'Perform alignment using gaps',
+      #   'values'              => [ { 'value' => '1' } ],
+      # },
+
+      # 'compstats'           => {
+      #   'type'                => 'dropdown',
+      #   'label'               => 'Compositional adjustments',
+      #   'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(F D 1 2 3) ]                                
+      # },
+      # /NCBI only
+
+
+      # WU-BLAST only
+      'strand'              => {
         'type'                => 'dropdown',
-        'label'               => 'Scoring matrix to use',
-        'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(BLOSUM45 BLOSUM50 BLOSUM62 BLOSUM80 BLOSUM90 PAM30 PAM70 PAM250) ]
+        'label'               => 'Nucleotide strand',
+        'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(none both top bottom) ]
       },
-
-      'dropoff'             => {
+      'stats'               => {
         'type'                => 'dropdown',
-        'label'               => 'Dropoff',
-        'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(0 2 4 6 8 10) ]
+        'label'               => 'Statistical model',
+        'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(sump poisson kap) ]                                
       },
 
-      'match_scores'        => {
+      'sensitivity'         => {
         'type'                => 'dropdown',
-        'label'               => 'Match/mismatch scores',
-        'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(2,-7 1,-3 2,-5 1,-2 2,-3 1,-1 5,-4 4,-5) ]
+        'label'               => 'Search sensitivity',
+        'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(vlow low medium normal high) ]                                
       },
 
-      'gapopen'             => {
+      'topcombon'           => {
         'type'                => 'dropdown',
-        'label'               => 'Penalty for opening a gap',
-        'values'              => [ map { 'value' => $_, 'caption' => ($_ == -1 ? 'default' : $_) }, (-1, (0..21), 25) ]
+        'label'               => 'Consistent sets of HSPs to be reported',
+        'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(1 2 3 4 5 50 100 1000 all) ]                                
       },
-
-      'gapext'              => {
-        'type'                => 'dropdown',
-        'label'               =>  'Penalty for extending a gap',
-        'values'              => [ map { 'value' => $_, 'caption' => ($_ == -1 ? 'default' : $_) }, (-1, (1..6), 8, 10) ]
-      },
-
-      'gapalign'            => {
-        'type'                => 'checklist',
-        'label'               => 'Perform alignment using gaps',
-        'values'              => [ { 'value' => '1' } ],
-      },
-
-      'compstats'           => {
-        'type'                => 'dropdown',
-        'label'               => 'Compositional adjustments',
-        'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(F D 1 2 3) ]                                
-      },
-
+      # /WU-BLAST only
     ],
 
     'filters_and_masking'  => [
 
+      # NCBI
+      # 'filter'              => {
+      #   'type'                => 'checklist',
+      #   'label'               => 'Filter low complexity regions',
+      #   'values'              => [ { 'value' => '1' } ],
+      #   'commandline_values'  => {'1' => 'T', '' => 'F'}
+      # },
+
+      # WUBLAST
       'filter'              => {
-        'type'                => 'checklist',
+        'type'                => 'dropdown',
         'label'               => 'Filter low complexity regions',
         'values'              => [ { 'value' => '1' } ],
-        'commandline_values'  => {'1' => 'T', '' => 'F'}
+        'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(none seg xnu seg+xnu dust) ]      
       },
+
+      # # WU-BLAST only
+      # 'viewfilter'          => {
+      #   'type'                => 'checklist',
+      #   'label'               => 'View filtered sequence',
+      #   'values'              => [ { 'value' => '1' } ],
+      #   'commandline_values'  => {'1' => 'true', '' => 'false'}
+      # },
+      # # /WU-BLAST only
 
     ]
   ];
@@ -109,102 +165,70 @@ sub CONFIGURATION_DEFAULTS {
   return {
 
     'all'                     => {
-      'exp'                     => '10',
       'alignments'              => '50',
       'scores'                  => '50',
-      'dropoff'                 => '0',
-      'gapopen'                 => '-1',
-      'gapext'                  => '-1',
+      'exp'                     => '10',     
       'filter'                  => '1',
-      'gapalign'                => '1',
     },
 
-    'NCBIBLAST_BLASTN'        => {
-      'match_scores'            => '1,-3',
+
+    # 'NCBIBLAST_BLASTN'        => {
+    #   'dropoff'                 => '0',
+    #   'match_scores'            => '1,-3',
+    #   'gapopen'                 => '-1',
+    #   'gapext'                  => '-1',
+    #   'gapalign'                => '1',      
+    # },
+
+    # 'NCBIBLAST_TBLASTX'       => {
+    #   'matrix'                  => 'BLOSUM62',
+    #   'dropoff'                 => '0',
+    #   'gapopen'                 => '-1',
+    #   'gapext'                  => '-1',
+    #   'gapalign'                => '1',
+    # },
+
+    # 'NCBIBLAST_TBLASTN'       => {
+    #   'matrix'                  => 'BLOSUM62',
+    #   'dropoff'                 => '0',
+    #   'gapopen'                 => '-1',
+    #   'gapext'                  => '-1',      
+    #   'compstats'               => 'F',
+    #   'gapalign'                => '1',
+    # },
+
+
+    'WUBLAST_BLASTN'          => {
+      #'matrix'                  => 'blosum62',
+      'stats'                   => 'sump',
+      'sensitivity'             => 'normal',
+      'topcombon'               => '1',
+      'viewfilter'              => '1',
+      'strand'                  => 'both',
     },
 
-    'NCBIBLAST_TBLASTX'        => {
+    'WUBLAST_TBLASTX'         => {
+      #'matrix'                  => 'blosum62',
+      'stats'                   => 'sump',
+      'sensitivity'             => 'normal',
+      'topcombon'               => '1',
+      #'viewfilter'              => '1',
+      'strand'                  => 'both',
     },
 
-    'NCBIBLAST_TBLASTN'       => {
-      'matrix'                  => 'BLOSUM62',
-      'compstats'               => 'F',
+    'WUBLAST_TBLASTN'         => {
+      #'matrix'                  => 'internal',
+      'stats'                   => 'sump',
+      'sensitivity'             => 'normal',
+      'topcombon'               => '1',
+      #'viewfilter'              => '1',
+      'strand'                  => 'both',
     },
   };
 }
 
 sub CONFIGURATION_SETS {
-
-  # my $sets = {
-  #   'dna'         => {
-  #     'near'        => {
-  #       'word_size'   => 15,
-  #       'dust'        => 1,
-  #       'exp'      => 10,
-  #       'reward'      => 1,
-  #       'penalty'     => -3,
-  #       'gapopen'     => 5,
-  #       'gapext'   => 2
-  #     },
-  #     'near_oligo'  => {
-  #       'word_size'   => 7,
-  #       'dust'        => 0,
-  #       'exp'      => 1000,
-  #       'reward'      => 1,
-  #       'penalty'     => -3,
-  #       'gapopen'     => 5,
-  #       'gapext'   => 2
-  #     },
-  #     'normal'      => {
-  #       'word_size'   => 11,
-  #       'dust'        => 1,
-  #       'exp'      => 10,
-  #       'reward'      => 1,
-  #       'penalty'     => -3,
-  #       'gapopen'     => 5,
-  #       'gapext'   => 2
-  #     },
-  #     'distant'     => {
-  #       'word_size'   => 9,
-  #       'dust'        => 1,
-  #       'exp'      => 10,
-  #       'reward'      => 1,
-  #       'penalty'     => -1,
-  #       'gapopen'     => 2,
-  #       'gapext'   => 1
-  #     },
-  #   },
-  #   'protein'     => {
-  #     'near'        => {
-  #       'matrix'      => 'BLOSUM90',
-  #       'gapopen'     => 10,
-  #       'gapext'   => 1
-  #     },
-  #     'normal'      => {
-  #       'matrix'      => 'BLOSUM62',
-  #       'gapopen'     => 11,
-  #       'gapext'   => 1
-  #     },
-  #     'distant'     => {
-  #       'matrix'      => 'BLOSUM45',
-  #       'gapopen'     => 14,
-  #       'gapext'   => 2
-  #     },
-  #   }
-  # };
-
-  # return [
-  #   { 'value' => 'near',        'caption' => 'Near match'},
-  #   { 'value' => 'near_oligo',  'caption' => 'Short sequences'},
-  #   { 'value' => 'normal',      'caption' => 'Normal', 'selected' => 'true'},
-  #   { 'value' => 'distant',     'caption' => 'Distant homologies'}
-  # ], {
-  #   'NCBIBLAST_BLASTN'        => $sets->{'dna'},
-  #   'NCBIBLAST_BLASTP'        => $sets->{'protein'},
-  #   'NCBIBLAST_BLASTX'        => $sets->{'protein'},
-  #   'NCBIBLAST_TBLASTN'       => $sets->{'protein'},
-  #   'NCBIBLAST_TBLASTX'       => $sets->{'protein'},
-  # };
+  # not currently used for EG
 }
 
 1;

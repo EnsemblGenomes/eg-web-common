@@ -16,11 +16,12 @@ limitations under the License.
 
 =cut
 
-package EnsEMBL::Web::JobDispatcher::NcbiBlast;
+package EnsEMBL::Web::JobDispatcher::WuBlast;
 
 use strict;
 use warnings;
 use Data::Dumper;
+use Scalar::Util qw(blessed);
 use HTTP::Request;
 use JSON qw(to_json);
 use LWP::UserAgent;
@@ -28,15 +29,19 @@ use XML::Simple;
 use URI;
 
 use EnsEMBL::Web::Utils::FileHandler qw(file_get_contents file_put_contents);
+use EnsEMBL::Web::Parsers::WuBlast;
 
 use parent qw(EnsEMBL::Web::JobDispatcher);
 
 my $DEBUG = 1;
 
-sub _endpoint { 'http://www.ebi.ac.uk/Tools/services/rest/ncbiblast' };
+sub _endpoint { 'http://www.ebi.ac.uk/Tools/services/rest/wublast' };
 
 sub dispatch_job {
   my ($self, $ticket_type, $job_data) = @_;
+
+warn "dispatch_job\n";
+warn Data::Dumper::Dumper $job_data;
 
   my $species    = $job_data->{'config'}{'species'};
   my $input_file = join '/', $job_data->{'work_dir'}, $job_data->{'sequence'}{'input_file'};
@@ -76,23 +81,28 @@ sub update_jobs {
       $job->dispatcher_status('running') if $job->dispatcher_status ne 'running';
     
     } elsif ($status eq 'FINISHED') {
-      
+
+warn "update_job\n";      
 warn Data::Dumper::Dumper $job_data;
 
       # fetch and store the text output
-      #my $output_file = join '/', $job_data->{'work_dir'}, $job_data->{'config'}{'output_file'};
-      #my $text        = $self->_get('result', [ $job_ref, 'out' ])->content;
-      #file_put_contents($output_file, $text);
+      my $output_file = $job_data->{work_dir} . '/blast';
+      my $text        = $self->_get('result', [ $job_ref, 'out' ])->content;
+      file_put_contents($output_file . '.out', $text);
 
-      # fetch and parse the XML
-      #my $xml = $self->_get('result', [ $job_ref, 'xml' ])->content;
-           
-      #warn $self->hub->database($self->hub->species);
+      # fetch, store, and parse the XML
+      my $xml = $self->_get('result', [ $job_ref, 'xml' ])->content;
+      file_put_contents($output_file . '.xml', $xml);
 
+      my $parser   = EnsEMBL::Web::Parsers::WuBlast->new($self->hub);
+      my $hits     = $parser->parse_xml($xml, $job_data->{species}, $job_data->{source});
+      my $orm_hits = [ map { {result_data => _to_ensorm_datastructure_string($_ || {})} } @$hits ];
+
+#warn Data::Dumper::Dumper $orm_hits;
+      
+      $job->result($orm_hits);
       $job->status('done');
       $job->dispatcher_status('done');      
-        
-      #$job->result([$hits]);
 
     } elsif ($status =~ '^FAILED|NOT_FOUND$') {
       
@@ -123,7 +133,37 @@ warn Data::Dumper::Dumper $job_data;
   }
 }
 
-# webservice methods
+## Harpreet says ORM should do the stringification itself and we don't need this sub.
+## Need to ask him how to do it when he gets back from holidays.
+sub _to_ensorm_datastructure_string {
+  ## @private
+  ## @function
+  ## Returns a string representation of an object as it should go in the db
+  ## Follows the ORM::EnsEMBL's way to save objects in DataStructure column types (see ORM::EnsEMBL::Rose::CustomColumnValue::DataStructure::_recursive_unbless)
+  my ($obj, $_flag) = @_;
+
+  my $datastructure;
+
+  if (ref $obj) {
+
+    $datastructure = blessed $obj ? [ '_ensorm_blessed_object', ref $obj ] : [];
+
+    if (UNIVERSAL::isa($obj, 'HASH')) {
+      push @$datastructure, { map _to_ensorm_datastructure_string($_, 1), %$obj };
+    } elsif (UNIVERSAL::isa($obj, 'ARRAY')) {
+      push @$datastructure, [ map _to_ensorm_datastructure_string($_, 1), @$obj ];
+    } else { # scalar ref
+      push @$datastructure, $$obj;
+    }
+
+    $datastructure = $datastructure->[0] if @$datastructure == 1;
+
+  } else {
+    $datastructure = $obj;
+  }
+
+  return $_flag ? $datastructure : Data::Dumper->new([ $datastructure ])->Sortkeys(1)->Useqq(1)->Terse(1)->Indent(0)->Dump;
+}
 
 sub _post {
   my ($self, $method, $data) = @_;
@@ -134,7 +174,7 @@ sub _post {
 
   my $response = $self->_user_agent->post($uri, $data);
 
-  $DEBUG && warn "RESPONSE " . Dumper($response);
+  #$DEBUG && warn "RESPONSE " . Dumper($response);
 
   unless ($response->is_success) {
     my ($error) = $response->content =~ m/<description>([^<]+)<\/description>/;   

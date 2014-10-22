@@ -75,7 +75,7 @@ sub update_conf {
   $SiteDefs::ENSEMBL_ORM_DATABASES->{'ticket'} = 'DATABASE_WEB_TOOLS';
 
   # Which dispatcher to be used for the jobs (provide the appropriate values in your plugins)
-  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'NcbiBlast', 'VEP' => '', 'AssemblyConverter' => '' };
+  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'WuBlast', 'VEP' => '', 'AssemblyConverter' => '' };
 
   # Flag to enable/disable BLAST, VEP, Assembly Converter
   $SiteDefs::ENSEMBL_BLAST_ENABLED  = 1;
