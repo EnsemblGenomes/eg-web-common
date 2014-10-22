@@ -33,15 +33,14 @@ use EnsEMBL::Web::Parsers::WuBlast;
 
 use parent qw(EnsEMBL::Web::JobDispatcher);
 
-my $DEBUG = 1;
+my $DEBUG = 0;
 
 sub _endpoint { 'http://www.ebi.ac.uk/Tools/services/rest/wublast' };
 
 sub dispatch_job {
   my ($self, $ticket_type, $job_data) = @_;
 
-warn "dispatch_job\n";
-warn Data::Dumper::Dumper $job_data;
+  $DEBUG && warn "DISPATCH JOB DATA " . Dumper $job_data;
 
   my $species    = $job_data->{'config'}{'species'};
   my $input_file = join '/', $job_data->{'work_dir'}, $job_data->{'sequence'}{'input_file'};
@@ -82,8 +81,7 @@ sub update_jobs {
     
     } elsif ($status eq 'FINISHED') {
 
-warn "update_job\n";      
-warn Data::Dumper::Dumper $job_data;
+      $DEBUG && warn "UPDATE JOB DATA " . Dumper $job_data;
 
       # fetch and store the text output
       my $output_file = $job_data->{work_dir} . '/blast';
@@ -97,8 +95,6 @@ warn Data::Dumper::Dumper $job_data;
       my $parser   = EnsEMBL::Web::Parsers::WuBlast->new($self->hub);
       my $hits     = $parser->parse_xml($xml, $job_data->{species}, $job_data->{source});
       my $orm_hits = [ map { {result_data => _to_ensorm_datastructure_string($_ || {})} } @$hits ];
-
-#warn Data::Dumper::Dumper $orm_hits;
       
       $job->result($orm_hits);
       $job->status('done');
@@ -178,7 +174,7 @@ sub _post {
 
   unless ($response->is_success) {
     my ($error) = $response->content =~ m/<description>([^<]+)<\/description>/;   
-    die sprintf 'NCBI BLAST REST error: %s (%s)', $response->status_line, $error;
+    die sprintf 'BLAST REST error: %s (%s)', $response->status_line, $error;
   }
   return $response;
 }

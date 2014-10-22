@@ -18,6 +18,10 @@ limitations under the License.
 
 package EnsEMBL::Web::JobDispatcher::NcbiBlast;
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#  WORK IN PROGRESS - DO NOT USE (USE WU_BLAST INSTEAD)
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 use strict;
 use warnings;
 use Data::Dumper;
