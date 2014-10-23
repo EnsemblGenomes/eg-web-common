@@ -17,6 +17,8 @@ limitations under the License.
 =cut
 
 package EnsEMBL::Web::ConfigPacker;
+use strict;
+use warnings;
 
 use LWP::UserAgent;
 use JSON;
@@ -105,7 +107,7 @@ sub _get_NCBIBLAST_source_file {
 
   (my $type     = lc $source_type) =~ s/_/\./;
 
-  my (undef, $stite) = split /\s/, lc($SiteDefs::ENSEMBL_SITETYPE);
+  my (undef, $site) = split /\s/, lc($SiteDefs::ENSEMBL_SITETYPE);
   
   return sprintf 'ensemblgenomes/%s/%s.%s.%s', $site, $species, $assembly, $type unless $type =~ /latestgp/;
 
