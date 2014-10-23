@@ -63,7 +63,7 @@ sub _configure_external_resources {
       if ($response->is_success) {
 	  if (my $sources = decode_json($response->content)) {
 	      if ($sources->{'total'}) {
-		  foreach $src (@{$sources->{'sources'} || []}) {
+		  foreach my $src (@{$sources->{'sources'} || []}) {
 		      my $source  = {
 			  source_name    => $src->{title},
 			  description => $src->{desc},
