@@ -21,6 +21,9 @@ limitations under the License.
 package EnsEMBL::Web::ImageConfig::contigviewbottom;
 
 use strict;
+use warnings;
+
+use previous qw(initialize);
 
 sub modify {
   my $self = shift;
@@ -32,6 +35,26 @@ sub modify {
 
   my $ml = $self->get_node('fg_methylation_legend');
   $ml->remove if $ml;
+} 
+
+sub initialize {
+  ## @plugin
+  ## Adds blast track to the config
+  my $self = shift;
+  $self->PREV::initialize(@_);
+
+  ## replace "BLAST/BLAST" with "BLAST"
+
+  if (my $node = $self->get_node('blast')) {
+    $node->set('caption', 'BLAST hits');
+    $node->set('name', 'BLAST hits');
+    $node->set('description', 'Track displaying BLAST hits for the selected job');
+  }
+
+  if (my $node = $self->get_node('blast_legend')) {
+    $node->set('caption', 'BLAST Legend');
+    $node->set('name', 'BLAST Legend');
+  }
 } 
 
 1;
