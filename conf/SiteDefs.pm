@@ -25,7 +25,7 @@ sub update_conf {
   map {delete($SiteDefs::__species_aliases{$_}) } keys %SiteDefs::__species_aliases;
   
   $SiteDefs::SITE_RELEASE_VERSION = 24;
-  $SiteDefs::SITE_RELEASE_DATE = 'August 2014';
+  $SiteDefs::SITE_RELEASE_DATE = 'November 2014';
   
   $SiteDefs::SITE_MISSION = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
   
@@ -47,8 +47,8 @@ sub update_conf {
   $SiteDefs::OBJECT_TO_SCRIPT->{'Info'} = 'AltPage';
   
   $SiteDefs::ENSEMBL_BLASTSCRIPT       = $SiteDefs::ENSEMBL_SERVERROOT."/utils/parse_blast.pl";
-  $SiteDefs::ENSEMBL_BLAST_ENABLED     = 1;   
-  $SiteDefs::ENSEMBL_ENASEARCH_ENABLED = 1;
+  $SiteDefs::ENSEMBL_BLAST_ENABLED     = 0;   
+  $SiteDefs::ENSEMBL_ENASEARCH_ENABLED = 0;
   $SiteDefs::ENSEMBL_LOGINS            = 1;
   
   $SiteDefs::APACHE_BIN   = '/usr/sbin/httpd';
@@ -81,7 +81,19 @@ sub update_conf {
   $SiteDefs::ENSEMBL_BLAST_ENABLED  = 1;
   $SiteDefs::ENSEMBL_VEP_ENABLED    = 0;
   $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
+
+  # Path to CrossMap
+  $SiteDefs::ASSEMBLY_CONVERTER_BIN_PATH = '/localsw/CrossMap-0.1.3/usr/local/bin/CrossMap.py';
+
+  # Command line options for VEP filter script
+  $SiteDefs::ENSEMBL_VEP_FILTER_SCRIPT_OPTIONS = {
+    '-host'         => undef,
+    '-user'         => undef,
+    '-port'         => undef,
+    '-pass'         => undef
+  };
 }
+
 
 1;
 

@@ -95,7 +95,7 @@ sub content {
     # Present the user input form
     $html .= qq(<p>Align all $num_seq sequences in the selected sub-tree using Clustal Omega.  The alignment may take some time to generate for larger sub-trees.</p>);
     $html .= qq(<form name="msa" method="GET" action=""><table>);
-    $html .= $hub->param('g') ? qq(<input type="hidden" name="g" value="$gene" />) : qq(<input type="hidden" name="gt" value="$genetree" />);
+    $html .= qq(<input type="hidden" name="gt" value="$genetree" />);
     $html .= qq(<input type="hidden" name="node" value="$node_id" /><input type="hidden" name="cdb" value="$cdb" />);
     $html .= qq(<tr><td>mBed-like Clustering Guide Tree</td><td><a class="popup constant help-header _ht" href="http://www.ebi.ac.uk/Tools/msa/clustalo/help/index.html#mbed"><span class="sprite info_icon"></span></a></td><td><select name="mbed" id="mbed"> <option value="true" selected="selected">yes</option> <option value="false">no</option> </select></td></tr>);
     $html .= qq(<tr><td>mBed-like Clustering Iteration</td><td><a class="popup constant help-header _ht" href="http://www.ebi.ac.uk/Tools/msa/clustalo/help/index.html#mbediteration"><span class="sprite info_icon"></span></a></td><td><select name="mbediteration" id="mbediteration"> <option value="true" selected="selected">yes</option> <option value="false">no</option> </select></td></tr>);

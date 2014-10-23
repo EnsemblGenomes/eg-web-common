@@ -33,7 +33,6 @@ die "Plugin dir does not exist\n" if !-e $plugin_dir;
 $plugin_dir =~ s/\/$//; # strip trailing slash
 
 my @assets = qw(
-  data
   htdocs/img
   htdocs/i
   htdocs/ssi
@@ -41,6 +40,7 @@ my @assets = qw(
 );
 
 my @optional_assets = qw(
+  data
   htdocs/registry.json
 );
 

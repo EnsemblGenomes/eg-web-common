@@ -35,7 +35,7 @@ use utils::Tool;
 my (
   $host,    $user,        $pass,   $port,     $species, $ind,
   $release, $max_entries, $nogzip, $parallel, $dir,     $inifile,
-  $nogenetrees, $novariation, $noxrefs, $skip_existing, $format, $noortholog
+  $nogenetrees, $novariation, $noxrefs, $skip_existing, $format, $noortholog, $nodomaindescription,
 );
 
 my %rHash = map { $_ } @ARGV;
@@ -59,6 +59,7 @@ GetOptions(
   "skipexisting",   \$skip_existing,
   "format=s", \$format,
   "noortholog",       \$noortholog,
+  "nodomaindescription", \$nodomaindescription,
   );
 
 $format  ||= 'ensembl';
@@ -360,7 +361,18 @@ sub dumpGene {
         print "Fetching $type xrefs...\n";
               
         my $xrefs = [];
-        if ($type ne 'Translation') {
+        if ($type eq 'Translation') {
+
+            # Interpro
+            $xrefs = $dbh->selectall_arrayref(
+              "SELECT pf.translation_id, x.display_label, x.dbprimary_acc, ed.db_name, es.synonym, x.description
+               FROM (protein_feature AS pf, interpro AS i, xref AS `x`, external_db AS ed)
+               LEFT JOIN external_synonym AS es ON es.xref_id = x.xref_id
+               WHERE pf.hit_name = i.id AND i.interpro_ac = x.dbprimary_acc 
+               AND x.external_db_id = ed.external_db_id AND ed.db_name = 'Interpro'"
+            );
+
+        } else { 
           
           my $table = lc($type);
           
@@ -417,11 +429,35 @@ sub dumpGene {
        FROM gene g, transcript t, translation tl, protein_feature pf 
        WHERE g.gene_id = t.gene_id AND t.transcript_id = tl.transcript_id AND tl.translation_id = pf.translation_id'
     );
-    
+
     foreach (@$T) {
       $domains{$_->[0]}{$_->[1]} = 1;
     }
-  
+
+    my %domain_count;
+    $T = $dbh->selectall_arrayref(
+      'SELECT DISTINCT g.gene_id, COUNT(pf.hit_name) 
+       FROM gene g, transcript t, translation tl, protein_feature pf 
+       WHERE g.gene_id = t.gene_id AND t.transcript_id = tl.transcript_id AND tl.translation_id = pf.translation_id
+       GROUP BY g.gene_id'
+    );
+
+    foreach (@$T) {
+      $domain_count{$_->[0]} = $_->[1];
+    }
+
+    unless($nodomaindescription) {
+      my %domain_descriptions;
+      $T = $dbh->selectall_arrayref(
+        'SELECT DISTINCT g.gene_id, pf.hit_description
+         FROM gene g, transcript t, translation tl, protein_feature pf 
+         WHERE g.gene_id = t.gene_id AND t.transcript_id = tl.transcript_id AND tl.translation_id = pf.translation_id AND pf.hit_description IS NOT NULL'
+      );
+      foreach (@$T) {
+        $domains{$_->[0]}{$_->[1]} = 1;
+      }
+    }
+    
     print "Fetching seq regions...\n";
   
     my $species_to_seq_region = $dbh->selectall_hashref(
@@ -597,6 +633,7 @@ sub dumpGene {
               'exons'                  => $exons{$gene_id},
               'genetrees'              => $genetree_lookup->{$gene_stable_id} || [],
               'domains'                => $domains{$gene_id},
+              'domain_count'           => $domain_count{$gene_id},
               'system_name'            => $production_name,
               'database'                => $DB,
             );
@@ -630,8 +667,8 @@ sub dumpGene {
               foreach my $K ( keys %{ $xrefs{'Translation'}{$translation_id}{$db} } ) {
                 $old{'external_identifiers'}{$db}{$K} = 1;
               }
-            }
-          
+            } 
+
           } else {
           
             $old{'transcript_stable_ids'}{$transcript_stable_id}   = 1;
@@ -677,6 +714,7 @@ sub geneLineXML {
   my $peptides             = $xml_data->{'translation_stable_ids'} or die "peptides not set";
   my $exons                = $xml_data->{'exons'} or die "exons not set";
   my $domains              = $xml_data->{'domains'};
+  my $domain_descriptions  = $xml_data->{'domain_descriptions'};
   my $external_identifiers = $xml_data->{'external_identifiers'} or die "external_identifiers not set";
   my $description          = $xml_data->{'description'};
   my $gene_name            = encode_entities($xml_data->{'gene_name'});
@@ -685,7 +723,7 @@ sub geneLineXML {
   my $haplotype            = $xml_data->{'haplotype'};
   my $taxon_id             = $xml_data->{'taxon_id'};
   my $exon_count           = scalar keys %$exons;
-  my $domain_count         = scalar keys %$domains;
+  my $domain_count         = $xml_data->{'domain_count'};
   my $transcript_count     = scalar keys %$transcripts;
   my $display_name         = $xml_data->{'display_name'};
   my $genetrees            = $xml_data->{'genetrees'};
@@ -974,12 +1012,12 @@ sub get_ortholog_lookup {
     SELECT
       m1.stable_id , m2.stable_id, gdb2.name
     FROM 
-      genome_db gdb1  JOIN member m1 USING (genome_db_id)
-      JOIN homology_member hm1 USING (member_id)
+      genome_db gdb1  JOIN gene_member m1 USING (genome_db_id)
+      JOIN homology_member hm1 USING (gene_member_id)
       JOIN homology h USING (homology_id)
       JOIN homology_member hm2 USING (homology_id)
-      JOIN member m2 ON (hm2.member_id = m2.member_id)
-      JOIN genome_db gdb2 on (m2.genome_db_id = gdb2.genome_db_id)
+      JOIN gene_member m2 ON (hm2.gene_member_id = m2.gene_member_id)
+      JOIN genome_db gdb2 ON (m2.genome_db_id = gdb2.genome_db_id)
     WHERE
       gdb1.name = "$species" 
       AND m2.source_name = "ENSEMBLGENE"
