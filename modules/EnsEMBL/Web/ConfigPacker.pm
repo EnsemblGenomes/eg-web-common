@@ -105,7 +105,9 @@ sub _get_NCBIBLAST_source_file {
 
   (my $type     = lc $source_type) =~ s/_/\./;
 
-  return sprintf 'ensemblgenomes/protists/%s.%s.%s', $species, $assembly, $type unless $type =~ /latestgp/;
+  my (undef, $stite) = split /\s/, lc($SiteDefs::ENSEMBL_SITETYPE);
+  
+  return sprintf 'ensemblgenomes/%s/%s.%s.%s', $site, $species, $assembly, $type unless $type =~ /latestgp/;
 
   $type =~ s/latestgp(.*)/dna$1\.toplevel/;
   $type =~ s/.masked/_rm/;
