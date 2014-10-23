@@ -113,7 +113,7 @@ sub _get_NCBIBLAST_source_file {
   $type =~ s/.masked/_rm/;
   $type =~ s/.soft/_sm/;
 
-  return sprintf 'ensemblgenomes/protists/%s.%s.%s', $species, $assembly, $type;
+  return sprintf 'ensemblgenomes/%s/%s.%s.%s', $site, $species, $assembly, $type;
 }
 
 # To make use of the new meta key species.biomart_dataset
