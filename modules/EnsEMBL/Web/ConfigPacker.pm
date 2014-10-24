@@ -24,23 +24,16 @@ use LWP::UserAgent;
 use JSON;
 use Data::Dumper;
 
+use previous qw(munge_config_tree);
+
+## EG - don't pack blast configs - instead generate on the fly, see E::W::SpeciesDefs::get_blast_datasources
+sub _configure_blast {} 
+##
+
 sub munge_config_tree {
-    my $self = shift;
-
-  # munge the results obtained from the database queries of the website and the meta tables
-    $self->_munge_meta;
-    $self->_munge_variation;
-    $self->_munge_website;
-
-# get data about file formats from corresponding Perl modules
-    $self->_munge_file_formats;
-
-
-### EG
-    $self->_configure_external_resources;
-###
-# parse the BLAST configuration
-    $self->_configure_blast;
+  my $self = shift;
+  $self->PREV::munge_config_tree(@_);
+  $self->_configure_external_resources;
 }
 
 sub _configure_external_resources {
@@ -94,28 +87,6 @@ sub _configure_external_resources {
 	  }
       }
   }
-}
-
-sub _get_WUBLAST_source_file { shift->_get_NCBIBLAST_source_file(@_) }
-
-sub _get_NCBIBLAST_source_file {
-  my ($self, $source_type) = @_;
-
-  my $species   = $self->species;
-  my $assembly  = $self->tree->{$species}{'ASSEMBLY_NAME'};
-  my $db_tree   = $self->db_tree;
-
-  (my $type     = lc $source_type) =~ s/_/\./;
-
-  my (undef, $site) = split /\s/, lc($SiteDefs::ENSEMBL_SITETYPE);
-  
-  return sprintf 'ensemblgenomes/%s/%s.%s.%s', $site, $species, $assembly, $type unless $type =~ /latestgp/;
-
-  $type =~ s/latestgp(.*)/dna$1\.toplevel/;
-  $type =~ s/.masked/_rm/;
-  $type =~ s/.soft/_sm/;
-
-  return sprintf 'ensemblgenomes/%s/%s.%s.%s', $site, $species, $assembly, $type;
 }
 
 # To make use of the new meta key species.biomart_dataset
