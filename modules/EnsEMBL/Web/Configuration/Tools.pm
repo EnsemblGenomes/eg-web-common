@@ -21,7 +21,7 @@ package EnsEMBL::Web::Configuration::Tools;
 use strict;
 use warnings;
 
-## EG change "BLAST" to "BLAST"
+## EG change "BLAST/BLAT" to "BLAST"
 sub populate_tree {
   my $self        = shift;
   my $hub         = $self->hub;
