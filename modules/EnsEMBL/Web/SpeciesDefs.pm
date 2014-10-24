@@ -50,15 +50,19 @@ sub _get_NCBIBLAST_source_file {
 
   (my $type = lc $source_type) =~ s/_/\./;
 
-  my (undef, $site) = split /\s/, lc($SiteDefs::ENSEMBL_SITETYPE);
+  my $unit = $self->GENOMIC_UNIT;
   
-  return sprintf 'ensemblgenomes/%s/%s.%s.%s', $site, $species, $assembly, $type unless $type =~ /latestgp/;
+  if ($unit eq 'bacteria') { # add collection prefix
+    $species = join '/', ucfirst($self->get_config($species, 'SPECIES_DATASET')), $species;
+  }
+
+  return sprintf 'ensemblgenomes/%s/%s.%s.%s', $unit, $species, $assembly, $type unless $type =~ /latestgp/;
 
   $type =~ s/latestgp(.*)/dna$1\.toplevel/;
   $type =~ s/.masked/_rm/;
   $type =~ s/.soft/_sm/;
 
-  return sprintf 'ensemblgenomes/%s/%s.%s.%s', $site, $species, $assembly, $type;
+  return sprintf 'ensemblgenomes/%s/%s.%s.%s', $unit, $species, $assembly, $type;
 }
 
 1;
