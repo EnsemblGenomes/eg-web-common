@@ -31,8 +31,6 @@ sub get_form_node {
   my $form            = $self->PREV::get_form_node(@_);
   my $default_species = $species_defs->valid_species($hub->species) ? $hub->species : $species_defs->ENSEMBL_PRIMARY_SPECIES;
 
-warn "param species " . Data::Dumper::Dumper $hub->param('species');
-
   my @species         = $hub->param('species') || $default_species;
   
   my $list            = join '<br />', map { $species_defs->species_display_label($_) } @species;

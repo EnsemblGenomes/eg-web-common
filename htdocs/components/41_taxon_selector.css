@@ -35,7 +35,8 @@ div.taxon_selector_list div.vscroll_container {
 }
 
 div.taxon_selector_form div.checkboxes {
-  display:none;
+  visibility: hidden;
+  position: absolute;
 }
 
 div.taxon_selector_form div.list-wrapper {

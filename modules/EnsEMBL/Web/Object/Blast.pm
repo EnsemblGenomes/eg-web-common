@@ -50,7 +50,9 @@ sub get_blast_form_options {
   my $missing_sources = {}; # List of missing source files per species
 
   # Species, query types and db types options
-  $options->{'species'}        = [ sort { $a->{'caption'} cmp $b->{'caption'} } map { 'value' => $_, 'caption' => $sd->species_label($_, 1) }, @species ];
+## EG - don't need full species list here - too slow in Bacteria 
+  $options->{'species'}        = [ $sd->PRIMARY_SPECIES ];#[ sort { $a->{'caption'} cmp $b->{'caption'} } map { 'value' => $_, 'caption' => $sd->species_label($_, 1) }, @species ];
+##  
   $options->{'query_type'}     = [ map { 'value' => $_, 'caption' => $query_types->{$_} }, keys %$query_types ];
   $options->{'db_type'}        = [ map { 'value' => $_, 'caption' => $db_types->{$_}    }, keys %$db_types    ];
 
