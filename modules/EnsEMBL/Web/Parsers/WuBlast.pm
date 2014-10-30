@@ -34,7 +34,7 @@ sub parse_xml {
   my ($self, $xml, $species, $source_type) = @_;
   my $hub  = $self->{hub};
   my $db   = $hub->database('core', $species);
-  my $data = XMLin($xml, ForceArray => ['alignment']); 
+  my $data = XMLin($xml, ForceArray => ['hit', 'alignment']); 
   my $hits = $data->{SequenceSimilaritySearchResult}->{hits}->{hit};
   my @results;
 
