@@ -71,10 +71,12 @@ sub main {
   my $aboutdir = "$plugin_root/htdocs/ssi/species";
   my $imgdir64 = "$plugin_root/htdocs/i/species/64";
   my $imgdir48 = "$plugin_root/htdocs/i/species/48";
+  my $imgdir16 = "$plugin_root/htdocs/i/species/16";
   my $image_path = "$plugin_root/htdocs/img";
   my @commits = ($aboutdir,$imgdir64,$imgdir48,$image_path);
   make_path($imgdir64) unless (-d $imgdir64);
   make_path($imgdir48) unless (-d $imgdir48);
+  make_path($imgdir16) unless (-d $imgdir16);
   make_path($aboutdir) unless (-d $aboutdir);
   make_path("$image_path") unless -d $image_path;
   my $urlparse = URI->new($url);
@@ -165,16 +167,24 @@ sub main {
     next unless (-e $tmpimg);
     my $image = Imager->new();
     $image->read(file=>$tmpimg);
+    
     my $image64 = $image->scale(xpixels=>64, ypixels=>64);
     my $image_filename = sprintf("%s/%s.png",$imgdir64,ucfirst($species));
     printf STDERR ("Writing %s\n",$image_filename) unless $quiet;
     $image64->write(file=>$image_filename);
     system(sprintf('cvs add %s', $image_filename)) if $commit;
+    
     my $image48 = $image->scale(xpixels=>48, ypixels=>48);
     $image_filename = sprintf("%s/%s.png",$imgdir48,ucfirst($species));
     printf STDERR ("Writing %s\n",$image_filename) unless $quiet;
     $image48->write(file=>$image_filename);
+
+    my $image16 = $image->scale(xpixels=>16, ypixels=>16, type => 'nonprop');
+    $image_filename = sprintf("%s/%s.png",$imgdir16,ucfirst($species));
+    printf STDERR ("Writing %s\n",$image_filename) unless $quiet;
+    $image16->write(file=>$image_filename);
     system(sprintf('cvs add %s', $image_filename)) if $commit;
+
     unlink $tmpimg;
   }
   if($commit){
