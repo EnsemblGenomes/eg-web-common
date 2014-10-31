@@ -29,7 +29,7 @@ sub get_form_node {
   my $hub             = $self->hub;
   my $species_defs    = $hub->species_defs;
   my $form            = $self->PREV::get_form_node(@_);
-  my $default_species = $species_defs->valid_species($hub->species) ? $hub->species : $species_defs->ENSEMBL_PRIMARY_SPECIES;
+  my $default_species = $species_defs->valid_species($hub->species) ? $hub->species : $hub->get_favourite_species->[0];
 
   my @species         = $hub->param('species') || $default_species;
   
