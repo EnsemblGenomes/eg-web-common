@@ -53,6 +53,8 @@ sub _init {
 
 sub content {
   my $self = shift;
+  return '' unless $self->{link_text};
+  
   my $hub = $self->hub;
   my $url = $self->ajax_url('ajax');
     
