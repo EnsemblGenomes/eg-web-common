@@ -33,7 +33,7 @@ use EnsEMBL::Web::Parsers::WuBlast;
 
 use parent qw(EnsEMBL::Web::JobDispatcher);
 
-my $DEBUG = 0;
+my $DEBUG = 1;
 
 sub _endpoint { 'http://www.ebi.ac.uk/Tools/services/rest/wublast' };
 
@@ -188,8 +188,8 @@ sub _get {
   my $response = $self->_user_agent->get($uri);
   
   #debug("RESPONSE", Dumper($response));
-
-  die $response->status_line unless $response->is_success;
+  
+  #die $response->status_line unless $response->is_success;  ## don't die or it upsets the BLAST interface
   return $response;
 }
 
