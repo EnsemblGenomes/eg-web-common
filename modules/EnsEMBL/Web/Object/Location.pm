@@ -48,6 +48,7 @@ sub count_alignments {
   #my %intra_species = $self->species_defs->multi($cdb, 'INTRA_SPECIES_ALIGNMENTS');
   
   $c->{'patch'} = scalar @{ $self->hub->intra_species_alignments($cdb, $self->species, $self->slice->seq_region_name) };
+  $c->{'patch'} ++ if $c->{'patch'}; # because we want to include the reference region in the count
 ##  
   return $c; 
 }
