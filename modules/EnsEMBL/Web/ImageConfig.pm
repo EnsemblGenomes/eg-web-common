@@ -378,9 +378,12 @@ sub _add_vcf_track {
 sub add_sequence_variations_default {
   my ($self, $key, $hashref, $options) = @_;
   my $menu = $self->get_node('variation');
-  my $sequence_variation = ($menu->get_node('variants')) ? $menu->get_node('variants') : $self->create_submenu('variants', 'Sequence variants');
 
-  if (!$menu->get_node('variants')) {
+## EG - ENSEMBL-3525 need to use old node name 'sequence_variations' instead of 'variants' (not sure why)
+  my $sequence_variation = ($menu->get_node('sequence_variations')) ? $menu->get_node('sequence_variations') : $self->create_submenu('sequence_variations', 'Sequence variants');
+
+  if (!$menu->get_node('sequence_variations')) {
+##
     my $title = 'Sequence variants (all sources)';
 
     $sequence_variation->append($self->create_track("variation_feature_$key", $title, {
