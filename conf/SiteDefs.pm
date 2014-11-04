@@ -75,23 +75,12 @@ sub update_conf {
   $SiteDefs::ENSEMBL_ORM_DATABASES->{'ticket'} = 'DATABASE_WEB_TOOLS';
 
   # Which dispatcher to be used for the jobs (provide the appropriate values in your plugins)
-  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'WuBlast', 'VEP' => '', 'AssemblyConverter' => '' };
+  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'WuBlast' };
 
   # Flag to enable/disable BLAST, VEP, Assembly Converter
   $SiteDefs::ENSEMBL_BLAST_ENABLED  = 1;
   $SiteDefs::ENSEMBL_VEP_ENABLED    = 0;
   $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
-
-  # Path to CrossMap
-  $SiteDefs::ASSEMBLY_CONVERTER_BIN_PATH = '/localsw/CrossMap-0.1.3/usr/local/bin/CrossMap.py';
-
-  # Command line options for VEP filter script
-  $SiteDefs::ENSEMBL_VEP_FILTER_SCRIPT_OPTIONS = {
-    '-host'         => undef,
-    '-user'         => undef,
-    '-port'         => undef,
-    '-pass'         => undef
-  };
 }
 
 
