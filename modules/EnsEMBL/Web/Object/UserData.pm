@@ -66,7 +66,7 @@ sub consequence_table {
 
   foreach my $feature_set (keys %$consequence_data) {
     foreach my $f (@{$consequence_data->{$feature_set}}) {
-      next if $f->id =~ /^Uploaded/;
+      next if $f->id =~ /^(Uploaded|What)/; # skip headings line
       
       my $row               = {};
       my $location          = $f->location;
