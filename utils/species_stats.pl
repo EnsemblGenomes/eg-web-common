@@ -273,7 +273,7 @@ foreach my $spp (@valid_spp) {
 
       ($alt_gene_stats{'alt_coding'}) = $genome_container->get_alt_coding_count() if $genome_container->get_alt_coding_count();
       $title{'alt_coding'} = $genome_container->get_attrib('coding_acnt')->name() if $genome_container->get_alt_coding_count();
-      print STDERR "Alternate coding:$alt_gene_stats{'alt_coding'}\n" if $DEBUG;
+      print STDERR "Alternate coding:$alt_gene_stats{'alt_coding'}\n" if $DEBUG && $genome_container->get_alt_coding_count();
 
       ($gene_stats{'shortnoncoding'}) = $genome_container->get_snoncoding_count() if $genome_container->get_snoncoding_count();
       $title{'shortnoncoding'} = $genome_container->get_attrib('snoncoding_cnt')->name() if $genome_container->get_snoncoding_count();
@@ -285,11 +285,11 @@ foreach my $spp (@valid_spp) {
 
       ($alt_gene_stats{'alt_shortnoncoding'}) = $genome_container->get_alt_snoncoding_count() if $genome_container->get_alt_snoncoding_count();
       $title{'alt_shortnoncoding'} = $genome_container->get_attrib('snoncoding_acnt')->name() if $genome_container->get_alt_snoncoding_count();
-      print STDERR "Alternate non coding:$alt_gene_stats{'alt_shortnoncoding'}\n" if $DEBUG;
+      print STDERR "Alternate non coding:$alt_gene_stats{'alt_shortnoncoding'}\n" if $DEBUG && $genome_container->get_alt_snoncoding_count();
 
       ($alt_gene_stats{'alt_longnoncoding'}) = $genome_container->get_alt_lnoncoding_count() if $genome_container->get_alt_lnoncoding_count();
       $title{'alt_longnoncoding'} = $genome_container->get_attrib('lnoncoding_acnt')->name() if $genome_container->get_alt_lnoncoding_count();
-      print STDERR "Alternate non coding:$alt_gene_stats{'alt_longnoncoding'}\n" if $DEBUG;
+      print STDERR "Alternate non coding:$alt_gene_stats{'alt_longnoncoding'}\n" if $DEBUG && $genome_container->get_alt_lnoncoding_count();
 
       ( $gene_stats{'pseudogene'} ) = $genome_container->get_pseudogene_count() if $genome_container->get_pseudogene_count();
       $title{'pseudogene'} = $genome_container->get_attrib('pseudogene_cnt')->name();
@@ -297,18 +297,20 @@ foreach my $spp (@valid_spp) {
 
       ( $alt_gene_stats{'alt_pseudogene'} ) = $genome_container->get_alt_pseudogene_count() if $genome_container->get_alt_pseudogene_count();
       $title{'alt_pseudogene'} = $genome_container->get_attrib('pseudogene_acnt')->name() if $genome_container->get_alt_pseudogene_count();
-      print STDERR "Alternate pseudogenes:$alt_gene_stats{'alt_pseudogene'}\n" if $DEBUG;
+      print STDERR "Alternate pseudogenes:$alt_gene_stats{'alt_pseudogene'}\n" if $DEBUG && $genome_container->get_alt_pseudogene_count();
 
       if ($genome_container->get_transcript_count()) {
         ( $gene_stats{'transcript'} ) = $genome_container->get_transcript_count();
-        $title{'transcript'} = $genome_container->get_attrib('transcript')->name() || $genome_container->get_attrib('transcript_cnt')->name() ||
-        warn "WARN: No name for transcript! Value is ".$genome_container->get_transcript_count();
-        print STDERR "Transcripts:$gene_stats{'transcript'}\n" if $DEBUG;
+        $title{'transcript'} = $genome_container->get_attrib('transcript')->name() || $genome_container->get_attrib('transcript_cnt')->name() || 'Gene transcripts';
+
+        $title{'transcript'} or warn "WARN: No name for transcript! Value is ".$genome_container->get_transcript_count();
+
+        print STDERR "Transcripts:$gene_stats{'transcript'} *\n" if $DEBUG;
       }
 
       ( $alt_gene_stats{'alt_transcript'} ) = $genome_container->get_alt_transcript_count() if $genome_container->get_alt_transcript_count();
       $title{'alt_transcript'} = $genome_container->get_attrib('transcript')->name() if $genome_container->get_alt_transcript_count();
-      print STDERR "Transcripts:$alt_gene_stats{'alt_transcript'}\n" if $DEBUG;
+      print STDERR "Transcripts:$alt_gene_stats{'alt_transcript'}\n" if $DEBUG && $genome_container->get_alt_transcript_count();
 
       if ($genome_container->get_short_variation_count) {
         ($other_stats{'snps'}) = $genome_container->get_short_variation_count();
@@ -341,7 +343,7 @@ foreach my $spp (@valid_spp) {
 
     ## Golden path length
     my ( $gpl ) = $genome_container->get_ref_length();
-    $title{'ref_length'} = $genome_container->get_attrib('ref_length')->name();
+    $title{'ref_length'} = $genome_container->get_attrib('ref_length')->name() || 'Golden Path Length';
     print STDERR $title{'ref_length'} . ": $gpl.\n" if $DEBUG;
 
 
@@ -424,15 +426,16 @@ foreach my $spp (@valid_spp) {
       </tr>);
 
     $rowcount++;
-    $gpl  = thousandify($gpl);
-    $row  = stripe_row($rowcount);
-    $title = $title{'ref_length'};
-    print STATS qq($row
+    if ($gpl) {
+	$gpl  = thousandify($gpl);
+	$row  = stripe_row($rowcount);
+	$title = $title{'ref_length'};
+	print STATS qq($row
           <td class="data">$title:</td>
           <td class="value">$gpl</td>
       </tr>
     );
-
+    }
     unless ($pre) {
       my @summary_stats = (
         'Genebuild by' => $b_id,
@@ -579,6 +582,7 @@ sub check_dir {
 
 sub thousandify {
   my $value = shift;
+  return unless $value;
   local $_ = reverse $value;
   s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
   return scalar reverse $_;
@@ -679,6 +683,8 @@ sub do_pan_compara_species {
 
 sub do_interpro {
   my ($db, $species) = @_;
+  # Interpro link has been removed
+  return;
   print STDERR "Get top InterPro hits ($species)..." if $DEBUG;
 
   ## Best to do this using API!
@@ -1160,6 +1166,9 @@ sub get_resources {
   }
   my $gdba = $dbc->genome_info_adaptor;
 
+  if (!$gdba) {
+      die "ERROR: $@ \n"; 
+  }
 #  use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
 #  my $dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(
 #    -USER=>'anonymous',
