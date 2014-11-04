@@ -55,7 +55,7 @@ Ensembl.Panel.Ontology = Ensembl.Panel.extend({
   	    var label = link.name;
   	    var url = link.link.replace(/###ID###/g, term);
   	    //			alert(label + " * " + url);
-  	    var mItem  = '<b>'+label+': </b> <a href="'+encodeURI(url)+'">'+term+'</a>';
+  	    var mItem  = '<b>'+label+': </b> <a href="'+url+'">'+term+'</a>';
   	    this.printMenu("nodenote", mItem);
   	    ph+=20;
       }
