@@ -47,7 +47,6 @@ sub update_conf {
   $SiteDefs::OBJECT_TO_SCRIPT->{'Info'} = 'AltPage';
   
   $SiteDefs::ENSEMBL_BLASTSCRIPT       = $SiteDefs::ENSEMBL_SERVERROOT."/utils/parse_blast.pl";
-  $SiteDefs::ENSEMBL_BLAST_ENABLED     = 0;   
   $SiteDefs::ENSEMBL_ENASEARCH_ENABLED = 0;
   $SiteDefs::ENSEMBL_LOGINS            = 1;
   
@@ -81,6 +80,8 @@ sub update_conf {
   $SiteDefs::ENSEMBL_BLAST_ENABLED  = 1;
   $SiteDefs::ENSEMBL_VEP_ENABLED    = 0;
   $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
+
+  $SiteDefs::WUBLAST_REST_ENDPOINT  = 'http://www.ebi.ac.uk/Tools/services/rest/wublast';
 }
 
 

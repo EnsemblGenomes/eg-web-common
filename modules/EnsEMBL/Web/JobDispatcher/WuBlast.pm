@@ -33,9 +33,7 @@ use EnsEMBL::Web::Parsers::WuBlast;
 
 use parent qw(EnsEMBL::Web::JobDispatcher);
 
-my $DEBUG = 1;
-
-sub _endpoint { 'http://www.ebi.ac.uk/Tools/services/rest/wublast' };
+my $DEBUG = 0;
 
 sub dispatch_job {
   my ($self, $ticket_type, $job_data) = @_;
@@ -204,7 +202,7 @@ sub _user_agent {
 sub _uri {
   my ($self, $method, $args) = @_;
   $args ||= [];
-  return join '/', $self->_endpoint, $method, @$args;
+  return join '/', $SiteDefs::WUBLAST_REST_ENDPOINT, $method, @$args;
 }
 
 1;
