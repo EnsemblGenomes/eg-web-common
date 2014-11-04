@@ -81,7 +81,9 @@ sub content {
     foreach my $pop(@{$data->{'Population'}}) {
       my $pop_id = $pop->{'ID'};
       next unless ($pop_id);
-      
+     
+      $pop->{'Name'}=~ s/population/collection/g;
+ 
       if ($pop->{'Size'} == 1) {
         $other_ind = 1;
       }
