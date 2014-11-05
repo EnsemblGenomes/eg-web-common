@@ -33,16 +33,30 @@ sub content {
   my $hub    = $self->hub;
   my $object = $self->object;
 
-  my $gene_object;
-  if ($object->isa('EnsEMBL::Web::Object::Gene') || $object->isa('EnsEMBL::Web::Object::LRG')){
-    $gene_object = $object;
-  } else {
-    $gene_object = $hub->core_object('gene');
-  }
-  
-  my $length = $gene_object->seq_region_end;
+  my $r                = $hub->param('r');
+  my $g                = $hub->param('g');
+  my ($reg_name, $seq_region_start, $seq_region_end) = $r =~ /(.+?):(\d+)-(\d+)/ if $r =~ /:/;
 
-  my $ramp = $self->ramp($min||1e3,$max||1e6,$length);
+  my $context      = $object->param( 'context' ) || 100;
+  my $extent       = $context eq 'FULL' ? 1000 : $context;
+
+  unless ($object->isa('EnsEMBL::Web::Object::Gene') || $object->isa('EnsEMBL::Web::Object::LRG')){
+    $object = $self->hub->core_object('gene');
+  }
+
+  $object->get_gene_slices(                                                   
+    undef,
+    [ 'gene',        'normal', '33%'  ],
+    [ 'transcripts', 'munged', $extent ],
+  );
+
+  my $start_difference =  $object->__data->{'slices'}{'transcripts'}[1]->start - $object->__data->{'slices'}{'gene'}[1]->start;
+  $start_difference = $start_difference > 0 ? $start_difference : $start_difference * -1;
+
+  my $region_start = $object->Obj->start - $start_difference;   #gene start - $start_difference
+  my $region_end   = $object->Obj->end   + $start_difference;   #gene end + $start_difference
+
+  my $ramp = $self->ramp($min||1e3,$max||1e6,$region_start, $region_end);
   return $self->navbar($ramp);
 }
 ##
