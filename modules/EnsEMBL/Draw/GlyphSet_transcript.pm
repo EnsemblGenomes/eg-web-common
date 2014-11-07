@@ -1738,11 +1738,12 @@ sub operon_text_label {
 sub operon_href {
   my ($self, $operon, $transcript) = @_;
   my ($gene) = @{$transcript->get_all_Genes};
- #my $action = $self->my_config('zmenu') ?  $self->my_config('zmenu') :  $ENV{'ENSEMBL_ACTION'};
+  return '' unless $gene;
+  
   my $params = {
     species => $self->species,
     type    => 'Gene',
-    action  => 'OperonView',#$action,
+    action  => 'OperonView',
     t       => $transcript->stable_id||$transcript->display_label,
     g       => $gene->stable_id, 
     db      => $self->my_config('db')
