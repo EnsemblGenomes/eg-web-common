@@ -19,6 +19,7 @@ limitations under the License.
 package EnsEMBL::Web::Component::Location::ViewBottomNav;
 
 use strict;
+use JSON;
 
 ## EG - add start boundary (Ensembl assumes start == 1 but we need to vary this for variation view)
 sub content {
@@ -35,8 +36,9 @@ sub content {
 
 sub ramp {
   my ($self, $min, $max, $start, $end) = @_;
-  
-  my $scale = $self->hub->species_defs->ENSEMBL_GENOME_SIZE || 1;
+  my $hub    = $self->hub;
+  my $object = $hub->core_object('Location');
+  my $scale  = $hub->species_defs->ENSEMBL_GENOME_SIZE || 1;
   
   $start = int $start;
   $end   = int $end;
@@ -49,10 +51,11 @@ sub ramp {
   }
 
   my $json = $self->jsonify({
-    min   => $min,
-    max   => $max,
-    start => $start,
-    end   => $end,
+    min        => $min,
+    max        => $max,
+    start      => $start,
+    end        => $end,
+    isCircular => $object->slice->is_circular ? JSON::true : JSON::false,
   });
 
   return $json;
