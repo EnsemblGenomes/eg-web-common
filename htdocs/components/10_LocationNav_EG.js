@@ -56,9 +56,9 @@ Ensembl.Panel.LocationNav = Ensembl.Panel.LocationNav.extend({
     input = Math.round(input);
     var out = {};
     $.each(rs,function(k,v) {
-      var start = v[1];
-      var end   = v[2];
-      var width = start > end ? end + config.end - start + 1 : end - start + 1;
+      var start  = v[1];
+      var end    = v[2];
+      var width  = start > end ? end + config.end - start + 1 : end - start + 1;
       var centre = start + Math.round(width / 2);
       if (start > end  && centre > config.end) centre = centre - config.end + 1; // wrap for circular regions
       var new_start = centre - Math.round(input / 2);
@@ -110,7 +110,26 @@ Ensembl.Panel.LocationNav = Ensembl.Panel.LocationNav.extend({
       if (e < config.start) e = config.start + config.min;
     }
     return {start: s, end: e};
+  },
+
+  val2pos: function () { // from 0-100 on UI slider to bp
+    var panel     = this;
+    
+    var rs        = panel.currentLocations();
+    var start     = rs['r'][1];
+    var end       = rs['r'][2];
+    var config    = panel.config();
+    var input     = start > end ? end + config.end - start + 1 : end - start + 1;
+    var slide_mul = ( Math.log(config.max) - Math.log(config.min) ) / 100;
+    var slide_off = Math.log(config.min);
+    var out       = (Math.log(input)-slide_off)/slide_mul;
+    
+    if(out < 0) { return 0; }
+    if(out > 100) { return 100; }
+    
+    return out;
   }
+
 //  
 
 });
