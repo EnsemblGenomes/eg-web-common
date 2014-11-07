@@ -79,9 +79,13 @@ sub update_conf {
   # Flag to enable/disable BLAST, VEP, Assembly Converter
   $SiteDefs::ENSEMBL_BLAST_ENABLED  = 1;
   $SiteDefs::ENSEMBL_VEP_ENABLED    = 0;
+  $SiteDefs::ENSEMBL_MART_ENABLED   = 0;
   $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
 
   $SiteDefs::WUBLAST_REST_ENDPOINT  = 'http://www.ebi.ac.uk/Tools/services/rest/wublast';
+
+  $SiteDefs::ENSEMBL_REST_URL     = 'http://rest.ensemblgenomes.org';
+  $SiteDefs::ENSEMBL_REST_DOC_URL = 'http://ensemblgenomes.org/info/access/rest';
 }
 
 
