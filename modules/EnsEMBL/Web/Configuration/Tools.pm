@@ -125,34 +125,34 @@ sub populate_tree {
     }));
   }
 
-  ## VEP specific nodes
-  my $vep_node = $tools_node->append($self->create_subnode('VEP', 'Variant Effect Predictor',
-    [qw(
-      vepeffect       EnsEMBL::Web::Component::Tools::VEP::InputForm
-      details         EnsEMBL::Web::Component::Tools::VEP::TicketDetails
-      tickets         EnsEMBL::Web::Component::Tools::TicketsList
-    )],
-    { 'availability' => 1, 'concise' => 'Variant Effect Predictor' }
-  ));
+  # ## VEP specific nodes
+  # my $vep_node = $tools_node->append($self->create_subnode('VEP', 'Variant Effect Predictor',
+  #   [qw(
+  #     vepeffect       EnsEMBL::Web::Component::Tools::VEP::InputForm
+  #     details         EnsEMBL::Web::Component::Tools::VEP::TicketDetails
+  #     tickets         EnsEMBL::Web::Component::Tools::TicketsList
+  #   )],
+  #   { 'availability' => 1, 'concise' => 'Variant Effect Predictor' }
+  # ));
 
-  $vep_node->append($self->create_subnode('VEP/Results', $result_cap,
-    [qw(
-      details     EnsEMBL::Web::Component::Tools::VEP::TicketDetails
-      ressummary  EnsEMBL::Web::Component::Tools::VEP::ResultsSummary
-      results     EnsEMBL::Web::Component::Tools::VEP::Results
-    )],
-    { 'availability' => 1, 'concise' => 'Variant Effect Predictor results', 'no_menu_entry' => "$action/$function" ne 'VEP/Results' }
-  ));
+  # $vep_node->append($self->create_subnode('VEP/Results', $result_cap,
+  #   [qw(
+  #     details     EnsEMBL::Web::Component::Tools::VEP::TicketDetails
+  #     ressummary  EnsEMBL::Web::Component::Tools::VEP::ResultsSummary
+  #     results     EnsEMBL::Web::Component::Tools::VEP::Results
+  #   )],
+  #   { 'availability' => 1, 'concise' => 'Variant Effect Predictor results', 'no_menu_entry' => "$action/$function" ne 'VEP/Results' }
+  # ));
 
-  ## Assembly converter specific node (doesn't need results page, just a download of file from ticket details)
-  my $ac_node = $tools_node->append($self->create_subnode('AssemblyConverter', 'Assembly Converter',
-    [qw(
-      ac_input        EnsEMBL::Web::Component::Tools::AssemblyConverter::InputForm
-      ac_details      EnsEMBL::Web::Component::Tools::AssemblyConverter::TicketDetails
-      tickets         EnsEMBL::Web::Component::Tools::TicketsList
-    )],
-    { 'availability' => 1 }
-  ));
+  # ## Assembly converter specific node (doesn't need results page, just a download of file from ticket details)
+  # my $ac_node = $tools_node->append($self->create_subnode('AssemblyConverter', 'Assembly Converter',
+  #   [qw(
+  #     ac_input        EnsEMBL::Web::Component::Tools::AssemblyConverter::InputForm
+  #     ac_details      EnsEMBL::Web::Component::Tools::AssemblyConverter::TicketDetails
+  #     tickets         EnsEMBL::Web::Component::Tools::TicketsList
+  #   )],
+  #   { 'availability' => 1 }
+  # ));
 
 }
 

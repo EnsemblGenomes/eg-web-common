@@ -33,9 +33,7 @@ use EnsEMBL::Web::Parsers::WuBlast;
 
 use parent qw(EnsEMBL::Web::JobDispatcher);
 
-my $DEBUG = 1;
-
-sub _endpoint { 'http://www.ebi.ac.uk/Tools/services/rest/wublast' };
+my $DEBUG = 0;
 
 sub dispatch_job {
   my ($self, $ticket_type, $job_data) = @_;
@@ -94,7 +92,7 @@ sub update_jobs {
 
       my $parser   = EnsEMBL::Web::Parsers::WuBlast->new($self->hub);
       my $hits     = $parser->parse_xml($xml, $job_data->{species}, $job_data->{source});
-      my $orm_hits = [ map { {result_data => _to_ensorm_datastructure_string($_ || {})} } @$hits ];
+      my $orm_hits = [ map { {result_data => $_ || {}} } @$hits ];
       
       $job->result($orm_hits);
       $job->status('done');
@@ -127,38 +125,6 @@ sub update_jobs {
 
     $job->save('changes_only' => 1);
   }
-}
-
-## Harpreet says ORM should do the stringification itself and we don't need this sub.
-## Need to ask him how to do it when he gets back from holidays.
-sub _to_ensorm_datastructure_string {
-  ## @private
-  ## @function
-  ## Returns a string representation of an object as it should go in the db
-  ## Follows the ORM::EnsEMBL's way to save objects in DataStructure column types (see ORM::EnsEMBL::Rose::CustomColumnValue::DataStructure::_recursive_unbless)
-  my ($obj, $_flag) = @_;
-
-  my $datastructure;
-
-  if (ref $obj) {
-
-    $datastructure = blessed $obj ? [ '_ensorm_blessed_object', ref $obj ] : [];
-
-    if (UNIVERSAL::isa($obj, 'HASH')) {
-      push @$datastructure, { map _to_ensorm_datastructure_string($_, 1), %$obj };
-    } elsif (UNIVERSAL::isa($obj, 'ARRAY')) {
-      push @$datastructure, [ map _to_ensorm_datastructure_string($_, 1), @$obj ];
-    } else { # scalar ref
-      push @$datastructure, $$obj;
-    }
-
-    $datastructure = $datastructure->[0] if @$datastructure == 1;
-
-  } else {
-    $datastructure = $obj;
-  }
-
-  return $_flag ? $datastructure : Data::Dumper->new([ $datastructure ])->Sortkeys(1)->Useqq(1)->Terse(1)->Indent(0)->Dump;
 }
 
 sub _post {
@@ -204,7 +170,7 @@ sub _user_agent {
 sub _uri {
   my ($self, $method, $args) = @_;
   $args ||= [];
-  return join '/', $self->_endpoint, $method, @$args;
+  return join '/', $SiteDefs::WUBLAST_REST_ENDPOINT, $method, @$args;
 }
 
 1;
