@@ -1,5 +1,5 @@
 use CGI qw(standard escape escapeHTML unescape header);
-use EnsEMBL::Web::Controller::Blast;
+use EnsEMBL::Web::Controller::ENASearch;
 use EnsEMBL::Web::TmpFile::Text;
 
 use EnsEMBL::Web::RegObj;
@@ -10,12 +10,11 @@ use ENAResult;
 use Data::Dumper;
 
 use vars qw( $species_defs);
-
 BEGIN {
   $species_defs = $EnsEMBL::Web::RegObj::ENSEMBL_WEB_REGISTRY->species_defs;
 }
 
-my $controller = new EnsEMBL::Web::Controller::Blast;
+my $controller = new EnsEMBL::Web::Controller::ENASearch;
 my $page       = $controller->page;
 $page->add_body_attr('class', 'static');
 
