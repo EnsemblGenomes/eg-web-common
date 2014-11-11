@@ -11,7 +11,6 @@
 
 <h1>Genomic alignments</h1>
 
-<p>NB: Some of the alignment statistics are only available via the Ensembl 75 archive (January 2014), but are still valid for the current version. Redirections are explicitly stated when used.</p>
 
 <h2 id="blastz_net">BlastZ-net/Lastz-net Pairwise Alignment Analysis</h2>
 
@@ -25,8 +24,6 @@ location in both genomes. The netting process chooses for the reference
 species the best sub-chain in each region. The reference species in the
 BlastZ-net or LastZ-net alignments is in bold:</p>
 
-[[SCRIPT::EnsEMBL::Web::Document::HTML::Compara::BlastZ]]
-
 
 <h2 id="tblat">Translated Blat Pairwise Alignment Analysis</h2>
 
@@ -38,9 +35,7 @@ translated blat analyses: a new set where the raw results were passed through
 a chain and netting procedure similar to that used for the BlastZ-net analyses 
 to produce the best sub-chain for the reference species (Translated Blat Net).</p>
 
-<h3>Translated Blat Net</h3>
 
-[[SCRIPT::EnsEMBL::Web::Document::HTML::Compara::draw_stepped_table(TRANSLATED_BLAT_NET)]]
 
 
 <h2 id="synteny">Synteny Analysis</h2>
@@ -52,7 +47,14 @@ kbp are grouped. In the second phase, the groups that are in synteny are
 linked provided that no more than 2 non-syntenic groups are found between
 them and they are less than 3Mbp apart.</p>
 
-[[SCRIPT::EnsEMBL::Web::Document::HTML::Compara::draw_stepped_table(SYNTENY)]]
+
+
+<h3>B - BlastZ-net Pairwise Alignment Analysis</h3>
+<h3>L - Lastz-net Pairwise Alignment Analysis</h3>
+<h3>T - Translated Blat Net</h3>
+<h3>S - Synteny Analysis</h3>
+
+[[SCRIPT::EnsEMBL::Web::Document::HTML::Compara::matrix()]]
 
 </body>
 </html>
