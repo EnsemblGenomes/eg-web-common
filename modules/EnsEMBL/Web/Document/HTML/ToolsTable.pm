@@ -27,11 +27,12 @@ use EnsEMBL::Web::Document::Table;
 use base qw(EnsEMBL::Web::Document::HTML);
 
 sub render { 
-  my $self    = shift;
-  my $hub     = EnsEMBL::Web::Hub->new;
-  my $sd      = $hub->species_defs;
-  my $sp      = $sd->ENSEMBL_PRIMARY_SPECIES;
-  my $img_url = $sd->img_url;
+  my $self        = shift;
+  my $hub         = EnsEMBL::Web::Hub->new;
+  my $sd          = $hub->species_defs;
+  my $sp          = $sd->ENSEMBL_PRIMARY_SPECIES;
+  my $img_url     = $sd->img_url;
+  my $is_bacteria = $sd->GENOMIC_UNIT eq 'bacteria'; 
   my $url;
 
   my $table = EnsEMBL::Web::Document::Table->new([
@@ -67,23 +68,27 @@ sub render {
   }
 
   ## BIOMART
-  $table->add_row({
-    'name' => '<b><a class="nodeco" href="/biomart/martview">BioMart</a></b>',
-    'desc' => 'Use this data-mining tool to export custom datasets from Ensembl.',
-    'tool' => sprintf('<a href="/biomart/martview" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $img_url),
-    'code' => sprintf('<a href="http://biomart.org" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download code from biomart.org" /></a>', $img_url),
-    'docs' => sprintf('<a href="http://www.biomart.org/biomart/mview/help.html" class="popup"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
-  });
+  if (!$is_bacteria) {
+    $table->add_row({
+      'name' => '<b><a class="nodeco" href="/biomart/martview">BioMart</a></b>',
+      'desc' => 'Use this data-mining tool to export custom datasets from Ensembl.',
+      'tool' => sprintf('<a href="/biomart/martview" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $img_url),
+      'code' => sprintf('<a href="http://biomart.org" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download code from biomart.org" /></a>', $img_url),
+      'docs' => sprintf('<a href="http://www.biomart.org/biomart/mview/help.html" class="popup"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
+    });
+  }
 
   ## ASSEMBLY CONVERTER
-  $url = $hub->url({'species' => $sp, 'type' => 'UserData', 'action' => 'SelectFeatures'});
-  $table->add_row({
-    'name' => sprintf('<b><a class="modal_link nodeco" href="%s">Assembly converter</a></b>', $url),
-    'desc' => "Map (liftover) your data's coordinates to the current assembly.",
-    'tool' => sprintf('<a href="%s" class="modal_link nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $url, $img_url),
-    'code' => '',
-    'docs' => ''
-  });
+  if (!$is_bacteria) {
+    $url = $hub->url({'species' => $sp, 'type' => 'UserData', 'action' => 'SelectFeatures'});
+    $table->add_row({
+      'name' => sprintf('<b><a class="modal_link nodeco" href="%s">Assembly converter</a></b>', $url),
+      'desc' => "Map (liftover) your data's coordinates to the current assembly.",
+      'tool' => sprintf('<a href="%s" class="modal_link nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $url, $img_url),
+      'code' => '',
+      'docs' => ''
+    });
+  }
 
 
   ## ID HISTORY CONVERTER
