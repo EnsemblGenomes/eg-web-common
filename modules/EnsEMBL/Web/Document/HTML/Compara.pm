@@ -68,7 +68,7 @@ sub matrix {
 		my ($mlss_id , $stats) = @{$data->{$species}->{align}->{$other_species}->{$method} || []};
 
 		if ($stats) {
-		    $content .= "<a href='/info/genome/compara/mlss.html?mlss=$mlss_id'>$label</a> "; 
+		    $content .= "<a href='/mlss.html?mlss=$mlss_id'>$label</a> "; 
 		} else {
 		    $content .= "$label ";
 		}
