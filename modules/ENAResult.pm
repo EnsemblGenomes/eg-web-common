@@ -31,7 +31,9 @@ sub new {
     my $dbc = EnsEMBL::Web::DBSQL::DBConnection->new( undef, $params->{_species_defs} );
     my $dba;
     eval {
-	$dba =   $dbc->_get_blast_database;
+	my $db_info = $params->{'_species_defs'}->multidb->{DATABASE_BLAST} ||
+	    die( "No blast database in MULTI" );
+	$dba = $dbc->_get_database( $db_info, 'Bio::EnsEMBL::External::ENAAdaptor' );
     };
 
     if ($@) {
