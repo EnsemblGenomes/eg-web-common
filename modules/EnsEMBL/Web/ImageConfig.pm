@@ -382,8 +382,7 @@ sub add_sequence_variations_default {
 ## EG - ENSEMBL-3525 need to use old node name 'sequence_variations' instead of 'variants' (not sure why)
   my $sequence_variation = ($menu->get_node('sequence_variations')) ? $menu->get_node('sequence_variations') : $self->create_submenu('sequence_variations', 'Sequence variants');
 
-  if (!$menu->get_node('sequence_variations')) {
-##
+  #if (!$menu->get_node('sequence_variations')) {
     my $title = 'Sequence variants (all sources)';
 
     $sequence_variation->append($self->create_track("variation_feature_$key", $title, {
@@ -391,7 +390,8 @@ sub add_sequence_variations_default {
       sources     => undef,
       description => 'Sequence variants from all sources',
     }));
-  }
+  #}
+##
 
   foreach my $key_2 (sort keys %{$hashref->{'source'}{'counts'} || {}}) {
     next unless $hashref->{'source'}{'counts'}{$key_2} > 0;
