@@ -38,7 +38,7 @@ sub matrix {
     my $data = $self->get_matrix_data($methods, 1);
 
     foreach my $sp (keys %$data) {
-	$data->{$sp}->{'name'} = ucfirst($sp);
+	$data->{$sp}->{'name'} = $sp;
 	$data->{$sp}->{'common_name'}    = $hub->species_defs->get_config($sp, 'SPECIES_COMMON_NAME') || $hub->species_defs->get_config(ucfirst($sp), 'SPECIES_COMMON_NAME') || ucfirst($sp);
 	(my $short_name = ucfirst($sp)) =~ s/([A-Z])[a-z]+_([a-z]{3})([a-z]+)?/$1.$2/; ## e.g. H.sap
 	$data->{$sp}->{'short_name'}     = $short_name;
@@ -51,8 +51,8 @@ sub matrix {
 
     foreach my $species (sort keys %$data) {
 	my $ybg = $i % 2 ? 'bg1' : 'bg3';
-	$html .= qq{<tr>\n<th class="$ybg" style="padding:2px"><b><i>}
-                  .$data->{$species}->{'common_name'}.qq{</i></b></th>\n};
+	$html .= sprintf qq{<tr>\n<th class="$ybg" style="padding:2px"><b><i><a href="%s">%s</a></i></b></th>\n},
+	,$data->{$species}->{'name'}, $data->{$species}->{'common_name'};
 	foreach my $other_species (@to_do) {
 	    my $cbg;
 	    if ($i % 2) {
@@ -74,7 +74,7 @@ sub matrix {
 		}
 	    }
 
-	    $html .= sprintf '<td class="left %s" style="padding:2px;vertical-align:middle">%s</td>', $cbg, $content;
+	    $html .= sprintf '<td class="center %s" style="padding:2px;vertical-align:middle">%s</td>', $cbg, $content;
 	    $j++;
 	}
 	$j = 0;
