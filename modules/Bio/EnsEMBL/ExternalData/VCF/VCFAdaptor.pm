@@ -27,6 +27,7 @@ sub new {
     _url => $url,
   }, $class;
 
+  chdir($SiteDefs::ENSEMBL_TMP_DIR);
   my @out = `tabix -l $url`;
   if ( $? ) {
       $self->{_error} = "ERROR: Failed to open $url and its index";
