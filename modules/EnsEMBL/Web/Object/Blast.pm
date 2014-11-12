@@ -30,6 +30,7 @@ use warnings;
 use EnsEMBL::Web::Utils::FileHandler qw(file_get_contents);
 
 use EnsEMBL::Web::BlastConstants qw(CONFIGURATION_FIELDS);
+use previous qw(get_edit_jobs_data);
 
 sub get_blast_form_options {
   ## Gets the list of options for dropdown fields in the blast input form
@@ -88,5 +89,19 @@ sub get_blast_form_options {
     'combinations'    => $self->jsonify($blast_configs)
   };
 }
+
+sub get_edit_jobs_data {
+  my $self      = shift;
+  my $sd        = $self->hub->species_defs;
+  my $jobs_data = $self->PREV::get_edit_jobs_data(@_);
+
+  $_->{'species'} = {
+    key   => lc($_->{'species'}), 
+    title => $sd->species_label($_->{'species'})
+  } for @$jobs_data;
+
+  return $jobs_data;
+}
+
 
 1;
