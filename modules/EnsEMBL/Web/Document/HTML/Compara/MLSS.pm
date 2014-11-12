@@ -114,7 +114,8 @@ sub-chain is chosen in each region on the reference species.</p>',
               $type, $references->{$type}, $site, $release, $ref_common, $type, $type;
   }
 
-  $html .= '<h2>Configuration parameters</h2>';
+  
+  my $config_html = '<h2 id="config_params">Configuration parameters</h2>';
 
   ## CONFIG TABLE
   if (keys %$blastz_parameters || keys %$tblat_parameters) {
@@ -136,14 +137,14 @@ sub-chain is chosen in each region on the reference species.</p>',
 
     push @$rows, { param => "$options->{$_} ($_)", value => $params->{$_} || ($_ eq 'Q' ? 'Default' : '') } for @order;
 
-    $html .= EnsEMBL::Web::Document::Table->new($columns, $rows)->render;
+    $config_html .= EnsEMBL::Web::Document::Table->new($columns, $rows)->render;
   } else {
-    $html .= '<p>No configuration parameters are available.</p>';
+    $config_html .= '<p>No configuration parameters are available.</p>';
   }
 
   ## CHUNKING TABLE
   if ($ref_dna_collection_config->{'chunk_size'}) {
-    $html .= qq{
+    $config_html .= qq{
       <h2>Chunking parameters</h2>
       <table style="width:80%">
         <tr>
@@ -168,7 +169,7 @@ sub-chain is chosen in each region on the reference species.</p>',
         $value_2 = $self->thousandify($non_ref_dna_collection_config->{$param}) || 0;
       }
       
-      $html .= qq{
+      $config_html .= qq{
         <tr>
           <th style="padding:1em">$header</th>
           <td style="padding:1em">$value_1</td>
@@ -177,7 +178,7 @@ sub-chain is chosen in each region on the reference species.</p>',
       };
     } 
 
-    $html .= '</table>';
+    $config_html .= '</table>';
   }
 
   my $blocks = $self->thousandify($alignment_results->{'num_blocks'});
@@ -315,7 +316,7 @@ sub-chain is chosen in each region on the reference species.</p>',
 
   $html .= '</div>';
 
-  return $html;
+  return $html.$config_html;
 }
 
 ## HELPER METHODS ##################################
