@@ -96,7 +96,7 @@ sub render {
 
 ## EG - add link back to alignemnts, italize the species names
   ## HEADER AND INTRO
-  $html .= sprintf('<h1><i>%s</i> vs <i>%s</i> %s alignment</h1> (Back to <a href="/compara_analyses.html">all alignments</a>) <br/>',
+  $html .= sprintf('<h1><i>%s</i> vs <i>%s</i> %s alignment</h1> <p style="padding-top:20px;padding-bottom:20px">Back to <a href="/compara_analyses.html">all alignments</a><p>',
                         $ref_common, $nonref_common, $type,
             );
 
