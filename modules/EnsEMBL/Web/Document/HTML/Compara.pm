@@ -101,6 +101,8 @@ sub get_matrix_data {
  
   my $data = {};
   my $species = {};
+# existence of this tag defines if stats are available
+  my $stats_tag = 'num_blocks';
   
   ## Munge all the necessary information
   foreach my $method (@{$methods||[]}) {
@@ -133,12 +135,12 @@ sub get_matrix_data {
 	    if (scalar(@non_ref_genome_dbs)) {
           # Alignment between 2+ species
 		foreach my $nonref_db (@non_ref_genome_dbs) {
-		    $data->{$ref_name}->{align}->{$nonref_db->name}->{$method} = [$mlss->dbID,  $mlss->has_tag('reference_species') ? 1 : 0];
-		    $data->{$nonref_db->name}->{align}->{$ref_name}->{$method} = [$mlss->dbID,  $mlss->has_tag('reference_species') ? 1 : 0];
+		    $data->{$ref_name}->{align}->{$nonref_db->name}->{$method} = [$mlss->dbID,  $mlss->has_tag($stats_tag) ? 1 : 0];
+		    $data->{$nonref_db->name}->{align}->{$ref_name}->{$method} = [$mlss->dbID,  $mlss->has_tag($stats_tag) ? 1 : 0];
 		}
 	    } else {
             # Self-alignment. No need to increment $species->{$ref_name} as it has been done earlier
-		$data->{$ref_name}->{align}->{$ref_name}->{$method} = [ $mlss->dbID, $mlss->has_tag('reference_species') ? 1 : 0];
+		$data->{$ref_name}->{align}->{$ref_name}->{$method} = [ $mlss->dbID, $mlss->has_tag($stats_tag) ? 1 : 0];
 	    }
 	} else {
 	    warn "Can't get ref genome db for ", $mlss->name;
