@@ -999,11 +999,16 @@ sub render_all_species_page {
   );
 
   $html .= qq(<div class="box-left tinted-box round-box unbordered" style="width:70%"><fieldset><legend>Data Codes</legend>);
-#  $html .= qq(<a style="font-size:1.1em;font-weight:bold;text-decoration:none;" href="#">Species</a> <span title="Has a variation database" style="color:red; cursor:default;">V</span>&nbsp;<span title="Is in pan-taxonomic compara" style="color:red; cursor:default;">P</span>&nbsp;<span title="Has whole genome DNA alignments" style="color:red; cursor:default;">G</span>&nbsp;<span title="Has other alignments" style="color:red; cursor:default;">A</span><p>Provider | <i>Scientific name</i> | Taxonomy ID</p>);
+
 #  my @species = sort keys %species;
   $html .= qq(<p><font color="red">V</font> - has a variation database, <font color="red">P</font> - is in pan-taxonomic compara,
      <font color="red">G</font> - has whole genome DNA alignments, <font color="red">A</font> - has other alignments</p>);
-  $html .= qq(</fieldset></div></div>);
+  $html .= qq(</fieldset></div>
+
+
+ <p><a href="/compara_analyses.html" class="nodeco"><img src="/i/24/info.png" alt="" class="homepage-link">More about comparative analyses</a></p>
+
+</div>);
 
   my %groups = map {$species{$_}->{group} => 1} keys %species;
 
