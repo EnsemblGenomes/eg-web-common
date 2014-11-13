@@ -1005,9 +1005,9 @@ sub render_all_species_page {
      <font color="red">G</font> - has whole genome DNA alignments, <font color="red">A</font> - has other alignments</p>);
   $html .= qq(</fieldset></div>
 
-
- <p><a href="/compara_analyses.html" class="nodeco"><img src="/i/24/info.png" alt="" class="homepage-link">More about comparative analyses</a></p>
-
+</div>
+<div class="box-left tinted-box round-box unbordered">
+ <p><a href="/compara_analyses.html" class="nodeco"><img src="/i/24/info.png" alt="" class="homepage-link">About genomic alignments</a></p>
 </div>);
 
   my %groups = map {$species{$_}->{group} => 1} keys %species;
