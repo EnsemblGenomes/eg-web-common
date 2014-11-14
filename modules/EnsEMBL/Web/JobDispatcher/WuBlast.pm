@@ -43,12 +43,14 @@ sub dispatch_job {
   my $species    = $job_data->{'config'}{'species'};
   my $input_file = join '/', $job_data->{'work_dir'}, $job_data->{'sequence'}{'input_file'};
   my $sequence   = join '', file_get_contents($input_file);
+  my $stype      = {dna => 'dna', peptide => 'protein'}->{$job_data->{db_type}};
+
 
   my $args = {
     email    => $SiteDefs::ENSEMBL_SERVERADMIN,
     title    => $job_data->{ticket_name},
     program  => $job_data->{program},
-    stype    => $job_data->{db_type},
+    stype    => $stype,
     database => $job_data->{source_file},
     sequence => $sequence,
     %{ $job_data->{configs} }  
