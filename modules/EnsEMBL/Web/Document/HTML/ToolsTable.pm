@@ -113,11 +113,12 @@ sub render {
 
 
   ## VIRTUAL MACHINE
+  $url = sprintf 'ftp://ftp.ensemblgenomes.org/pub/release-%s/virtual_machines', $SiteDefs::SITE_RELEASE_VERSION;
   $table->add_row({
-    'name' => '<b><a class="nodeco" href="ftp://ftp.ensemblgenomes.org/pub/release-23/virtual_machines">Ensembl Genomes Virtual Machine</a></b>',
+    'name' => sprintf('<b><a class="nodeco" href="%s">Ensembl Genomes Virtual Machine</a></b>', $url),
     'desc' => 'Pre-configured VirtualBox virtual machine (VM) running the latest Ensembl Genomes browser.',
     'tool' => '',
-    'code' => sprintf('<a href="ftp://ftp.ensemblgenomes.org/pub/release-23/virtual_machines" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Virtual Machine" /></a>', $img_url),
+    'code' => sprintf('<a href="%s" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Virtual Machine" /></a>', $url, $img_url),
     'docs' => sprintf('<a href="http://ensemblgenomes.org/info/access/virtual_machine"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
   });
   
