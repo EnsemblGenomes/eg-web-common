@@ -249,4 +249,42 @@ sub append_hover_label_description {
 
 ##
 
+sub feature_title {
+  my ($self, $f, $db_name) = @_;
+  my @strand_name = qw(- Forward Reverse);
+  my $title       = sprintf(
+    '%s: %s; Start: %d; End: %d; Strand: %s',
+    $self->{'track_key'},
+    $f->id,
+    $f->seq_region_start,
+    $f->seq_region_end,
+    $strand_name[$f->seq_region_strand]
+  );
+
+  $title .= '; Hit start: ' . $f->hstart if $f->hstart;
+  $title .= '; Hit end: ' . $f->hend if $f->hend;
+  $title .= '; Hit strand: ' . $f->hstrand if $f->hstrand;
+  $title .= '; Score: ' . $f->score if $f->score; 
+ 
+  my %extra = $f->extra_data && ref $f->extra_data eq 'HASH' ? %{$f->extra_data} : (); 
+ 
+  foreach my $k (sort keys %extra) {
+    next if $k eq '_type';
+    next if $k eq 'item_colour';
+    $title .= "; $k: " . join ', ', @{$extra{$k}};
+  }
+## EG - add optional external link 
+  my $external_link = $self->my_config('external_link');
+  if ($external_link) {
+    my ($url, $caption) = @$external_link;
+    my $id = $f->id;
+    $url =~ s/###ID###/$id/g;
+    $title .= sprintf '; %s: <a href="%s">%s</a>', $caption, $url, $id;
+  }
+##
+
+  return $title;
+}
+
+
 1;
