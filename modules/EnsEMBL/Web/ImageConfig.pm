@@ -514,14 +514,15 @@ sub _add_bed_track {
   my ($self,%args) = @_;
   my $menu = $args{'menu'};
   my $source = $args{'source'};
-   my $description = $source->{'description'} || 
+  my $description = $source->{'description'} || 
      sprintf('Data retrieved from an external webserver. This data and comes from URL: %s', encode_entities($source->{'source_url'}));
   $self->_add_flat_file_track($menu, 'url', $args{'key'}, $source->{'source_name'},
      $description,
-     url     => $source->{'source_url'},
-     format  => $source->{'format'} || 'bed',
-     display => $source->{'display'} || 'normal',
-     description => $description
+     url             => $source->{'source_url'},
+     format          => $source->{'format'} || 'bed',
+     display         => $source->{'display'} || 'normal',
+     description     => $description,
+     external_link   => $source->{'external_link'},
   );
 }
 sub _add_bedgraph_track {
@@ -532,11 +533,12 @@ sub _add_bedgraph_track {
      sprintf('Data retrieved from an external webserver. This data and comes from URL: %s', encode_entities($source->{'source_url'}));
    $self->_add_flat_file_track($menu, 'url', $args{'key'}, $source->{'source_name'},
       $description,
-      url     => $source->{'source_url'},
-      format  => 'BEDGRAPH',
-      style   => 'wiggle',
-      display => $source->{'display'} || 'tiling',
-      description => $description
+      url           => $source->{'source_url'},
+      format        => 'BEDGRAPH',
+      style         => 'wiggle',
+      display       => $source->{'display'} || 'tiling',
+      description   => $description,
+      external_link => $source->{'external_link'},
    );
 }
 
