@@ -104,7 +104,7 @@ sub species_table {
 	    foreach my $align (grep {$_ =~ /SYNTENY/} sort keys %{$sdata->{'align'}->{$sp}||{}}) {
 		my ($aid, $stats) = @{$sdata->{'align'}->{$sp}->{$align}||[]};
 		push @rows, {
-		    'species' => $loc ? $self->_link("<em>$sp1</em> : <em>$sp2</em>", $self->hub->url({ 'species' => $species, 'type' => 'Location', 'action'=>'Synteny', 'r'=>$loc, 'otherspecies' => $sp})) : $sp2,
+		    'species' => $loc ? $self->_link("<em>$sp1</em> : <em>$sp2</em>", $self->hub->url({ 'species' => $species, 'type' => 'Location', 'action'=>'Synteny', 'r'=>$loc, 'otherspecies' => ucfirst($sp)})) : $sp2,
  		    'type' => $stats ? qq{ | <a href="/mlss.html?mlss=$aid">stats</a>} : ''
 		};
 	    }    	
