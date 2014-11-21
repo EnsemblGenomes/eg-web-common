@@ -23,6 +23,7 @@ package EnsEMBL::Web::Component::Info::HomePage;
 use strict;
 
 use EnsEMBL::Web::Document::HTML::HomeSearch;
+use EnsEMBL::Web::Document::HTML::Compara;
 use EnsEMBL::Web::DBSQL::ProductionAdaptor;
 use EnsEMBL::Web::Component::GenomicAlignments;
 
@@ -494,10 +495,9 @@ sub _compara_text {
     $html .= qq(<p><a href="$ftp_url" class="nodeco"><img src="${img_url}24/download.png" alt="" class="homepage-link" />Download alignments</a> (EMF)</p>) 
       unless $self->is_bacteria;
   }
-  my $aligns = EnsEMBL::Web::Component::GenomicAlignments->new($hub)->content;
-  if ($aligns) {
-    $html .= sprintf(qq{<p><div class="js_panel"><img src="%s24/info.png" alt="" class="homepage-link" />Genomic alignments [%s]</div></p>}, $img_url, $aligns);
-  }
+
+  $html .= EnsEMBL::Web::Document::HTML::Compara->new($hub)->table($hub->species);
+
   return $html;
 }
 
