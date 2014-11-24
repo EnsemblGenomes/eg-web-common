@@ -332,7 +332,7 @@ sub _assembly_text {
     $html .= qq(<p><a href="$am_url" class="modal_link nodeco"><img src="${img_url}24/tool.png" class="homepage-link" />Convert your data to $assembly coordinates</a></p>);
   }
   
-  $html .= sprintf '<p><a href="%s" class="nodeco" rel="modal_user_data">%sDisplay your data in %s</a></p>',
+  $html .= sprintf '<p><a href="%s" class="modal_link nodeco" rel="modal_user_data">%sDisplay your data in %s</a></p>',
     $hub->url({ type => 'UserData', action => 'SelectFile', __clear => 1 }), qq|<img src="${img_url}24/page-user.png" class="homepage-link" />|, $species_defs->ENSEMBL_SITETYPE;
 
 #EG no old assemblies
