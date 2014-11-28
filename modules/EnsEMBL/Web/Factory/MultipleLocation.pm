@@ -65,7 +65,10 @@ sub createObjects {
         $already_configured = 0 if !$align_species{$s};
         $i ++;
       }
-      $already_configured = 0 if scalar keys %align_species != $i-1;
+      ## disabled - this is a bad assumption as there could be alignments in this list that 
+      ##            don't have features for the current location
+      #$already_configured = 0 if scalar keys %align_species != $i-1; 
+      ##
       if (!$already_configured) {
         # clear old params
         my $i = 1;
