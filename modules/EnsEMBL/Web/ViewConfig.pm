@@ -18,131 +18,6 @@ limitations under the License.
 
 package EnsEMBL::Web::ViewConfig;
 
-use strict;
-
-sub build_imageconfig_form {
-  my $self         = shift;
-  my $image_config = shift;
-  my $img_url      = $self->img_url;
-  my $hub          = $self->hub;
-  my $extra_menus  = $image_config->{'extra_menus'};
-  my $tree         = $self->tree;
-  my $form         = $self->get_form;
-  my %node_options = ( availability => 1, url => '#', rel => 'multi' );
-  my $track_order;
-  
-  $tree->append($tree->create_node('active_tracks',    { caption => 'Active tracks',    class => 'active_tracks',    %node_options })) if $extra_menus->{'active_tracks'};
-  $tree->append($tree->create_node('favourite_tracks', { caption => 'Favourite tracks', class => 'favourite_tracks', %node_options })) if $extra_menus->{'favourite_tracks'};
-  
-  if ($extra_menus->{'track_order'}) {
-    $tree->append($tree->create_node('track_order', { caption => 'Track order', class => 'track_order', %node_options, rel => undef }));
-    $self->{'json'}{'order'} = { map { join('.', grep $_, $_->id, $_->data->{'drawing_strand'}) => $_->data->{'order'} } $image_config->get_parameter('sortable_tracks') ? $image_config->get_sortable_tracks : () };
-  }
-  
-  $tree->append($tree->create_node('search_results', { caption => 'Search results', class => 'search_results disabled', %node_options })) if $extra_menus->{'search_results'};
-  
-  # Delete all tracks where menu = no, and parent nodes if they are now empty
-  # Do this after creating track order, so that unconfigurable but displayed tracks are still considered in the ordering process
-  $image_config->remove_disabled_menus;
-  
-  # In the scenario where the tree structure is menu -> sub menu -> sub menu, and the 3rd level contains only one non-external menu,
-  # move all the tracks in that 3rd level menu up to the 2nd level, and delete the 3rd level.
-  # This avoids a bug where the 2nd level menu has an h3 header, and no enable/disable all, and the enable/disable all for the 3rd level is printed in the wrong place.
-  # An example of this would be in a species with one type of variation set subset
-  foreach my $node (grep $_->data->{'node_type'} eq 'menu', $image_config->tree->nodes) {
-    my @child_menus = grep $_->data->{'node_type'} eq 'menu', @{$node->child_nodes};
-    
-    if (scalar @child_menus == 1 && scalar @{$node->child_nodes} == 1 && scalar(grep !$_->data->{'external'}, @child_menus) == 1) {
-      $child_menus[0]->before($_) for @{$child_menus[0]->child_nodes};
-      $child_menus[0]->remove;
-    }
-  }
-  
-  $self->{'favourite_tracks'} = $image_config->get_favourite_tracks;
-  
-  foreach my $node (@{$image_config->tree->child_nodes}) {
-    my $section = $node->id;
-    
-    next if $section eq 'track_order';
-    
-    my $data    = $node->data;
-    my $caption = $data->{'caption'};
-    my $class   = $data->{'datahub_menu'} || $section eq 'user_data' ? 'move_to_top' : ''; # add a class to user data and data hubs to get javascript to move them to the top of the navigation
-    my $div     = $form->append_child('div', { class => "config $section $class" });
-    
-    $div->append_child('h2', { class => 'config_header', inner_HTML => $caption });
-    
-    my $parent_menu = $tree->append($tree->create_node($section, {
-      caption  => $caption,
-      class    => $section,
-      li_class => $class,
-      url      => '#',
-    }));
-    
-    if ($node->has_child_nodes) {
-      my @child_nodes = @{$node->child_nodes};
-      
-      # If all children are menus
-      if (scalar @child_nodes && !grep $_->data->{'node_type'} ne 'menu', @child_nodes) {
-        my $first = 'first ';
-        
-        foreach (@child_nodes) {
-          my $id = $_->id;
-          
-          $self->build_imageconfig_menus($_, $div->append_child('div', { class => "subset $first$id" }), $section, $id);
-          
-          $first = '';
-          
-          next if scalar @child_nodes == 1 && !$data->{'datahub_menu'};
-          
-          my $url = $_->data->{'url'};
-          my ($total, $on);
-          
-          my @child_ids = map $_->id, grep { $_->data->{'node_type'} eq 'track' && $_->data->{'menu'} ne 'hidden' && $_->data->{'matrix'} ne 'column' } $_->nodes;
-             $total     = scalar @child_ids;
-             $on        = 0;
-             $on       += $self->{'enabled_tracks'}{$_} for @child_ids;
-          
-          # Add submenu entries to the navigation tree
-          $parent_menu->append($tree->get_node($id) || $tree->create_node($id, {
-            caption      => $_->data->{'caption'},
-            class        => $url ? $id : $parent_menu->id . "-$id",
-            url          => $url || '#',
-            count        => $total ? qq{(<span class="on">$on</span>/$total)} : '',
-            availability => $url ? 1 : $total > 0,
-          }));
-          
-          $self->add_fieldset($id, 'empty', 1) if $url;
-        }
-      } else {
-        my $parent = $div->append_child('div', { class => 'subset' . (scalar @child_nodes > 1 ? ' first' : '') })->append_child('ul', { class => "config_menu $section" }); # Add a subset div to keep the HTML consistent
-        
-        $self->build_imageconfig_menus($_, $parent, $section) for @child_nodes;
-        $self->add_select_all($node, $parent, $section);
-      }
-    }
-    
-    my $on    = $self->{'enabled_tracks'}{$section} || 0;
-    my $total = $self->{'total_tracks'}{$section}   || 0;
-    
-    $parent_menu->set('count', qq{(<span class="on">$on</span>/$total)}) if $total;
-    $parent_menu->set('availability', $total > 0);
-  }
-  
-  # When creating HTML for the form, we want only the tracks which are turned on, and their parent nodes - remove all other track nodes before rendering.
-  # Also remove any empty UL tags. These can occur when a menu which is not explicitly external contains only external tracks.
-  $_->remove for grep { ($_->node_name eq 'li' && !$_->get_flag('display')) || ($_->node_name eq 'ul' && !$_->has_child_nodes) } @{$form->get_all_nodes};
-  
-  if ($extra_menus->{'favourite_tracks'}) {
-    $form->prepend_child('h1', { class => 'favourite_tracks',        inner_HTML => 'Favourite tracks' });
-    $form->append_child('div', { class => 'config favourite_tracks', inner_HTML => qq{You have no favourite tracks. Use the <img src="${img_url}grey_star.png" alt="star" /> icon to add tracks to your favourites} });
-  }
-  
-  $form->append_child('div', { class => 'config track_order', inner_HTML => '<h1 class="track_order">Track order</h1><ul class="config_menu"></ul>' }) if $self->{'json'}{'order'};
-  $form->append_child('div', { class => 'config no_search',   inner_HTML => 'Sorry, your search did not find any tracks' });
-  $form->prepend_child('h1', { class => 'search_results',     inner_HTML => 'Search results' });
-  $form->prepend_child('h1', { class => 'active_tracks',      inner_HTML => 'Active tracks'  });
-}
 
 sub build_imageconfig_menus {
   my ($self, $node, $parent, $menu_class, $submenu_class) = @_;
@@ -207,11 +82,11 @@ sub build_imageconfig_menus {
     my $subset      = $data->{'subset'};
     my $name        = encode_entities($data->{'name'});
     if (exists $data->{'web'}->{'name'}) {
-      $name        =   encode_entities($data->{'web'}->{'name'});
-    }
+          $name        =   encode_entities($data->{'web'}->{'name'});
+        }
 
     my @classes     = ('track', $external ? 'external' : '', lc $external);
-    my $menu_header = scalar @states > 4 ? qq{<li class="header">Change track style<img class="close" src="${img_url}close.png" title="Close" alt="Close" /></li>} : '';
+    my $menu_header = scalar @states > 4 ? qq(<li class="header">Change track style<img class="close" src="${img_url}close.png" title="Close" alt="Close" /></li>) : '';
     my ($selected, $menu, $help);
     
     while (my ($renderer, $label) = splice @states, 0, 2) {
@@ -258,13 +133,14 @@ sub build_imageconfig_menus {
     
     my $child = $parent->append_child('li', {
       id         => $id,
-      class      => join(' ', @classes),
-      inner_HTML => qq{$name
+      class      => \@classes,
+      inner_HTML => qq{
         <div class="controls">
           $controls
           <div class="favourite sprite fave_icon _ht" title="Favorite this track"></div>
           $help
         </div>
+        <div class="track_name">$name</div>
         $desc
       }
     });
@@ -294,5 +170,6 @@ sub build_imageconfig_menus {
     };
   }
 }
+
 
 1;
