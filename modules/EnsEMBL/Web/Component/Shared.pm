@@ -478,7 +478,7 @@ sub transcript_table {
         transcript => sprintf('<a href="%s">%s</a>', $url, $tsi),
         bp_length  => $transcript_length,
         protein    => (($protein_length ne '-')?"$protein_length aa ":' ').$protein,
-        biotype    => $self->colour_biotype($self->glossary_mouseover(ucfirst $biotype_text,undef,$merged),$_),
+        biotype    => $self->colour_biotype($self->glossary_mouseover($biotype_text,undef,$merged),$_),
         ccds       => $ccds,
         %extras,
         has_ccds   => $ccds eq '-' ? 0 : 1,
