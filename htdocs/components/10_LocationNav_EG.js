@@ -37,7 +37,7 @@ Ensembl.Panel.LocationNav = Ensembl.Panel.LocationNav.extend({
   
   zoom: function(factor) { // href for +/- buttons at cur pos. as string
     var config = this.config();
-    var rs     = this.currentLocations();
+    var rs     = this.currentLocations();  
     var start  = rs['r'][1];
     var end    = rs['r'][2];
     var width  = start > end ? end + config.end - start + 1 : end - start + 1;
@@ -46,7 +46,7 @@ Ensembl.Panel.LocationNav = Ensembl.Panel.LocationNav.extend({
       $.each(rs,function(k,v) {
         if(v[1] == v[2]) { v[2]++; }
       });
-    }
+    }   
     return this.newLocation(rs);
   },
 
@@ -63,22 +63,33 @@ Ensembl.Panel.LocationNav = Ensembl.Panel.LocationNav.extend({
       if (start > end  && centre > config.end) centre = centre - config.end + 1; // wrap for circular regions
       var new_start = centre - Math.round(input / 2);
       var new_end   = centre + Math.round(input / 2);
-      out[k] = panel.constrainRegion([v[0], new_start, new_end, v[3]]);
+      var new_region = [v[0], new_start, new_end, v[3]];
+      out[k] = k == 'r' ? panel.constrainToWindow(new_region) : panel.constrainStart(new_region);
     });
     return out;
   },
 
   arrow: function(step) { // href for arrow buttons at cur pos. as string
     var panel = this;
-    var config = this.config();
     var rs = this.currentLocations();
     $.each(rs,function(k,v) {
-      rs[k] = panel.constrainRegion([v[0], v[1] + step, v[2] + step, v[3]]);
+      var new_region = [v[0], v[1] + step, v[2] + step, v[3]];
+      rs[k] = k == 'r' ? panel.constrainToWindow(new_region) : panel.constrainStart(new_region);
     });
     return this.newLocation(rs);
   },
 
-  constrainRegion: function(r) {
+  constrainStart: function(r) {
+    var start = r[1];
+    var end = r[2];
+    if (start < 0) {
+      end  -= start;
+      start = 1; 
+    };
+    return [r[0], start, end, r[3]];
+  },
+
+  constrainToWindow: function(r) {
     var c = this.constrain(r[1], r[2]);
     return [r[0], c.start, c.end, r[3]];
   },
