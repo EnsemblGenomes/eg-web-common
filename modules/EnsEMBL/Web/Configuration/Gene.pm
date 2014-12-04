@@ -78,34 +78,6 @@ sub modify_tree {
     }
   }
 
-  my $evidence_node = $self->get_node('Evidence');
-  $evidence_node->set('caption', 'Supporting evidence ([[counts::gene_supporting_evidence]])');
-  $evidence_node->set('availability', 'gene has_gene_supporting_evidence');
-
-  my $compara_menu  = $self->get_node('Compara');
-  my $genetree = $self->get_node('Compara_Tree');
- 
-  $genetree->set('components', [qw(
-    tree_summary  EnsEMBL::Web::Component::Gene::ComparaTreeSummary
-    image EnsEMBL::Web::Component::Gene::ComparaTree
-		   )
-		]);
-
-
-  # Graphical gene alignment:
-  my $compara_align = $self->get_node('Compara_Alignments');
-  $compara_align->set('caption', 'Genomic alignments (text)');
-  my $compara_align_image = $self->create_node('Compara_Alignments/Image', 'Genomic alignments (image)',
-    [qw(
-      selector EnsEMBL::Web::Component::Compara_AlignSliceSelector
-      bottom   EnsEMBL::Web::Component::Gene::Compara_AlignSliceBottom
-    )],
-    { 'availability' => 'gene database:compara core has_alignments' }
-  );
-  $compara_menu->append($compara_align_image);
-  $compara_align->before($compara_align_image);
-  #
-
   my $var_menu     = $self->get_node('Variation');
 
   my $r   = ($reg_name && $start && $end) ? $reg_name.':'.$start.'-'.$end : $gene->seq_region_name.':'.$gene->start.'-'.$gene->end;
@@ -127,10 +99,20 @@ sub modify_tree {
 
   $var_menu->append($variation_image);
 
+
+
   my $cdb_name = $self->hub->species_defs->COMPARA_DB_NAME || 'Comparative Genomics';
 
+  my $compara_menu  = $self->get_node('Compara');
   $compara_menu->set('caption', $cdb_name);
-  
+
+
+  my $genetree = $self->get_node('Compara_Tree'); 
+  $genetree->set('components', [qw(
+    tree_summary  EnsEMBL::Web::Component::Gene::ComparaTreeSummary
+    image EnsEMBL::Web::Component::Gene::ComparaTree
+		   )
+		]);
   
   # homoeologues for polyploids
   
@@ -153,35 +135,21 @@ sub modify_tree {
   
   
 ##----------------------------------------------------------------------
-## Compara menu: alignments/orthologs/paralogs/trees
+## Pan Compara menu: 
   my $pancompara_menu = $self->create_node( 'PanCompara', 'Pan-taxonomic Compara',
     [qw(button_panel EnsEMBL::Web::Component::Gene::PanCompara_Portal)],
       {'availability' => 'gene database:compara_pan_ensembl core'}
   );
 
 
-## Compara tree
-
   my $tree_node = $self->create_node(
-    'Compara_Tree/pan_compara', "Gene Tree (image)",
-   #[qw(image        EnsEMBL::Web::Component::Gene::ComparaTree
+    'Compara_Tree/pan_compara', "Gene Tree",
     [qw(
       tree_summary EnsEMBL::Web::Component::Gene::ComparaTreeSummary
       image EnsEMBL::Web::Component::Gene::ComparaTree
     )],
     { 'availability' => 'gene database:compara_pan_ensembl core has_gene_tree_pan' }
   );
-  $tree_node->append( $self->create_subnode(
-    'Compara_Tree/Text_pan_compara', "Gene Tree (text)",
-    [qw(treetext        EnsEMBL::Web::Component::Gene::ComparaTree/text_pan_compara)],
-    { 'availability' => 'gene database:compara_pan_ensembl core has_gene_tree_pan' }
-  ));
-
-  $tree_node->append( $self->create_subnode(
-    'Compara_Tree/Align_pan_compara',       "Gene Tree (alignment)",
-    [qw(treealign      EnsEMBL::Web::Component::Gene::ComparaTree/align_pan_compara)],
-    { 'availability' => 'gene database:compara_pan_ensembl core has_gene_tree_pan' }
-  ));
   $pancompara_menu->append( $tree_node );
 
 
