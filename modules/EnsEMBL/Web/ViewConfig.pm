@@ -82,11 +82,13 @@ sub build_imageconfig_menus {
     my $controls    = $data->{'controls'};
     my $subset      = $data->{'subset'};
     my $name = encode_entities($data->{'name'});
+## EG    
     if (exists $data->{'web'}->{'name'}) {
       $name        =   encode_entities($data->{'web'}->{'name'});
     }
+##    
     my @classes     = ('track', $external ? 'external' : '', lc $external);
-    my $menu_header = scalar @states > 4 ? qq{<li class="header">Change track style<img class="close" src="${img_url}close.png" title="Close" alt="Close" /></li>} : '';
+    my $menu_header = scalar @states > 4 ? qq(<li class="header">Change track style<img class="close" src="${img_url}close.png" title="Close" alt="Close" /></li>) : '';
     my ($selected, $menu, $help);
     
     while (my ($renderer, $label) = splice @states, 0, 2) {
@@ -133,13 +135,14 @@ sub build_imageconfig_menus {
     
     my $child = $parent->append_child('li', {
       id         => $id,
-      class      => join(' ', @classes),
-      inner_HTML => qq{$name
+      class      => \@classes,
+      inner_HTML => qq{
         <div class="controls">
           $controls
           <div class="favourite sprite fave_icon _ht" title="Favorite this track"></div>
           $help
         </div>
+        <div class="track_name">$name</div>
         $desc
       }
     });
