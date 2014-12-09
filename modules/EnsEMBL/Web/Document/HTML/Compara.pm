@@ -302,7 +302,8 @@ sub get_compara_alignments {
 		}
 	    } else {
             # Self-alignment. No need to increment $species->{$ref_name} as it has been done earlier
-		$data->{$ref_name}->{align}->{$ref_name}->{$method} = [ $mlss->dbID, $mlss->has_tag($stats_tag) ? 1 : 0];
+		# EG: skip it for now as this is only available for wheat and should go to polyploid view - but the url is not easy to construct
+		# $data->{$ref_name}->{align}->{$ref_name}->{$method} = [ $mlss->dbID, $mlss->has_tag($stats_tag) ? 1 : 0];
 	    }
 	} else {
 	    warn "Can't get ref genome db for ", $mlss->name;
