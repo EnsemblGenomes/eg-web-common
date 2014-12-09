@@ -60,8 +60,9 @@ sub species_table {
 	    my $sp2 = $data->{$sp}->{'common_name'};
 	    foreach my $align (grep {$_ !~ /SYNTENY/} sort keys %{$sdata->{'align'}->{$sp}||{}}) {
 		my ($aid, $stats) = @{$sdata->{'align'}->{$sp}->{$align}||[]};
+		my $elink =  $self->hub->url({ 'species' => $species, 'type' => 'Location', 'action'=>'Compara_Alignments/Image', 'r'=>$loc, 'align' => $aid});
 		push @rows, {
-		    'species' => $loc ? $self->_link("<em>$sp1</em> : <em>$sp2</em>", $self->hub->url({ 'species' => $species, 'type' => 'Location', 'action'=>'Compara_Alignments/Image', 'r'=>$loc, 'align' => $aid})) : $sp2,
+		    'species' => $loc ? $self->_link("<em>$sp1</em> : <em>$sp2</em>", $elink) : $sp2,
 		    'type' => $align . ($stats ? qq{ | <a href="/mlss.html?mlss=$aid">stats</a>} : '')
 		};
 	    }    	
@@ -302,7 +303,9 @@ sub get_compara_alignments {
 		}
 	    } else {
             # Self-alignment. No need to increment $species->{$ref_name} as it has been done earlier
-		$data->{$ref_name}->{align}->{$ref_name}->{$method} = [ $mlss->dbID, $mlss->has_tag($stats_tag) ? 1 : 0];
+	    # EG  skip self  alignments - for wheat it is a polyploid view
+
+#		$data->{$ref_name}->{align}->{$ref_name}->{$method} = [ $mlss->dbID, $mlss->has_tag($stats_tag) ? 1 : 0];
 	    }
 	} else {
 	    warn "Can't get ref genome db for ", $mlss->name;
