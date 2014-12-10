@@ -22,7 +22,36 @@ package EnsEMBL::Web::Object::Gene;
 
 use Data::Dumper;
 use strict;
-use previous qw(counts availability);
+use previous qw(
+  counts 
+  availability 
+  get_homology_matches 
+  get_desc_mapping
+);
+
+## EG suppress the default Ensembl display label
+sub get_homology_matches {
+  my $self = shift;
+  my $matches = $self->PREV::get_homology_matches(@_);
+  foreach my $sp (values %$matches) {
+    $_->{display_id} =~ s/^Novel Ensembl prediction$// for (values %$sp);
+  }
+  return $matches;
+}
+
+
+## EG add eg-specific mappings
+sub get_desc_mapping {
+  my $self = shift;
+  my %mapping = $self->PREV::get_desc_mapping(@_);
+  return (
+    %mapping,
+    gene_split          => 'gene split',
+    homoeolog_one2one   => '1-to-1',
+    homoeolog_one2many  => '1-to-many',
+    homoeolog_many2many => 'many-to-many',   
+  )
+}
 
 sub availability {
   my $self = shift;
@@ -187,85 +216,6 @@ sub gene_type {
   $type ||= $db;
   if( $type !~ /[A-Z]/ ){ $type = ucfirst($type) } #All lc, so format
   return $type;
-}
-
-## EG - add homoeolog descriptions
-sub get_homology_matches {
-  my ($self, $homology_source, $homology_description, $disallowed_homology, $compara_db) = @_;
-  #warn ">>> MATCHING $homology_source, $homology_description BUT NOT $disallowed_homology";
-  
-  $homology_source      ||= 'ENSEMBL_HOMOLOGUES';
-  $homology_description ||= 'ortholog';
-  $compara_db           ||= 'compara';
-  
-  my $key = "$homology_source::$homology_description";
-  
-  if (!$self->{'homology_matches'}{$key}) {
-    my $homologues = $self->fetch_homology_species_hash($homology_source, $homology_description, $compara_db);
-    
-    return $self->{'homology_matches'}{$key} = {} unless keys %$homologues;
-    
-    my $gene         = $self->Obj;
-    my $geneid       = $gene->stable_id;
-    my $adaptor_call = $self->param('gene_adaptor') || 'get_GeneAdaptor';
-    my %homology_list;
-
-    # Convert descriptions into more readable form
-    my %desc_mapping = (
-      ortholog_one2one          => '1-to-1',
-      apparent_ortholog_one2one => '1-to-1 (apparent)', 
-      ortholog_one2many         => '1-to-many',
-      possible_ortholog         => 'possible ortholog',
-      ortholog_many2many        => 'many-to-many',
-      within_species_paralog    => 'paralogue (within species)',
-      other_paralog             => 'other paralogue (within species)',
-      putative_gene_split       => 'putative gene split',
-      contiguous_gene_split     => 'contiguous gene split',
-## EG      
-      gene_split                => 'gene split',
-      homoeolog_one2one         => '1-to-1',
-      homoeolog_one2many        => '1-to-many',
-      homoeolog_many2many       => 'many-to-many',
-##
-    );
-    
-    foreach my $display_spp (keys %$homologues) {
-      my $order = 0;
-      
-      foreach my $homology (@{$homologues->{$display_spp}}) { 
-        my ($homologue, $homology_desc, $homology_subtype, $query_perc_id, $target_perc_id, $dnds_ratio, $gene_tree_node_id) = @$homology;
-        
-        next unless $homology_desc =~ /$homology_description/;
-        next if $disallowed_homology && $homology_desc =~ /$disallowed_homology/;
-        
-        # Avoid displaying duplicated (within-species and other paralogs) entries in the homology table (e!59). Skip the other_paralog (or overwrite it)
-        next if $homology_list{$display_spp}{$homologue->stable_id} && $homology_desc eq 'other_paralog';
-        
-        $homology_list{$display_spp}{$homologue->stable_id} = { 
-          homology_desc       => $desc_mapping{$homology_desc} || 'no description',
-          description         => $homologue->description       || 'No description',
-## EG - ENSEMBL-3342         
-          display_id          => $homologue->display_label     || '',
-          #display_id          => $homologue->display_label     || 'Novel Ensembl prediction',
-##          
-          homology_subtype    => $homology_subtype,
-          spp                 => $display_spp,
-          query_perc_id       => $query_perc_id,
-          target_perc_id      => $target_perc_id,
-          homology_dnds_ratio => $dnds_ratio,
-          gene_tree_node_id   => $gene_tree_node_id,
-          order               => $order,
-          location            => sprintf('%s:%s-%s:%s', map $homologue->$_, qw(chr_name chr_start chr_end chr_strand))
-        };
-        
-        $order++;
-      }
-    }
-    
-    $self->{'homology_matches'}{$key} = \%homology_list;
-  }
-  
-  return $self->{'homology_matches'}{$key};
 }
 
 1;
