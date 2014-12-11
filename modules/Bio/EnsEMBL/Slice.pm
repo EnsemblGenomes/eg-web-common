@@ -18,58 +18,6 @@ limitations under the License.
 
 package Bio::EnsEMBL::Slice;
 
-## EG : had to rewrite the whole function as we dont to filter by sv class by default
-
-sub get_all_StructuralVariations{
-  my $self = shift;
-  my $source = shift;
-  my $study = shift;
-  my $sv_class = shift;
-
-  if(!$self->adaptor()) {
-    warning('Cannot get structural variations without attached adaptor');
-    return [];
-  }
-
-  
-  my $sv_adaptor = Bio::EnsEMBL::DBSQL::MergedAdaptor->new(-species => $self->adaptor()->db()->species, -type => "StructuralVariation");
-  if( $sv_adaptor ) {
-      my $constraint = '';
-      if (defined $source) {
-	        $constraint .= qq{AND s.name = '$source' };
-      }
-      if (defined $study) {
-	       $constraint .= qq{AND st.name = '$study' };
-      }
-      if (defined $sv_class) {
-        my $variation_db = $self->adaptor->db->get_db_adaptor('variation');
-
-        unless($variation_db) {
-		      warning("Variation database must be attached to core database to " .
-						"retrieve variation information" );
-		    return [];
-        }
-        my $at_adaptor = $variation_db->get_AttributeAdaptor;
-	      my $SO_term   = $at_adaptor->SO_term_for_SO_accession($sv_class);
-	      my $attrib_id = $at_adaptor->attrib_id_for_type_value('SO_term',$SO_term);
-
-	     if (!$attrib_id) {
-		     warning("The Sequence Ontology accession number is not found in the database");
-  	     return [];
-	     }
-        
-       $constraint .= qq{AND sv.class_attrib_id = '$attrib_id' }; 
-      }
-      $constraint =~ s/^AND//;
-
-      return $constraint ? $sv_adaptor->fetch_all_by_Slice_constraint($self, $constraint) : $sv_adaptor->fetch_all_by_Slice($self);
-  } else {
-      warning("Variation database must be attached to core database to " .
-	      "retrieve variation information" );
-      return [];
-  }
-}
-
 sub expand {
     my $self              = shift;
     my $five_prime_shift  = shift || 0;
