@@ -42,11 +42,31 @@ sub content {
     $self->evidence_status,
     $self->clinical_significance,
     $self->synonyms,
+    $self->inter_homoeologues,
     $self->hgvs,
     $self->sets
   );
 
   return sprintf qq{<div class="summary_panel">$info_box%s</div>}, $summary_table->render;
 }
+
+## EG ENSEMBL-3426 link to inter-homoeologues - will need to update for E79
+sub inter_homoeologues {
+  my $self           = shift;
+  my $hub            = $self->hub;
+  my $attribs        = $self->object->Obj->get_all_attributes();
+  my $attrib_adaptor = $hub->get_adaptor('get_AttributeAdaptor', 'variation');
+  my @rows;
+
+  foreach my $code (keys %$attribs) {
+    my $name    = $attribs->{$code};
+    my $caption = ucfirst( $attrib_adaptor->attrib_type_name_for_attrib_type_code($code) );
+    my $url     = $hub->url({ v => $name, vf => undef });
+    push @rows, [$caption, sprintf('<a href="%s">%s</a> %s', $url, $name)];
+  } 
+
+  return @rows ;
+}
+##
 
 1;
