@@ -63,6 +63,7 @@ our %pretty_method = (
   BLASTZ_NET          => 'BlastZ',
   LASTZ_NET           => 'LastZ',
   TRANSLATED_BLAT_NET => 'Translated Blat',
+  SYNTENY             => 'Synteny',
 );
 
 our $references = {
@@ -83,7 +84,7 @@ sub render {
   my $site    = $hub->species_defs->ENSEMBL_SITETYPE;
   my $html;
 
-  my ($alignment_results, $ref_results, $non_ref_results, $pair_aligner_config, $blastz_parameters, $tblat_parameters, $ref_dna_collection_config, $non_ref_dna_collection_config) = $self->fetch_input($mlss_id);
+  my ($alignment_results, $ref_results, $non_ref_results, $compara_analysis_config, $blastz_parameters, $tblat_parameters, $ref_dna_collection_config, $non_ref_dna_collection_config) = $self->fetch_input($mlss_id);
 
   my $ref_sp          = $ref_dna_collection_config->{'name'};
   my $ref_common      = $ref_dna_collection_config->{'common_name'};
@@ -91,19 +92,24 @@ sub render {
   my $nonref_sp       = $non_ref_dna_collection_config->{'name'};
   my $nonref_common   = $non_ref_dna_collection_config->{'common_name'};
   my $nonref_assembly = $non_ref_results->{'assembly'};
-  my $release         = $pair_aligner_config->{'ensembl_release'};
-  my $type            = $pretty_method{$pair_aligner_config->{'method_link_type'}};
+  my $release         = $compara_analysis_config->{'ensembl_release'};
+  my $type            = $pretty_method{$compara_analysis_config->{'method_link_type'}};
 
 ## EG - add link back to alignemnts, italize the species names
   ## HEADER AND INTRO
-  $html .= sprintf('<h1><i>%s</i> vs <i>%s</i> %s alignment</h1> <p style="padding-top:10px;padding-bottom:10px">Back to <a href="/compara_analyses.html">all alignments</a><p>',
+  $html .= sprintf('<h1><i>%s</i> vs <i>%s</i> %s Results</h1> <p style="padding-top:10px;padding-bottom:10px">Back to <a href="/compara_analyses.html">all analyses</a><p>',
                         $ref_common, $nonref_common, $type,
             );
 
-  if ($pair_aligner_config->{'download_url'}) {
-    my $ucsc = $pair_aligner_config->{'download_url'};
+  if ($compara_analysis_config->{'download_url'}) {
+    my $ucsc = $compara_analysis_config->{'download_url'};
     $html .= qq{<p>$ref_common (<i>$ref_sp</i>, $ref_assembly) and $nonref_common (<i>$nonref_sp</i>, $nonref_assembly)
 alignments were downloaded from <a href="$ucsc">UCSC</a> in $site release $release.</p>};
+  }
+  elsif ($type eq 'Synteny') {
+    $html .= sprintf '<p><a href="http://ensemblgenomes.org/info/data/synteny">%s</a> was calculated between %s (<i>%s</i>, %s) and %s (<i>%s</i>, %s) in %s release %s.</p>',
+              $type, $ref_common, $ref_sp, $ref_assembly, $nonref_common, $nonref_sp, $nonref_assembly,
+              $site, $release;
   }
   else {
     $html .= sprintf '<p>%s (<i>%s</i>, %s) and %s (<i>%s</i>, %s) were aligned using the %s alignment algorithm (%s)
@@ -182,10 +188,17 @@ sub-chain is chosen in each region on the reference species.</p>',
   }
 
   my $blocks = $self->thousandify($alignment_results->{'num_blocks'});
-  $html .= qq{
-    <h2>Results</h2>
-    <p>Number of alignment blocks: $blocks</p>
-    };
+  if ($type eq 'Synteny') {
+    $html .= qq{
+      <h2>Results</h2>
+      <p>Number of syntenic blocks: $blocks</p>
+      };
+  } else {
+    $html .= qq{
+      <h2>Results</h2>
+      <p>Number of alignment blocks: $blocks</p>
+      };
+  }
 
   ## PIE CHARTS
   $html .= qq{
@@ -251,28 +264,46 @@ sub-chain is chosen in each region on the reference species.</p>',
       my $matches     = $results->{'matches'};
       my $mismatches  = $results->{'mis-matches'};
       my $insertions  = $results->{'insertions'};
+      my $covered     = $results->{'covered'};
       my $uncovered   = $results->{'uncovered'};
 
-      $key->{$sp_type}{'exon'} = sprintf('<p>
-                                            <b>Uncovered</b>: %s out of %s<br />
-                                            <b>Matches</b>: %s out of %s<br />
-                                            <b>Mismatches</b>: %s out of %s<br />
-                                            <b>Insertions</b>: %s out of %s
-                                          </p>',
-                                $self->thousandify($uncovered), $self->thousandify($total),
-                                $self->thousandify($matches), $self->thousandify($total),
-                                $self->thousandify($mismatches), $self->thousandify($total),
-                                $self->thousandify($insertions), $self->thousandify($total),
-                                );
+      if ($type eq 'Synteny') {
+        $key->{$sp_type}{'exon'} = sprintf('<p>
+                                              <b>Uncovered</b>: %s out of %s<br />
+                                              <b>Covered</b>: %s out of %s<br />
+                                            </p>',
+                                  $self->thousandify($uncovered), $self->thousandify($total),
+                                  $self->thousandify($covered), $self->thousandify($total),
+                                  );
 
-      my $match_pc  = round($matches/$total * 100); 
-      my $mis_pc    = round($mismatches/$total * 100); 
-      my $ins_pc    = round($insertions/$total * 100); 
-      my $uncov_pc  = 100 - ($match_pc + $mis_pc + $ins_pc); 
+        my $cov_pc  = round($covered/$total * 100);
+        my $uncov_pc  = 100 - $cov_pc; 
 
-      $html .= qq{
-          <input class="graph_data" type="hidden" value="[[$uncov_pc,'Uncovered'],[$match_pc, 'Matches'],[$mis_pc,'Mismatches'],[$ins_pc,'Insertions']]" />
-      };
+        $html .= qq{
+            <input class="graph_data" type="hidden" value="[[$uncov_pc,'Uncovered'],[$cov_pc, 'Covered'],]" />
+        };
+      } else {
+        $key->{$sp_type}{'exon'} = sprintf('<p>
+                                              <b>Uncovered</b>: %s out of %s<br />
+                                              <b>Matches</b>: %s out of %s<br />
+                                              <b>Mismatches</b>: %s out of %s<br />
+                                              <b>Insertions</b>: %s out of %s
+                                            </p>',
+                                  $self->thousandify($uncovered), $self->thousandify($total),
+                                  $self->thousandify($matches), $self->thousandify($total),
+                                  $self->thousandify($mismatches), $self->thousandify($total),
+                                  $self->thousandify($insertions), $self->thousandify($total),
+                                  );
+
+        my $match_pc  = round($matches/$total * 100); 
+        my $mis_pc    = round($mismatches/$total * 100); 
+        my $ins_pc    = round($insertions/$total * 100); 
+        my $uncov_pc  = 100 - ($match_pc + $mis_pc + $ins_pc); 
+
+        $html .= qq{
+            <input class="graph_data" type="hidden" value="[[$uncov_pc,'Uncovered'],[$match_pc, 'Matches'],[$mis_pc,'Mismatches'],[$ins_pc,'Insertions']]" />
+        };
+      }
     }
     $i++;
   }
@@ -328,7 +359,7 @@ sub fetch_input {
   
   my $hub        = $self->hub;
   my $compara_db = $hub->database('compara');
-  my ($results, $ref_results, $non_ref_results, $pair_aligner_config, $blastz_parameters, $tblat_parameters, $ref_dna_collection_config, $non_ref_dna_collection_config);
+  my ($results, $ref_results, $non_ref_results, $compara_analysis_config, $blastz_parameters, $tblat_parameters, $ref_dna_collection_config, $non_ref_dna_collection_config);
   
   if ($compara_db) {
     my $genome_db_adaptor             = $compara_db->get_adaptor('GenomeDB');
@@ -362,22 +393,24 @@ sub fetch_input {
     $ref_results->{'matches'}                 = $mlss->get_value_for_tag('ref_matches');
     $ref_results->{'mis-matches'}             = $mlss->get_value_for_tag('ref_mis_matches');
     $ref_results->{'insertions'}              = $mlss->get_value_for_tag('ref_insertions');
-    $ref_results->{'uncovered'}                 = $mlss->get_value_for_tag('ref_uncovered');
+    $ref_results->{'covered'}                 = $mlss->get_value_for_tag('ref_covered');
+    $ref_results->{'uncovered'}               = $mlss->get_value_for_tag('ref_uncovered');
 
     
-    $non_ref_results->{'name'}                    = $non_ref_genome_db->name;
-    $non_ref_results->{'assembly'}                = $non_ref_genome_db->assembly;
-    $non_ref_results->{'length'}                  = $mlss->get_value_for_tag('non_ref_genome_length');
-    $non_ref_results->{'alignment_coverage'}      = $mlss->get_value_for_tag('non_ref_genome_coverage');
-    $non_ref_results->{'coding_exon_length'}      = $mlss->get_value_for_tag('non_ref_coding_exon_length');
-    $non_ref_results->{'matches'}                 = $mlss->get_value_for_tag('non_ref_matches');
-    $non_ref_results->{'mis-matches'}             = $mlss->get_value_for_tag('non_ref_mis_matches');
-    $non_ref_results->{'insertions'}              = $mlss->get_value_for_tag('non_ref_insertions');
-    $non_ref_results->{'uncovered'}               = $mlss->get_value_for_tag('non_ref_uncovered');
+    $non_ref_results->{'name'}                = $non_ref_genome_db->name;
+    $non_ref_results->{'assembly'}            = $non_ref_genome_db->assembly;
+    $non_ref_results->{'length'}              = $mlss->get_value_for_tag('non_ref_genome_length');
+    $non_ref_results->{'alignment_coverage'}  = $mlss->get_value_for_tag('non_ref_genome_coverage');
+    $non_ref_results->{'coding_exon_length'}  = $mlss->get_value_for_tag('non_ref_coding_exon_length');
+    $non_ref_results->{'matches'}             = $mlss->get_value_for_tag('non_ref_matches');
+    $non_ref_results->{'mis-matches'}         = $mlss->get_value_for_tag('non_ref_mis_matches');
+    $non_ref_results->{'insertions'}          = $mlss->get_value_for_tag('non_ref_insertions');
+    $non_ref_results->{'covered'}             = $mlss->get_value_for_tag('non_ref_covered');
+    $non_ref_results->{'uncovered'}           = $mlss->get_value_for_tag('non_ref_uncovered');
 
-    $pair_aligner_config->{'method_link_type'} = $mlss->method->type;
-    $pair_aligner_config->{'ensembl_release'}  = $mlss->get_value_for_tag('ensembl_release');
-    $pair_aligner_config->{'download_url'}     = $mlss->url if $mlss->source eq 'ucsc';
+    $compara_analysis_config->{'method_link_type'} = $mlss->method->type;
+    $compara_analysis_config->{'ensembl_release'}  = $mlss->get_value_for_tag('ensembl_release');
+    $compara_analysis_config->{'download_url'}     = $mlss->url if $mlss->source eq 'ucsc';
     
     $ref_dna_collection_config->{'name'}        = $self->sci_name($ref_species);
     $ref_dna_collection_config->{'common_name'} = $self->common_name($ref_genome_db->name);
@@ -391,7 +424,7 @@ sub fetch_input {
         $p =~ s/-//;
         $tblat_parameters->{$p} = $v;
       }
-    } else {
+    } elsif ($mlss->method->type =~ /LASTZ_NET/) {
       foreach my $param (split ' ', $pairwise_params) {
         my ($p, $v) = split '=', $param;
         
@@ -428,7 +461,7 @@ sub fetch_input {
     }
   }
   
-  return ($results, $ref_results, $non_ref_results, $pair_aligner_config, $blastz_parameters, $tblat_parameters, $ref_dna_collection_config, $non_ref_dna_collection_config);
+  return ($results, $ref_results, $non_ref_results, $compara_analysis_config, $blastz_parameters, $tblat_parameters, $ref_dna_collection_config, $non_ref_dna_collection_config);
 }
 
 1;
