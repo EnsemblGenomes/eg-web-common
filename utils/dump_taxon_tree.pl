@@ -154,7 +154,16 @@ if (%$custom_nodes) {
     );
   });
 } else {
-  $node_adaptor->collapse_tree($root); 
+  $node_adaptor->collapse_tree($root, sub { # change the collapse behaviour
+    my ($node) = @_;
+    return (
+      $node->taxon_id() eq $root->taxon_id() ||
+      ($node->dba() && scalar(@{$node->dba()}) > 0) ||
+      scalar(@{$node->children()}) != 1 
+      # ENSEMBL-3448 this line produces uncollapsed empty nodes 
+      #|| scalar(@{$node->parent()->children()}) > 1   
+    );
+  }); 
 }
 
 #------------------------------------------------------------------------------
