@@ -38,7 +38,7 @@ sub _species_sets {
 
   my $species_defs  = $self->hub->species_defs;
 
-  my $set_order;
+  my $set_order = [];
   my $is_pan = $self->hub->function eq 'pan_compara';
   if($is_pan){
     $set_order = [qw(all ensembl metazoa plants fungi protists bacteria archaea)];
