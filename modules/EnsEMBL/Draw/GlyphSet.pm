@@ -28,14 +28,22 @@ sub init_label {
   
   return $self->label(undef) if defined $self->{'config'}->{'_no_label'};
   
+  my $text = $self->my_config('caption');
+## EG  
+  if($SiteDefs::ENSEMBL_SITETYPE =~ /bacteria/i){
+    $text =~ s/^chromosome //; # EB chromosomes don't have names
+  }
+##
+
+  my $img = $self->my_config('caption_img');
+  $img = undef if $SiteDefs::ENSEMBL_NO_LEGEND_IMAGES;
+  if($img and $img =~ s/^r:// and $self->{'strand'} ==  1) { $img = undef; }
+  if($img and $img =~ s/^f:// and $self->{'strand'} == -1) { $img = undef; }
+
+  return $self->label(undef) unless $text;
   
   my $config    = $self->{'config'};
   my $hub       = $config->hub;
-  my $text = $self->my_config('caption');
-  if($hub->species_defs->GENOMIC_UNIT =~ /bacteria/i){
-    $text =~ s/^chromosome //; # EB chromosomes don't have names
-  }
-  return $self->label(undef) unless $text;
   my $name      = $self->my_config('name');
   my $desc      = $self->my_config('description');
   my $style     = $config->species_defs->ENSEMBL_STYLE;
@@ -46,11 +54,11 @@ sub init_label {
   my $node      = $config->get_node($track);
   my $component = $config->get_parameter('component');
   my $hover     = $component && !$hub->param('export') && $node->get('menu') ne 'no';
-  (my $class    = $self->species . "_$track") =~ s/\W/_/g;
-  
+  my $class     = random_string(8);
+
   if ($hover) {
     my $fav       = $config->get_favourite_tracks->{$track};
-    my @renderers = @{$node->get('renderers') || []};
+    my @renderers = grep !/default/i, @{$node->get('renderers') || []};
     my $subset    = $node->get('subset');
     my @r;
     
@@ -58,8 +66,7 @@ sub init_label {
       species  => $config->species,
       action   => $component,
       function => undef,
-      submit   => 1,
-      __clear  => 1
+      submit   => 1
     });
     
     if (scalar @renderers > 4) {
@@ -71,7 +78,7 @@ sub init_label {
     $config->{'hover_labels'}->{$class} = {
       header    => $name,
       desc      => $desc,
-      class     => $class,
+      class     => "$class $track",
       component => lc($component . ($config->multi_species && $config->species ne $hub->species ? '_' . $config->species : '')),
       renderers => \@r,
       fav       => [ $fav, "$url;$track=favourite_" ],
@@ -80,21 +87,39 @@ sub init_label {
       subset    => $subset ? [ $subset, $hub->url('Config', { species => $config->species, action => $component, function => undef, __clear => 1 }), lc "modal_config_$component" ] : '',
     };
   }
-  
+ 
+  my $ch = $self->my_config('caption_height') || 0;
   $self->label($self->Text({
     text      => $text,
     font      => $font,
     ptsize    => $fsze,
     colour    => $self->{'label_colour'} || 'black',
     absolutey => 1,
-    height    => $res[3],
+    height    => $ch || $res[3],
     class     => "label $class",
     alt       => $name,
-    hover     => $hover
+    hover     => $hover,
   }));
+  if($img) {
+    $img =~ s/^([\d@-]+)://; my $size = $1 || 16;
+    my $offset = 0;
+    $offset = $1 if $size =~ s/@(-?\d+)$//;
+    $self->label_img($self->Sprite({
+        z             => 1000,
+        x             => 0,
+        y             => $offset,
+        sprite        => $img,
+        spritelib     => 'species',
+        width         => $size,
+        height         => $size,
+        absolutex     => 1,
+        absolutey     => 1,
+        absolutewidth => 1,
+        pixperbp      => 1,
+        alt           => '',
+    }));
+  }
 }
-
-
 
 ### Circular
 sub bump_row {
