@@ -36,67 +36,52 @@ sub content {
   my $species_defs = $hub->species_defs;
   my $gene_id      = $self->object->stable_id;
   my $second_gene  = $hub->param('g1');
+  my $homology_id  = $hub->param('hom_id');
   my $seq          = $hub->param('seq');
   my $text_format  = $hub->param('text_format');
-  my $database     = $hub->database($cdb);
-  my $qm           = $database->get_GeneMemberAdaptor->fetch_by_source_stable_id('ENSEMBLGENE', $gene_id);
-  my ($homologies, $html, %skipped);
-  
-  eval {
-    $homologies = $database->get_HomologyAdaptor->fetch_all_by_Member($qm);
-  };
+  my (%skipped, $html);
+
+  my $is_ncrna       = ($self->object->Obj->biotype =~ /RNA/);
+  my $gene_product   = $is_ncrna ? 'Transcript' : 'Peptide';
+  my $unit           = $is_ncrna ? 'nt' : 'aa';
+  my $identity_title = '% identity'.(!$is_ncrna ? " ($seq)" : '');
+
+  my $homologies = $self->get_homologies;
  
-  my ($match_type, $desc_mapping) = $self->homolog_type;
- 
-  my $homology_types = EnsEMBL::Web::Constants::HOMOLOGY_TYPES;
-  
+  # Remove the homologies with hidden species
   foreach my $homology (@{$homologies}) {
 
-    ## filter out non-required types
-    my $homology_desc  = $homology_types->{$homology->{'_description'}} || $homology->{'_description'};
-    next unless $desc_mapping->{$homology_desc};      
-
+    my $compara_seq_type = $seq eq 'cDNA' ? 'cds' : undef;
+    $homology->update_alignment_stats($compara_seq_type);
     my $sa;
     
     eval {
-      if($seq eq 'cDNA') {
-        $sa = $homology->get_SimpleAlign(-SEQ_TYPE => 'cds');
-      } else {
-        $sa = $homology->get_SimpleAlign;
-      }
+      $sa = $homology->get_SimpleAlign(-SEQ_TYPE => $compara_seq_type);
     };
+    warn $@ if $@;
     
     if ($sa) {
       my $data = [];
-      my $flag = !$second_gene;
       
       foreach my $peptide (@{$homology->get_all_Members}) {
         
         my $gene = $peptide->gene_member;
-        $flag = 1 if $gene->stable_id eq $second_gene;
-        
         my $member_species = ucfirst $peptide->genome_db->name;
-        my $location       = sprintf '%s:%d-%d', $gene->chr_name, $gene->chr_start, $gene->chr_end;
-        
-        if (!$second_gene && $member_species ne $species && $hub->param('species_' . lc $member_species) eq 'off') {
-          $flag = 0;
-          $skipped{$species_defs->species_label($member_species)}++;
-          next;
-        }
+        my $location       = sprintf '%s:%d-%d', $gene->dnafrag->name, $gene->dnafrag_start, $gene->dnafrag_end;
         
         if ($gene->stable_id eq $gene_id) {
           push @$data, [
-            $species_defs->get_config($member_species, 'SPECIES_SCIENTIFIC_NAME'),
+            $species_defs->species_label($member_species),
             $gene->stable_id,
             $peptide->stable_id,
-            sprintf('%d aa', $peptide->seq_length),
+            sprintf('%d %s', $peptide->seq_length, $unit),
             sprintf('%d %%', $peptide->perc_id),
             sprintf('%d %%', $peptide->perc_cov),
             $location,
           ]; 
         } else {
           push @$data, [
-            $species_defs->get_config($member_species, 'SPECIES_SCIENTIFIC_NAME') || $species_defs->species_label($member_species),
+            $species_defs->species_label($member_species),
             sprintf('<a href="%s">%s</a>',
               $hub->url({ species => $member_species, type => 'Gene', action => 'Summary', g => $gene->stable_id, r => undef }),
               $gene->stable_id
@@ -105,7 +90,7 @@ sub content {
               $hub->url({ species => $member_species, type => 'Transcript', action => 'ProteinSummary', peptide => $peptide->stable_id, __clear => 1 }),
               $peptide->stable_id
             ),
-            sprintf('%d aa', $peptide->seq_length),
+            sprintf('%d %s', $peptide->seq_length, $unit),
             sprintf('%d %%', $peptide->perc_id),
             sprintf('%d %%', $peptide->perc_cov),
             sprintf('<a href="%s">%s</a>',
@@ -116,24 +101,22 @@ sub content {
         }
       }
       
-      next unless $flag;
-      
-      my $homology_desc_mapped = $desc_mapping->{$homology_desc} ? $desc_mapping->{$homology_desc} : 
-                                 $homology_desc ? $homology_desc : 'no description';
+      my $homology_desc_mapped = $Bio::EnsEMBL::Compara::Homology::PLAIN_TEXT_DESCRIPTIONS{$homology->{'_description'}} || $homology->{'_description'} || 'no description';
 
-      $html .= "<h2>$match_type type: $homology_desc_mapped</h2>";
+      $html .= "<h2>Type: $homology_desc_mapped</h2>";
       
       my $ss = $self->new_table([
-          { title => 'Species',          width => '15%' },
+          { title => 'Species',          width => '20%' },
           { title => 'Gene ID',          width => '15%' },
-          { title => 'Peptide ID',       width => '15%' },
-          { title => 'Peptide length',   width => '10%' },
-          { title => '% identity',       width => '10%' },
+          { title => "$gene_product ID",       width => '15%' },
+          { title => "$gene_product length",   width => '10%' },
+          { title => $identity_title,    width => '10%' },
           { title => '% coverage',       width => '10%' },
-          { title => 'Genomic location', width => '25%' }
+          { title => 'Genomic location', width => '20%' }
         ],
         $data
       );
+
 ## EG: add alignment details table      
       my $match_line = $sa->match_line;
       my $identical = $match_line =~ tr/*/*/;
@@ -156,6 +139,7 @@ sub content {
         ]);
       $html .= $ss->render . $alntable->render;
 ## /EG
+
       my $alignio = Bio::AlignIO->newFh(
         -fh     => IO::String->new(my $var),
         -format => $self->renderer_type($text_format)
@@ -170,20 +154,19 @@ sub content {
   if (scalar keys %skipped) {
     my $count;
     $count += $_ for values %skipped;
-## EG    
-    $html .= '<br />' . $self->_info(   
-      "${match_type}s hidden by configuration",
+    
+    $html .= '<br />' . $self->_info(
+      'Orthologues hidden by configuration',
       sprintf(
-        '<p>%d ${match_type}s not shown in the table above from the following species. Use the "<strong>Configure this page</strong>" on the left to show them.<ul><li>%s</li></ul></p>',
+        '<p>%d orthologues not shown in the table above from the following species. Use the "<strong>Configure this page</strong>" on the left to show them.<ul><li>%s</li></ul></p>',
         $count,
         join "</li>\n<li>", map "$_ ($skipped{$_})", sort keys %skipped
       )
     );
-##    
   }
   
   return $html;
-}        
+}  
 
 1;
 
