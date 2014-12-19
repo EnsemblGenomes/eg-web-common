@@ -98,22 +98,23 @@ sub map_to_genome {
     my $object        = $adaptor->fetch_by_stable_id($hit->{'tid'});
 
     if ($object) {
+      eval {
+        $object     = $object->transcript if $feature_type eq 'Translation';
+        my @coords  = sort { $a->start <=> $b->start } grep { !$_->isa('Bio::EnsEMBL::Mapper::Gap') } $object->$mapper($hit->{'tstart'}, $hit->{'tend'}, $hit->{'tori'});
+        $g_id       = $object->seq_region_name;
+        $g_start    = $coords[0]->start;
+        $g_end      = $coords[-1]->end;
+        $g_ori      = $object->strand;
+        $g_coords   = \@coords;
+      };
+      warn "Warning - failed mapping feature to geneome: " . $@ if $@;
+    }
 
-      $object     = $object->transcript if $feature_type eq 'Translation';
-      my @coords  = sort { $a->start <=> $b->start } grep { !$_->isa('Bio::EnsEMBL::Mapper::Gap') } $object->$mapper($hit->{'tstart'}, $hit->{'tend'}, $hit->{'tori'});
-      $g_id       = $object->seq_region_name;
-      $g_start    = $coords[0]->start;
-      $g_end      = $coords[-1]->end;
-      $g_ori      = $object->strand;
-      $g_coords   = \@coords;
-
-    } else {
-
+    if (!$g_id) {
       $g_id       = 'Unmapped';
       $g_start    = 'N/A';
       $g_end      = 'N/A';
       $g_ori      = 'N/A'
-
     }
   }
 
