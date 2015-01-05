@@ -265,7 +265,7 @@ sub get_compara_alignments {
   my $data = {};
   my $species = {};
 # existence of this tag defines if stats are available
-  my $stats_tag = 'num_blocks';
+  my $stats_tag = 'ref_genome_length';
   
   ## Munge all the necessary information
   foreach my $method (@{$methods||[]}) {
