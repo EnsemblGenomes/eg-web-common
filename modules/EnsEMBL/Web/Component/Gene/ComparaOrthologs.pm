@@ -331,11 +331,11 @@ sub content {
     $html .= sprintf(
       ' &nbsp;|&nbsp; <a href="%s" target="_blank">Download all protein sequences</a>', 
       $hub->url({ action => 'Compara_Ortholog', function => 'PepSequence', _format => 'Text' }) 
-    ) if $cdb !~ /pan/;
+    );# if $cdb !~ /pan/;
     $html .= sprintf(
       ' &nbsp;|&nbsp; <a href="%s" target="_blank">Download all DNA sequences</a>', 
       $hub->url({ action => 'Compara_Ortholog', function => 'PepSequence', _format => 'Text', seq => 'cds' }) 
-    ) if $cdb !~ /pan/;
+    );# if $cdb !~ /pan/;
     $html .= '</p>';
    }
 ##  
