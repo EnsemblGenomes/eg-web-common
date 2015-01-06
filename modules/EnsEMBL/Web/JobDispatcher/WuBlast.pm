@@ -28,6 +28,7 @@ use LWP::UserAgent;
 use XML::Simple;
 use URI;
 
+use EnsEMBL::Web::Exceptions;
 use EnsEMBL::Web::Utils::FileHandler qw(file_get_contents file_put_contents);
 use EnsEMBL::Web::Parsers::WuBlast;
 
@@ -56,7 +57,17 @@ sub dispatch_job {
     %{ $job_data->{configs} }  
   };
   
-  my $job_ref = $self->_post('run', $args)->content;  
+  # fetch (retry on fail) 
+  my $job_ref;
+  
+  for (1..3) {
+    my $response = $self->_post('run', $args);
+    last if $response and $job_ref = $response->content;
+  }
+
+  if (!$job_ref) {
+    throw exception('InputError', 'There was a problem contacting the BLAST service, please try again later');
+  }
 
   $DEBUG && warn "CREATED JOB REF $job_ref";
 
@@ -138,11 +149,11 @@ sub _post {
 
   my $response = $self->_user_agent->post($uri, $data);
 
-  #$DEBUG && warn "RESPONSE " . Dumper($response);
-
   unless ($response->is_success) {
+    $DEBUG && warn "RESPONSE " . Dumper($response);
     my ($error) = $response->content =~ m/<description>([^<]+)<\/description>/;   
-    die sprintf 'BLAST REST error: %s (%s)', $response->status_line, $error;
+    warn sprintf 'BLAST REST error: %s (%s)', $response->status_line, $error;
+    return undef;
   }
   return $response;
 }
