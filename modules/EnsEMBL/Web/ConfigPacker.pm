@@ -24,10 +24,18 @@ use LWP::UserAgent;
 use JSON;
 use Data::Dumper;
 
-use previous qw(munge_config_tree);
+use previous qw(munge_config_tree _summarise_generic);
 
 ## EG - don't pack blast configs - instead generate on the fly, see E::W::SpeciesDefs::get_blast_datasources
 sub _configure_blast {} 
+##
+
+## EG - hack for tools schema to make sure ASSEMBLY_VERSION is never null (needs a better fix)
+sub _summarise_generic {
+  my $self = shift;
+  $self->PREV::_summarise_generic(@_);
+  $self->db_tree->{'ASSEMBLY_VERSION'} ||= '';
+}
 ##
 
 sub munge_config_tree {
