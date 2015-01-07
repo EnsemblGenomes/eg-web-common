@@ -73,7 +73,7 @@ sub query_sequence {
 ## EG
   my $sub_sequence = $full_length ? $query_sequence : substr($query_sequence, $start - 1, $length);
 
-  if ($ori != 1) {
+  if ($ori != 1 && $blast_method !~ /blastx/i) {
     # need to return reverse complimentatry sequence
     my $map = {
       A => 'T',
