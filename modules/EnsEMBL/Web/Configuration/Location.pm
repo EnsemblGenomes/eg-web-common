@@ -27,7 +27,7 @@ sub modify_tree {
   if ($species_defs->POLYPLOIDY) {
     
     $self->get_node('Multi')->after( 
-      $self->create_node('MultiPolyploid', 'Polyploid view ([[counts::intraspecies_alignments]])',
+      $self->create_node('MultiPolyploid', 'Polyploid view',
         [qw(
           summary  EnsEMBL::Web::Component::Location::MultiIdeogram
           top      EnsEMBL::Web::Component::Location::MultiTop

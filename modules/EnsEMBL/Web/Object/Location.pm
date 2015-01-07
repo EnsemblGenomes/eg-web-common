@@ -45,10 +45,23 @@ sub count_alignments {
   my $cdb           = shift || 'DATABASE_COMPARA';
   my $c             = $self->SUPER::count_alignments($cdb);
 ## EG
-  #my %intra_species = $self->species_defs->multi($cdb, 'INTRA_SPECIES_ALIGNMENTS');
-  
-  $c->{'patch'} = scalar @{ $self->hub->intra_species_alignments($cdb, $self->species, $self->slice->seq_region_name) };
-  $c->{'patch'} ++ if $c->{'patch'}; # because we want to include the reference region in the count
+  my $hub           = $self->hub;
+  my $seq_region    = $self->slice->seq_region_name;
+
+  if ($hub->species_defs->POLYPLOIDY) {
+    
+    my $dbh = $hub->database('core')->dbc->db_handle;
+    my $components = $dbh->selectrow_array(
+      "SELECT COUNT(DISTINCT(value)) FROM seq_region_attrib sra 
+       JOIN attrib_type at USING (attrib_type_id)
+       WHERE at.code = 'genome_component'"
+    );  
+    $c->{'patch'} = $components - 1;
+
+  } else {
+    $c->{'patch'} = scalar @{ $hub->intra_species_alignments($cdb, $self->species, $seq_region) };
+    $c->{'patch'} ++ if $c->{'patch'}; # because we want to include the reference region in the count
+  }
 ##  
   return $c; 
 }
