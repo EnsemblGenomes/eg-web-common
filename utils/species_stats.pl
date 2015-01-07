@@ -1060,18 +1060,20 @@ sub render_all_species_page {
       }
       $html .= qq(</td><td style="width:28%;padding:2px;padding-bottom:1em">);
 
+      my $usual_name = $info->{'usual_name'} if $info->{'usual_name'} and lc($info->{'usual_name'}) ne lc($common);
+
       if ($dir) {
         if ($info->{'status'} eq 'pre') {
           $html .= qq(<a href="http://pre.ensembl.org/$dir/" style="$link_style" rel="external">$link_text</a> (preview - assembly only));
           $html .= qq(<nobr>);
-          $html .= qq( ($info->{'usual_name'})) if $info->{'usual_name'};
+          $html .= qq( ($info->{'usual_name'})) if $usual_name;
           $html .= $info->{'strain'} ? " <small>$info->{'strain'}</small>" : '';
           $html .= qq(</nobr>);
         }
         else {
           $html .= qq(<a href="/$dir/Info/Index/"  style="$link_style">$link_text</a>);
           $html .= qq(<nobr>);
-          $html .= qq( ($info->{'usual_name'})) if $info->{'usual_name'};
+          $html .= qq( ($info->{'usual_name'})) if $usual_name;
           $html .= $info->{'strain'} ? " <small>$info->{'strain'}</small>" : '';
           $html .= qq(</nobr>);
           $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has a variation database">V</span>)
