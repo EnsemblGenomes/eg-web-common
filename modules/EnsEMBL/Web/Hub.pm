@@ -63,7 +63,7 @@ sub intra_species_alignments {
       
       my $genomic_align_blocks = $genomic_align_block_adaptor->fetch_all_by_MethodLinkSpeciesSet_DnaFrag($mlss, $source_dnafrag);
     
-      my %dnafrag_group;
+      my %dnafrag_groups_href;
       my %group_info;
     
       foreach my $genomic_align_block (@$genomic_align_blocks) {
@@ -73,7 +73,17 @@ sub intra_species_alignments {
         foreach my $align (@$aligns) {
     
           if ($align->dnafrag->name ne $source_dnafrag->name) {
-            $dnafrag_group{$align->dnafrag->name} = $group_id;
+	      if (!defined $dnafrag_groups_href{$align->dnafrag->name()}) {
+		  # Create a new unique list of group_ids for this target dnafrag
+		  my $group_ids_href = {$group_id => 1};
+		  $dnafrag_groups_href{$align->dnafrag->name()} = $group_ids_href;
+	      }
+	      else {
+		  # If group_id not there yet, add it to the list of group_ids for this target dnafrag
+		  if (! defined $dnafrag_groups_href{$align->dnafrag->name()}->{$group_id}) {
+		      $dnafrag_groups_href{$align->dnafrag->name()}->{$group_id} = 1;
+		  }
+	      }
           }
           else {
             # get the coordinates for the group
@@ -101,34 +111,39 @@ sub intra_species_alignments {
           "SELECT sr.name, sra.value FROM seq_region sr
            JOIN seq_region_attrib sra USING (seq_region_id)
            JOIN attrib_type at USING (attrib_type_id)
-           WHERE sr.name IN ('" . join("', '", keys %dnafrag_group)  . "')
+           WHERE sr.name IN ('" . join("', '", keys %dnafrag_groups_href)  . "')
            AND at.code = 'genome_component'"
         );        
         %target_sub_genomes = map {$_->[0] => $_->[1]} @{$sub_genomes};     
       }
+      
+      # Built a list of a comparison objects, one comparison object per group_id and per pair of source/target dnafrags
 
-      foreach my $target_name (keys %dnafrag_group) {
-        my $group_id    = $dnafrag_group{$target_name};
-        my $target_info = $group_info{$group_id};        
-        
-        push @comparisons, {
-          'species'     => {
-            "$species--$target_name" => 1,
-            "$species--$seq_region" => 1,
-          },
-          'target_name' => $target_name,
-          'start'       => $target_info->{start},
-          'end'         => $target_info->{end},
-          'id'          => $mlss->dbID,
-          'name'        => $mlss->name,
-          'type'        => $mlss->method->type,
-          'class'       => $mlss->method->class,
-          'homologue'   => undef, ## Not implemented for EG
-          'target_sub_genome' => $target_sub_genomes{$target_name},
-        };
+      foreach my $target_name (keys %dnafrag_groups_href) {
+        my $group_ids_href = $dnafrag_groups_href{$target_name};
+
+	foreach my $group_id (keys (%$group_ids_href)) {
+	    my $target_info = $group_info{$group_id};
+	    
+	    push @comparisons, {
+		'species'     => {
+		    "$species--$target_name" => 1,
+		    "$species--$seq_region" => 1,
+		},
+		'target_name' => $target_name,
+		'start'       => $target_info->{start},
+		'end'         => $target_info->{end},
+		'id'          => $mlss->dbID,
+		'name'        => $mlss->name,
+		'type'        => $mlss->method->type,
+		'class'       => $mlss->method->class,
+		'homologue'   => undef, ## Not implemented for EG
+		'target_sub_genome' => $target_sub_genomes{$target_name},
+	    };
+	}
       }
     } 
-
+    
     $self->{_intra_species_alignments}->{$cache_key} = \@comparisons;
   }
   
