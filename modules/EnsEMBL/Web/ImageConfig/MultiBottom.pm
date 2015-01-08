@@ -95,14 +95,29 @@ sub multi {
   my $primary_species = $self->hub->species;
   my $p               = $pos == $total && $total > 2 ? 2 : 1;
   my ($i, %alignments, @strands);
-  
+
+## EG
+  my $hub             = $self->hub;
+  my $params          = $hub->multi_params; 
+  my %regions         = map { $params->{"s$_"} => $params->{"r$_"} } grep s/^s(\d+)$/$1/, keys %$params;
+  warn "REGIONS " . Data::Dumper::Dumper(\%regions);
+##
+
   foreach my $db (@{$self->species_defs->compara_like_databases || []}) {
     next unless exists $multi_hash->{$db};
 
 ## EG   
-    my $intra_species_alignments = $self->hub->intra_species_alignments($db, $sp, $chr);
+    my @intra_species_alignments;
+    if (my $region = $regions{"$sp--$chr"}) {
+      my ($seq_region, $start, $end, $strand) = $region =~ m/(.+):(\d+)-(\d+):(.+)/;
+      
+      my $slice_adaptor = $hub->get_adaptor('get_SliceAdaptor', 'core', $sp);
+      my $slice         = $slice_adaptor->fetch_by_region(undef, $seq_region, $start, $end, $strand);
+      
+      @intra_species_alignments = @{ $hub->intra_species_alignments($db, $sp, $slice) };
+    }   
 
-    foreach (values %{$multi_hash->{$db}{'ALIGNMENTS'}}, @$intra_species_alignments) {
+    foreach (values %{$multi_hash->{$db}{'ALIGNMENTS'}}, @intra_species_alignments) {
 ##
       next unless $methods->{$_->{'type'}};
       next unless $_->{'class'} =~ /pairwise_alignment/;
