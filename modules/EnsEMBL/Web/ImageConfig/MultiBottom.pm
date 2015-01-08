@@ -31,7 +31,9 @@ sub init {
     opt_lines       => 1,  # register lines
     spritelib       => { default => $self->species_defs->ENSEMBL_WEBROOT . '/htdocs/img/sprites' },
   });
-  my $sp_img_48 = $self->species_defs->ENSEMBL_WEBROOT . '/../public-plugins/ensembl/htdocs/i/species/48'; # XXX make configurable
+
+  my $site = $SiteDefs::ENSEMBL_SITETYPE =~ s/Ensembl //r; #/
+  my $sp_img_48 = $self->species_defs->ENSEMBL_SERVERROOT . '/eg-web-' . lc($site) . '/htdocs/i/species/48'; # 
   if(-e $sp_img_48) {
     $self->set_parameters({ spritelib => {
       %{$self->get_parameter('spritelib')||{}},
