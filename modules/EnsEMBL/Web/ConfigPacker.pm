@@ -747,7 +747,7 @@ sub _summarise_core_tables {
 ## EG - don't assume highest rank coord system will have rank=1 (rank doesn't have to start at 1)
 ##      should be able to remove this whole sub for EG26
   $t_aref = $dbh->selectall_arrayref(
-    'select version, attrib from coord_system where version is not null order by rank desc' 
+    'select version, attrib from coord_system where version is not null order by rank' 
   );
 
   my (%default, %not_default);
