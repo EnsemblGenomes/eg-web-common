@@ -19,6 +19,7 @@ limitations under the License.
 package EnsEMBL::Web::ConfigPacker;
 use strict;
 use warnings;
+no warnings qw(uninitialized);
 
 use LWP::UserAgent;
 use JSON;
