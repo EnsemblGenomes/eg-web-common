@@ -98,24 +98,28 @@ sub multi {
 
 ## EG
   my $hub             = $self->hub;
+  my $primary_region  = $hub->param('r');
   my $params          = $hub->multi_params; 
-  my %regions         = map { $params->{"s$_"} => $params->{"r$_"} } grep s/^s(\d+)$/$1/, keys %$params;
-  warn "REGIONS " . Data::Dumper::Dumper(\%regions);
+  my %target_regions  = map { $params->{"s$_"} => $params->{"r$_"} } grep s/^s(\d+)$/$1/, keys %$params;
+  
+  my $intra_species_slice;  
+  if ($sp == $primary_species) {
+    my ($sr, $start, $end, $strand);
+    if (my $target_region = $target_regions{"$sp--$chr"}) {
+      ($sr, $start, $end, $strand) = ($chr, ($target_region =~ m/.+:(\d+)-(\d+):(.+)/));
+    } else {
+      ($sr, $start, $end, $strand) = (($primary_region =~ m/(.+):(\d+)-(\d+)/), 1);
+    }
+    my $slice_adaptor = $hub->get_adaptor('get_SliceAdaptor', 'core', $sp);
+    $intra_species_slice = $slice_adaptor->fetch_by_region(undef, $sr, $start, $end, $strand);
+  }
 ##
 
   foreach my $db (@{$self->species_defs->compara_like_databases || []}) {
     next unless exists $multi_hash->{$db};
 
 ## EG   
-    my @intra_species_alignments;
-    if (my $region = $regions{"$sp--$chr"}) {
-      my ($seq_region, $start, $end, $strand) = $region =~ m/(.+):(\d+)-(\d+):(.+)/;
-      
-      my $slice_adaptor = $hub->get_adaptor('get_SliceAdaptor', 'core', $sp);
-      my $slice         = $slice_adaptor->fetch_by_region(undef, $seq_region, $start, $end, $strand);
-      
-      @intra_species_alignments = @{ $hub->intra_species_alignments($db, $sp, $slice) };
-    }   
+    my @intra_species_alignments = @{ $hub->intra_species_alignments($db, $sp, $intra_species_slice) } if $intra_species_slice;
 
     foreach (values %{$multi_hash->{$db}{'ALIGNMENTS'}}, @intra_species_alignments) {
 ##

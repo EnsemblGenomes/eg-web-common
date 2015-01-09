@@ -75,12 +75,7 @@ sub intra_species_alignments {
       my $genomic_align_blocks;
       
       if ($slice) {
-        $genomic_align_blocks = $genomic_align_block_adaptor->fetch_all_by_MethodLinkSpeciesSet_Slice($mlss, $slice);
-        
-        #my $other_slice = $slice->invert;
-        my $other_slice = $slice->adaptor->fetch_by_region(undef, $slice->seq_region_name, $slice->start, $slice->end, -$slice->strand);
-        push @$genomic_align_blocks, @{ $genomic_align_block_adaptor->fetch_all_by_MethodLinkSpeciesSet_Slice($mlss, $other_slice) };
-      
+        $genomic_align_blocks = $genomic_align_block_adaptor->fetch_all_by_MethodLinkSpeciesSet_Slice($mlss, $slice);      
       } else {
         $genomic_align_blocks = $genomic_align_block_adaptor->fetch_all_by_MethodLinkSpeciesSet_DnaFrag($mlss, $source_dnafrag);
       }
