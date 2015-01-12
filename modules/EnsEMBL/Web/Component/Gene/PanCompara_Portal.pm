@@ -34,7 +34,7 @@ sub content {
 
   my $html  = $self->SUPER::content;
 
-  $html .= qq{<p><a target="_blank" href="http://ensemblgenomes.org/info/species?pan_compara=1">Species list</a> (will open in a new window)</p>};
+  $html .= qq{<p><a target="_blank" href="http://ensemblgenomes.org/info/genomes?pan_compara=1">Species list</a> (will open in a new window)</p>};
   $html .= qq{<p>More views of comparative genomics data, such as multiple alignments and synteny, are available on the <a href="$location">Location</a> page for this gene.</p>};
 
   return $html;
