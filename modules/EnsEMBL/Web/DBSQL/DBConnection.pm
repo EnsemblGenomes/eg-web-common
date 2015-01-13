@@ -1,5 +1,8 @@
 package EnsEMBL::Web::DBSQL::DBConnection;
 
+use Bio::EnsEMBL::Registry;
+
+my $reg = 'Bio::EnsEMBL::Registry';
 
 sub get_databases_species {
   my $self = shift;
