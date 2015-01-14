@@ -31,11 +31,15 @@ sub content_ajax {
   my %shown           = map { $params->{"s$_"} => $_ } grep s/^s(\d+)$/$1/, keys %$params; # get species (and parameters) already shown on the page
   my $object          = $self->object;
   my $chr             = $object->seq_region_name;
-  my $start           = $object->seq_region_start;
-  my $end             = $object->seq_region_end;
-## EG  
-  my @intra_species   = grep $start < $_->{'end'} && $end > $_->{'start'}, @{ $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $object->seq_region_name) };
+## EG 
+  #my $start           = $object->seq_region_start;
+  #my $end             = $object->seq_region_end;
+
+  my $slice           = $object->Obj->{slice};
+  my @intra_species   = @{ $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $slice) };
 ##
+#warn "INTRA" . Data::Dumper::Dumper(\@intra_species);
+
   my $chromosomes     = $species_defs->ENSEMBL_CHROMOSOMES;
   my (%species, %included_regions);
 
@@ -49,13 +53,13 @@ sub content_ajax {
 
     $species{$s} = $species_defs->species_label($sp, 1) . (grep($target eq $_, @$chromosomes) ? ' chromosome' : '') . " $target - $type";
   }
-  
-  foreach (grep !$species{$_}, keys %shown) {
-    my ($sp, $target) = split '--';
-## EG    
-    $included_regions{$target} = $hub->intra_species_alignments('DATABASE_COMPARA', $sp, $target) if $sp eq $primary_species;
-##
-  }
+
+## EG can't see why we would need to do this....?  
+  # foreach (grep !$species{$_}, keys %shown) {
+  #   my ($sp, $target) = split '--';
+  #   $included_regions{$target} = $hub->intra_species_alignments('DATABASE_COMPARA', $sp, $target) if $sp eq $primary_species;
+  # }
+##  
   
   foreach my $target (keys %included_regions) {
     my $s     = "$primary_species--$target";
