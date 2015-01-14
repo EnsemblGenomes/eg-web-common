@@ -50,3 +50,7 @@ sub initialize {
   return ($sequence, $config);
 }
 
+sub blast_options {
+  ## @override
+  return { 'no_button' => 1 };
+}

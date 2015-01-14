@@ -29,7 +29,11 @@ sub buttons {
   my $species_defs = $hub->species_defs;
   my @buttons      = $self->PREV::buttons(@_);
 
-  if ($species_defs->ENSEMBL_ENASEARCH_ENABLED && $hub->type ne 'Tools' && $hub->action !~ /Align/) {
+  my $show_seq_search = $species_defs->ENSEMBL_ENASEARCH_ENABLED && $hub->type ne 'Tools' && $hub->action !~ /Align/;
+
+  $show_seq_search = 0 if $self->can('blast_options') and $self->blast_options->{no_button};
+
+  if ($show_seq_search) {
     push @buttons, {
       'caption'   => 'Search Ensembl Genomes with this sequence',
       'url'       => '/Multi/enasearch',
