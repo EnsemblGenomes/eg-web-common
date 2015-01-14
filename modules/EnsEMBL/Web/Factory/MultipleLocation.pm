@@ -46,7 +46,7 @@ sub createObjects {
   if ($hub->action =~ /Polyploid/) {
     my $primary_slice   = $object->slice;
     my $primary_species = $hub->species; 
-    my $alignments      = $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $primary_slice->seq_region_name);
+    my $alignments      = $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $primary_slice);
     my %align_species;
 
     foreach my $align (sort { $a->{target_name} cmp $b->{target_name} } @$alignments) {
