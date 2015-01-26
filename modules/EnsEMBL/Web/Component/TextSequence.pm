@@ -31,7 +31,9 @@ sub buttons {
 
   my $show_seq_search = $species_defs->ENSEMBL_ENASEARCH_ENABLED && $hub->type ne 'Tools' && $hub->action !~ /Align/;
 
-  $show_seq_search = 0 if $self->can('blast_options') and $self->blast_options->{no_button};
+  if ($self->can('blast_options') and my $options = $self->blast_options) {
+    $show_seq_search = 0 if $options->{no_button};
+  }
 
   if ($show_seq_search) {
     push @buttons, {
