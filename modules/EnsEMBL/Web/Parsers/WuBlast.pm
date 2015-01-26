@@ -41,6 +41,8 @@ sub parse_xml {
   foreach my $hit_id (keys %$hits) {
     my $hit = $hits->{$hit_id};
     
+    my ($description) = $hit->{description} =~ /description:"(.+)"/;
+
     foreach my $align (@{ $hit->{alignments}->{alignment} }) {
       
       my $qstart = $align->{querySeq}->{start};
@@ -69,6 +71,7 @@ sub parse_xml {
         pident => $align->{identity},
         len    => length($align->{querySeq}->{content}),
         aln    => btop($align->{querySeq}->{content}, $align->{matchSeq}->{content}),
+        desc   => $description,
       };
       
       push @results, $self->map_to_genome($result, $species, $source_type, $db);
