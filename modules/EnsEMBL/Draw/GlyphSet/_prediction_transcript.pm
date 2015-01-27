@@ -28,7 +28,7 @@ sub href {
   my ($self, $gene, $transcript) = @_;
 
   if ($transcript) {
-    $self->PREV::href(@_);
+    $self->PREV::href($gene, $transcript);
   } else {
     $self->SUPER::href($gene);
   }
