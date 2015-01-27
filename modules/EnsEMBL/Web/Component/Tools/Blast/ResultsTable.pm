@@ -53,16 +53,18 @@ sub content {
         ]
       : [
           { 'key' => 'tid',     'title'=> 'Subject name',     'align' => 'left',  'sort' => 'string'  },
+## EG          
           { 'key' => 'desc',    'title'=> 'Subject description',     'align' => 'left',  'sort' => 'string'  },
-          { 'key' => 'tstart',  'title'=> 'Subject start',    'align' => 'left',  'sort' => 'numeric', hidden => 1 },
-          { 'key' => 'tend',    'title'=> 'Subject end',      'align' => 'left',  'sort' => 'numeric', hidden => 1 },
-          { 'key' => 'tori',    'title'=> 'Subject ori',      'align' => 'left',  'sort' => 'string', hidden => 1  },
+##
+          { 'key' => 'tstart',  'title'=> 'Subject start',    'align' => 'left',  'sort' => 'numeric', },
+          { 'key' => 'tend',    'title'=> 'Subject end',      'align' => 'left',  'sort' => 'numeric', },
+          { 'key' => 'tori',    'title'=> 'Subject ori',      'align' => 'left',  'sort' => 'string',  },
           { 'key' => 'gid',     'title'=> 'Genomic Location', 'align' => 'left',  'sort' => 'string'  },
           { 'key' => 'gori',    'title'=> 'Orientation',      'align' => 'left',  'sort' => 'string'  },
           { 'key' => 'qid',     'title'=> 'Query name',       'align' => 'left',  'sort' => 'string'  },
-          { 'key' => 'qstart',  'title'=> 'Query start',      'align' => 'left',  'sort' => 'numeric', hidden => 1 },
-          { 'key' => 'qend',    'title'=> 'Query end',        'align' => 'left',  'sort' => 'numeric', hidden => 1 },
-          { 'key' => 'qori',    'title'=> 'Query ori',        'align' => 'left',  'sort' => 'string', hidden => 1 },
+          { 'key' => 'qstart',  'title'=> 'Query start',      'align' => 'left',  'sort' => 'numeric', },
+          { 'key' => 'qend',    'title'=> 'Query end',        'align' => 'left',  'sort' => 'numeric', },
+          { 'key' => 'qori',    'title'=> 'Query ori',        'align' => 'left',  'sort' => 'string', },
           { 'key' => 'len',     'title'=> 'Length',           'align' => 'left',  'sort' => 'numeric' },
           { 'key' => 'score',   'title'=> 'Score',            'align' => 'left',  'sort' => 'numeric' },
           { 'key' => 'evalue',  'title'=> 'E-val',            'align' => 'left',  'sort' => 'numeric' },
@@ -72,8 +74,10 @@ sub content {
       {
         'data_table' => 1, 
         'exportable' => 0, 
-        'sorting' => ['score desc'],  
+        'sorting' => ['score desc'],
+## EG          
         'hidden_columns' => $source =~/latestgp/i ? [2, 3, 4, 5] : [2, 3, 4, 7, 8, 9, 10] }
+##    
     );
 
     # Data for table rows
