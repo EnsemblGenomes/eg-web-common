@@ -69,7 +69,11 @@ sub content {
           { 'key' => 'pident',  'title'=> '%ID',              'align' => 'left',  'sort' => 'numeric_hidden' },
         ],
       [], 
-      {'data_table' => 1, 'exportable' => 0, 'sorting' => ['score desc'],  'hidden_columns' => $source =~/latestgp/i ? [3, 4, 5] : [2, 3, 4, 8, 9, 10] }
+      {
+        'data_table' => 1, 
+        'exportable' => 0, 
+        'sorting' => ['score desc'],  
+        'hidden_columns' => $source =~/latestgp/i ? [2, 3, 4, 5] : [2, 3, 4, 7, 8, 9, 10] }
     );
 
     # Data for table rows
