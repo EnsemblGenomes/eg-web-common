@@ -84,7 +84,7 @@ sub main {
   printf STDERR ("Fetching %s ...\n", $url) unless $quiet;
   my $xmldoc = get($url) or die "Fetch $url failed: $!\n";
 # $xmldoc =~ s/[^[:ascii:]]//g;
-  my $xml = XMLin($xmldoc);
+  my $xml = XMLin(encode('utf-8', $xmldoc));
   my @fields = qw/acknowledgement about assembly annotation regulation variation other/;
   foreach my $species (keys %{$xml->{'node'}}){
     my $node = $xml->{'node'};
