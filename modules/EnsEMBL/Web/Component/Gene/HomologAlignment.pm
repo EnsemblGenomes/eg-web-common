@@ -168,5 +168,29 @@ sub content {
   return $html;
 }  
 
+sub get_homologies {
+  my $self         = shift;
+  my $hub          = $self->hub;
+  my $cdb          = shift || $hub->param('cdb') || 'compara';
+  my $object       = $self->object || $hub->core_object('gene');
+
+  my $database     = $hub->database($cdb);
+  my $qm           = $database->get_GeneMemberAdaptor->fetch_by_stable_id($object->stable_id); # gene_id
+
+  my $homologies;
+  my $action        = $hub->param('data_action') || $hub->action;
+
+  my $homology_method_link = 'ENSEMBL_PARALOGUES';
+  if ($action eq 'Compara_Ortholog') { $homology_method_link='ENSEMBL_ORTHOLOGUES'; }
+  elsif ($action eq 'Compara_Homoeolog') { $homology_method_link='ENSEMBL_HOMOEOLOGUES'; }
+
+  eval {
+    $homologies = $database->get_HomologyAdaptor->fetch_all_by_Member($qm, -METHOD_LINK_TYPE => $homology_method_link);
+  };
+  warn $@ if $@;
+
+  return $homologies;
+}
+
 1;
 
