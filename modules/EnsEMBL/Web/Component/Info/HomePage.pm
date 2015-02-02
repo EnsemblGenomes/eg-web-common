@@ -198,7 +198,7 @@ sub content {
   if ($about_text) {
     $html .= '<div class="column-wrapper"><div class="round-box tinted-box unbordered">'; 
     $html .= $about_text;
-    $html .= qq(<p><a href="/$species/Info/Annotation/#about" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More information and statistics</a></p>);
+    $html .= qq(<p><a href="/$species/Info/Annotation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More information and statistics</a></p>);
     $html .= '</div></div>';
   }
 
