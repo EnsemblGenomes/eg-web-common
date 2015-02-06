@@ -445,7 +445,7 @@ sub fetch_input {
         if ($blastz_options->{$p}) {
           $blastz_parameters->{$p} = $v;
         } else {
-          $blastz_parameters->{'other'} .= $param;
+          $blastz_parameters->{'other'} .= "$param  ";
         }
       }
       ## Set default matrix
