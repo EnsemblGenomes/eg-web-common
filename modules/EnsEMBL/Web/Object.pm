@@ -194,4 +194,28 @@ sub get_ontology_chart {
   return \%chart;
 }
 
+sub get_target_slice {
+  my $self = shift;
+  my $hub = $self->hub;
+  my $align_param = $hub->param('align');
+  my $target_slice;
+
+  #target_species and target_slice_name_range may not be defined so split separately
+  #target_species but not target_slice_name_range is defined for pairwise compact alignments. 
+  my ($align, $target_species, $target_slice_name_range) = split '--', $align_param;
+
+## EG VB-3405 regex should allow dots in seq region name e.g. 'supercont1.186'  
+  my ($target_slice_name, $target_slice_start, $target_slice_end) = $target_slice_name_range ?
+    $target_slice_name_range =~ /([\w\.]+):(\d+)-(\d+)/ : (undef, undef, undef);
+##
+
+  #Define target_slice
+  if ($target_species && $target_slice_start) {
+      my $target_slice_adaptor = $hub->database('core', $target_species)->get_SliceAdaptor;
+      $target_slice = $target_slice_adaptor->fetch_by_region('toplevel', $target_slice_name, $target_slice_start, $target_slice_end);
+  }
+
+  return $target_slice;
+}
+
 1;
