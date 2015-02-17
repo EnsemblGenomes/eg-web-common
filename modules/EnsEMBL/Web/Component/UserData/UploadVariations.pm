@@ -232,23 +232,23 @@ sub content {
   );
 
 ## EG  
-#  $form->add_element('type' => 'SubHeader', 'value' => 'Missense SNP predictions (human only)');
-#  
-#  $form->add_element(
-#    type   => 'DropDown',
-#    select =>, 'select',
-#    label  => 'SIFT predictions',
-#    name   => 'sift',
-#    values => [
-#      { value => 'no',    name => 'No'                   },
-#      { value => 'pred',  name => 'Prediction only'      },
-#      { value => 'score', name => 'Score only'           },
-#      { value => 'both',  name => 'Prediction and score' },
-#    ],
-#    value  => 'no',
-#    select => 'select',
-#  );  
-#  
+  $form->add_element('type' => 'SubHeader', 'value' => 'Missense SNP predictions');
+  
+  $form->add_element(
+    type   => 'DropDown',
+    select =>, 'select',
+    label  => 'SIFT predictions',
+    name   => 'sift',
+    values => [
+      { value => 'no',    name => 'No'                   },
+      { value => 'pred',  name => 'Prediction only'      },
+      { value => 'score', name => 'Score only'           },
+      { value => 'both',  name => 'Prediction and score' },
+    ],
+    value  => 'no',
+    select => 'select',
+  );  
+  
 #  $form->add_element(
 #    type   => 'DropDown',
 #    select =>, 'select',
