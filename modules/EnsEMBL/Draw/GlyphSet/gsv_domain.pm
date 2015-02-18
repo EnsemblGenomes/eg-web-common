@@ -173,7 +173,7 @@ sub _init {
        $bump_end = $bitmap_length if ($bump_end > $bitmap_length);
 
     if ($flag_y > 0) {	
-      my $row = & Sanger::Graphics::Bump::bump_row( $bump_start, $bump_end, $bitmap_length, \@bitmap);    
+      my $row = & EnsEMBL::Draw::Utils::Bump::bump_row( $bump_start, $bump_end, $bitmap_length, \@bitmap);    
       $Composite3->y( $voffset + $Composite3->{'y'} + $row * ($h+$th*2+5) );
     }
 

@@ -233,7 +233,7 @@ sub _init {
       my $height = $f->{y_to} - $f->{y_from} - 1;
       my $x = $f->{x};
       my $width = $bitmap_width - $x - 5;
-      push @bg_glyphs, Sanger::Graphics::Glyph::Rect->new
+      push @bg_glyphs, EnsEMBL::Draw::Glyph::Rect->new
           ({
             'x'      => $x,
             'y'      => $y,
@@ -249,7 +249,7 @@ sub _init {
       my $x = $f->{x} + 2;
       $collapsed_xoffset = $width;
 
-      push @node_glyphs, Sanger::Graphics::Glyph::Poly->new
+      push @node_glyphs, EnsEMBL::Draw::Glyph::Poly->new
           ({
             'points' => [ $x, $y,
                           $x + $width, $y - ($height / 2 ),
@@ -258,7 +258,7 @@ sub _init {
             'href'   => $node_href,
           });
 
-      my $node_glyph = Sanger::Graphics::Glyph::Rect->new
+      my $node_glyph = EnsEMBL::Draw::Glyph::Rect->new
           ({
             'x'      => $f->{x},
             'y'      => $f->{y},
@@ -269,7 +269,7 @@ sub _init {
           });
       push @node_glyphs, $node_glyph;
       if ($f->{_node_type} eq 'gene_split') {
-        push @node_glyphs, Sanger::Graphics::Glyph::Rect->new
+        push @node_glyphs, EnsEMBL::Draw::Glyph::Rect->new
             ({
               'x'         => $f->{x},
               'y'         => $f->{y},
@@ -299,7 +299,7 @@ sub _init {
       push(@labels, $nodes_label);
                 
       # Add a 'collapse' href
-      my $node_glyph = Sanger::Graphics::Glyph::Rect->new
+      my $node_glyph = EnsEMBL::Draw::Glyph::Rect->new
           ({
             'x'         => $f->{x} - $bold,
             'y'         => $f->{y} - $bold,
@@ -311,7 +311,7 @@ sub _init {
           });
       push @node_glyphs, $node_glyph;
       if ($bold) {
-        my $node_glyph = Sanger::Graphics::Glyph::Rect->new
+        my $node_glyph = EnsEMBL::Draw::Glyph::Rect->new
             ({
               'x'         => $f->{x},
               'y'         => $f->{y},
@@ -324,7 +324,7 @@ sub _init {
         push @node_glyphs, $node_glyph;
       }
       if ($f->{_node_type} eq 'gene_split') {
-        push @node_glyphs, Sanger::Graphics::Glyph::Rect->new
+        push @node_glyphs, EnsEMBL::Draw::Glyph::Rect->new
             ({
               'x'         => $f->{x},
               'y'         => $f->{y},
@@ -341,7 +341,7 @@ sub _init {
     my $type = $f->{_node_type};
 
     my $color_type = $tree->isa('Bio::EnsEMBL::Compara::CAFETreeNode') ? "colour" : "bordercolour";
-      push @node_glyphs, Sanger::Graphics::Glyph::Rect->new
+      push @node_glyphs, EnsEMBL::Draw::Glyph::Rect->new
           ({
             'x'         => $f->{x},
             'y'         => $f->{y},
@@ -373,7 +373,7 @@ sub _init {
       my @highlight_matches = ();
       map { push (@highlight_matches,$highlight_map{$_}) if exists $highlight_map{$_}} keys %{$f->{'_genes'}};
       if( @highlight_matches ){
-        my $label_highlight = Sanger::Graphics::Glyph::Rect->new
+        my $label_highlight = EnsEMBL::Draw::Glyph::Rect->new
             ({
               'height'     => $font_height + 2,
               'width'      => $labels_bitmap_width,
