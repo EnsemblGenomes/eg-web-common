@@ -1677,8 +1677,11 @@ sub colour_key {
   
   # hate having to put ths hack here, needed because any logic_name specific web_data entries
   # get lost when the track is merged - needs rewrite of imageconfig merging code
-  return 'merged' if $transcript->analysis->logic_name =~ /ensembl_havana/;
-  
+
+## EG  
+  return 'merged' if $transcript->analysis and $transcript->analysis->logic_name =~ /ensembl_havana/;
+##
+
   # EG: the colour can be altered via an attribute assigned to the gene
   # e.g a PHIbase_mutant attribute is assigned to a gene with value 'virulence'
   # then the web_data should have label set to [attrib.PHIbase_mutant][biotype] 

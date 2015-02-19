@@ -1061,4 +1061,74 @@ sub add_somatic_mutations {
   }
   else {return undef;}
 }
+
+sub add_repeat_features {
+  my ($self, $key, $hashref) = @_;
+  my $menu = $self->get_node('repeat');
+  
+  return unless $menu && $hashref->{'repeat_feature'}{'rows'} > 0;
+  
+  my $data    = $hashref->{'repeat_feature'}{'analyses'};
+  my %options = (
+    glyphset    => '_repeat',
+    optimizable => 1,
+    depth       => 0.5,
+    bump_width  => 0,
+    strand      => 'r',
+  );
+  
+  $menu->append($self->create_track("repeat_$key", 'All repeats', {
+    db          => $key,
+    logic_names => [ undef ], # All logic names
+    types       => [ undef ], # All repeat types
+    name        => 'All repeats',
+    description => 'All repeats',
+    colourset   => 'repeat',
+    display     => 'off',
+    renderers   => [qw(off Off normal On)],
+    %options
+  }));
+  
+  my $flag    = keys %$data > 1;
+  my $colours = $self->species_defs->colour('repeat');
+  
+  foreach my $key_2 (sort { $data->{$a}{'name'} cmp $data->{$b}{'name'} } keys %$data) {
+    if ($flag) {
+      # Add track for each analysis
+      $self->generic_add($menu, $key, "repeat_${key}_$key_2", $data->{$key_2}, {
+        logic_names => [ $key_2 ], # Restrict to a single supset of logic names
+        types       => [ undef  ],
+        colours     => $colours,
+        description => $data->{$key_2}{'desc'},
+        display     => 'off',
+        name => exists $data->{$key_2}->{web}->{name} ? $data->{$key_2}->{web}->{name} : $data->{$key_2}->{'name'},
+        caption     => $data->{$key_2}->{'name'},
+        %options
+      });
+    }
+    
+    my $d2 = $data->{$key_2}{'types'};
+    
+    if (keys %$d2 > 1) {
+      foreach my $key_3 (sort keys %$d2) {
+        my $n  = $key_3;
+           $n .= " ($data->{$key_2}{'name'})" unless $data->{$key_2}{'name'} eq 'Repeats';
+         
+        # Add track for each repeat_type;        
+        $menu->append($self->create_track('repeat_' . $key . '_' . $key_2 . '_' . $key_3, $n, {
+          db          => $key,
+          logic_names => [ $key_2 ],
+          types       => [ $key_3 ],
+          name        => $n,
+          colours     => $colours,
+          description => "$data->{$key_2}{'desc'} ($key_3)",
+          display     => 'off',
+          renderers   => [qw(off Off normal On)],
+          %options
+        }));
+      }
+    }
+  }
+}
+
 1;

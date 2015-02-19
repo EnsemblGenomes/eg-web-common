@@ -37,7 +37,7 @@ sub parse {
 
     ## Some complex formats need extra parsing capabilities
     my $sub_package = __PACKAGE__."::$format";
-    if (EnsEMBL::Web::Root::dynamic_use(undef, $sub_package)) {
+    if (EnsEMBL::Root::dynamic_use(undef, $sub_package)) {
       bless $self, $sub_package;
     }
     ## Create an empty feature that gives us access to feature info
@@ -160,7 +160,7 @@ sub parse {
                 $current_min = $self->{'tracks'}{$self->current_key}{'config'}{'min_score'};
                 $current_max = $feature->score if $feature->score > $current_max;
                 $current_min = $feature->score if $feature->score < $current_min;
-                $current_max = 0 unless $current_max; ## Because shit happens...
+                $current_max = 0 unless $current_max; ## Because bad things can happen...
                 $current_min = 0 unless $current_min;
                 $self->{'tracks'}{$self->current_key}{'config'}{'max_score'} = $current_max;
                 $self->{'tracks'}{$self->current_key}{'config'}{'min_score'} = $current_min;

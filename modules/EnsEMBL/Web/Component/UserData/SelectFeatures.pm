@@ -58,8 +58,7 @@ sub content {
     });
     
     ## Munge data needed for form elements
-## EG : Triticum is a ghost species - only exist in ENA - we display the mappings on anothe page
-    foreach (grep { $_ !~ /Triticum/} @mapping_species) {
+    foreach (@mapping_species) {
       push @species_values, { value => $_, caption => $species_defs->species_label($_, 1) };
      
       my @mappings = ref($assembly_mappings{$_}) eq 'ARRAY' ? @{$assembly_mappings{$_}} : ($assembly_mappings{$_});
@@ -71,7 +70,6 @@ sub content {
         push @backward, { caption => "$to -> $from", value => "${to}:$from", class => "_stt_$_" };
       }
     }
-##
 
 ## EG - use species selector instead of simple dropdown
     my $select = $form->add_element(
