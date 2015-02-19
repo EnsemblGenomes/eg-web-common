@@ -35,7 +35,7 @@ sub query_sequence {
   my $length         = $end - $start + 1;
   my $full_length;
 
-  if ($blast_method =~ /blastx/i) {
+  if ($blast_method =~ /^blastx/i) {
     my $codon_table_id = 1;
     my $frame          = $hit->{'qframe'};
        $length         = $length / 3;
