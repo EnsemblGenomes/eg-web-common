@@ -18,6 +18,8 @@ limitations under the License.
 
 package EnsEMBL::Draw::GlyphSet::gsv_domain;
 
+use EnsEMBL::Draw::Utils::Bump;
+
 sub _init {
   my ($self) = @_;
   my $type = $self->type;
