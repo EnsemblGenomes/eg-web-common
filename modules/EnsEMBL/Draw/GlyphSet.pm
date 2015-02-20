@@ -24,17 +24,18 @@ no warnings "uninitialized";
 use URI::Escape qw(uri_escape);
 
 sub init_label {
-  my $self = shift;
+  my $self = CORE::shift;
   
   return $self->label(undef) if defined $self->{'config'}->{'_no_label'};
   
   my $text = $self->my_config('caption');
+
 ## EG  
   if($SiteDefs::ENSEMBL_SITETYPE =~ /bacteria/i){
     $text =~ s/^chromosome //; # EB chromosomes don't have names
   }
 ##
-
+  
   my $img = $self->my_config('caption_img');
   $img = undef if $SiteDefs::ENSEMBL_NO_LEGEND_IMAGES;
   if($img and $img =~ s/^r:// and $self->{'strand'} ==  1) { $img = undef; }
@@ -71,7 +72,7 @@ sub init_label {
     
     if (scalar @renderers > 4) {
       while (my ($val, $text) = splice @renderers, 0, 2) {
-        push @r, { url => "$url;$track=$val", val => $val, text => $text, current => $val eq $self->{'display'} };
+        CORE::push @r, { url => "$url;$track=$val", val => $val, text => $text, current => $val eq $self->{'display'} };
       }
     }
     
