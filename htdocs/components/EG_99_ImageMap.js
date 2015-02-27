@@ -6,8 +6,13 @@ Ensembl.Panel.ImageMap =  Ensembl.Panel.ImageMap.extend({
     if (!area || area.a.klass.label) {
       return;
     }
-  
-    this.zMenus['zmenu_' + area.a.coords.replace(/[ ,]/g, '_')] = 1;
+    
+    if (area.a.klass.nav) {
+      Ensembl.redirect(area.a.href);
+      return;
+    }
+    
+    this.zMenus['zmenu_' + area.a.coords.join('_')] = 1;
 
     this.base(e, coords);
   },
