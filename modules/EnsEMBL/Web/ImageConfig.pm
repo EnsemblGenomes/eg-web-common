@@ -54,7 +54,7 @@ sub add_alignments {
  
   foreach my $row (values %{$hashref->{'ALIGNMENTS'}}) {
     next unless $row->{'species'}{$species};
-    
+   
     if ($row->{'class'} =~ /pairwise_alignment/) {
       my ($other_species) = grep { !/^$species$|ancestral_sequences$/ } keys %{$row->{'species'}};
          $other_species ||= $species if scalar keys %{$row->{'species'}} == 1;
@@ -77,7 +77,7 @@ sub add_alignments {
       } else {
         $type        = ucfirst lc $row->{'type'};
         $type        =~ s/\W/ /g;
-        $menu_key    = 'pairwise_align';
+        $menu_key    = 'pairwise_other';
         $description = 'Pairwise alignments';
       }
       
