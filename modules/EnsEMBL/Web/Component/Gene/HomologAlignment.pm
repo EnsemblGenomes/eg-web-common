@@ -46,7 +46,7 @@ sub content {
   my $unit           = $is_ncrna ? 'nt' : 'aa';
   my $identity_title = '% identity'.(!$is_ncrna ? " ($seq)" : '');
 
-  my $homologies = $self->get_homologies;
+  my $homologies = $self->get_homologies($cdb);
  
   # Remove the homologies with hidden species
   foreach my $homology (@{$homologies}) {
@@ -182,6 +182,7 @@ sub get_homologies {
   my $self         = shift;
   my $hub          = $self->hub;
   my $cdb          = shift || $hub->param('cdb') || 'compara';
+
   my $object       = $self->object || $hub->core_object('gene');
 
   my $database     = $hub->database($cdb);
