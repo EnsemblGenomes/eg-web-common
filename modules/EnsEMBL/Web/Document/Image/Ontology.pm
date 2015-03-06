@@ -16,8 +16,10 @@ limitations under the License.
 
 =cut
 
-package EnsEMBL::Web::Tools::OntologyVisualisation;
+package EnsEMBL::Web::Document::Image::Ontology;
 
+use EnsEMBL::Web::TmpFile::Text;
+use EnsEMBL::Web::TmpFile::Image;
 use Data::Dumper;
 use strict;
 
@@ -177,7 +179,7 @@ sub create_dot{
   my ($self, $chart, $root, $gwidth) = @_;
 #  warn Dumper $chart;
 
-  my $dot = new EnsEMBL::Web::TmpFile::Text( extenstion => 'dot', $self->{'species_defs'} );  
+  my $dot = EnsEMBL::Web::TmpFile::Text->new( extenstion => 'dot', $self->{'species_defs'} );  
 #  warn "Creating DOT file in $dot->{full_path} \n";
 
   my $cmap = $self->colours;
@@ -335,7 +337,7 @@ $sshtml
   $dot->save;
 
 
-  my $image = new EnsEMBL::Web::TmpFile::Image( $self->{'species_defs'} );
+  my $image = EnsEMBL::Web::TmpFile::Image->new( $self->{'species_defs'} );
   $image->save();
 
   my $ofile = $image->{full_path};
@@ -385,7 +387,7 @@ sub create_json{
   my $chart = shift;
   my $root = shift;
 
-  my $jsfile = new EnsEMBL::Web::TmpFile::Text( extension => 'js', $self->{'species_defs'} );  
+  my $jsfile = EnsEMBL::Web::TmpFile::Text->new( extension => 'js', $self->{'species_defs'} );  
   
 #  warn "Creating json file in $jsfile->{full_path} \n";
 
