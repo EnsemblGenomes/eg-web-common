@@ -826,12 +826,11 @@ sub update_from_url {
     my @array = split /::/, $v; 
     my $url_string = $array [0];
     my %image_param = split /\//, $array[1];
-    my $viewLimits = $hub->param('viewLimits');
     my %extra_params = (
       colour     => $image_param{colour},
       strand     => $image_param{strand},
       caption    => $image_param{name},
-      viewLimits => $viewLimits,
+      viewLimits => $hub->param('viewLimits'),
     );
 ##
 
