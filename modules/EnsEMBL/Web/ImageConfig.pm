@@ -825,11 +825,12 @@ sub update_from_url {
     # first value url, second one query string containing params for image like strand, name and colour
     my @array = split /::/, $v; 
     my %image_param = split /\//, $array[1];
+    my $viewLimits = $hub->param('viewLimits');
     my %extra_params = (
       colour     => $image_param{colour},
       strand     => $image_param{strand},
       caption    => $image_param{name},
-      viewLimits => $hub->param('viewLimits'),
+      viewLimits => $viewLimits,
     );
 ##
 
@@ -953,7 +954,7 @@ sub update_from_url {
           $self->_add_flat_file_track(undef, 'url', "url_$code", $n, 
             sprintf('Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: %s', encode_entities($n), encode_entities($p)),
             url   => $p,
-            style => $style
+            style => $style,
 ## EG            
             caption => $image_param{name},
             viewLimits => $viewLimits,
