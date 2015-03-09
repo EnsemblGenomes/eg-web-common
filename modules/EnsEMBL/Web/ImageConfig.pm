@@ -820,15 +820,19 @@ sub update_from_url {
   my $species = $hub->species;
   
   foreach my $v (@values) {
+
 ## EG    
     # first value url, second one query string containing params for image like strand, name and colour
     my @array = split /::/, $v; 
-    my $url_string = $array [0];
     my %image_param = split /\//, $array[1];
-    
-    my $viewLimits = $hub->param('viewLimits');
+    my %extra_params = (
+      colour     => $image_param{colour},
+      strand     => $image_param{strand},
+      caption    => $image_param{name},
+      viewLimits => $hub->param('viewLimits'),
+    );
 ##
-      
+
     my $format = $hub->param('format');
     my ($key, $renderer);
     
@@ -845,13 +849,13 @@ sub update_from_url {
         $renderer = 'normal';
       }
     }
-
+   
     if ($key =~ /^(\w+)[\.:](.*)$/) {
       my ($type, $p) = ($1, $2);
       
       if ($type eq 'url') {
         my $menu_name   = $hub->param('menu');
-        my $all_formats = $hub->species_defs->DATA_FORMAT_INFO;
+        my $all_formats = $hub->species_defs->multi_val('DATA_FORMAT_INFO');
         
         if (!$format) {
           $p = uri_unescape($p);
@@ -906,46 +910,89 @@ sub update_from_url {
           
           next;
         }
-        
-        # We have to create a URL upload entry in the session
-        $session->set_data(
-          type    => 'url',
-          url     => $p,
-          species => $species,
-          code    => $code, 
-          name    => $n,
-          format  => $format,
-          style   => $style,
-## EG          
-          colour     => $image_param{colour},
-          strand     => $image_param{strand},
-          caption    => $image_param{name},
-          viewLimits => $viewLimits,
-##
-        );
-        
-        $session->add_data(
-          type     => 'message',
-          function => '_info',
-          code     => 'url_data:' . md5_hex($p),
-          message  => sprintf('Data has been attached to your display from the following URL: %s', encode_entities($p))
-        );
-        
+
         # We then have to create a node in the user_config
+        my %ensembl_assemblies = %{$hub->species_defs->assembly_lookup};
+
         if (uc $format eq 'DATAHUB') {
-          $self->_add_datahub($n, $p);
+          my $info;
+          ($n, $info) = $self->_add_datahub($n, $p,1);
+          if ($info->{'error'}) {
+            my @errors = @{$info->{'error'}||[]};
+            $session->add_data(
+              type     => 'message',
+              function => '_warning',
+              code     => 'datahub:' . md5_hex($p),
+              message  => "There was a problem attaching trackhub $n: @errors",
+            );
+          }
+          else {
+            my $assemblies = $info->{'genomes'}
+                        || {$hub->species => $hub->species_defs->get_config($hub->species, 'ASSEMBLY_VERSION')};
+
+            foreach (keys %$assemblies) {
+              my ($data_species, $assembly) = @{$ensembl_assemblies{$_}||[]};
+              if ($assembly) {
+                my $data = $session->add_data(
+                  type        => 'url',
+                  url         => $p,
+                  species     => $data_species,
+                  code        => join('_', md5_hex($n . $data_species . $assembly . $p), $session->session_id),
+                  name        => $n,
+                  format      => $format,
+                  style       => $style,
+                  assembly    => $assembly,
+## EG          
+                  %extra_params
+##                  
+                );
+              }
+            }
+          }
         } else {
           $self->_add_flat_file_track(undef, 'url', "url_$code", $n, 
             sprintf('Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: %s', encode_entities($n), encode_entities($p)),
             url   => $p,
-            style => $style,
+            style => $style
 ## EG            
             caption => $image_param{name},
             viewLimits => $viewLimits,
-##
+##            
           );
+
+          ## Assume the data is for the current assembly
+          my $assembly;
+          while (my($a, $info) = each (%ensembl_assemblies)) {
+            $assembly = $info->[1] if $info->[0] eq $species;
+            last if $assembly;
+          }
+ 
           $self->update_track_renderer("url_$code", $renderer);
-        }       
+          $session->set_data(
+            type      => 'url',
+            url       => $p,
+            species   => $species,
+            code      => $code,
+            name      => $n,
+            format    => $format,
+            style     => $style,
+            assembly  => $assembly,
+## EG          
+            %extra_params
+##           
+          );
+        }
+        # We have to create a URL upload entry in the session
+        my $message  = sprintf('Data has been attached to your display from the following URL: %s', encode_entities($p));
+        if (uc $format eq 'DATAHUB') {
+          $message .= " Please go to '<b>Configure this page</b>' to choose which tracks to show (we do not turn on tracks automatically in case they overload our server).";
+        }
+        $session->add_data(
+          type     => 'message',
+          function => '_info',
+          code     => 'url_data:' . md5_hex($p),
+          message  => $message,
+        );
       } elsif ($type eq 'das') {
         $p = uri_unescape($p);
 
@@ -965,12 +1012,13 @@ sub update_from_url {
     }
   }
   
-  if ($self->altered) {
+  if ($self->is_altered) {
+    my $tracks = join(', ', @{$self->altered});
     $session->add_data(
       type     => 'message',
       function => '_info',
       code     => 'image_config',
-      message  => 'The link you followed has made changes to the tracks displayed on this page.',
+      message  => "The link you followed has made changes to these tracks: $tracks.",
     );
   }
 }
