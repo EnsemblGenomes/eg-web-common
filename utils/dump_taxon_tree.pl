@@ -117,7 +117,7 @@ my $custom_nodes = $custom_node_config->{$SiteDefs::ENSEMBL_SITETYPE} || {};
 print "getting db adaptors...\n";
 
 Bio::EnsEMBL::Registry->load_registry_from_db(@db_args);
-Bio::EnsEMBL::Registry->set_disconnect_when_inactive;
+#Bio::EnsEMBL::Registry->set_disconnect_when_inactive;
 
 my @dbas  = grep { $species{$_->species} } @{ Bio::EnsEMBL::Registry->get_all_DBAdaptors(-group => 'core') };
 
