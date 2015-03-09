@@ -954,6 +954,10 @@ sub update_from_url {
             sprintf('Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: %s', encode_entities($n), encode_entities($p)),
             url   => $p,
             style => $style
+## EG            
+            caption => $image_param{name},
+            viewLimits => $viewLimits,
+##            
           );
 
           ## Assume the data is for the current assembly
