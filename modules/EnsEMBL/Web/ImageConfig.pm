@@ -824,7 +824,6 @@ sub update_from_url {
 ## EG    
     # first value url, second one query string containing params for image like strand, name and colour
     my @array = split /::/, $v; 
-    my $url_string = $array [0];
     my %image_param = split /\//, $array[1];
     my %extra_params = (
       colour     => $image_param{colour},
