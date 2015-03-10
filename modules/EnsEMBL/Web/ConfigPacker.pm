@@ -146,7 +146,7 @@ sub _munge_meta {
   while (my ($species_id, $meta_hash) = each (%$meta_info)) {
     next unless $species_id && $meta_hash && ref($meta_hash) eq 'HASH';
     
-    my $species  = ucfirst $meta_hash->{'species.production_name'}[0];
+    my $species  = $meta_hash->{'species.url'}[0] || ucfirst $meta_hash->{'species.production_name'}[0];
     my $bio_name = $meta_hash->{'species.scientific_name'}[0];
     
     ## Put other meta info into variables
@@ -154,6 +154,13 @@ sub _munge_meta {
       next unless $meta_hash->{$meta_key};
       
       my $value = scalar @{$meta_hash->{$meta_key}} > 1 ? $meta_hash->{$meta_key} : $meta_hash->{$meta_key}[0]; 
+
+      ## Set version of assembly name that we can use where space is limited 
+      if ($meta_key eq 'assembly.name') {
+        $self->tree->{$species}{'ASSEMBLY_SHORT_NAME'} = (length($value) > 16)
+                  ? $self->db_tree->{'ASSEMBLY_VERSION'} : $value;
+      }
+
       $self->tree->{$species}{$key} = $value;
     }
 
@@ -161,18 +168,10 @@ sub _munge_meta {
     my $taxonomy = $meta_hash->{'species.classification'};
     
     if ($taxonomy && scalar(@$taxonomy)) {
-      my $order = $self->tree->{'TAXON_ORDER'};
-      
-      foreach my $taxon (@$taxonomy) {
-        foreach my $group (@$order) {
-          if ($taxon eq $group) {
-            $self->tree->{$species}{'SPECIES_GROUP'} = $group;
-            last;
-          }
-        }
-        
-        last if $self->tree->{$species}{'SPECIES_GROUP'};
-      }
+      my %valid_taxa = map {$_ => 1} @{ $self->tree->{'TAXON_ORDER'} };
+      my @matched_groups = grep {$valid_taxa{$_}} @$taxonomy;
+      $self->tree->{$species}{'SPECIES_GROUP'} = $matched_groups[0] if @matched_groups;
+      $self->tree->{$species}{'SPECIES_GROUP_HIERARCHY'} = \@matched_groups;
     }
 
     ## create lookup hash for species aliases
