@@ -448,7 +448,10 @@ foreach my $spp (@valid_spp) {
       
       if ($nogenebuild) {
         # no genebuild dates - but want method
-        @summary_stats = ('Genebuild method'=> $b_method);
+        @summary_stats = (
+          'Genebuild version' => $b_version,
+          'Genebuild method' => $b_method
+        );
       }
 
       while (my($k, $v) = splice(@summary_stats, 0, 2)) {
