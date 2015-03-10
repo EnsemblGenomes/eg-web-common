@@ -436,6 +436,19 @@ foreach my $spp (@valid_spp) {
       </tr>
     );
     }
+
+    my $provider     = $SD->get_config($spp, "PROVIDER_NAME");
+    my $provider_url = $SD->get_config($spp, "PROVIDER_URL");
+    if ($provider) {
+      $provider = qq{<a href="$provider_url">$provider</a>} if $provider_url;
+      $row  = stripe_row($rowcount);
+      print STATS qq($row
+          <td class="data">Data source:</td>
+          <td class="value">$provider</td>
+      </tr>
+      );
+    }
+    
     unless ($pre) {
       my @summary_stats = (
         'Genebuild by' => $b_id,
