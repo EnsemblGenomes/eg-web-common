@@ -612,7 +612,7 @@ sub load_user_tracks {
         glyphset    => '_flat_file',
         colourset   => 'classes',
         sub_type    => 'tmp',
-        file        => $entry->{'filename'},
+        file        => $entry->{'file'},
         format      => $entry->{'format'},
         caption     => $entry->{'name'},
         renderers   => $renderers,
@@ -667,7 +667,7 @@ sub load_user_tracks {
         external => 'user'
       );
     } elsif (lc $url_sources{$code}{'format'} eq 'datahub') {
-      $self->_add_datahub($url_sources{$code}{'source_name'}, $url_sources{$code}{'source_url'}, $code) if $datahubs;
+      $self->_add_datahub($url_sources{$code}{'source_name'}, $url_sources{$code}{'source_url'}) if $datahubs;
     } else {
       $self->_add_flat_file_track($menu, 'url', $code, $url_sources{$code}{'source_name'},
         sprintf('
