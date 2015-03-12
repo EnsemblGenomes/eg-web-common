@@ -145,8 +145,11 @@ sub _munge_meta {
 
   while (my ($species_id, $meta_hash) = each (%$meta_info)) {
     next unless $species_id && $meta_hash && ref($meta_hash) eq 'HASH';
-    
-    my $species  = $meta_hash->{'species.url'}[0] || ucfirst $meta_hash->{'species.production_name'}[0];
+
+## EG do not use species url    
+   # my $species = $meta_hash->{'species.url'}[0] || ucfirst $meta_hash->{'species.production_name'}[0]; 
+   my $species = ucfirst $meta_hash->{'species.production_name'}[0];
+##
     my $bio_name = $meta_hash->{'species.scientific_name'}[0];
     
     ## Put other meta info into variables
