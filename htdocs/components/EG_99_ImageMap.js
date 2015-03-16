@@ -1,33 +1,18 @@
 Ensembl.Panel.ImageMap =  Ensembl.Panel.ImageMap.extend({
 
-  // EG - I can't see why these were here? nickl
-  //
-  // init: function(){
-  //   this.zMenus = [];
-  //   this.base();
-  // },
-  // getContent: function (url, el, params, newContent) {
-  //   var i = this.zMenus.length;
-  //   while (i--) {
-  //     Ensembl.EventManager.trigger('destroyPanel', this.zMenus[i]);
-  //   }
-  //   this.zMenus = {};
-  //   if (newContent && newContent !== true) {
-  //     Ensembl.updateURL(newContent); // A link was clicked that needs to add parameters to the url
-  //     newContent = false;
-  //   }
-  //   this.base(url, el, params, newContent);
-  // },
-  // 
-  
   makeZMenu: function (e, coords) {
     var area = coords.r ? this.dragRegion : this.getArea(coords);
 
-    if (!area || $(area.a).hasClass('label')) {
+    if (!area || area.a.klass.label) {
       return;
     }
-  
-    this.zMenus['zmenu_' + area.a.coords.replace(/[ ,]/g, '_')] = 1;
+    
+    if (area.a.klass.nav) {
+      Ensembl.redirect(area.a.href);
+      return;
+    }
+    
+    this.zMenus['zmenu_' + area.a.coords.join('_')] = 1;
 
     this.base(e, coords);
   },
@@ -36,26 +21,26 @@ Ensembl.Panel.ImageMap =  Ensembl.Panel.ImageMap.extend({
   makeImageMap: function () {
     var panel = this;
 // EG    
-    var highlight = !!(window.location.pathname.match(/\/Location\/|\/Variation_(Gene|Transcript)\/Image/) && !this.vdrag);
+    var highlight = !!(window.location.pathname.match(/\/Location\/|\/Variation_(Gene|Transcript)\/Image/) && !this.vertical);
 //    
     var rect      = [ 'l', 't', 'r', 'b' ];
     var speciesNumber, c, r, start, end, scale;
     
-    this.elLk.areas.each(function () {
+    $.each(this.elLk.areas,function () {
       c = { a: this };
       
       if (this.shape && this.shape.toLowerCase() !== 'rect') {
         c.c = [];
-        $.each(this.coords.split(/[ ,]/), function () { c.c.push(parseInt(this, 10)); });
+        $.each(this.coords, function () { c.c.push(parseInt(this, 10)); });
       } else {
-        $.each(this.coords.split(/[ ,]/), function (i) { c[rect[i]] = parseInt(this, 10); });
+        $.each(this.coords, function (i) { c[rect[i]] = parseInt(this, 10); });
       }
       
       panel.areas.push(c);
       
-      if (this.className.match(/drag/)) {
+      if (this.klass.drag || this.klass.vdrag) {
         // r = [ '#drag', image number, species number, species name, region, start, end, strand ]
-        r        = c.a.href.split('|');
+        r        = c.a.attrs.href.split('|');
         start    = parseInt(r[5], 10);
         end      = parseInt(r[6], 10);
         scale    = (end - start + 1) / (this.vertical ? (c.b - c.t) : (c.r - c.l)); // bps per pixel on image
@@ -65,7 +50,7 @@ Ensembl.Panel.ImageMap =  Ensembl.Panel.ImageMap.extend({
         panel.draggables.push(c);
         
         if (highlight === true) {
-          r = this.href.split('|');
+          r = this.attrs.href.split('|');
           speciesNumber = parseInt(r[1], 10) - 1;
           
           if (panel.multi || !speciesNumber) {
@@ -111,12 +96,12 @@ Ensembl.Panel.ImageMap =  Ensembl.Panel.ImageMap.extend({
         var tip;
 
         // change the cursor to pointer for clickable areas
-        $(this).toggleClass('drag_select_pointer', !(!area || $(area.a).hasClass('label') || $(area.a).hasClass('drag') || $(area.a).hasClass('hover')));
+        $(this).toggleClass('drag_select_pointer', !(!area || area.a.klass.label || area.a.klass.drag || area.a.klass.vdrag || area.a.klass.hover));
 
         // Add helptips on navigation controls in multi species view
-        if (area && area.a && $(area.a).hasClass('nav')) {
-          if (tip !== area.a.alt) {
-            tip = area.a.alt;
+        if (area && area.a && area.a.klass.nav) {
+          if (tip !== area.a.attrs.alt) {
+            tip = area.a.attrs.alt;
             
             if (!panel.elLk.navHelptip) {
               panel.elLk.navHelptip = $('<div class="ui-tooltip helptip-bottom"><div class="ui-tooltip-content"></div></div>');

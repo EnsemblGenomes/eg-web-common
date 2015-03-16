@@ -50,13 +50,9 @@ sub count_alignments {
 
   if ($hub->species_defs->POLYPLOIDY) {
     
-    my $dbh = $hub->database('core')->dbc->db_handle;
-    my $components = $dbh->selectrow_array(
-      "SELECT COUNT(DISTINCT(value)) FROM seq_region_attrib sra 
-       JOIN attrib_type at USING (attrib_type_id)
-       WHERE at.code = 'genome_component'"
-    );  
-    $c->{'patch'} = $components - 1;
+    my $gc = $hub->database('core')->get_adaptor('GenomeContainer');
+    my @components = @{ $gc->get_genome_components };
+    $c->{'patch'} = @components - 1;
 
   } else {
     $c->{'patch'} = scalar @{ $hub->intra_species_alignments($cdb, $self->species, $seq_region) };

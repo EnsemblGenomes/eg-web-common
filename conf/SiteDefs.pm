@@ -24,8 +24,8 @@ use Data::Dumper;
 sub update_conf {
   map {delete($SiteDefs::__species_aliases{$_}) } keys %SiteDefs::__species_aliases;
   
-  $SiteDefs::SITE_RELEASE_VERSION = 25;
-  $SiteDefs::SITE_RELEASE_DATE = 'January 2015';
+  $SiteDefs::SITE_RELEASE_VERSION = 26;
+  $SiteDefs::SITE_RELEASE_DATE = 'March 2015';
   
   $SiteDefs::SITE_MISSION = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
   

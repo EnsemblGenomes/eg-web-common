@@ -18,6 +18,19 @@ limitations under the License.
 
 package EnsEMBL::Web::Text::FeatureParser;
 
+use strict;
+use warnings;
+use previous qw(new);
+
+## EG ENSEMBL-3789
+sub new {
+  my ($class, $species_defs, $location, $data_species) = @_;
+  my $self = PREV::new(@_);
+  $self->{nearest_window_size} = 100000 * ($species_defs->get_config($data_species, 'ENSEMBL_GENOME_SIZE') || 1);
+  return $self;
+}
+##
+
 ### This object parses data supplied by the user and identifies 
 ### sequence locations for use by other Ensembl objects
 sub parse { 
@@ -37,7 +50,7 @@ sub parse {
 
     ## Some complex formats need extra parsing capabilities
     my $sub_package = __PACKAGE__."::$format";
-    if (EnsEMBL::Web::Root::dynamic_use(undef, $sub_package)) {
+    if (EnsEMBL::Root::dynamic_use(undef, $sub_package)) {
       bless $self, $sub_package;
     }
     ## Create an empty feature that gives us access to feature info
@@ -160,7 +173,7 @@ sub parse {
                 $current_min = $self->{'tracks'}{$self->current_key}{'config'}{'min_score'};
                 $current_max = $feature->score if $feature->score > $current_max;
                 $current_min = $feature->score if $feature->score < $current_min;
-                $current_max = 0 unless $current_max; ## Because shit happens...
+                $current_max = 0 unless $current_max; ## Because bad things can happen...
                 $current_min = 0 unless $current_min;
                 $self->{'tracks'}{$self->current_key}{'config'}{'max_score'} = $current_max;
                 $self->{'tracks'}{$self->current_key}{'config'}{'min_score'} = $current_min;
@@ -174,12 +187,15 @@ sub parse {
     }
     $self->{'feature_count'} = $count;
     ## Extend sample coordinates a bit!
-    if ($self->{'_find_nearest'}{'nearest_region'}) {
+    if ($self->{'_find_nearest'}{'nearest_region'}) { 
       my $midpoint = int(abs($self->{'_find_nearest'}{'nearest_start'} 
                               - $self->{'_find_nearest'}{'nearest_end'})/2) 
                               + $self->{'_find_nearest'}{'nearest_start'};
-      my $start = $midpoint < 50000 ? 0 : ($midpoint - 50000);
-      my $end = $start + 100000;
+## EG ENSEMBL-3789                                  
+      my $half_window = $self->{'nearest_window_size'} / 2;
+      my $start = $midpoint < $half_window ? 0 : ($midpoint - $half_window);
+      my $end = $start + $self->{'nearest_window_size'};
+##      
       $self->{'nearest'} = $self->{'_find_nearest'}{'nearest_region'}.':'.$start.'-'.$end;
     }
   }

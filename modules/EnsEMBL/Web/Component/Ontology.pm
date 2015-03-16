@@ -25,7 +25,7 @@ use Data::Dumper;
 
 use base qw(EnsEMBL::Web::Component);
 use EnsEMBL::Web::Constants;
-use EnsEMBL::Web::Tools::OntologyVisualisation;
+use EnsEMBL::Web::Document::Image::Ontology;
 
 sub _init {
   my $self = shift;
@@ -159,7 +159,12 @@ sub ontology_chart {
     
     my %clusters = $species_defs->multiX('ONTOLOGIES');
 
-    my $ontovis = new EnsEMBL::Web::Tools::OntologyVisualisation();
+    my $ontology_term_adaptor       = $hub->get_databases('go')->{'go'}->get_GOTermAdaptor;
+
+    my $ontovis = EnsEMBL::Web::Document::Image::Ontology->new(
+      $hub, undef,
+      {'_ontology_term_adaptor' => $ontology_term_adaptor},
+    );
 
     my $oMap = EnsEMBL::Web::Constants::ONTOLOGY_SETTINGS ;
     my @hss =  $oMap->{$oname} ? @{$oMap->{$oname}->{subsets} || []} : ();

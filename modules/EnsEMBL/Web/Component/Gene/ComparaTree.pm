@@ -225,6 +225,18 @@ sub content {
     $image->{'panel_number'} = 'tree';
     $image->set_button('drag', 'title' => 'Drag to select region');
 
+    ## Need to pass gene name to export form 
+    my $gene_name;
+    if ($gene) {
+      my $dxr    = $gene->Obj->can('display_xref') ? $gene->Obj->display_xref : undef;
+      $gene_name = $dxr ? $dxr->display_id : $gene->stable_id;
+    }
+    else {
+      $gene_name = $tree_stable_id;
+    }
+    $image->{'export_params'} = [['gene_name', $gene_name],['align', 'tree']];
+    $image->{'data_export'}   = 'GeneTree';
+
 # EG include the ht param
     if ($gene) {
       push @view_links, sprintf $li_tmpl, $hub->url({ action => 'Compara_Tree', function => $url_function, ht => $hub->param('ht'), collapse => $collapsed_to_gene, g1 => $highlight_gene }), $highlight_gene ? 'View current genes only'        : 'View current gene only';
