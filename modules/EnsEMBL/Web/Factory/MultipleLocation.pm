@@ -47,44 +47,49 @@ sub createObjects {
     my $primary_slice   = $object->slice;
     my $primary_species = $hub->species; 
     my $alignments      = $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $primary_slice);
-    my %align_species;
 
-    foreach my $align (sort { $a->{target_name} cmp $b->{target_name} } @$alignments) {
-      next unless $align->{'class'} =~ /pairwise_alignment/;
-      next unless $align->{'species'}{"$primary_species--" . $primary_slice->seq_region_name};
-      my $sp = sprintf('%s--%s', $primary_species, $align->{target_name});
-      $align_species{$sp} = 1;
-    }
+    if (@$alignments > 20) { 
+      $object->__data->{'too_many_alignments'} = 1;
+    } else {
+      my %align_species;
 
-    my $already_configured = !!$hub->param("s1");
-
-    # check if current configured species are valid for polyploid view
-    if ($already_configured) {
-      my $i = 1;
-      while (my $s = $hub->param("s$i")) {
-        $already_configured = 0 if !$align_species{$s};
-        $i ++;
+      foreach my $align (sort { $a->{target_name} cmp $b->{target_name} } @$alignments) {
+        next unless $align->{'class'} =~ /pairwise_alignment/;
+        next unless $align->{'species'}{"$primary_species--" . $primary_slice->seq_region_name};
+        my $sp = sprintf('%s--%s', $primary_species, $align->{target_name});
+        $align_species{$sp} = 1;
       }
-      ## disabled - this is a bad assumption as there could be alignments in this list that 
-      ##            don't have features for the current location
-      #$already_configured = 0 if scalar keys %align_species != $i-1; 
-      ##
-      if (!$already_configured) {
-        # clear old params
+
+      my $already_configured = !!$hub->param("s1");
+
+      # check if current configured species are valid for polyploid view
+      if ($already_configured) {
         my $i = 1;
-        while ($hub->param("s$i")) {
-          $hub->delete_param("s$i", "r$i");
+        while (my $s = $hub->param("s$i")) {
+          $already_configured = 0 if !$align_species{$s};
           $i ++;
         }
-      }
-    }  
+        ## disabled - this is a bad assumption as there could be alignments in this list that 
+        ##            don't have features for the current location
+        #$already_configured = 0 if scalar keys %align_species != $i-1; 
+        ##
+        if (!$already_configured) {
+          # clear old params
+          my $i = 1;
+          while ($hub->param("s$i")) {
+            $hub->delete_param("s$i", "r$i");
+            $i ++;
+          }
+        }
+      }  
 
-    if (!$already_configured) {
-      # set up default intra-species comparisons for polyploid view
-      my $i = 1;
-      for (keys %align_species) {
-        $hub->param("s$i", $_);
-        $i ++;
+      if (!$already_configured) {
+        # set up default intra-species comparisons for polyploid view
+        my $i = 1;
+        for (keys %align_species) {
+          $hub->param("s$i", $_);
+          $i ++;
+        }
       }
     }
   } elsif (!$hub->param("r1")) { 
