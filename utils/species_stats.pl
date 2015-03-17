@@ -276,11 +276,13 @@ foreach my $spp (@valid_spp) {
       print STDERR "Alternate coding:$alt_gene_stats{'alt_coding'}\n" if $DEBUG && $genome_container->get_alt_coding_count();
 
       ($gene_stats{'shortnoncoding'}) = $genome_container->get_snoncoding_count() if $genome_container->get_snoncoding_count();
-      $title{'shortnoncoding'} = $genome_container->get_attrib('snoncoding_cnt')->name() if $genome_container->get_snoncoding_count();
+      $title{'shortnoncoding'} = $genome_container->get_attrib('snoncoding_cnt')->name()
+        || $genome_container->get_attrib('noncoding_cnt_s')->name() if $genome_container->get_snoncoding_count();
       print STDERR "Non coding:$gene_stats{'shortnoncoding'}\n" if $DEBUG;
 
       ($gene_stats{'longnoncoding'}) = $genome_container->get_lnoncoding_count() if $genome_container->get_lnoncoding_count();
-      $title{'longnoncoding'} = $genome_container->get_attrib('lnoncoding_cnt')->name() if $genome_container->get_lnoncoding_count();
+      $title{'longnoncoding'} = $genome_container->get_attrib('lnoncoding_cnt')->name()
+        || $genome_container->get_attrib('noncoding_cnt_l')->name() if $genome_container->get_lnoncoding_count();
       print STDERR "Non coding:$gene_stats{'longnoncoding'}\n" if $DEBUG;
 
       ($alt_gene_stats{'alt_shortnoncoding'}) = $genome_container->get_alt_snoncoding_count() if $genome_container->get_alt_snoncoding_count();
