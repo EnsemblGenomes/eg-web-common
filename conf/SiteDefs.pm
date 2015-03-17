@@ -49,6 +49,7 @@ sub update_conf {
   $SiteDefs::ENSEMBL_BLASTSCRIPT       = $SiteDefs::ENSEMBL_SERVERROOT."/utils/parse_blast.pl";
   $SiteDefs::ENSEMBL_ENASEARCH_ENABLED = 0;
   $SiteDefs::ENSEMBL_LOGINS            = 1;
+  $SiteDefs::ENSEMBL_BLAST_BY_SEQID    = 0;
   
   $SiteDefs::APACHE_BIN   = '/usr/sbin/httpd';
   $SiteDefs::APACHE_DIR   = '/etc/httpd';

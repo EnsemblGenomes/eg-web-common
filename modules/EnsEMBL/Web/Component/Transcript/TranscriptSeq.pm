@@ -51,6 +51,6 @@ sub initialize {
 }
 
 sub blast_options {
-  ## @override
-  return { 'no_button' => 1 };
+ ## @override
+ return { 'no_button' => 0 };
 }
