@@ -66,9 +66,9 @@ sub table_options {
   return {
     'id'          => sprintf('blast_results%s', $job->job_data->{'source'} =~ /latestgp/i ? '_1' : '_2'), # keep different session record for DataTable when saving sorting, hidden cols etc
     'data_table'  => 1,
-    'sorting'     => ['score desc']
+    'sorting'     => ['score desc'],
 ## EG          
-    'hidden_columns' => $job->job_data->{'source'} =~/latestgp/i ? [3, 4, 5, 6] : [3, 4, 5, 8, 9, 10, 11] }
+    'hidden_columns' => $job->job_data->{'source'} =~/latestgp/i ? [3, 4, 5, 6] : [3, 4, 5, 8, 9, 10, 11] 
 ##        
   };
 }
