@@ -27,6 +27,7 @@ use Bio::AlignIO;
 use EnsEMBL::Web::Constants;
 use Bio::EnsEMBL::Compara::GeneTree;
 use Data::Dumper;
+use EnsEMBL::Web::TmpFile::Text; ## FIXME: this is deprecated.
 
 use base qw(EnsEMBL::Web::Component);
 
