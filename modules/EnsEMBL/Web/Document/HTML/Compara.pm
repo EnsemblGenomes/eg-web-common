@@ -146,7 +146,7 @@ sub table {
     my ($self, $species) = @_;
     
     my $hub  = $self->hub;
-    my $methods = ['SYNTENY', 'TRANSLATED_BLAT_NET','BLASTZ_NET', 'LASTZ_NET'];
+    my $methods = ['SYNTENY', 'TRANSLATED_BLAT_NET','BLASTZ_NET', 'LASTZ_NET', 'ATAC'];
     my $data = get_compara_alignments($hub->database('compara'), $methods);
 
     my $thtml = qq{<table id="genomic_align_table" class="no_col_toggle ss autocenter" style="width: 100%" cellpadding="0" cellspacing="0">};

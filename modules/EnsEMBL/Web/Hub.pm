@@ -68,7 +68,7 @@ sub intra_species_alignments {
  
     my @comparisons;
     
-    foreach my $method (qw(LASTZ_NET TRANSLATED_BLAT_NET TRANSLATED_BLAT BLASTZ_NET)) { 
+    foreach my $method (qw(LASTZ_NET TRANSLATED_BLAT_NET TRANSLATED_BLAT BLASTZ_NET ATAC)) { 
       my $mlss = $mlss_adaptor->fetch_by_method_link_type_GenomeDBs($method, [$genomedb], 1);
       next unless $mlss;
       
