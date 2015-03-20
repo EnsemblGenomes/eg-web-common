@@ -72,7 +72,7 @@ sub intra_species_alignments {
     my @methods = qw(LASTZ_NET TRANSLATED_BLAT_NET TRANSLATED_BLAT BLASTZ_NET);
     push @methods, 'ATAC' if $SiteDefs::ENSEMBL_SITETYPE =~ /plants/i;
 
-    foreach my $method (qw(LASTZ_NET TRANSLATED_BLAT_NET TRANSLATED_BLAT BLASTZ_NET)) { 
+    foreach my $method (@methods) { 
       my $mlss = $mlss_adaptor->fetch_by_method_link_type_GenomeDBs($method, [$genomedb], 1);
       next unless $mlss;
       
