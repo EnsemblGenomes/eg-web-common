@@ -65,6 +65,7 @@ our %pretty_method = (
   LASTZ_NET           => 'LastZ',
   TRANSLATED_BLAT_NET => 'Translated Blat',
   SYNTENY             => 'Synteny',
+  ATAC                => 'ATAC',
 );
 
 our $references = {
@@ -73,7 +74,8 @@ our $references = {
   'BlastZ'          => qq{
     <a href="http://www.genome.org/cgi/content/abstract/13/1/103">Schwartz S et al., Genome Res.;13(1):103-7</a>, 
     <a href="http://www.pnas.org/cgi/content/full/100/20/11484">Kent WJ et al., Proc Natl Acad Sci U S A., 2003;100(20):11484-9</a>
-  }
+  },
+  'ATAC'            => qq{<a href="http://seqanswers.com/wiki/ATAC">http://seqanswers.com/wiki/ATAC</a>}
 };
 
 ## HTML OUTPUT ######################################
@@ -111,14 +113,18 @@ alignments were downloaded from <a href="$ucsc">UCSC</a> in $site release $relea
     $html .= sprintf '<p><a href="http://ensemblgenomes.org/info/data/synteny">%s</a> was calculated between %s (<i>%s</i>, %s) and %s (<i>%s</i>, %s) in %s release %s.</p>',
               $type, $ref_common, $ref_sp, $ref_assembly, $nonref_common, $nonref_sp, $nonref_assembly,
               $site, $release;
-  }
-  else {
+  } else {
     $html .= sprintf '<p>%s (<i>%s</i>, %s) and %s (<i>%s</i>, %s) were aligned using the %s alignment algorithm (%s)
-in %s release %s. %s was used as the reference species. After running %s, the raw %s alignment blocks
-are chained according to their location in both genomes. During the final netting process, the best
-sub-chain is chosen in each region on the reference species.</p>',
+in %s release %s. %s was used as the reference species.',
               $ref_common, $ref_sp, $ref_assembly, $nonref_common, $nonref_sp, $nonref_assembly,
-              $type, $references->{$type}, $site, $release, $ref_common, $type, $type;
+              $type, $references->{$type}, $site, $release, $ref_common;
+    if ($type ne 'ATAC') {           
+      $html .= sprintf ' After running %s, the raw %s alignment blocks
+  are chained according to their location in both genomes. During the final netting process, the best
+  sub-chain is chosen in each region on the reference species.',
+                $type, $type;
+    }
+    $html .= '</p>';
   }
 
   
