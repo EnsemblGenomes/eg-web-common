@@ -143,7 +143,6 @@ Alignments of resequencing data are available for several species as
 Ensembl Multi Format (EMF) flatfile dumps. The accompanying README
 file describes the file format.
 </p>
-
 <p>
 Also, the same format is used to dump whole-genome multiple alignments
 as well as gene-based multiple alignments and phylogentic trees used
@@ -154,15 +153,23 @@ directory</a>.
 </p>
 </dd>
 
-<dt class="bg1">GVF (variation data)</dt>
-<dd class="bg1">GVF (Genome Variation Format) is a simple tab-delimited format derived
+<dt class="bg1">MAF (comparative data)</dt>
+<dd class="bg1">
+<p>
+MAF files are provided for all pairwise alignments.
+The MAF file format is described <a href="http://genome.ucsc.edu/FAQ/FAQformat.html#format5">here</a>.
+</p>
+</dd>
+
+<dt class="bg2">GVF (variation data)</dt>
+<dd class="bg2">GVF (Genome Variation Format) is a simple tab-delimited format derived
 from GFF3 for variation positions across the genome.
 There are GVF files for different types of variation data (e.g.
 somatic variants, structural variants etc). For more information see
 the "README" files in the GVF directory.</dd>
 
-<dt class="bg2">BED format files (comparative data)</dt>
-<dd class="bg2">
+<dt class="bg1">BED format files (comparative data)</dt>
+<dd class="bg1">
 <p>
 Constrained elements calculated using GERP are available in BED
 format. For more information see the accompanying README file.
@@ -184,8 +191,8 @@ are:
 </p>
 </dd>
 
-<dt class="bg1">Tarball</dt>
-<dd class="bg1">
+<dt class="bg2">Tarball</dt>
+<dd class="bg2">
 <p>
 The entire Ensembl API is gzipped and concatenated into a single TAR file. This is updated daily.</p>
 </dd>

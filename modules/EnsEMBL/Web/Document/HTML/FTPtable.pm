@@ -65,6 +65,7 @@ sub render {
     compara   => '%s Compara data export',
     mart      => '%s BioMart data export',
     tsv       => 'Tab separated files containing selected data for individual species and from comparative genomics',
+    maf       => 'Pairwise alignment data in MAF format',
 
   );
   $title{$_} = encode_entities($title{$_}) for keys %title;
@@ -159,7 +160,8 @@ vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_s
       {key=>'database',    sort=>'html',title=>'Database'},
       {key => 'mysql',    sort=>'none',title => 'MySQL' },  
       {key => 'tsv',      sort=>'none',title => 'TSV'   },    
-      {key => 'emf',      sort=>'none',title => 'EMF'   },    
+      {key => 'emf',      sort=>'none',title => 'EMF'   },
+      {key => 'maf',      sort=>'none',title => 'MAF'   },    
     ],
     [
       {
@@ -173,6 +175,7 @@ vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_s
       mysql   => sprintf(qq{<a rel="external" title="%s" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/mysql/$compara">MySQL</a>},sprintf($title{compara},ucfirst $genomic_unit)),
       emf     => qq{<a rel="external" title="$title{emf}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/emf/ensembl-compara/homologies">EMF</a>},
       tsv     => qq{<a rel="external" title="$title{tsv}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/tsv/ensembl-compara">TSV</a>},
+      maf     => qq{<a rel="external" title="$title{maf}" href="ftp://ftp.ensemblgenomes.org/pub/release-$rel/$genomic_unit/maf/ensembl-compara">MAF</a>},
       },
       {
       database => qq{<strong>Ensembl Mart</strong>},
