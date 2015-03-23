@@ -211,7 +211,7 @@ sub transcript_table {
 
   my $site_type         = $hub->species_defs->ENSEMBL_SITETYPE; 
   my @SYNONYM_PATTERNS  = qw(%HGNC% %ZFIN%);
-  my (@syn_matches, $syns_html);
+  my (@syn_matches, $syns_html, $counts_summary);
   push @syn_matches,@{$object->get_database_matches($_)} for @SYNONYM_PATTERNS;
 
   my $gene = $page_type eq 'gene' ? $object->Obj : $object->gene;
@@ -323,15 +323,12 @@ sub transcript_table {
       
       $location_html .= '
         </ul>';
+
     }
   }
 
+
   $table->add_row('Location', $location_html);
-
-  my $insdc_accession;
-  $insdc_accession = $self->object->insdc_accession if $self->object->can('insdc_accession');
-  $table->add_row('INSDC coordinates',$insdc_accession) if $insdc_accession;
-
   my $gene = $object->gene;
 
   #text for tooltips
@@ -339,6 +336,7 @@ sub transcript_table {
   my $trans_5_3_desc = "5' and 3' truncations in transcript evidence prevent annotation of the start and the end of the CDS.";
   my $trans_5_desc = "5' truncation in transcript evidence prevents annotation of the start of the CDS.";
   my $trans_3_desc = "3' truncation in transcript evidence prevents annotation of the end of the CDS.";
+  my $gene_html    = '';
 
   if ($gene) {
     my $transcript  = $page_type eq 'transcript' ? $object->stable_id : $hub->param('t');
@@ -373,8 +371,6 @@ sub transcript_table {
       $plural =~ s/s$//;
       $splices =~ s/s$//;
     }
-    
-    my $gene_html = "This gene has $count $plural ($splices)";
     
     if ($page_type eq 'transcript') {
       my $gene_id  = $gene->stable_id;
@@ -513,16 +509,6 @@ sub transcript_table {
       $_->{'bp_length'} .= ' bp' if $_->{'bp_length'} =~ /\d/;
     }
 
-    $table->add_row(
-      $page_type eq 'gene' ? 'Transcripts' : 'Gene',
-      $gene_html . sprintf(
-        ' <a rel="transcripts_table" class="button toggle no_img set_cookie %s" href="#" title="Click to toggle the transcript table">
-          <span class="closed">Show transcript table</span><span class="open">Hide transcript table</span>
-        </a>',
-        $show ? 'open' : 'closed'
-      )
-    );
-
     my @hidecols;
     foreach my $id (keys %extra_links) {
       foreach my $i (0..$#columns) {
@@ -543,12 +529,151 @@ sub transcript_table {
       hidden_columns    => \@hidecols,
     });
 
+    my $avail       = $object->availability;
+    # since counts form left nav is gone, we are adding it in the description  
+    if($page_type eq 'gene') {
+      my @str_array;
+      my $ortholog_url = $hub->url({
+        type   => 'Gene',
+        action => 'Compara_Ortholog',
+        g      => $gene->stable_id
+      });
+      
+      my $paralog_url = $hub->url({
+        type   => 'Gene',
+        action => 'Compara_Paralog',
+        g      => $gene->stable_id
+      });
+      
+      my $protein_url = $hub->url({
+        type   => 'Gene',
+        action => 'Family',
+        g      => $gene->stable_id
+      });
+
+      my $phenotype_url = $hub->url({
+        type   => 'Gene',
+        action => 'Phenotype',
+        g      => $gene->stable_id
+      });    
+
+      my $splice_url = $hub->url({
+        type   => 'Gene',
+        action => 'Splice',
+        g      => $gene->stable_id
+      });        
+      
+      push @str_array, sprintf('%s %s', 
+                          $avail->{has_transcripts}, 
+                          $avail->{has_transcripts} eq "1" ? "transcript (<a href='$splice_url'>splice variant</a>)" : "transcripts (<a href='$splice_url'>splice variants)</a>"
+                      ) if($avail->{has_transcripts});
+      push @str_array, sprintf('%s gene %s', 
+                          $avail->{has_alt_alleles}, 
+                          $avail->{has_alt_alleles} eq "1" ? "allele" : "alleles"
+                      ) if($avail->{has_alt_alleles});
+      push @str_array, sprintf('<a href="%s">%s %s</a>', 
+                          $ortholog_url, 
+                          $avail->{has_orthologs}, 
+                          $avail->{has_orthologs} eq "1" ? "orthologue" : "orthologues"
+                      ) if($avail->{has_orthologs});
+      push @str_array, sprintf('<a href="%s">%s %s</a>',
+                          $paralog_url, 
+                          $avail->{has_paralogs}, 
+                          $avail->{has_paralogs} eq "1" ? "paralogue" : "paralogues"
+                      ) if($avail->{has_paralogs});    
+      push @str_array, sprintf('is a member of <a href="%s">%s Ensembl protein %s</a>', $protein_url, 
+                          $avail->{family_count}, 
+                          $avail->{family_count} eq "1" ? "family" : "families"
+                      ) if($avail->{family_count});
+      push @str_array, sprintf('is associated with <a href="%s">%s %s</a>', 
+                          $phenotype_url, 
+                          $avail->{has_phenotypes}, 
+                          $avail->{has_phenotypes} eq "1" ? "phenotype" : "phenotypes"
+                      ) if($avail->{has_phenotypes});
+     
+      $counts_summary  = sprintf('This gene has %s.',$self->join_with_and(@str_array));    
+    } 
+    
+    if($page_type eq 'transcript') {    
+      my @str_array;
+      
+      my $exon_url = $hub->url({
+        type   => 'Transcript',
+        action => 'Exons',
+        g      => $gene->stable_id
+      }); 
+      
+      my $similarity_url = $hub->url({
+        type   => 'Transcript',
+        action => 'Similarity',
+        g      => $gene->stable_id
+      }); 
+      
+      my $oligo_url = $hub->url({
+        type   => 'Transcript',
+        action => 'Oligos',
+        g      => $gene->stable_id
+      });     
+
+      my $domain_url = $hub->url({
+        type   => 'Transcript',
+        action => 'Domains',
+        g      => $gene->stable_id
+      });
+      
+      my $variation_url = $hub->url({
+        type   => 'Transcript',
+        action => 'ProtVariations',
+        g      => $gene->stable_id
+      });     
+     
+      push @str_array, sprintf('<a href="%s">%s %s</a>', 
+                          $exon_url, $avail->{has_exons}, 
+                          $avail->{has_exons} eq "1" ? "exon" : "exons"
+                        ) if($avail->{has_exons});
+                        
+      push @str_array, sprintf('is annotated with <a href="%s">%s %s</a>', 
+                          $domain_url, $avail->{has_domains}, 
+                          $avail->{has_domains} eq "1" ? "domain and feature" : "domains and features"
+                        ) if($avail->{has_domains});
+
+      push @str_array, sprintf('is associated with <a href="%s">%s %s</a>', 
+                          $variation_url, 
+                          $avail->{has_variations}, 
+                          $avail->{has_variations} eq "1" ? "variation" : "variations",
+                        ) if($avail->{has_variations});    
+      
+      push @str_array, sprintf('maps to <a href="%s">%s oligo %s</a>',    
+                          $oligo_url,
+                          $avail->{has_oligos}, 
+                          $avail->{has_oligos} eq "1" ? "probe" : "probes"
+                        ) if($avail->{has_oligos});
+                  
+      $counts_summary  = sprintf('<p>This transcript has %s.</p>', $self->join_with_and(@str_array));  
+    }    
+
+  my $insdc_accession;
+  $insdc_accession = $self->object->insdc_accession if $self->object->can('insdc_accession');
+  $table->add_row('INSDC coordinates',$insdc_accession) if $insdc_accession;
+
+  $table->add_row( $page_type eq 'gene' ? 'About this gene' : 'About this transcript',$counts_summary) if $counts_summary;
+    $table->add_row(
+      $page_type eq 'gene' ? 'Transcripts' : 'Gene',
+      $gene_html . sprintf(
+        ' <a rel="transcripts_table" class="button toggle no_img set_cookie %s" href="#" title="Click to toggle the transcript table">
+          <span class="closed">Show transcript table</span><span class="open">Hide transcript table</span>
+        </a>',
+        $show ? 'open' : 'closed'
+      )
+    );
+
     $html = $table->render.$table_2->render;
 
   } else {
     $html = $table->render;
   }
-  
+ 
+ 
   return qq{<div class="summary_panel">$html</div>};
 }
 
