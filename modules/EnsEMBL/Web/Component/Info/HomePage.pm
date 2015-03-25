@@ -304,14 +304,16 @@ sub _assembly_text {
   my $region_url  = $species_defs->species_path . '/Location/View?r=' . $sample_data->{'LOCATION_PARAM'};
 
   $html .= qq(<a class="nodeco _ht" href="$region_url" title="Go to $region_text"><img src="${img_url}96/region.png" class="bordered" /><span>Example region</span></a>);
+  $html .= '</div>'; #homepage-icon
 
   if ($sample_data->{POLYPLOID_REGION}) { 
     my $url  = $species_defs->species_path . '/Location/MultiPolyploid?r=' . $sample_data->{'LOCATION_PARAM'};
-    $html .= qq(<a class="nodeco _ht" href="$url" title="Go to $sample_data->{POLYPLOID_REGION}"><img src="${img_url}96/region.png" class="bordered" /><span>Example polyploid region</span></a>);
+    $html .= qq(
+      <div class="homepage-icon" style="padding-top:97px;">
+        <a class="nodeco _ht" href="$url" title="Go to $sample_data->{POLYPLOID_REGION}"><img src="${img_url}96/region_polyploid.png" class="bordered" /><span>Polyploid example</span></a>
+      </div>
+    );
   }
-
-
-  $html .= '</div>'; #homepage-icon
 
   my $assembly = $current_assembly;
   if ($accession) {
