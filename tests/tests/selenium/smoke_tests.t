@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 
 use lib 'lib';
-use EG::Test::Utils qw(selenium_from_config);
+use EG::Test::Config qw(selenium_from_config);
 
 my $sel = selenium_from_config;
 
@@ -15,7 +15,7 @@ sub test_nav_links {
   my $js       = "\$('a', '.local_context').each(function(index) { \$(this).attr('id', 'nav_test_' + index); })"; # set ids;
     
   foreach my $entity (@entities) {
-    diag ucfirst($entity) . '...';
+    note ucfirst($entity) . '...';
     
     $sel->eg_open_species_homepage,
     and $sel->eg_click_link("link=Example $entity");
@@ -27,7 +27,7 @@ sub test_nav_links {
       $sel->run_script($js);
       my $href = $sel->get_eval("selenium.browserbot.getCurrentWindow().jQuery('a#$id').attr('href')");
       next unless $href =~ /^\//; # don't test external urls
-      diag $href;
+      note $href;
       $sel->eg_click_link_ok("id=$id");
     }
   }
