@@ -3,9 +3,11 @@ use warnings;
 use Test::More;
 
 use lib 'lib';
-use EG::Test::Config qw(selenium_from_config);
+use EG::Test::Config;
+use EG::Test::Selenium;
 
-my $sel = selenium_from_config;
+my $config = EG::Test::Config::parse;
+my $sel    = EG::Test::Selenium->new_from_config($config);
 
 test_nav_links();
 done_testing();
@@ -17,7 +19,7 @@ sub test_nav_links {
   foreach my $entity (@entities) {
     note ucfirst($entity) . '...';
     
-    $sel->eg_open_species_homepage,
+    $sel->eg_open_species_homepage($config->{species}),
     and $sel->eg_click_link("link=Example $entity");
     
     $sel->run_script($js);

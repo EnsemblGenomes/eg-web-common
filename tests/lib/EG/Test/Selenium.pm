@@ -3,15 +3,20 @@ use strict;
 use base 'Test::WWW::Selenium';
 use Test::More;
 
-sub new {
-  my ($class, %args) = @_;
-  my $species = delete $args{species} || die 'Must provide species, e.g. Zea_mays';
+# Build a selenium object based on a config hash
+sub new_from_config {
+  my ($class, $config) = @_;
 
-  my $self = $class->SUPER::new(%args);
-  $self->{species} = $species;
+  my %args = (
+    host        => $config->{selenium_host},
+    port        => $config->{selenium_port},
+    browser     => $config->{selenium_browser},
+    browser_url => $config->{url},
+    _timeout    => $config->{selenium_timeout},
+    _ua         => LWP::UserAgent->new(keep_alive => 5, env_proxy => 1),
+  );
 
-  $self->start;
-  return $self;
+  return $class->SUPER::new(%args);
 }
 
 # Wait until there are no ajax loading indicators or errors shown in the page
@@ -48,8 +53,8 @@ sub eg_click_link {
 }
 
 sub eg_open_species_homepage {
-  my ($self) = @_;
-  $self->open("$self->{browser_url}/$self->{species}/Info/Index")
+  my ($self, $species) = @_;
+  $self->open("$self->{browser_url}/$species/Info/Index")
   and $self->eg_wait_for_page_to_load;
 }
 

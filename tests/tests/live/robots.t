@@ -4,10 +4,10 @@ use Test::More;
 use Data::Dumper;
 
 use lib 'lib';
-use EG::Test::Config qw(get_config);
+use EG::Test::Config;
 
-my $config   = get_config;
-my $ua       = LWP::UserAgent->new(keep_alive => 5, env_proxy => 1);
+my $config = EG::Test::Config::parse;
+my $ua     = LWP::UserAgent->new(keep_alive => 5, env_proxy => 1);
 
 test_robots_file();
 test_sitemap_index();

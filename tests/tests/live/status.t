@@ -4,9 +4,9 @@ use Test::More;
 use Data::Dumper;
 
 use lib 'lib';
-use EG::Test::Config qw(get_config);
+use EG::Test::Config;
 
-my $config = get_config;
+my $config = EG::Test::Config::parse;
 my $ua     = LWP::UserAgent->new(keep_alive => 5, env_proxy => 1);
 
 test_status();
@@ -17,12 +17,16 @@ sub test_status {
   
   ok $response->is_success, 'fetched status page';
   like $response->content, qr/STATUS: OK/m , 'status is ok';
-  like $response->content, qr/USER_DB host is:\s+oy-mysql-eg-web/m , "user db is oy-mysql-eg-web";  
 
-  if ($config->{datacentre}) {
-    my $db = "$config->{datacentre}-mysql-eg-live";
-    like $response->content, qr/DATA_DB host is:\s+$db/m , "data db is $db";  
+  if ($config->{live_data_db_host}) {
+    like $response->content, qr/DATA_DB host is:\s+$config->{live_data_db_host}/m , "data db is correct";  
   } else {
-    note 'skipping datacentre db checks as no datacentre config supplied'
+    note 'skipping data db check as no config or live_data_db_host';
+  }
+
+  if ($config->{live_user_db_host}) {
+    like $response->content, qr/USER_DB host is:\s+$config->{live_user_db_host}/m , "user db is correct";  
+  } else {
+    note 'skipping user db check as no config or live_user_db_host';
   }
 }
