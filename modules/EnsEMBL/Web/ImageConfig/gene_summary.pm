@@ -80,4 +80,46 @@ sub init {
 }
 
 
+sub modify {
+  my $self = shift;
+
+  my $gene_transcript_menu = $self->tree->get_node('gene_transcript');
+   
+  # create pombase menus
+  my $pombase_menu_binding = $self->create_submenu('chromatin_binding', 'Chromatin binding');
+  $gene_transcript_menu->after($pombase_menu_binding);
+
+  my $pombase_menu_intron = $self->create_submenu('pb_intron_branch_point', 'Intron Branch Point');
+  $gene_transcript_menu->after($pombase_menu_intron);
+
+  my $pombase_menu_polya   = $self->create_submenu('polya_sites', 'Polyadenylation sites');
+  $gene_transcript_menu->after($pombase_menu_polya);
+
+  my $pombase_menu_reppro   = $self->create_submenu('replication_profiling', 'Replication Profiling');
+  $gene_transcript_menu->after($pombase_menu_reppro);
+
+  my $pombase_menu_reppro   = $self->create_submenu('regulatory_elements', 'Regulatory Elements');
+  $gene_transcript_menu->after($pombase_menu_reppro);
+
+  my $pombase_menu_transcriptome   = $self->create_submenu('transcriptome', 'Transcriptome');
+  $gene_transcript_menu->after($pombase_menu_transcriptome);
+
+  my $pombase_menu_nucleosome   = $self->create_submenu('nucleosome', 'Nucleosome Positioning');
+  $gene_transcript_menu->after($pombase_menu_nucleosome);
+
+  my $dnameth_menu_transcriptome   = $self->create_submenu('dna_methylation', 'DNA Methylation');
+  $gene_transcript_menu->after($dnameth_menu_transcriptome);
+ 
+  my $histmod_menu_transcriptome   = $self->create_submenu('histone_mod', 'Histone Modification');
+  $gene_transcript_menu->after($histmod_menu_transcriptome);
+  
+  $self->load_configured_bam;
+  $self->load_configured_bed;
+  $self->load_configured_bedgraph;
+  $self->load_configured_mw;
+
+  my $ml = $self->get_node('fg_methylation_legend');
+  $ml->remove if $ml; 
+}
+
 1;
