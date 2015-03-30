@@ -33,6 +33,7 @@ sub wiggle_features {
 ## EG
   my $slice = $self->{'container'};
   if (!$self->{'_cache'}{'wiggle_features'}) {
+    return [] unless $self->bigwig_adaptor;
     my $summary = $self->bigwig_adaptor->fetch_extended_summary_array($slice->seq_region_name, $slice->start, $slice->end, $bins) || [];
 
     # check summary by synonym name unless not found by name
