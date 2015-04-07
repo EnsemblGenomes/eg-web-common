@@ -23,41 +23,11 @@ package EnsEMBL::Web::ImageConfig::contigviewbottom;
 use strict;
 use warnings;
 
-use previous qw(initialize);
+use previous qw(init initialize);
 
 sub modify {
   my $self = shift;
-
-  my $gene_transcript_menu = $self->tree->get_node('gene_transcript');
-   
-  # create pombase menus
-  my $pombase_menu_binding = $self->create_submenu('chromatin_binding', 'Chromatin binding');
-  $gene_transcript_menu->after($pombase_menu_binding);
-
-  my $pombase_menu_intron = $self->create_submenu('pb_intron_branch_point', 'Intron Branch Point');
-  $gene_transcript_menu->after($pombase_menu_intron);
-
-  my $pombase_menu_polya   = $self->create_submenu('polya_sites', 'Polyadenylation sites');
-  $gene_transcript_menu->after($pombase_menu_polya);
-
-  my $pombase_menu_reppro   = $self->create_submenu('replication_profiling', 'Replication Profiling');
-  $gene_transcript_menu->after($pombase_menu_reppro);
-
-  my $pombase_menu_reppro   = $self->create_submenu('regulatory_elements', 'Regulatory Elements');
-  $gene_transcript_menu->after($pombase_menu_reppro);
-
-  my $pombase_menu_transcriptome   = $self->create_submenu('transcriptome', 'Transcriptome');
-  $gene_transcript_menu->after($pombase_menu_transcriptome);
-
-  my $pombase_menu_nucleosome   = $self->create_submenu('nucleosome', 'Nucleosome Positioning');
-  $gene_transcript_menu->after($pombase_menu_nucleosome);
-
-  my $dnameth_menu_transcriptome   = $self->create_submenu('dna_methylation', 'DNA Methylation');
-  $gene_transcript_menu->after($dnameth_menu_transcriptome);
-
-  my $histmod_menu_transcriptome   = $self->create_submenu('histone_mod', 'Histone Modification');
-  $gene_transcript_menu->after($histmod_menu_transcriptome);
-  
+ 
   $self->load_configured_bam;
   $self->load_configured_bed;
   $self->load_configured_bedgraph;
@@ -66,6 +36,58 @@ sub modify {
   my $ml = $self->get_node('fg_methylation_legend');
   $ml->remove if $ml;
 } 
+
+sub init {
+  my $self = shift;
+  
+  $self->create_menus(qw(
+    sequence
+    marker
+    trans_associated
+    transcript
+    prediction
+    dna_align_cdna
+    dna_align_est
+    dna_align_rna
+    dna_align_other
+    protein_align
+    protein_feature
+    rnaseq
+    ditag
+    simple
+    genome_attribs
+    misc_feature
+    variation
+    recombination
+    somatic
+    functional
+    multiple_align
+    conservation
+    pairwise_blastz
+    pairwise_tblat
+    pairwise_other
+    dna_align_compara
+    oligo
+    repeat
+
+    chromatin_binding
+    pb_intron_branch_point
+    polya_sites 
+    replication_profiling
+    regulatory_elements
+    transcriptome
+    nucleosome
+    dna_methylation
+    histone_mod 
+
+    external_data
+    user_data
+    decorations
+    information
+  ));
+
+  $self->PREV::init(@_);
+}
 
 sub initialize {
   ## @plugin
