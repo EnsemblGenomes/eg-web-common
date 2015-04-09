@@ -27,18 +27,32 @@ sub init {
     opt_lines       => 1, # draw registry lines
   });
 
+## EG
   $self->create_menus(qw(
     sequence
     transcript
+    rnaseq
     prediction
     variation
     somatic
     functional
+
+    chromatin_binding
+    pb_intron_branch_point
+    polya_sites 
+    replication_profiling
+    regulatory_elements
+    transcriptome
+    nucleosome
+    dna_methylation
+    histone_mod 
+
     external_data
     user_data
     other
     information
   ));
+##
 
   $self->add_tracks('other',    
     [ 'scalebar',  '', 'scalebar',  { display => 'normal', strand => 'b', name => 'Scale bar', description => 'Shows the scalebar' }],
@@ -78,6 +92,5 @@ sub init {
 ##
 
 }
-
 
 1;
