@@ -9,3 +9,10 @@ li p {
 div.image_container.ui-state-disabled {
   opacity: 1;
 }
+
+.highlight_annotations_selector {
+  position: absolute; 
+  color: #FFF; 
+  left: 165px; 
+  padding-top: 7px;
+}

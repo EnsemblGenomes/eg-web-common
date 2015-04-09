@@ -61,34 +61,42 @@ sub content {
     my ($hidden_genome_db_ids, $highlight_species, $highlight_genome_db_id);
 
 
-    #EG: warning message is added to the top of the page to let the user know if an old GeneTree stable_ids is mapped to new GeneTree stable_ids
-    # EG highlight tree nodes by annotation
-    my $hide = $hub->get_cookie_value('toggle_ht_table') eq 'closed';
-    my @ontology_terms             = split(',',$hub->param('ht') || '');
-    my @highlight_map = @{$self->get_highlight_map($cdb,$tree->tree) || []};
-    my ($highlight_filter, $highlight_tags_table) = ("","");
-    my ($hitags,$hitags_types);
-    if(@highlight_map){
-      $hitags_types = $self->highlight_types_selector(\@highlight_map);
-      $highlight_tags_table = $self->highlight_tags_table(\@highlight_map);
-     #my $hitags_text = '<img alt="*New Feature" style="vertical-align:middle;width:32px" src="/i/new_star.gif"/>Highlight annotations'; # EG 17 removed NEW! star
-      my $hitags_text = 'Highlight annotations';
-      $hitags = $self->dom->create_element('div',{});
-      $hitags->append_child('a',{href=>'#',rel=>'ht_table',class=>sprintf('toggle set_cookie %s',$hide ? 'closed':'open'),title=>'highlight tags',inner_HTML=>$hitags_text});
-      $hitags->append_child('span',{style=>"display:block;text-align:center;"})->append_child('small',{inner_HTML=>'click to show/hide table'});
+#EG: warning message is added to the top of the page to let the user know if an old GeneTree stable_ids is mapped to new GeneTree stable_ids
+# EG highlight tree nodes by annotation
+    my $hide                 = $hub->get_cookie_value('toggle_ht_table') eq 'closed';
+    my @ontology_terms       = split /,/, $hub->param('ht');
+    my @highlight_map        = @{$self->get_highlight_map($cdb, $tree->tree) || []};
+    my $highlight_tags_row   = undef;
+    my $highlight_tags_table = '';
+
+    if(@highlight_map){      
+      my $type_selector = $self->highlight_types_selector(\@highlight_map);
+      
+      my $button = sprintf(
+          '<a rel="ht_table" class="button toggle no_img _slide_toggle set_cookie %s" href="#" title="Click to toggle the annotations table">
+           <span class="closed">Show annotations table</span><span class="open">Hide annotations table</span></a>',
+          $hide ? 'closed' : 'open'
+      ); 
+
+      $highlight_tags_row   = ['Highlight annotations', $button];
+      $highlight_tags_table = $type_selector . $self->highlight_tags_table(\@highlight_map);     
     }
-    #
+    
     my $html = $tree->history_warn ? $self->_warning('Warning', $tree->history_warn) : '';
-    $html .= sprintf '<h3>GeneTree%s</h3>%s', $link, $self->new_twocol(
+    
+    $html .= sprintf '<h3>GeneTree%s</h3>%s', $link;
+
+    $html .= $self->new_twocol(
       ['Number of genes',             scalar(@$leaves)                                                  ],
       ['Number of speciation nodes',  $self->get_num_nodes_with_tag($tree, 'node_type', 'speciation')   ],
-      ['Number of duplication nodes',       $self->get_num_nodes_with_tag($tree, 'node_type', 'duplication')  ],
-      ['Number of ambiguous nodes',         $self->get_num_nodes_with_tag($tree, 'node_type', 'dubious')      ],
+      ['Number of duplication nodes', $self->get_num_nodes_with_tag($tree, 'node_type', 'duplication')  ],
+      ['Number of ambiguous nodes',   $self->get_num_nodes_with_tag($tree, 'node_type', 'dubious')      ],
       ['Number of gene split events', $self->get_num_nodes_with_tag($tree, 'node_type', 'gene_split')   ],
-      @highlight_map ? [ $hitags->render, $hitags_types ] : undef
+      $highlight_tags_row
     )->render;
+    
     $html .= $highlight_tags_table;
-    #/EG
+#/EG
 
 
     return $html;
@@ -156,9 +164,9 @@ sub highlight_types_selector {
     });
   }
   if(scalar keys %types  < 2){ return "";}#only one type, no filters needed
-  my $meta = $self->dom->create_element('div', {class=>'ht_table'});
+  my $meta = $self->dom->create_element('div', {class=>'ht_table highlight_annotations_selector', style=>''});
   my $form = $meta->append_child('div',{class=>sprintf('toggleable toggleTable_wrapper_no_margin %s', $hide ? 'hide':'')});
-  $form->append_child('span',{inner_HTML=>'Shown terms: '});
+  $form->append_child('span',{inner_HTML=>'Show '});
   for my $db_name (keys %types){
     $form->append_child('input',{name=>'ht_table',class=>'table_filter',type=>'checkbox', checked=>1, value=>"type_$db_name"});
     $form->append_child('label',{inner_HTML=>sprintf("%s ",$db_name)});
