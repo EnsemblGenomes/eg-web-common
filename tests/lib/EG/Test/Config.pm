@@ -9,11 +9,11 @@ use Data::Dumper;
 sub parse {
    
   my $opts        = _parse_commandline_opts();
-  my $user_config = delete $opts->{config} || warn "\n\nWarning: you have not specified a config file using the --config param\n\n";
+  my $config_file = delete $opts->{config} || warn "\n\nWarning: you have not specified a config file using the --config param\n\n";
   my $url         = $ARGV[0]               || die  "\n\nERROR: Please supply URL to test as the first argument\n\n";
   
   my $default     = _load_config_file('default');
-  my $user        = $user_config ? _load_config_file($user_config) : {};
+  my $user        = $config_file ? _load_config_file($config_file) : {};
 
   # merge configs
   my $config = { %$default, %$user, %$opts, url => $url };
