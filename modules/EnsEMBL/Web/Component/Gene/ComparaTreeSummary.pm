@@ -164,7 +164,7 @@ sub highlight_types_selector {
     });
   }
   if(scalar keys %types  < 2){ return "";}#only one type, no filters needed
-  my $meta = $self->dom->create_element('div', {class=>'ht_table highlight_annotations_selector', style=>''});
+  my $meta = $self->dom->create_element('div', {class=>'ht_table', style=>''});
   my $form = $meta->append_child('div',{class=>sprintf('toggleable toggleTable_wrapper_no_margin %s', $hide ? 'hide':'')});
   $form->append_child('span',{inner_HTML=>'Show '});
   for my $db_name (keys %types){
