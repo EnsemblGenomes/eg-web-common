@@ -241,6 +241,18 @@ sub menus {
     prediction          => [ 'Prediction transcripts', 'gene_transcript' ],
     lrg                 => [ 'LRG transcripts',        'gene_transcript' ],
     rnaseq              => [ 'RNASeq models',          'gene_transcript' ],
+
+## EG used to organise fungi/protists external tracks
+    chromatin_binding      => 'Chromatin binding',      
+    pb_intron_branch_point => 'Intron Branch Point',    
+    polya_sites            => 'Polyadenylation sites',  
+    replication_profiling  => 'Replication Profiling',  
+    regulatory_elements    => 'Regulatory Elements',    
+    transcriptome          => 'Transcriptome',          
+    nucleosome             => 'Nucleosome Positioning', 
+    dna_methylation        => 'DNA Methylation',        
+    histone_mod            => 'Histone Modification', 
+#       
     
     # Supporting evidence
     splice_sites        => 'Splice sites',
@@ -292,6 +304,7 @@ sub menus {
     external_data       => 'External data',
   };
 }
+
 ## Add the density display for the variation tracks
 sub _add_msa_track {
   my ($self, %args) = @_;
