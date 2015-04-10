@@ -69,4 +69,64 @@ sub inter_homoeologues {
 }
 ##
 
+sub variation_source {
+  my $self    = shift;
+  my $hub     = $self->hub;
+  my $object  = $self->object;
+  my $name    = $object->name;
+  my $source  = $object->source;
+  my $version = $object->source_version;
+  my $url     = $object->source_url;
+  my ($source_link, $sname);
+  
+  # Date version
+  if ($version =~ /^(20\d{2})(\d{2})/) {
+    $version = "$2/$1";
+  }
+  warn $object;
+  warn $object->source_description;
+  ## parse description for links
+  (my $description = $object->source_description) =~ s/(\w+) \[(http:\/\/[\w\.\/]+)\]/<a href="$2" class="constant">$1<\/a>/; 
+  
+  # Source link
+  if ($source =~ /dbSNP/) {
+    $sname       = 'DBSNP';
+    $source_link = $hub->get_ExtURL_link("[View in dbSNP]", $sname, $name);
+  } elsif ($source =~ /SGRP/) {
+    $source_link = $hub->get_ExtURL_link("[About $source]", 'SGRP_PROJECT');
+  } elsif ($source =~ /COSMIC/) {
+    $sname       = 'COSMIC';
+    my $cname = ($name =~ /^COSM(\d+)/) ? $1 : $name;
+    $source_link = $hub->get_ExtURL_link("[View in $source]", "${sname}_ID", $cname);
+  } elsif ($source =~ /HGMD/) {
+    $version =~ /(\d{4})(\d+)/;
+    $version = "$1.$2";
+    my $pf          = ($hub->get_adaptor('get_PhenotypeFeatureAdaptor', 'variation')->fetch_all_by_Variation($object->Obj))->[0];
+    my $asso_gene   = $pf->associated_gene;
+       $source_link = $hub->get_ExtURL_link("[View in $source]", 'HGMD', { ID => $asso_gene, ACC => $name });
+  } elsif ($source =~ /ESP/) {
+    if ($name =~ /^TMP_ESP_(\d+)_(\d+)/) {
+      $source_link = $hub->get_ExtURL_link("[View in $source]", $source, { CHR => $1 , START => $2, END => $2});
+    }
+    else {
+      $source_link = $hub->get_ExtURL_link("[View in $source]", "${source}_HOME");
+    }
+  } elsif ($source =~ /LSDB/) {
+    $version = ($version) ? " ($version)" : '';
+    $source_link = $hub->get_ExtURL_link("[View in $source]", $source, $name);
+  }  elsif ($source =~ /PhenCode/) {
+     $sname       = 'PHENCODE';
+     $source_link = $hub->get_ExtURL_link("[View in PhenCode]", $sname, $name);
+  } else {
+## EG
+    #$source_link = $url ? qq{<a href="$url" class="constant">[View in $source]</a>} : "$source $version";
+##
+  }
+  
+  $version = ($version) ? " (release $version)" : '';
+## EG  
+  return ['Original source', sprintf('<p>%s%s%s</p>', $description, $version, $source_link ? " | $source_link" : '')];
+##
+}
+
 1;
