@@ -2,12 +2,13 @@ use strict;
 use warnings;
 use Test::More;
 use Data::Dumper;
+use LWP::UserAgent;
 
 use lib 'lib';
 use EG::Test::Config;
 
 my $config = EG::Test::Config::parse;
-my $ua     = LWP::UserAgent->new(keep_alive => 5, env_proxy => 1);
+my $ua     = LWP::UserAgent->new(env_proxy => 1);
 
 test_robots_file();
 test_sitemap_index();

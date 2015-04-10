@@ -32,7 +32,7 @@ foreach my $division (keys %$nodes) {
   foreach my $dc (grep {!$filter_dc || $_ eq $filter_dc} @$dcs) {
     foreach my $node (grep {!$filter_node || $_ eq $filter_node} @$nodes) {
       
-      my $cmd = "prove $v tests/live/ :: http://ves-$dc-$node:$port --config $division --live_data_db_host=$dbs->{$dc}->{data} --live_user_db_host=$dbs->{$dc}->{user}";
+      my $cmd = "prove $v tests/multi_live/ :: http://ves-$dc-$node:$port --config $division --live_data_db_host=$dbs->{$dc}->{data} --live_user_db_host=$dbs->{$dc}->{user}";
       print "$cmd\n";
       print `$cmd`;
     
