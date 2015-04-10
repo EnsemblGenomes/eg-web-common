@@ -16,7 +16,7 @@ sub parse {
   die  "\n\nERROR: Please supply URL to test as the first argument\n\n" unless $url;  
   
   my $default     = _load_config_file('default');
-  my $user        = $user_config ? _load_config_file($user_config) : {};
+  my $user        = $config_file ? _load_config_file($config_file) : {};
 
   # merge configs
   my $config = { %$default, %$user, %$opts, url => $url };
