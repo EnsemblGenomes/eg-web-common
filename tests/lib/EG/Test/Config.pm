@@ -30,7 +30,6 @@ sub _parse_commandline_opts {
     config=s
     
     species=s 
-    division=s
     
     selenium_host=s 
     selenium_port=i 
