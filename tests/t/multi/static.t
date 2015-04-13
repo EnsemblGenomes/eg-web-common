@@ -5,9 +5,9 @@ use Data::Dumper;
 use LWP::UserAgent;
 
 use lib 'lib';
-use EG::Test::Config;
+use EGTest::Config;
 
-my $config = EG::Test::Config::parse;
+my $config = EGTest::Config::parse;
 my $ua     = LWP::UserAgent->new(env_proxy => 1);
 
 test_taxon_tree_data();

@@ -1,4 +1,4 @@
-package EG::Test::Config;
+package EGTest::Config;
 use strict;
 use warnings;
 use Getopt::Long;

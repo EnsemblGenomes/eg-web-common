@@ -4,9 +4,9 @@ use Test::More;
 use Data::Dumper;
 
 use lib 'lib';
-use EG::Test::Config;
+use EGTest::Config;
 
-my $config = EG::Test::Config::parse(required => 'live');
+my $config = EGTest::Config::parse(required => 'live');
 my $ua     = LWP::UserAgent->new(env_proxy => 1);
 
 test_status();

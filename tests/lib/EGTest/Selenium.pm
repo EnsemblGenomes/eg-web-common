@@ -1,4 +1,4 @@
-package EG::Test::Selenium;
+package EGTest::Selenium;
 use strict;
 use base 'Test::WWW::Selenium';
 use Test::More;
