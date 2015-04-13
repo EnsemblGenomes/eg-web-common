@@ -7,7 +7,7 @@ use LWP::UserAgent;
 use lib 'lib';
 use EG::Test::Config;
 
-my $config = EG::Test::Config::parse;
+my $config = EG::Test::Config::parse(required => 'live');
 my $ua     = LWP::UserAgent->new(env_proxy => 1);
 
 test_robots_file();

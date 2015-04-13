@@ -6,7 +6,7 @@ use lib 'lib';
 use EG::Test::Config;
 use EG::Test::Selenium;
 
-my $config = EG::Test::Config::parse(required => 'selenium');
+my $config = EG::Test::Config::parse(required => [qw(species selenium)]);
 my $sel    = EG::Test::Selenium->new_from_config($config);
 
 test_nav_links();

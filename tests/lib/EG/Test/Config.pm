@@ -5,42 +5,54 @@ use Getopt::Long;
 use LWP::UserAgent;
 use Data::Dumper;
 
+my @OPTIONS = qw(
+  config=s
+
+  species=s 
+  
+  selenium_host=s 
+  selenium_port=i 
+  selenium_browser=s 
+  selenium_timeout=i
+
+  live_url=s
+  live_data_db_host=s
+  live_user_db_host=s 
+);
+
 # Parse the config from file and command line args
 sub parse {
-   
-  my $opts        = _parse_commandline_opts();
-  my $config_file = delete $opts->{config};
-  my $url         = $ARGV[0];               
+  my %args = @_;
+  my $required = ref $args{required} eq 'ARRAY' ? $args{required} : [$args{required}];
 
-  #warn "\n\nWarning: you have not specified a config file using the --config param\n\n" unless $config_file;
-  die  "\n\nERROR: Please supply URL to test as the first argument\n\n" unless $url;  
+  my $opts = {};
+  GetOptions $opts, @OPTIONS;
   
-  my $default     = _load_config_file('default');
+  my $url         = $ARGV[0] || die "\nERROR: Please supply URL to test as the first argument\n\n";              
+  my $config_file = delete $opts->{config};  
+  my $default     = _load_config_file('_default');
   my $user        = $config_file ? _load_config_file($config_file) : {};
 
   # merge configs
   my $config = { %$default, %$user, %$opts, url => $url };
-  
+
+  # check for missing settings
+  my @missing = _check_missing_keys($config, $required);
+  die "\nERROR: Required config key(s) '" . join("', '", @missing) . "' not defined\n\n" if @missing; 
+
   return $config;
 }
 
-sub _parse_commandline_opts {
-  my $opts = {};
-  GetOptions $opts, qw(
-    config=s
-    
-    species=s 
-    
-    selenium_host=s 
-    selenium_port=i 
-    selenium_browser=s 
-    selenium_timeout=i
-
-    live_url=s
-    live_data_db_host=s
-    live_user_db_host=s 
-  );
-  return $opts;
+sub _check_missing_keys {
+  my ($config, $required) = @_;
+  my @missing;
+  foreach my $prefix (@$required) {
+    my @required_keys = map {s/=.$//r} grep {/^${prefix}/} @OPTIONS;
+    foreach my $key (@required_keys) { 
+      push @missing, $key unless defined $config->{$key};
+    }
+  }
+  return @missing;
 }
 
 sub _load_config_file {
