@@ -1,10 +1,10 @@
 package EGTest::Config;
 use strict;
 use warnings;
+use Config::Any::Perl;
 use Getopt::Long;
-use LWP::UserAgent;
-use Data::Dumper;
 
+# Valid config keys
 my @OPTIONS = qw(
   config=s
 
@@ -22,19 +22,27 @@ my @OPTIONS = qw(
 
 # Parse the config from file and command line args
 sub parse {
-  my %args = @_;
-  my $required = ref $args{required} eq 'ARRAY' ? $args{required} : [$args{required}];
+  my %args         = @_;
+  my $required     = ref $args{required} eq 'ARRAY' ? $args{required} : [$args{required}];
+  my $config       = {};
+  my $opts         = {};
+  my @config_files = ('_default');
 
-  my $opts = {};
+  # parse command line options
   GetOptions $opts, @OPTIONS;
-  
-  my $url         = $ARGV[0] || die "\nERROR: Please supply URL to test as the first argument\n\n";              
-  my $config_file = delete $opts->{config};  
-  my $default     = _load_config_file('_default');
-  my $user        = $config_file ? _load_config_file($config_file) : {};
 
-  # merge configs
-  my $config = { %$default, %$user, %$opts, url => $url };
+  # get test url from argv
+  my $url = $ARGV[0] || die "\nERROR: Please supply URL to test as the first argument\n\n"; 
+  
+  # check for user config file
+  my $user_config = delete $opts->{config};
+  push @config_files, $user_config if $user_config;              
+  
+  # load and merge config files
+  $config = { %$config, %{ Config::Any::Perl->load("configs/$_.conf") } } for @config_files;
+
+  # merge in the command line opts and url
+  $config = { %$config, %$opts, url => $url };
 
   # check for missing settings
   my @missing = _check_missing_keys($config, $required);
@@ -54,21 +62,5 @@ sub _check_missing_keys {
   }
   return @missing;
 }
-
-sub _load_config_file {
-  my $name = shift;
-  my $file = "configs/$name.conf";
-  my $config;
-
-  if (-f $file) {
-    $config = do ($file);
-    die "Failed parsing config file '$file': expected HashRef" unless ref $config eq 'HASH';
-  } else {
-    die "Cannot find config file '$file'"; 
-  }
-
-  return $config;
-}
-
 
 1;
