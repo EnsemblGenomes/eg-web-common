@@ -47,7 +47,6 @@ sub update_conf {
   $SiteDefs::OBJECT_TO_SCRIPT->{'Info'} = 'AltPage';
   
   $SiteDefs::ENSEMBL_BLASTSCRIPT       = $SiteDefs::ENSEMBL_SERVERROOT."/utils/parse_blast.pl";
-  $SiteDefs::ENSEMBL_ENASEARCH_ENABLED = 0;
   $SiteDefs::ENSEMBL_LOGINS            = 1;
   $SiteDefs::ENSEMBL_BLAST_BY_SEQID    = 0;
   
