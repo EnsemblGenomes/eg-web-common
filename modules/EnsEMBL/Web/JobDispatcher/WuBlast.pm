@@ -30,7 +30,7 @@ use URI;
 
 use EnsEMBL::Web::Exceptions;
 use EnsEMBL::Web::Utils::FileHandler qw(file_get_contents file_put_contents);
-use EnsEMBL::Web::Parsers::WuBlast;
+use EnsEMBL::Web::Parsers::Blast;
 
 use parent qw(EnsEMBL::Web::JobDispatcher);
 
@@ -44,7 +44,7 @@ sub dispatch_job {
   my $species    = $job_data->{'config'}{'species'};
   my $input_file = join '/', $job_data->{'work_dir'}, $job_data->{'sequence'}{'input_file'};
   my $sequence   = join '', file_get_contents($input_file);
-  my $stype      = {dna => 'dna', peptide => 'protein'}->{$job_data->{db_type}};
+  my $stype      = {dna => 'dna', peptide => 'protein'}->{$job_data->{query_type}};
 
 
   my $args = {
@@ -103,7 +103,7 @@ sub update_jobs {
       my $xml = $self->_get('result', [ $job_ref, 'xml' ])->content;
       file_put_contents($output_file . '.xml', $xml);
 
-      my $parser   = EnsEMBL::Web::Parsers::WuBlast->new($self->hub);
+      my $parser   = EnsEMBL::Web::Parsers::Blast->new($self->hub);
       my $hits     = $parser->parse_xml($xml, $job_data->{species}, $job_data->{source});
       my $orm_hits = [ map { {result_data => $_ || {}} } @$hits ];
       

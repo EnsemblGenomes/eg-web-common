@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package EnsEMBL::Web::Parsers::WuBlast;
+package EnsEMBL::Web::Parsers::Blast;
 
 use strict;
 use warnings;
@@ -51,7 +51,7 @@ sub parse_xml {
       my $tend   = $align->{matchSeq}->{end};
       my $tori   = $tstart < $tend ? 1 : -1;
       
-      my ($qframe, $tframe) = split /\s*\/\s*/, $align->{frame}; # E.g "+2 / -3"
+      my ($qframe, $tframe) = split /\s*\/\s*/, $align->{frame} || ''; # E.g "+2 / -3"
 
       my $result = {
         qid    => 'Query_1', #??
@@ -64,7 +64,7 @@ sub parse_xml {
         tend   => $tend,
         tori   => $tori,
         tframe => $tframe,
-        score  => $align->{identity},
+        score  => $align->{score},
         evalue => $align->{expectation},
         pident => $align->{identity},
         len    => length($align->{querySeq}->{content}),

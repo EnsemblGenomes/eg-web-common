@@ -18,45 +18,55 @@ limitations under the License.
 
 package EnsEMBL::Web::JobDispatcher::NcbiBlast;
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#  WORK IN PROGRESS - DO NOT USE (USE WU_BLAST INSTEAD)
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 use strict;
 use warnings;
 use Data::Dumper;
+use Scalar::Util qw(blessed);
 use HTTP::Request;
 use JSON qw(to_json);
 use LWP::UserAgent;
 use XML::Simple;
 use URI;
 
+use EnsEMBL::Web::Exceptions;
 use EnsEMBL::Web::Utils::FileHandler qw(file_get_contents file_put_contents);
+use EnsEMBL::Web::Parsers::Blast;
 
 use parent qw(EnsEMBL::Web::JobDispatcher);
 
 my $DEBUG = 1;
 
-sub _endpoint { 'http://www.ebi.ac.uk/Tools/services/rest/ncbiblast' };
-
 sub dispatch_job {
   my ($self, $ticket_type, $job_data) = @_;
+
+  $DEBUG && warn "DISPATCH JOB DATA " . Dumper $job_data;
 
   my $species    = $job_data->{'config'}{'species'};
   my $input_file = join '/', $job_data->{'work_dir'}, $job_data->{'sequence'}{'input_file'};
   my $sequence   = join '', file_get_contents($input_file);
+  my $stype      = {dna => 'dna', peptide => 'protein'}->{$job_data->{query_type}};
 
   my $args = {
     email    => $SiteDefs::ENSEMBL_SERVERADMIN,
     title    => $job_data->{ticket_name},
     program  => $job_data->{program},
-    stype    => $job_data->{db_type},
+    stype    => $stype,
     database => $job_data->{source_file},
     sequence => $sequence,
     %{ $job_data->{configs} }  
   };
   
-  my $job_ref = $self->_post('run', $args)->content;  
+  # fetch (retry on fail) 
+  my $job_ref;
+  
+  for (1..3) {
+    my $response = $self->_post('run', $args);
+    last if $response and $job_ref = $response->content;
+  }
+
+  if (!$job_ref) {
+    throw exception('InputError', 'There was a problem contacting the BLAST service, please try again later');
+  }
 
   $DEBUG && warn "CREATED JOB REF $job_ref";
 
@@ -80,42 +90,38 @@ sub update_jobs {
       $job->dispatcher_status('running') if $job->dispatcher_status ne 'running';
     
     } elsif ($status eq 'FINISHED') {
+
+      $DEBUG && warn "UPDATE JOB DATA " . Dumper $job_data;
+
+      # fetch and process the output
+      my $out_file = $job_data->{work_dir} . '/blast.out';
+      my $xml_file = $job_data->{work_dir} . '/blast.xml';
+
+      my $text = $self->_get('result', [ $job_ref, 'out' ])->content;
+      file_put_contents($out_file, $text);
+
+      my $xml = $self->_get('result', [ $job_ref, 'xml' ])->content;
+      file_put_contents($xml_file, $text);
+
+      my $parser   = EnsEMBL::Web::Parsers::Blast->new($self->hub);
+      my $hits     = $parser->parse_xml($xml, $job_data->{species}, $job_data->{source});
+      my $orm_hits = [ map { {result_data => $_ || {}} } @$hits ];
       
-warn Data::Dumper::Dumper $job_data;
-
-      # fetch and store the text output
-      #my $output_file = join '/', $job_data->{'work_dir'}, $job_data->{'config'}{'output_file'};
-      #my $text        = $self->_get('result', [ $job_ref, 'out' ])->content;
-      #file_put_contents($output_file, $text);
-
-      # fetch and parse the XML
-      #my $xml = $self->_get('result', [ $job_ref, 'xml' ])->content;
-           
-      #warn $self->hub->database($self->hub->species);
-
+      $job->result($orm_hits);
       $job->status('done');
       $job->dispatcher_status('done');      
-        
-      #$job->result([$hits]);
 
-    } elsif ($status =~ '^FAILED|NOT_FOUND$') {
+    } elsif ($status =~ '^FAILED|FAILURE$') {
       
-      # fatal
-      $job->status('awaiting_user_response');
-      $job->dispatcher_status('failed');
-
-      $job->job_message([{
-        'display_message' => $self->default_error_message,
-        'exception'       => {'exception' => $status},
-        'fatal'           => 1
-      }]);
+      my $error = $self->_get('result', [ $job_ref, 'error' ])->content; 
+      $self->_fatal_job($job, $error, $self->default_error_message);
+    
+    } elsif ($status eq 'NOT_FOUND') {
+      
+      $self->_fatal_job($job, $status, $self->default_error_message);
 
     } elsif ($status eq 'ERROR') {
       
-      # couldn't check status
-      #$job->status('awaiting_dispatcher_response');
-      #$job->dispatcher_status('running');
-
       $job->job_message([{
         'display_message' => 'Error while trying to check job status',
         'fatal'           => 0
@@ -127,7 +133,16 @@ warn Data::Dumper::Dumper $job_data;
   }
 }
 
-# webservice methods
+sub _fatal_job {
+  my ($self, $job, $exception, $message) = @_;
+  $job->status('awaiting_user_response');
+  $job->dispatcher_status('failed');
+  $job->job_message([{
+    'display_message' => $message,
+    'exception'       => {'exception' => $exception},
+    'fatal'           => 1
+  }]);
+}
 
 sub _post {
   my ($self, $method, $data) = @_;
@@ -138,11 +153,11 @@ sub _post {
 
   my $response = $self->_user_agent->post($uri, $data);
 
-  $DEBUG && warn "RESPONSE " . Dumper($response);
-
   unless ($response->is_success) {
+    $DEBUG && warn "RESPONSE " . Dumper($response);
     my ($error) = $response->content =~ m/<description>([^<]+)<\/description>/;   
-    die sprintf 'NCBI BLAST REST error: %s (%s)', $response->status_line, $error;
+    warn sprintf 'BLAST REST error: %s (%s)', $response->status_line, $error;
+    return undef;
   }
   return $response;
 }
@@ -156,8 +171,8 @@ sub _get {
   my $response = $self->_user_agent->get($uri);
   
   #debug("RESPONSE", Dumper($response));
-
-  die $response->status_line unless $response->is_success;
+  
+  #die $response->status_line unless $response->is_success;  ## don't die or it upsets the BLAST interface
   return $response;
 }
 
@@ -172,7 +187,7 @@ sub _user_agent {
 sub _uri {
   my ($self, $method, $args) = @_;
   $args ||= [];
-  return join '/', $self->_endpoint, $method, @$args;
+  return join '/', $SiteDefs::NCBIBLAST_REST_ENDPOINT, $method, @$args;
 }
 
 1;

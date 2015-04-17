@@ -51,9 +51,9 @@ sub update_conf {
   $SiteDefs::ENSEMBL_LOGINS            = 1;
   $SiteDefs::ENSEMBL_BLAST_BY_SEQID    = 0;
   
-  $SiteDefs::APACHE_BIN   = '/usr/sbin/httpd';
-  $SiteDefs::APACHE_DIR   = '/etc/httpd';
-  $SiteDefs::SAMTOOLS_DIR = '/nfs/public/rw/ensembl/samtools';
+  $SiteDefs::APACHE_BIN    = '/usr/sbin/httpd';
+  $SiteDefs::APACHE_DIR    = '/etc/httpd';
+  $SiteDefs::SAMTOOLS_DIR  = '/nfs/public/rw/ensembl/samtools';
   
   $SiteDefs::ENSEMBL_USERDB_HOST = 'localhost';
   $SiteDefs::ENSEMBL_USERDB_PORT = 3306;
@@ -75,7 +75,8 @@ sub update_conf {
   $SiteDefs::ENSEMBL_ORM_DATABASES->{'ticket'} = 'DATABASE_WEB_TOOLS';
 
   # Which dispatcher to be used for the jobs (provide the appropriate values in your plugins)
-  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'WuBlast' };
+  #$SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'WuBlast' };
+  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'NcbiBlast' };
 
   # Flag to enable/disable BLAST, VEP, Assembly Converter
   $SiteDefs::ENSEMBL_BLAST_ENABLED  = 1;
@@ -83,7 +84,9 @@ sub update_conf {
   $SiteDefs::ENSEMBL_MART_ENABLED   = 0;
   $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
 
-  $SiteDefs::WUBLAST_REST_ENDPOINT  = 'http://www.ebi.ac.uk/Tools/services/rest/wublast';
+  #$SiteDefs::WUBLAST_REST_ENDPOINT  = 'http://www.ebi.ac.uk/Tools/services/rest/wublast';
+  #$SiteDefs::NCBIBLAST_REST_ENDPOINT = 'http://www.ebi.ac.uk/Tools/services/rest/ncbiblast';
+  $SiteDefs::NCBIBLAST_REST_ENDPOINT = 'http://wwwdev.ebi.ac.uk/Tools/services/rest/ncbiblast';
 
   $SiteDefs::ENSEMBL_REST_URL     = 'http://rest.ensemblgenomes.org';
   $SiteDefs::ENSEMBL_REST_DOC_URL = 'http://ensemblgenomes.org/info/access/rest';
