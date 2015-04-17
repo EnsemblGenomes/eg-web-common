@@ -154,10 +154,8 @@ sub _sort_similarity_links {
       my $link_type = $fv_type eq 'OligoFeature' ? $fv_type    : "${fv_type}_$externalDB";
 
       my $k_url = $self->hub->url({
-# EG:ENSEMBL-2785 add this new URL so that the Transcript info appears at the top of the page for the Karyotype display with Locations tables
-        type   => 'Transcript',
-        action => 'Similarity/Locations',
-# EG:ENSEMBL-2785 end
+        type   => 'Location',
+        action => 'Genome',
         id     => $link_name,
         ftype  => $link_type
       });
