@@ -198,7 +198,7 @@ sub content {
   if ($about_text) {
     $html .= '<div class="column-wrapper"><div class="round-box tinted-box unbordered">'; 
     $html .= $about_text;
-    $html .= qq(<p><a href="/$species/Info/Annotation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More information and statistics</a></p>);
+    $html .= qq(<p><a href="/$species/Info/Annotation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />Genome Assembly Information and Statistics</a></p>);
     $html .= '</div></div>';
   }
 
@@ -320,7 +320,7 @@ sub _assembly_text {
     $assembly = $hub->get_ExtURL_link($current_assembly, 'ENA', $accession);
   }
   $html .= "<h2>Genome assembly: $assembly</h2>";
-  $html .= qq(<p><a href="/$species/Info/Annotation/#assembly" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More information and statistics</a></p>);
+  $html .= qq(<p><a href="/$species/Info/Annotation/#assembly" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />Information and Statistics</a></p>);
 
   # Link to FTP site
   if ($species_defs->ENSEMBL_FTP_URL) {
