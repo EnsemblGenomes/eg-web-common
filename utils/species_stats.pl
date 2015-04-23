@@ -364,29 +364,51 @@ foreach my $spp (@valid_spp) {
       my $row_count=0;
       my $rows_html = "";
       foreach my $cs (@coord_systems){
-        
-      # my @regions = @{$sa->fetch_all($cs->name)};
-      # my $count_regions = scalar @regions;
+
         my $csid = $cs->dbID;
         my ($count_regions) = &query( $db, "SELECT count(1) from seq_region where coord_system_id=$csid" ); 
       	print join(' : ', ($csid, $cs->name, $cs->version , $count_regions, "\n")) if ($DEBUG) ;
         my $regions_html;
-        if($count_regions < 1000){
-          my @regions = @{$sa->fetch_all($cs->name)};
+
+        my @regions;
+        my @all = @{$sa->fetch_all($cs->name)};
+
+        if ($cs->name eq 'contig'){
+          # select top level for contigs and filter fetch_all above by the names we get below
+          my $names = &fetchall_arrayref( $db, 
+            "SELECT sr.name FROM seq_region sr, seq_region_attrib sra, attrib_type `at`, coord_system cs
+              WHERE sr.seq_region_id = sra.seq_region_id
+              AND sra.attrib_type_id = at.attrib_type_id AND sr.coord_system_id = cs.coord_system_id
+              AND  cs.name='contig' && code='toplevel' && sr.coord_system_id=$csid"
+          );
+          foreach my $name (@$names) {
+            push @regions, grep {$_->seq_region_name eq $name->[0]} @all;
+          }
+
+          $count_regions = scalar @regions;
+
+        } else {
+          @regions = @all;
+        }
+
+        if($count_regions < 1000 && $count_regions > 0){
           $regions_html = regions_table($spp,$cs->name,\@regions);
         }
         else{
           $regions_html = sprintf("%d %s",$count_regions,($count_regions>1)?"sequences":"sequence");
         }
-        $row_count++;
-        $rows_html .= sprintf(qq{
-          %s 
-          <td class="data">%s</td>
-          <td class="value">%s</td>
-          </tr>},
-          stripe_row($row_count),
-          $cs->name,
-          $regions_html);
+
+        if ($count_regions > 0) {
+          $row_count++;
+          $rows_html .= sprintf(qq{
+            %s 
+            <td class="data">%s</td>
+            <td class="value">%s</td>
+            </tr>},
+            stripe_row($row_count),
+            $cs->name,
+            $regions_html);
+        }
       	printf("%s done\n", $cs->name) if ($DEBUG);
       }
       #EG - only print when there is a table to print
@@ -587,6 +609,14 @@ sub query { my( $db, $SQL ) = @_;
    my @Q = $sth->fetchrow_array();
    $sth->finish;
    return @Q;
+}
+
+sub fetchall_arrayref { my( $db, $SQL ) = @_;
+   my $sth = $db->dbc->prepare($SQL);
+   $sth->execute();
+   my $Q = $sth->fetchall_arrayref();
+   $sth->finish;
+   return $Q;
 }
 
 sub check_dir {
