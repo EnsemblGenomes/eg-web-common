@@ -154,6 +154,9 @@ sub variation_source {
   } else {
 ## EG
     #$source_link = $url ? qq{<a href="$url" class="constant">[View in $source]</a>} : "$source $version";
+    if ($url) {
+      $description = qq(<a href="$url">$description</a>);
+    }
 ##
   }
   
