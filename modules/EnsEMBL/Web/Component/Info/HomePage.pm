@@ -198,7 +198,7 @@ sub content {
   if ($about_text) {
     $html .= '<div class="column-wrapper"><div class="round-box tinted-box unbordered">'; 
     $html .= $about_text;
-    $html .= qq(<p><a href="/$species/Info/Annotation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />Genome assembly information and statistics</a></p>);
+    $html .= qq(<p><a href="/$species/Info/Annotation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More information and statistics</a></p>);
     $html .= '</div></div>';
   }
 
@@ -320,7 +320,7 @@ sub _assembly_text {
     $assembly = $hub->get_ExtURL_link($current_assembly, 'ENA', $accession);
   }
   $html .= "<h2>Genome assembly: $assembly</h2>";
-  $html .= qq(<p><a href="/$species/Info/Annotation/#assembly" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />Information and statistics</a></p>);
+  $html .= qq(<p><a href="/$species/Info/Annotation/#assembly" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More information and statistics</a></p>);
 
   # Link to FTP site
   if ($species_defs->ENSEMBL_FTP_URL) {
@@ -483,6 +483,16 @@ sub _compara_text {
     <a class="nodeco _ht" href="$tree_url" title="Go to pan-taxonomic protein families for $tree_text"><span>Pan-taxonomic protein families</span></a>
   ) if $self->has_pan_compara('Family');
 
+  my $compara_table = EnsEMBL::Web::Document::HTML::Compara->new($hub)->table($hub->species);
+
+  # EG synteny
+  if ($sample_data->{'SYNTENY_PARAM'} and $compara_table =~ /Syntenies/m) { # Lazy way to check for synteny
+    my $url = $species_defs->species_path . '/Location/Synteny?r=' . $sample_data->{'SYNTENY_PARAM'};
+    $html .= qq(
+      <a class="nodeco _ht" href="$url" title="Go to example syntenic region"><img src="${img_url}96/synteny.png" class="bordered" /><span>Synteny example</span></a>
+    )
+  }
+
   # /EG
   $html .= '</div>';
 
@@ -505,7 +515,7 @@ sub _compara_text {
       unless $self->is_bacteria;
   }
 
-  $html .= EnsEMBL::Web::Document::HTML::Compara->new($hub)->table($hub->species);
+  $html .= $compara_table;
 
   return $html;
 }
