@@ -125,7 +125,7 @@ sub buttons {
         function => 'PepSequence'.($cdb =~ /pan/ ? '_pan_compara' : ''), 
         _format  => 'Text'
       }),
-      caption => 'Download protein sequence alignments',
+      caption => 'Download protein sequences',
       class   => 'export',
       modal   => 0
     };
@@ -137,7 +137,7 @@ sub buttons {
         _format  => 'Text',
         seq      => 'cds'
       }),
-      caption => 'Download DNA sequence alignments',
+      caption => 'Download DNA sequences',
       class   => 'export',
       modal   => 0
     };
