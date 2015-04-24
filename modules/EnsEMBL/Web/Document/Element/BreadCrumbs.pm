@@ -32,7 +32,7 @@ sub content {
   my $tree        = $self->species_defs->STATIC_INFO;
   (my $pathstring = $ENV{'SCRIPT_NAME'}) =~ s/^\///; ## Remove leading slash
   my @path        = split '/', $pathstring;
-  my @breadcrumbs = qq{<a class="home" href="http://www.ensemblgenomes.org/info">Home</a>};
+  my @breadcrumbs = qq{<a class="home" href="/">Home</a>};
 
 
   if ($path[0] eq 'info') {
@@ -43,9 +43,7 @@ sub content {
     ## Top level link
     if ($path[1] eq 'index.html') {
       push @breadcrumbs, encode_entities($tree->{'_title'});
-    } else {
-      push @breadcrumbs, sprintf '<a href="http://www.ensemblgenomes.org/info">%s</a>', 'Documentation';
-    }
+    } 
 
     for (my $i = 1; $i < scalar @path; $i++) {
       $current_path .= $path[$i];
