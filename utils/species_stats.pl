@@ -253,6 +253,7 @@ foreach my $spp (@valid_spp) {
       'alt_shortnoncoding'  => 'Short non coding gene',
       'longnoncoding'       => 'Long non coding gene',
       'alt_longnoncoding'   => 'Long non coding gene',
+      'miscnoncoding'       => 'Misc non coding genes',
       'pseudogene'          => 'Pseudogene',
       'alt_pseudogene'      => 'Pseudogene',
       'transcript'          => 'Transcript',
@@ -260,7 +261,7 @@ foreach my $spp (@valid_spp) {
     );
 
     my %glossary          = $SD->multiX('ENSEMBL_GLOSSARY');
-    my @gene_keys = ('coding', 'shortnoncoding', 'longnoncoding', 'pseudogene', 'transcript');
+    my @gene_keys = ('coding', 'shortnoncoding', 'longnoncoding', 'miscnoncoding', 'pseudogene', 'transcript');
     my @alt_gene_keys = ('alt_coding', 'alt_shortnoncoding', 'alt_longnoncoding', 'alt_pseudogene', 'alt_transcript');
     my %title;
 
@@ -284,6 +285,11 @@ foreach my $spp (@valid_spp) {
       $title{'longnoncoding'} = $genome_container->get_attrib('lnoncoding_cnt')->name()
         || $genome_container->get_attrib('noncoding_cnt_l')->name() if $genome_container->get_lnoncoding_count();
       print STDERR "Non coding:$gene_stats{'longnoncoding'}\n" if $DEBUG;
+
+      ($gene_stats{'miscnoncoding'}) = $genome_container->get_mnoncoding_count() if $genome_container->get_mnoncoding_count();
+      $title{'miscnoncoding'} = $genome_container->get_attrib('noncoding_cnt_m')->name()
+        || $genome_container->get_attrib('noncoding_cnt_m')->name() if $genome_container->get_mnoncoding_count();
+      print STDERR "Non coding:$gene_stats{'miscnoncoding'}\n" if $DEBUG;
 
       ($alt_gene_stats{'alt_shortnoncoding'}) = $genome_container->get_alt_snoncoding_count() if $genome_container->get_alt_snoncoding_count();
       $title{'alt_shortnoncoding'} = $genome_container->get_attrib('snoncoding_acnt')->name() if $genome_container->get_alt_snoncoding_count();
@@ -512,15 +518,49 @@ foreach my $spp (@valid_spp) {
         );
         $rowcount = 0;
 
+        #coding
+        
+        $rowcount++;
+        $row = stripe_row($rowcount);
+        my ($num, $header, $term);
+        $term = $glossary_lookup{'coding'};
+        $header = $term ? qq(<span class="glossary_mouseover">$title{coding}<span class="floating_popup">$glossary{$term}</span></span>) : $title{coding};
+        $num = thousandify($gene_stats{coding});
+        print STATS qq($row
+              <td class="data">$header:</td>
+              <td class="value">$num</td>
+              </tr>
+            );
+
+        # noncoding header
+
+        if ( $gene_stats{'shortnoncoding'} || $gene_stats{'longnoncoding'} || $gene_stats{'miscnoncoding'}) {
+          my $noncoding= $gene_stats{'shortnoncoding'} if exists $gene_stats{'shortnoncoding'};
+          $noncoding +=  $gene_stats{'longnoncoding'} if exists $gene_stats{'longnoncoding'};
+          $noncoding += $gene_stats{'miscnoncoding'} if exists $gene_stats{'miscnoncoding'};
+          $header = qq(<b>Non coding genes</b>);
+          $rowcount++;
+          $row = stripe_row($rowcount);
+          $num = thousandify($noncoding);
+          print STATS qq($row
+              <td class="data">$header:</td>
+              <td class="value">$num</td>
+              </tr>
+            );
+        }
+
         for (@gene_keys) {
+          next if $_ eq 'coding';
           if ($gene_stats{$_}) {
             $gene_stats{$_} = thousandify($gene_stats{$_});
             $rowcount++;
             $row = stripe_row($rowcount);
             my $term = $glossary_lookup{$_};
+            my $shift ='';
+            $shift = "&nbsp;&nbsp;&nbsp;" if $_ =~ /noncoding_?(.*)$/;
             my $header = $term ? qq(<span class="glossary_mouseover">$title{$_}<span class="floating_popup">$glossary{$term}</span></span>) : $title{$_};
             print STATS qq($row
-              <td class="data">$header:</td>
+              <td class="data">$shift $header:</td>
               <td class="value">$gene_stats{$_}</td>
               </tr>
             );
@@ -561,18 +601,12 @@ foreach my $spp (@valid_spp) {
       }
     }
 
-    if($coordsys){
-      print STATS $b_coordsys;
-    }
-
-    $db->dbc->db_handle->disconnect; # prevent too many connections
-
-    # only use keys that we have titles for
+   # only use keys that we have titles for
     my @other_stats_keys = grep {$title{$_}} (keys %other_stats);
     if(@other_stats_keys){
 
       print STATS qq(
-        <h3>Other</h3>
+        <h3>Feature counts</h3>
         <table class="ss tint species-stats">
       );
       $rowcount = 0;
@@ -581,6 +615,7 @@ foreach my $spp (@valid_spp) {
         $other_stats{$key} = thousandify($other_stats{$key});
         $rowcount++;
         $row = stripe_row($rowcount);
+        $title{$key} =~ s/([\w']+)/\u\L$1/g;
         print STATS qq($row
           <td class="data">$title{$key}:</td>
           <td class="value">$other_stats{$key}</td>
@@ -591,6 +626,12 @@ foreach my $spp (@valid_spp) {
       print STATS '</table>';
     }
 
+    if($coordsys){
+      print STATS $b_coordsys;
+    }
+
+    $db->dbc->db_handle->disconnect; # prevent too many connections
+ 
     close(STATS);
   }
   print STDERR "...$spp done.\n";
