@@ -1,10 +1,10 @@
 <html>
 <head>
 <meta name="order" content="1" />
-<title>Ensembl Genomes Help </title>
+<title>Website Help </title>
 </head>
 <body>
-<h1>Ensembl Genomes Help</h1>
+<h1>Website Help</h1>
 <div class="column-wrapper">
   <div class="column-two">
     <div class="column-padding no-left-margin">
@@ -15,18 +15,26 @@
       <div class="plain-box">
         <img src="/img/help/new_help_button.png" style="border:1px solid #cccccc; width: auto;" class="float-right" alt="[screenshot showing help button]" title="Click on the e? button for context-sensitive help" />
         <h2 class="box-header">Looking for context-sensitive help?</h2>
+        <p><strong>Our help button has changed!</strong></p>
+        <p>Instead of the blue 'Help' button in the top right corner of each page, 
+        you will now find individual buttons next to most headings on the Location, Gene, 
+        Transcript and Variation pages.</p>
         <p style="line-height: 20px;">Click on the <img src="/i/16/info.png" style="vertical-align: middle; height:16px;width:16px" alt="(i)" /> button to get a pop-up help box
         containing a brief explanation of the page or image you're looking at.</p>
       </div>
       <div class="tinted-box">
-        <h2 class="box-header">Search our Help database</h2>
+        <h2 class="box-header">Search the documentation</h2>
 
-        [[SCRIPT::EnsEMBL::Web::Document::HTML::HelpSearch]]
+        <form name="inline-docsearch" method="get" action="/info/search/index.html">
+          <p>
+            <strong>Search for: </strong> <input name="q" style="width:200px" type="text">
+            <input type="submit" value="Go" class="fbutton submit">
+          </p>
+        </form>
 
         <h3>Search Tips</h3>
         <ul>
-          <li>Words shorter than 4 characters in length (eg SNP) are ignored.</li>
-          <li>Words that occur in more than 50% of the records are ignored.</li>
+          <li>Words shorter than 3 characters in length are ignored.</li>
           <li>Wildcard characters are not available.</li>
         </ul>
       </div>
@@ -34,6 +42,10 @@
   </div>
   <div class="column-two">
     <div class="column-padding no-right-margin">
+      <div class="plain-box">
+        <h2 class="box-header">FAQs</h2>
+        <p><a href="http://www.ensemblgenomes.org/info/faqs">Read frequently asked questions at ensemblgenomes.org</a></p>
+      </div>
       <div class="plain-box">
         <h2 class="box-header">Supported browsers</h2>
         <p>The following browsers are fully supported, i.e. all site features including JavaScript and CSS styles should work properly:</p>
@@ -43,7 +55,7 @@
           <li>Safari</li>
           <li>Chrome</li>
         </ul>
-        <p>We recommend <a href="http://www.mozilla.org/en-US/firefox/fx/" title="Get Firefox!">Firefox</a> for browsing Ensembl.</p>
+        <p>We recommend <a href="http://www.mozilla.org/products/firefox/" title="Get Firefox!">Firefox</a> for browsing Ensembl.</p>
         <h3>Other browsers</h3>
         <p>The following are not officially supported but should work with most or all of the site's current features:</p>
         <ul>
