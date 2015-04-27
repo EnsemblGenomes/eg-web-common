@@ -31,18 +31,19 @@ sub _get_NCBIBLAST_source_file {
   (my $type = lc $source_type) =~ s/_/\./;
 
   my $unit = $self->GENOMIC_UNIT;
+  my $path = $self->EBI_BLAST_DB_PREFIX || "ensemblgenomes/$unit";
   
   if ($unit eq 'bacteria') { # add collection prefix
     $species = join '/', ucfirst($self->get_config($species, 'SPECIES_DATASET')), $species;
   }
 
-  return sprintf 'ensemblgenomes/%s/%s.%s.%s', $unit, $species, $assembly, $type unless $type =~ /latestgp/;
+  return sprintf '%s/%s.%s.%s', $path, $species, $assembly, $type unless $type =~ /latestgp/;
 
   $type =~ s/latestgp(.*)/dna$1\.toplevel/;
   $type =~ s/.masked/_rm/;
   $type =~ s/.soft/_sm/;
 
-  return sprintf 'ensemblgenomes/%s/%s.%s.%s', $unit, $species, $assembly, $type;
+  return sprintf '%s/%s.%s.%s', $path, $species, $assembly, $type;
 }
 
 1;
