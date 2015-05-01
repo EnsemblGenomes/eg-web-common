@@ -48,9 +48,7 @@ sub _summarise_compara_db {
 
   $self->_summarise_generic($db_name, $dbh);
   
-## EG
-# added 
-# and ml.type not like "%HOMOEOLOGUES"
+## EG - exclude HOMOEOLOGUES
   # See if there are any intraspecies alignments (ie a self compara)
   my $intra_species_aref = $dbh->selectall_arrayref('
     select mls.species_set_id, mls.method_link_species_set_id, count(*) as count
@@ -65,7 +63,8 @@ sub _summarise_compara_db {
       group by mls.method_link_species_set_id, mls.method_link_id
       having count = 1
   ');
-  
+##
+
   my (%intra_species, %intra_species_constraints);
   $intra_species{$_->[0]}{$_->[1]} = 1 for @$intra_species_aref;
  
@@ -102,9 +101,7 @@ sub _summarise_compara_db {
     }
     
     $vega = 0 if $species eq 'Ailuropoda_melanoleuca';
-## EG : this has to be 1 for wheat
-    $vega = 0 if $species eq 'Triticum_aestivum';
-    
+ 
     if ($intra_species{$species_set_id}) {
       $intra_species_constraints{$species}{$_} = 1 for keys %{$intra_species{$species_set_id}};
     }
@@ -166,10 +163,7 @@ sub _summarise_compara_db {
   
   ## That's the end of the compara region munging!
 
-## EG
-# added 
-# and ml.type not like "%HOMOEOLOGUES"
-
+## EG - exclude HOMOEOLOGUES
   my $res_aref_2 = $dbh->selectall_arrayref(qq{
     select ml.type, gd.name, gd.name, count(*) as count
       from method_link_species_set as mls, method_link as ml, species_set as ss, genome_db as gd 
@@ -181,7 +175,8 @@ sub _summarise_compara_db {
       group by mls.method_link_species_set_id, mls.method_link_id
       having count = 1
   });
-  
+##
+
   push @$res_aref, $_ for @$res_aref_2;
   
   foreach my $row (@$res_aref) {
@@ -197,38 +192,22 @@ sub _summarise_compara_db {
   
   ###################################################################
   ## Section for colouring and colapsing/hidding genes per species in the GeneTree View
-  # 1. Only use the species_sets that have a genetree_display tag
   
-  $res_aref = $dbh->selectall_arrayref(q{SELECT species_set_id FROM species_set_tag WHERE tag = 'genetree_display'});
-  
-  foreach my $row (@$res_aref) {
-    # 2.1 For each set, get all the tags
-    my ($species_set_id) = @$row;
-    my $res_aref2 = $dbh->selectall_arrayref("SELECT tag, value FROM species_set_tag WHERE species_set_id = $species_set_id");
-    my $res;
-    
-    foreach my $row2 (@$res_aref2) {
-      my ($tag, $value) = @$row2;
-      $res->{$tag} = $value;
-    }
-    
-    my $name = $res->{'name'}; # 2.2 Get the name for this set (required)
-    
-    next unless $name; # Requires a name for the species_set
-    
-    # 2.3 Store the values
-    while (my ($key, $value) = each %$res) {
-      next if $key eq 'name';
-      $self->db_tree->{$db_name}{'SPECIES_SET'}{$name}{$key} = $value;
-    }
+  # The config for taxon-groups is in DEFAULTS.ini
+  # Here, we only need to add the "special" set of low-coverage species
+  $res_aref = $dbh->selectall_arrayref(q{SELECT genome_db_id FROM genome_db WHERE is_high_coverage = 0});
+  $self->db_tree->{$db_name}{'SPECIES_SET'}{'LOWCOVERAGE'} = [map {$_->[0]} @$res_aref];
 
-    # 3. Get the genome_db_ids for each set
-    $res_aref2 = $dbh->selectall_arrayref("SELECT genome_db_id FROM species_set WHERE species_set_id = $species_set_id");
-    
-    push @{$self->db_tree->{$db_name}{'SPECIES_SET'}{$name}{'genome_db_ids'}}, $_->[0] for @$res_aref2;
-  }
-  
   ## End section about colouring and colapsing/hidding gene in the GeneTree View
+  ###################################################################
+
+  ###################################################################
+  ## Cache MLSS for quick lookup in ImageConfig
+
+  $self->_build_compara_default_aligns($dbh,$self->db_tree->{$db_name});
+  $self->_build_compara_mlss($dbh,$self->db_tree->{$db_name});
+
+  ##
   ###################################################################
 
   ###################################################################
@@ -248,21 +227,16 @@ sub _summarise_compara_db {
   ###################################################################
   ## Section for storing the taxa properties
   
-  # Default name is the scientific name
-  $res_aref = $dbh->selectall_arrayref(qq(SELECT DISTINCT taxon_id, name FROM ncbi_taxa_name JOIN gene_tree_node_tag ON taxon_id=value WHERE tag='lost_taxon_id' AND name_class='scientific name'));
-  foreach my $row (@$res_aref) {
-    my ($taxon_id, $taxon_name) = @$row;
-    $self->db_tree->{$db_name}{'TAXON_NAME'}{$taxon_id} = $taxon_name;
-  }
+  # Default name is the name stored in species_tree_node: the glyphset will use it by default
 
-  # Better name is the ensembl alias
+  # But a better name is the ensembl alias
   $res_aref = $dbh->selectall_arrayref(qq(SELECT taxon_id, name FROM ncbi_taxa_name WHERE name_class='ensembl alias name'));
   foreach my $row (@$res_aref) {
     my ($taxon_id, $taxon_name) = @$row;
     $self->db_tree->{$db_name}{'TAXON_NAME'}{$taxon_id} = $taxon_name;
   }
 
-  # And the age of each ancestor
+  # And we need the age of each ancestor
   $res_aref = $dbh->selectall_arrayref(qq(SELECT taxon_id, name FROM ncbi_taxa_name WHERE name_class='ensembl timetree mya'));
   foreach my $row (@$res_aref) {
     my ($taxon_id, $taxon_mya) = @$row;
