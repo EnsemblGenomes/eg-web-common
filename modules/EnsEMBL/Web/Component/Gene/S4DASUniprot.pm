@@ -40,7 +40,7 @@ sub _filter_segments {
   return [values %$segments] if (values %$segments == 1);
   
   # get uniprot meta data
-  my $search = EBeyeSearch::REST->new(base_url => $SiteDefs::EBEYE_REST_ENDPOINT)
+  my $search = EBeyeSearch::REST->new(base_url => $SiteDefs::EBEYE_REST_ENDPOINT);
   my @meta;
   foreach my $accesion (keys %$segments) {
     my $hits = $search->get_results_as_hashes('uniprot', $accesion, 

@@ -127,7 +127,7 @@ sub get_results_as_hashes {
     if (ref $opts->{single_values} eq 'ARRAY') { 
       $hash{$_} = $hash{$_}->[0] for @{$opts->{single_values}}; 
     } elsif ($opts->{single_values}) {
-      $hash{$_} = $hash{$_} for keys %$hash; # all fields
+      $hash{$_} = $hash{$_} for keys %hash; # all fields
     }
 
     push @$hashes, \%hash;
