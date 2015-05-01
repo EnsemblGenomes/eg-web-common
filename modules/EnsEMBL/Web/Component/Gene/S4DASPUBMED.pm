@@ -19,7 +19,6 @@ limitations under the License.
 package EnsEMBL::Web::Component::Gene::S4DASPUBMED;
 
 use strict;
-use EBeyeSearch::EBeyeWSWrapper;
 use base qw(EnsEMBL::Web::Component::Gene::S4DAS);
 
 sub _filter_features {

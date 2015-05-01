@@ -18,7 +18,6 @@ limitations under the License.
 
 package EnsEMBL::Web::Component::Gene::S4DASLiterature;
 use strict;
-use EBeyeSearch::EBeyeWSWrapper;
 use base qw(EnsEMBL::Web::Component::Gene::S4DAS);
 use Data::Dumper;
 use URI::Escape;

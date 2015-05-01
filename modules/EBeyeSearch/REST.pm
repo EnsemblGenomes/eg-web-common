@@ -57,12 +57,12 @@ sub user_agent {
 }
 
 sub get { 
-  my ($self, $method, %args) = @_;
+  my ($self, $method, $args) = @_;
+  $args ||= {};
+  $args->{format} = 'json';
 
-  $args{format} = 'json';
-
-  my $uri = URI->new($self->{base_url . ($method ? "/$method" : ''));
-  $uri->query_param( $_, $args{$_} ) for keys %args;
+  my $uri = URI->new($self->base_url . ($method ? "/$method" : ''));
+  $uri->query_param( $_, $args->{$_} ) for keys %$args;
   
   my $can_accept;
   eval { $can_accept = HTTP::Message::decodable() };
@@ -79,54 +79,60 @@ sub get {
   return from_json($content);
 }
 
-#--- search methods ---
+#--- API methods ---
 
-sub get_domain_hierarchy {
-  my $self = shift;
-  my $json = $self->get();
-  return from_json($json);
+sub get_facet_values {
+  my ($self, $domain, $query, $facet_id, $args) = @_;
+  $args ||= {};
+  $args->{facetcount} ||= 10;
+  
+  my $results = $self->get($domain, {%$args, query => $query, size => 0});
+
+  my $facet_values = [];  
+  foreach my $facet (@{$results->{facets}}) {
+    if ($facet->{id} eq $facet_id) {
+      $facet_values = $facet->{facetValues};  
+      last;
+    }
+  }
+  return $facet_values;
 }
 
-sub get_domain_details {
-  my ($self, $domain) = @_;
-  return $self->get($domain);
+sub get_results {
+  my ($self, $domain, $query, $args) = @_;
+  $args ||= {};
+
+  return $self->get($domain, {%$args, query => $query});
 }
 
 sub get_results_count {
   my ($self, $domain, $query) = @_;
-  my $result = $self->get($domain, (query => $query, size => 0));
-  return $result->{hitCount} || 0;
+  
+  my $results = $self->get($domain, {query => $query, size => 0});
+  return $results->{hitCount} || 0;
 }
 
-sub get_results {
-  my ($self, $domain, $query, %args) = @_;
-  return $self->get($domain, (%args, query => $query));
-}
+sub get_results_as_hashes {
+  my ($self, $domain, $query, $args, $opts) = @_;
+  $args ||= {};
 
-sub get_faceted_results {
-  my ($self, $domain, $query, %args) = @_;
-  $args{facetcount} ||= 10;
-  return $self->get($domain, (%args, query => $query));
-}
+  my $results = $self->get($domain, {%$args, query => $query});
 
-sub get_entries {
-  my ($self, $domain, $entries, %args) = @_;
-  return $self->get("$domain/entry/$entries", %args);
-}
+  my $hashes = [];
+  foreach my $entry (@{$results->{entries}}) {
+    my %hash = map {$_ => $entry->{fields}->{$_}} keys %{$entry->{fields}};
+    
+    # by default all fields are returned as arrayrefs, but sometimes we know we will 
+    # only have a single value so we can reduce those fields to scalars
+    if (ref $opts->{single_values} eq 'ARRAY') { 
+      $hash{$_} = $hash{$_}->[0] for @{$opts->{single_values}}; 
+    } elsif ($opts->{single_values}) {
+      $hash{$_} = $hash{$_} for keys %$hash; # all fields
+    }
 
-sub get_domains_referenced_in_domain {
-  my ($self, $domain) = @_;
-  return $self->get("$domain/xref");
-}
-
-sub get_domains_referenced_in_entry {
-  my ($self, $domain, $entry) = @_;
-  return $self->get("$domain/entry/$entry/xref");
-}
-
-sub get_referenced_entries {
-  my ($self, $domain, $entries, $ref_domain, %args) = @_;
-  return $self->get("$domain/entry/$entries/xref/$ref_domain", %args);
+    push @$hashes, \%hash;
+  }
+  return $hashes;
 }
 
 1;

@@ -87,6 +87,8 @@ sub update_conf {
   #$SiteDefs::NCBIBLAST_REST_ENDPOINT = 'http://www.ebi.ac.uk/Tools/services/rest/ncbiblast';
   $SiteDefs::NCBIBLAST_REST_ENDPOINT = 'http://wwwdev.ebi.ac.uk/Tools/services/rest/ncbiblast';
 
+  $SiteDefs::EBEYE_REST_ENDPOINT     = 'http://www.ebi.ac.uk/ebisearch/ws/rest';
+
   $SiteDefs::ENSEMBL_REST_URL     = 'http://rest.ensemblgenomes.org';
   $SiteDefs::ENSEMBL_REST_DOC_URL = 'http://ensemblgenomes.org/info/access/rest';
 }
