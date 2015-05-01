@@ -27,10 +27,6 @@ use Data::Dumper;
 
 use previous qw(munge_config_tree _summarise_generic);
 
-## EG - don't pack blast configs - instead generate on the fly, see E::W::SpeciesDefs::get_blast_datasources
-sub _configure_blast {} 
-##
-
 sub munge_config_tree {
   my $self = shift;
   $self->PREV::munge_config_tree(@_);
