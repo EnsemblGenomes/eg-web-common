@@ -19,7 +19,7 @@ limitations under the License.
 package EnsEMBL::Web::Component::Gene::S4DASUniprot;
 
 use strict;
-use EBeyeSearch::EBeyeWSWrapper;
+use EBeyeSearch::REST;
 use base qw(EnsEMBL::Web::Component::Gene::S4DAS);
 
 # given segment hashref, return filtered segments arrayref
@@ -40,10 +40,17 @@ sub _filter_segments {
   return [values %$segments] if (values %$segments == 1);
   
   # get uniprot meta data
-  my $ws = EBeyeSearch::EBeyeWSWrapper->new({endpoint => $species_defs->S4DAS_EBEYE_ENDPOINT});
+  my $search = EBeyeSearch::REST->new(base_url => $SiteDefs::EBEYE_REST_ENDPOINT);
   my @meta;
   foreach my $accesion (keys %$segments) {
-    my $hits = $ws->getResultsAsHashArray('uniprot', $accesion, ['status', 'sequence_length'], 0, 10); 
+    my $hits = $search->get_results_as_hashes('uniprot', $accesion, 
+      {
+        fields => 'status,sequence_length', 
+        start => 0, 
+        size => 10
+      }, 
+      { single_values => 1 }
+    ); 
     my $first_hit = shift @$hits;
     push @meta, {accession => $accesion, status => $first_hit->{status}, sequence_length => $first_hit->{sequence_length}} 
   }

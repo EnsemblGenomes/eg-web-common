@@ -24,8 +24,8 @@ use Data::Dumper;
 sub update_conf {
   map {delete($SiteDefs::__species_aliases{$_}) } keys %SiteDefs::__species_aliases;
   
-  $SiteDefs::SITE_RELEASE_VERSION = 26;
-  $SiteDefs::SITE_RELEASE_DATE = 'March 2015';
+  $SiteDefs::SITE_RELEASE_VERSION = 27;
+  $SiteDefs::SITE_RELEASE_DATE = 'May 2015';
   
   $SiteDefs::SITE_MISSION = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
   
@@ -47,13 +47,12 @@ sub update_conf {
   $SiteDefs::OBJECT_TO_SCRIPT->{'Info'} = 'AltPage';
   
   $SiteDefs::ENSEMBL_BLASTSCRIPT       = $SiteDefs::ENSEMBL_SERVERROOT."/utils/parse_blast.pl";
-  $SiteDefs::ENSEMBL_ENASEARCH_ENABLED = 0;
   $SiteDefs::ENSEMBL_LOGINS            = 1;
   $SiteDefs::ENSEMBL_BLAST_BY_SEQID    = 0;
   
-  $SiteDefs::APACHE_BIN   = '/usr/sbin/httpd';
-  $SiteDefs::APACHE_DIR   = '/etc/httpd';
-  $SiteDefs::SAMTOOLS_DIR = '/nfs/public/rw/ensembl/samtools';
+  $SiteDefs::APACHE_BIN    = '/usr/sbin/httpd';
+  $SiteDefs::APACHE_DIR    = '/etc/httpd';
+  $SiteDefs::SAMTOOLS_DIR  = '/nfs/public/rw/ensembl/samtools';
   
   $SiteDefs::ENSEMBL_USERDB_HOST = 'localhost';
   $SiteDefs::ENSEMBL_USERDB_PORT = 3306;
@@ -75,7 +74,8 @@ sub update_conf {
   $SiteDefs::ENSEMBL_ORM_DATABASES->{'ticket'} = 'DATABASE_WEB_TOOLS';
 
   # Which dispatcher to be used for the jobs (provide the appropriate values in your plugins)
-  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'WuBlast' };
+  #$SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'WuBlast' };
+  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'NcbiBlast' };
 
   # Flag to enable/disable BLAST, VEP, Assembly Converter
   $SiteDefs::ENSEMBL_BLAST_ENABLED  = 1;
@@ -83,7 +83,11 @@ sub update_conf {
   $SiteDefs::ENSEMBL_MART_ENABLED   = 0;
   $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
 
-  $SiteDefs::WUBLAST_REST_ENDPOINT  = 'http://www.ebi.ac.uk/Tools/services/rest/wublast';
+  #$SiteDefs::WUBLAST_REST_ENDPOINT  = 'http://www.ebi.ac.uk/Tools/services/rest/wublast';
+  #$SiteDefs::NCBIBLAST_REST_ENDPOINT = 'http://www.ebi.ac.uk/Tools/services/rest/ncbiblast';
+  $SiteDefs::NCBIBLAST_REST_ENDPOINT = 'http://wwwdev.ebi.ac.uk/Tools/services/rest/ncbiblast';
+
+  $SiteDefs::EBEYE_REST_ENDPOINT     = 'http://www.ebi.ac.uk/ebisearch/ws/rest';
 
   $SiteDefs::ENSEMBL_REST_URL     = 'http://rest.ensemblgenomes.org';
   $SiteDefs::ENSEMBL_REST_DOC_URL = 'http://ensemblgenomes.org/info/access/rest';

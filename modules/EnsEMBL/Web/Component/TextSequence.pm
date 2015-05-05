@@ -23,31 +23,6 @@ use warnings;
 
 use previous qw(buttons);
 
-sub buttons {
-  my $self         = shift;
-  my $hub          = $self->hub;
-  my $species_defs = $hub->species_defs;
-  my @buttons      = $self->PREV::buttons(@_);
-
-  my $show_seq_search = $species_defs->ENSEMBL_ENASEARCH_ENABLED && $hub->type ne 'Tools' && $hub->action !~ /Align/;
-
-  if ($self->can('blast_options') and my $options = $self->blast_options) {
-    warn $self;
-    warn "NO BUTTON " . $options->{no_button};
-    $show_seq_search = 0 if $options->{no_button};
-  }
-
-  if ($show_seq_search) {
-    push @buttons, {
-      'caption'   => 'Search Ensembl Genomes with this sequence',
-      'url'       => '/Multi/enasearch',
-      'class'     => 'find hidden _enasearch_button'
-    };
-  }
-
-  return @buttons;
-}
-
 sub build_sequence {
   my ($self, $sequence, $config, $exclude_key) = @_;
   my $line_numbers   = $config->{'line_numbers'};

@@ -32,6 +32,7 @@ sub content {
       <a href="http://www.ebi.ac.uk/Information/Privacy.html">Privacy</a> | 
       <a href="http://www.ensemblgenomes.org/info/about/cookies">Cookies</a> | 
       <a href="/info/website/help/index.html">Help</a> 
+      <br />&nbsp;
     </div>) 
   ;
 }

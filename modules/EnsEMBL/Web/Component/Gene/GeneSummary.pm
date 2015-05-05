@@ -76,7 +76,7 @@ sub content {
   if (scalar @Uniprot) {
     my %temp = map { $_->primary_id, 1 } @Uniprot;
     @Uniprot = sort keys %temp;
-    $table->add_row('UniprotKB', sprintf('<p>This gene has proteins that correspond to the following Uniprot identifiers: %s</p>', join ', ', map $hub->get_ExtURL_link($_, 'Uniprot/SWISSPROT', $_), @Uniprot));
+    $table->add_row('UniProtKB', sprintf('<p>This gene has proteins that correspond to the following UniProtKB identifiers: %s</p>', join ', ', map $hub->get_ExtURL_link($_, 'Uniprot/SWISSPROT', $_), @Uniprot));
   }
 
   ## add RefSeq match info where appropriate
@@ -237,7 +237,7 @@ sub content {
 
   eval {
     # add prediction method
-    my $label = ($db eq 'vega' || $site_type eq 'Vega' ? 'Curation' : 'Prediction') . ' Method';
+    my $label = ($db eq 'vega' || $site_type eq 'Vega' ? 'Curation' : 'Annotation') . ' Method';
     my $text  = "<p>No $label defined in database</p>";
     my $o     = $object->Obj;
 
