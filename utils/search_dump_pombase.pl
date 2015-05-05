@@ -390,7 +390,7 @@ sub dumpGene {
            FROM (object_xref AS ox, xref AS x, external_db AS ed) 
            LEFT JOIN external_synonym AS es ON es.xref_id = x.xref_id
            WHERE ox.ensembl_object_type = '$type' AND ox.xref_id = x.xref_id AND x.external_db_id = ed.external_db_id
-             AND ed.db_name NOT IN ('PomBase_Ortholog', 'PomBase_GO_AnnotationExtensions', 'PomBase_Interaction_GENETIC', 'PomBase_Interaction_PHYSICAL')"
+             AND ed.db_name NOT IN ('PomBase_GO_AnnotationExtensions', 'PomBase_Interaction_GENETIC', 'PomBase_Interaction_PHYSICAL')"
         );
         
         foreach (@$xrefs, @$object_xrefs) {
