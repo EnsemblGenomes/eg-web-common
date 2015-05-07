@@ -79,7 +79,7 @@ sub process {
     $session_data->{'md5'}      = $temp_file->md5;
     $session_data->{'nearest'}  = $nearest;
     $session_data->{'assembly'} = $species_defs->get_config($species, 'ASSEMBLY_NAME');
-    $session_data->{'name'} = 'Data';
+    $session_data->{'name'} = $hub->param('name') ? $hub->param('name') : 'Data';
     $session_data->{'file'} = 'user_upload/'.$temp_file->filename;
     $session_data->{'no_attach'} = 0;
 

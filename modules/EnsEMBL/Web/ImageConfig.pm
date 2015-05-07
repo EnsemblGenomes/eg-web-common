@@ -630,7 +630,7 @@ sub load_user_tracks {
         caption     => $entry->{'name'},
         renderers   => $renderers,
         description => 'Data that has been temporarily uploaded to the web server.',
-        display     => 'off',
+        display     => 'normal', # turn on just uploaded user track by default ensembl-2124
         strand      => $strand,
       }));
     }
