@@ -18,7 +18,7 @@ limitations under the License.
 
 package EnsEMBL::Web::SpeciesDefs;
 
-use strict;
+#use strict;
 use warnings;
 
 sub _get_WUBLAST_source_file { shift->_get_NCBIBLAST_source_file(@_) }
@@ -45,5 +45,98 @@ sub _get_NCBIBLAST_source_file {
 
   return sprintf '%s/%s.%s.%s', $path, $species, $assembly, $type;
 }
+
+#------------------------------------------------------------------------------
+# MULTI SPECIES
+#------------------------------------------------------------------------------
+
+sub _parse {
+  ### Does the actual parsing of .ini files
+  ### (1) Open up the DEFAULTS.ini file(s)
+  ### Foreach species open up all {species}.ini file(s)
+  ###  merge in content of defaults
+  ###  load data from db.packed file
+  ###  make other manipulations as required
+  ### Repeat for MULTI.ini
+  ### Returns: boolean
+
+  my $self = shift; 
+  $CONF->{'_storage'} = {};
+
+  $self->_info_log('Parser', 'Starting to parse tree');
+
+  my $tree          = {};
+  my $db_tree       = {};
+  my $das_tree      = {};
+  my $config_packer = EnsEMBL::Web::ConfigPacker->new($tree, $db_tree, $das_tree);
+  
+  $self->_info_line('Parser', 'Child objects attached');
+
+  # Parse the web tree to create the static content site map
+  $tree->{'STATIC_INFO'} = $self->_load_in_webtree;
+  ## Parse species directories for static content
+  $tree->{'SPECIES_INFO'} = $self->_load_in_species_pages;
+  
+  $self->_info_line('Filesystem', 'Trawled web tree');
+  
+  $self->_info_log('Parser', 'Parsing ini files and munging dbs');
+  
+  # Grab default settings first and store in defaults
+  my $defaults = $self->_read_in_ini_file('DEFAULTS', {});
+  $self->_info_line('Parsing', 'DEFAULTS ini file');
+  
+  # Loop for each species exported from SiteDefs
+  # grab the contents of the ini file AND
+  # IF  the DB/DAS packed files exist expand them
+  # o/w attach the species databases/parse the DAS registry, 
+  # load the data and store the DB/DAS packed files
+  foreach my $species (@$SiteDefs::ENSEMBL_DATASETS, 'MULTI') {
+    $config_packer->species($species);
+    
+    $self->process_ini_files($species, 'db', $config_packer, $defaults);
+    $self->_merge_db_tree($tree, $db_tree, $species);
+    
+    if ($species ne 'MULTI') {
+      $self->process_ini_files($species, 'das', $config_packer, $defaults);
+      $self->_merge_db_tree($tree, $das_tree, $species);
+    }
+  }
+  
+  $self->_info_log('Parser', 'Post processing ini files');
+   
+  # Loop over each tree and make further manipulations
+  foreach my $species (@$SiteDefs::ENSEMBL_DATASETS, 'MULTI') {
+    $config_packer->species($species);
+    $config_packer->munge('config_tree');
+    $self->_info_line('munging', "$species config");
+  }
+
+## EG MULTI
+  foreach my $db (@$SiteDefs::ENSEMBL_DATASETS ) {
+    my @species = map {ucfirst} @{$tree->{$db}->{DB_SPECIES}};
+    my $species_lookup = { map {$_ => 1} @species };
+
+    foreach my $sp (@species) {
+        $self->_merge_species_tree( $tree->{$sp}, $tree->{$db}, $species_lookup);
+    }
+  }
+##  
+
+  $CONF->{'_storage'} = $tree; # Store the tree
+}
+
+## EG MULTI
+sub _merge_species_tree {
+  my ($self, $a, $b, $species_lookup) = @_;
+
+  foreach my $key (keys %$b) {
+## EG - don't bloat the configs with references to all the other speices in this dataset    
+      next if $species_lookup->{$key}; 
+##      
+      $a->{$key} = $b->{$key} unless exists $a->{$key};
+  }
+}
+##
+
 
 1;

@@ -33,6 +33,60 @@ sub munge_config_tree {
   $self->_configure_external_resources;
 }
 
+## EG MULTI
+sub _summarise_generic {
+  my( $self, $db_name, $dbh ) = @_;
+
+  my $t_aref = $dbh->selectall_arrayref( 'show table status' );
+#---------- Table existance and row counts
+  foreach my $row ( @$t_aref ) {
+    $self->db_details($db_name)->{'tables'}{$row->[0]}{'rows'} = $row->[4];
+  }
+#---------- Meta coord system table...
+  if( $self->_table_exists( $db_name, 'meta_coord' )) {
+    $t_aref = $dbh->selectall_arrayref(
+      'select table_name,max_length
+         from meta_coord'
+    );
+    foreach my $row ( @$t_aref ) {
+      $self->db_details($db_name)->{'tables'}{$row->[0]}{'coord_systems'}{$row->[1]}=$row->[2];
+    }
+  }
+#---------- Meta table (everything except patches)
+## Needs tweaking to work with new ensembl_ontology_xx db, which has no species_id in meta table
+  if( $self->_table_exists( $db_name, 'meta' ) ) {
+    my $hash = {};
+
+## EG MULTI
+# With multi species DB there is no way to define the list of chromosomes for the karyotype in the ini file
+# The idea is the people who produce the DB can define the lists in the meta table using region.toplevel met key
+# In case there is no such definition of the karyotype - we just create the lists of toplevel regions 
+    if( $db_name =~ /CORE/) {
+        my $t_aref = $dbh->selectall_arrayref(
+                qq{SELECT cs.species_id, s.name FROM seq_region s, coord_system cs
+WHERE s.coord_system_id = cs.coord_system_id and cs.attrib = 'default_version' and cs.name in ('plasmid', 'chromosome')
+ORDER by cs.species_id, s.seq_region_id}
+                );
+
+        foreach my $row ( @$t_aref ) {
+            push @{$hash->{$row->[0]}{'region.toplevel'}}, $row->[1];
+        }
+    }
+##
+    $t_aref  = $dbh->selectall_arrayref(
+      'select meta_key,meta_value,meta_id, species_id
+         from meta
+        where meta_key != "patch"
+        order by meta_key, meta_id'
+    );
+
+    foreach my $r( @$t_aref) {
+      push @{ $hash->{$r->[3]+0}{$r->[0]}}, $r->[1];
+    }
+    $self->db_details($db_name)->{'meta_info'} = $hash;
+  }
+}
+
 ## EG : need to exclude HOMOEOLOGUES as well as PARALOGUES otherwise too many method link species sets that prevents web site from starting
 sub _summarise_compara_db {
   my ($self, $code, $db_name) = @_;
@@ -245,6 +299,8 @@ sub _summarise_compara_db {
   $dbh->disconnect;
 }
 
+## EG MULTI
+# note: for MULTI need to use $self->tree($species)->{} instead of $self->tree->{$species}->
 # To make use of the new meta key species.biomart_dataset
 sub _munge_meta {
   my $self = shift;
@@ -304,6 +360,7 @@ sub _munge_meta {
 ## EG do not use species url    
    # my $species = $meta_hash->{'species.url'}[0] || ucfirst $meta_hash->{'species.production_name'}[0]; 
    my $species = ucfirst $meta_hash->{'species.production_name'}[0];
+   warn "MUNGE META $species_id :: $species";
 ##
     my $bio_name = $meta_hash->{'species.scientific_name'}[0];
     
@@ -315,11 +372,11 @@ sub _munge_meta {
 
       ## Set version of assembly name that we can use where space is limited 
       if ($meta_key eq 'assembly.name') {
-        $self->tree->{$species}{'ASSEMBLY_SHORT_NAME'} = (length($value) > 16)
+        $self->tree($species)->{'ASSEMBLY_SHORT_NAME'} = (length($value) > 16)
                   ? $self->db_tree->{'ASSEMBLY_VERSION'} : $value;
       }
 
-      $self->tree->{$species}{$key} = $value;
+      $self->tree($species)->{$key} = $value;
     }
 
     ## Do species group
@@ -328,8 +385,8 @@ sub _munge_meta {
     if ($taxonomy && scalar(@$taxonomy)) {
       my %valid_taxa = map {$_ => 1} @{ $self->tree->{'TAXON_ORDER'} };
       my @matched_groups = grep {$valid_taxa{$_}} @$taxonomy;
-      $self->tree->{$species}{'SPECIES_GROUP'} = $matched_groups[0] if @matched_groups;
-      $self->tree->{$species}{'SPECIES_GROUP_HIERARCHY'} = \@matched_groups;
+      $self->tree($species)->{'SPECIES_GROUP'} = $matched_groups[0] if @matched_groups;
+      $self->tree($species)->{'SPECIES_GROUP_HIERARCHY'} = \@matched_groups;
     }
 
     ## create lookup hash for species aliases
@@ -338,39 +395,39 @@ sub _munge_meta {
     }
 
     ## Backwards compatibility
-    $self->tree->{$species}{'SPECIES_BIO_NAME'}  = $bio_name;
+    $self->tree($species)->{'SPECIES_BIO_NAME'}  = $bio_name;
     ## Used mainly in <head> links
-    ($self->tree->{$species}{'SPECIES_BIO_SHORT'} = $bio_name) =~ s/^([A-Z])[a-z]+_([a-z]+)$/$1.$2/;
-    
-    if ($self->tree->{'ENSEMBL_SPECIES'}) {
+    ($self->tree($species)->{'SPECIES_BIO_SHORT'} = $bio_name) =~ s/^([A-Z])[a-z]+_([a-z]+)$/$1.$2/;
+
+    #if ($self->tree->{'ENSEMBL_SPECIES'}) {
       push @{$self->tree->{'DB_SPECIES'}}, $species;
-    } else {
-      $self->tree->{'DB_SPECIES'} = [ $species ];
-    }
+    #} else {
+    #  $self->tree->{'DB_SPECIES'} = [ $species ];
+    #}
 
     
-    $self->tree->{$species}{'SPECIES_META_ID'} = $species_id;
+    $self->tree($species)->{'SPECIES_META_ID'} = $species_id;
 
     ## Munge genebuild info
     my @A = split '-', $meta_hash->{'genebuild.start_date'}[0];
     
-    $self->tree->{$species}{'GENEBUILD_START'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
-    $self->tree->{$species}{'GENEBUILD_BY'}    = $A[2];
+    $self->tree($species)->{'GENEBUILD_START'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
+    $self->tree($species)->{'GENEBUILD_BY'}    = $A[2];
 
     @A = split '-', $meta_hash->{'genebuild.initial_release_date'}[0];
     
-    $self->tree->{$species}{'GENEBUILD_RELEASE'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
+    $self->tree($species)->{'GENEBUILD_RELEASE'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
     
     @A = split '-', $meta_hash->{'genebuild.last_geneset_update'}[0];
 
-    $self->tree->{$species}{'GENEBUILD_LATEST'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
+    $self->tree($species)->{'GENEBUILD_LATEST'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
     
     @A = split '-', $meta_hash->{'assembly.date'}[0];
     
-    $self->tree->{$species}{'ASSEMBLY_DATE'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
+    $self->tree($species)->{'ASSEMBLY_DATE'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
     
 
-    $self->tree->{$species}{'HAVANA_DATAFREEZE_DATE'} = $meta_hash->{'genebuild.havana_datafreeze_date'}[0];
+    $self->tree($species)->{'HAVANA_DATAFREEZE_DATE'} = $meta_hash->{'genebuild.havana_datafreeze_date'}[0];
 
     # check if there are sample search entries defined in meta table ( the case with Ensembl Genomes)
     # they can be overwritten at a later stage  via INI files
@@ -390,13 +447,53 @@ sub _munge_meta {
       } 
     }
 
-    $self->tree->{$species}{'SAMPLE_DATA'} = $shash if scalar keys %$shash;
+    $self->tree($species)->{'SAMPLE_DATA'} = $shash if scalar keys %$shash;
 
     # check if the karyotype/list of toplevel regions ( normally chroosomes) is defined in meta table
     @{$self->tree($species)->{'TOPLEVEL_REGIONS'}} = @{$meta_hash->{'regions.toplevel'}} if $meta_hash->{'regions.toplevel'};
+    @{$self->tree($species)->{'ENSEMBL_CHROMOSOMES'}} = ();                                                                      #nickl: need to explicitly define as empty array by default otherwise SpeciesDefs looks for a value at collection level
+    @{$self->tree($species)->{'ENSEMBL_CHROMOSOMES'}} = @{$meta_hash->{'region.toplevel'}} if $meta_hash->{'region.toplevel'};
+
+    #If the top level regions are other than palsmid or chromosome, ENSEMBL_CHROMOSOMES is set to an empty array
+    #in order to disable the 'Karyotype' and 'Chromosome summary' links in the menu tree
+    if ($meta_hash->{'region.toplevel'}) {
+
+      my $db_name = 'DATABASE_CORE';
+      my $dbh     = $self->db_connect($db_name);
+
+      #it's sufficient to check just the first elem, assuming the list doesn't contain a mixture of plasmid/chromosome and other than plasmid/chromosome regions:
+      my $sname  = $meta_hash->{'region.toplevel'}->[0];
+      my $t_aref = $dbh->selectall_arrayref(
+        "select       
+        coord_system.name, 
+        seq_region.name
+        from 
+        meta, 
+        coord_system, 
+        seq_region, 
+        seq_region_attrib
+        where 
+        coord_system.coord_system_id = seq_region.coord_system_id
+        and seq_region_attrib.seq_region_id = seq_region.seq_region_id
+        and seq_region_attrib.attrib_type_id =  (SELECT attrib_type_id FROM attrib_type where name = 'Top Level') 
+        and meta.species_id=coord_system.species_id 
+        and meta.meta_key = 'species.production_name'
+        and meta.meta_value = '" . $species . "'
+        and seq_region.name = '" . $sname . "'
+        and coord_system.name not in ('plasmid', 'chromosome')"
+      ) || [];
+
+      if (@$t_aref) {
+        @{$self->tree($species)->{'ENSEMBL_CHROMOSOMES'}} = ();
+      }
+    }
+
+
+    (my $group_name = $self->{'_species'}) =~ s/_collection//;
+    $self->tree($species)->{'SPECIES_DATASET'} = $group_name;
     
     # convenience flag to determine if species is polyploidy
-    $self->tree->{$species}{POLYPLOIDY} = ($self->tree->{$species}{PLOIDY} > 2);
+    $self->tree($species)->{POLYPLOIDY} = ($self->tree($species)->{PLOIDY} > 2);
   }
 }
 
@@ -453,7 +550,7 @@ sub _configure_external_resources {
   my $species = $self->species;
 
   my $registry = $self->tree->{'FILE_REGISTRY_URL'} || ( warn "No FILE_REGISTRY_URL in config tree" && return );
-  my $taxid = $self->tree->{$species}->{'TAXONOMY_ID'};
+  my $taxid = $self->tree($species)->{'TAXONOMY_ID'};
 
 #  warn " Configure files for $species ($taxid)...";
 
