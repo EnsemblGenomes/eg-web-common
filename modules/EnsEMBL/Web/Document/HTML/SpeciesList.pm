@@ -22,11 +22,19 @@ use strict;
 use previous qw(render);
 
 
-## /info/about/species.html  -->  /species.html
 sub render {
   my $self = shift;
-  my $html = $self->PREV::render(@_);
-  $html =~ s/\/info\/about\/species\.html/\/species\.html/m;
+  
+  my $html;
+
+  if ($SiteDefs::LARGE_SPECIES_SET) {
+    $html = '<div><h3>All genomes</h3><p><a href="/species.html">View full list of all Ensembl Protists species</a></p></div>';
+  } else {
+    ## /info/about/species.html  -->  /species.html
+    $html = $self->PREV::render(@_);
+    $html =~ s/\/info\/about\/species\.html/\/species\.html/m;
+  }
+
   return $html;
 }
 

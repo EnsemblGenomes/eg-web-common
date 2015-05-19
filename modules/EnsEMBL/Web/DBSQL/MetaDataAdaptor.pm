@@ -26,10 +26,9 @@ use Bio::EnsEMBL::DBSQL::DBConnection;
 use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
 
 sub new {
-  my ($class, $args) = @_;
+  my ($class, $hub) = @_;
 
-  # use DATABASE_METADATA if passed a hub object
-  my $db = ref $args eq 'EnsEMBL::Web::Hub' ? $args->species_defs->multidb->{'DATABASE_METADATA'} : $args;
+  my $db = $hub->species_defs->multidb->{'DATABASE_METADATA'};
 
   my $self = {
     NAME => $db->{NAME},
@@ -37,6 +36,7 @@ sub new {
     PORT => $db->{PORT},
     USER => $db->{USER},
     PASS => $db->{PASS},
+    hub  => $hub,
   };
 
   return bless $self, $class;
@@ -64,6 +64,16 @@ sub genome_info_adaptor {
   $self->{genome_info_adaptor} ||= Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC => $self->db);
 
   return $self->{genome_info_adaptor};
+}
+
+
+sub all_genomes_by_division {
+  my ($self, $division) = @_;
+  return [] unless $self->genome_info_adaptor;
+  
+  $division ||= ( $self->{hub}->species_defs->SITE_NAME =~ s/\s+//gr ); #/
+  
+  return $self->genome_info_adaptor->fetch_all_by_division($division);
 }
 
 1;

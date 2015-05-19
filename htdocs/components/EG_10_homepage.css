@@ -1,0 +1,24 @@
+/* styles for accomodating multi-species collections in EG */
+
+.home-search-flex {
+  float:left;
+  width:50%;
+}
+
+form.homepage-search-form-multi {
+  text-align: left;
+}
+
+form.homepage-search-form-multi div.ff-notes p.search-example {
+  margin-top: -8px;
+}
+
+form.homepage-search-form-multi .ftext {
+  width: 70%;
+}
+
+form.homepage-search-form-multi div.ff-right, 
+form.homepage-search-form-multi div.ff-notes {
+  padding-left: 0;
+}
+

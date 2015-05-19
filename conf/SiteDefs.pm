@@ -91,6 +91,8 @@ sub update_conf {
 
   $SiteDefs::ENSEMBL_REST_URL     = 'http://rest.ensemblgenomes.org';
   $SiteDefs::ENSEMBL_REST_DOC_URL = 'http://ensemblgenomes.org/info/access/rest';
+
+  $SiteDefs::LARGE_SPECIES_SET = 0;
 }
 
 
