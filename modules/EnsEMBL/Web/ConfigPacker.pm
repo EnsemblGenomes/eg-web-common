@@ -360,7 +360,6 @@ sub _munge_meta {
 ## EG do not use species url    
    # my $species = $meta_hash->{'species.url'}[0] || ucfirst $meta_hash->{'species.production_name'}[0]; 
    my $species = ucfirst $meta_hash->{'species.production_name'}[0];
-   warn "MUNGE META $species_id :: $species";
 ##
     my $bio_name = $meta_hash->{'species.scientific_name'}[0];
     
