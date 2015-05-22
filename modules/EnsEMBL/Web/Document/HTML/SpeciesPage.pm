@@ -83,7 +83,14 @@ sub render {
     { key => 'pan_compara',  title => 'In pan-taxonomic compara', width => '5%',  align => 'center', sort => 'string' },
   ];
 
-  my $table = EnsEMBL::Web::Document::Table->new($columns, [], { data_table => 1, exportable => 1 });
+  my $table = EnsEMBL::Web::Document::Table->new($columns, [], { 
+    data_table => 1, 
+    exportable => 1,
+    data_table_config => {
+      oSearch =>  { sSearch => $hub->param('search') || '' }
+    }
+  });
+  $table->code     = 'species_index';
   $table->filename = 'Species';
   
   foreach my $info (sort {$a->{'common'} cmp $b->{'common'}} values %species) {
