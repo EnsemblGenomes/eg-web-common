@@ -101,17 +101,6 @@ sub render {
     'docs' => ''
   });
 
-  ## REGION REPORT TOOL
-  $url = $hub->url({'species' => $sp, 'type' => 'UserData', 'action' => 'SelectReportOptions'});
-  $table->add_row({
-    'name' => sprintf('<b><a class="modal_link nodeco" href="%s">Region Report Tool</a></b>', $url),
-    'desc' => 'Export standard data sets (genes, sequence, variations, etc) from one or more regions, in either GFF or simple text format.',
-    'tool' => sprintf('<a href="%s" class="modal_link nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $url, $img_url),
-    'code' => sprintf('<a href="https://github.com/Ensembl/ensembl-tools/tree/release/%s/scripts/region_reporter" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $sd->ENSEMBL_VERSION, $img_url),
-    'docs' => ''
-  });
-
-
   ## VIRTUAL MACHINE
   $url = sprintf 'ftp://ftp.ensemblgenomes.org/pub/release-%s/virtual_machines', $SiteDefs::SITE_RELEASE_VERSION;
   $table->add_row({

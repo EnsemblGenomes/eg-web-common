@@ -476,51 +476,6 @@ sub add_sequence_variations_default {
   }
 }
 
-sub add_das_tracks {
-  my ($self, $menu, $source, $extra) = @_;
-  my $node = $self->get_node($menu); 
-  
-  if (!$node && grep { $menu eq "${_}_external" } @{$self->{'transcript_types'}}) {
-    for (@{$self->{'transcript_types'}}) {
-      $node = $self->get_node("${_}_external");
-      last if $node;
-    }
-  }
-  
-  $node ||= $self->get_node('external_data'); 
-  
-  return unless $node;
-  
-  my $caption  = $source->caption || $source->label;
-  my $desc     = $source->description;
-  my $homepage = $source->homepage;
-  
-  $desc .= sprintf ' [<a href="%s" rel="external">Homepage</a>]', $homepage if $homepage;
-  
-  my $track = $self->create_track('das_' . $source->logic_name, $source->label, {
-    %{$extra || {}},
-    external    => 'external',
-## EG @ added P_protdas
-    glyphset    => $self->{type} eq 'protview' ? 'P_protdas' : '_das',
-## EG
-    display     => 'off',
-    logic_names => [ $source->logic_name ],
-    caption     => $caption,
-    description => $desc,
-    renderers   => [
-      'off',      'Off', 
-      'nolabels', 'No labels', 
-      'normal',   'Normal', 
-      'labels',   'Labels'
-    ],
-  });
-  
-  if ($track) {
-    $node->append($track);
-    $self->has_das ||= 1;
-  }
-}
-
 sub load_configured_bed    { my $result = shift->load_file_format('bed'); }
 sub load_configured_bedgraph    { my $result = shift->load_file_format('bedgraph');  }
 sub _add_bed_track {
