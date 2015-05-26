@@ -343,7 +343,10 @@ sub _munge_meta {
   ## How many species in database?
   $self->tree->{'SPP_IN_DB'} = scalar @sp_count;
     
-  if (scalar @sp_count > 1) {
+## EG   
+  my $database_name = $self->tree->{'databases'}->{'DATABASE_CORE'}{'NAME'};
+  if ($database_name =~ /_collection/) {
+##    
     if ($meta_info->{0}{'species.group'}) {
       $self->tree->{'DISPLAY_NAME'} = $meta_info->{0}{'species.group'};
     } else {
