@@ -36,6 +36,8 @@ sub species_autocomplete {
   };
   
   $term = $normalise->($term);
+  
+  my $paralogues = $species_defs->multi_hash->{'DATABASE_COMPARA'}->{'ENSEMBL_PARALOGUES'};
 
   # find matches
   my @matches;
@@ -44,22 +46,26 @@ sub species_autocomplete {
     my $taxid   = $species_defs->get_config($sp, "TAXONOMY_ID");
     my $search  = $normalise->("$name $taxid");
     next unless $search =~ /\Q$term\E/i;
-    
+
+    my $compara     = exists $paralogues->{$sp};    
     my $begins_with = $search =~ /^\Q$term\E/i;
     
+    my $score = 0;
+    $score ++ if $compara;
+    $score ++ if $begins_with;
+
     push(@matches, {
-      value => "$name, (TaxID $taxid)",
+      value           => "$name, (TaxID $taxid)",
       production_name => $sp,
-      begins_with => $begins_with,
+      score           => $score,
     });
   }
 
-  # sub to make alpha-numeric comparison but give precendence to 
-  # strings that begin with the search term
+  # alphanumeric sort with score boost
   my $sort = sub {
     my ($a, $b) = @_;
-    return $a->{value} cmp $b->{value} if $a->{begins_with} == $b->{begins_with};
-    return $a->{begins_with} ? -1 : 1;
+    return $a->{value} cmp $b->{value} if $a->{score} == $b->{score};
+    return $b->{score} <=> $a->{score};
   };
 
   @matches = sort {$sort->($a, $b)} @matches;
