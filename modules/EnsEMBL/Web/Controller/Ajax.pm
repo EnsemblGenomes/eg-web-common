@@ -56,7 +56,7 @@ sub species_autocomplete {
     my $compara     = exists $paralogues->{$sp};    
     my $begins_with = $search =~ /^\Q$term\E/i;
     
-    my $score = $hits;
+    my $score = $hits * 5;
     $score   += 2 if $compara;
     $score   += 1 if $begins_with;
 
