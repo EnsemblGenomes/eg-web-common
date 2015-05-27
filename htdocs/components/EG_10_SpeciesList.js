@@ -35,8 +35,12 @@ Ensembl.Panel.SpeciesList = Ensembl.Panel.extend({
       ac.removeClass('invalid');
     }).data("ui-autocomplete")._renderItem = function (ul, item) {
       // highlight the term within each match
-      var regex = new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + $.ui.autocomplete.escapeRegex(this.term) + ")(?![^<>]*>)(?![^&;]+;)", "gi");
-      item.label = item.label.replace(regex, "<strong>$1</strong>");
+      var words = this.term.split(/\s+/);
+      for (var i = 0; i < words.length; i++) {
+        var word = words[i];
+        var regex = new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + $.ui.autocomplete.escapeRegex(word) + ")(?![^<>]*>)(?![^&;]+;)", "gi");
+        item.label = item.label.replace(regex, "<strong>$1</strong>");
+      }
       return $("<li></li>").data("ui-autocomplete-item", item).append("<a>" + item.label + "</a>").appendTo(ul);
     };
     

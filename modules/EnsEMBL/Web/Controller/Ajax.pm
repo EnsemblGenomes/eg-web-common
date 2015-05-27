@@ -36,7 +36,8 @@ sub species_autocomplete {
   };
   
   $term = $normalise->($term);
-  
+  my @terms = split /\s+/, $term;
+
   my $paralogues = $species_defs->multi_hash->{'DATABASE_COMPARA'}->{'ENSEMBL_PARALOGUES'};
 
   # find matches
@@ -45,14 +46,19 @@ sub species_autocomplete {
     my $name    = $species_defs->get_config($sp, "SPECIES_COMMON_NAME");
     my $taxid   = $species_defs->get_config($sp, "TAXONOMY_ID");
     my $search  = $normalise->("$name $taxid");
-    next unless $search =~ /\Q$term\E/i;
+    
+    my $hits = 0;
+    for (@terms) {
+      $hits ++ if $search =~ /\Q$_\E/i;
+    }
+    next unless $hits;
 
     my $compara     = exists $paralogues->{$sp};    
     my $begins_with = $search =~ /^\Q$term\E/i;
     
-    my $score = 0;
-    $score ++ if $compara;
-    $score ++ if $begins_with;
+    my $score = $hits;
+    $score   += 2 if $compara;
+    $score   += 1 if $begins_with;
 
     push(@matches, {
       value           => "$name, (TaxID $taxid)",
