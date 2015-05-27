@@ -51,12 +51,12 @@ sub species_autocomplete {
     for (@terms) {
       $hits ++ if $search =~ /\Q$_\E/i;
     }
-    next unless $hits;
+    next unless $hits >= @terms;
 
     my $compara     = exists $paralogues->{$sp};    
     my $begins_with = $search =~ /^\Q$term\E/i;
     
-    my $score = $hits * 5;
+    my $score = 0;
     $score   += 2 if $compara;
     $score   += 1 if $begins_with;
 
