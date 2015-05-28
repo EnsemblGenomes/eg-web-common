@@ -60,19 +60,20 @@ sub db {
 sub genome_info_adaptor {
   my $self = shift;
   return unless $self->db;
-
   $self->{genome_info_adaptor} ||= Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC => $self->db);
-
   return $self->{genome_info_adaptor};
 }
 
+sub genome {
+  my ($self, $species) = @_;
+  $species ||= $self->{hub}->species;
+  return $self->genome_info_adaptor->fetch_by_species($species);
+}
 
 sub all_genomes_by_division {
   my ($self, $division) = @_;
   return [] unless $self->genome_info_adaptor;
-  
   $division ||= ( $self->{hub}->species_defs->SITE_NAME =~ s/\s+//gr ); #/
-  
   return $self->genome_info_adaptor->fetch_all_by_division($division);
 }
 

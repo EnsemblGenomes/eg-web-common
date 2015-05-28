@@ -15,6 +15,7 @@
 
 use strict;
 use warnings;
+use DateTime;
 use Getopt::Long;
 use XML::Generator;
 use Data::Dumper;
@@ -23,6 +24,7 @@ use FindBin qw($Bin);
 use lib $Bin;
 use LibDirs;
 use EnsEMBL::Web::Hub; 
+use EnsEMBL::Web::DBSQL::MetaDataAdaptor;
 
 my $dir  = '.';
 my $index_list;
@@ -32,7 +34,7 @@ GetOptions(
   'index=s' => \$index_list
 );
 
-my @indices      = $index_list ? map {ucfirst} split(/,/, $index_list) : qw(Species Seqregion);
+my @indices      = $index_list ? map {ucfirst} split(/,/, $index_list) : qw(Genome Seqregion);
 my $hub          = EnsEMBL::Web::Hub->new;
 my $species_defs = $hub->species_defs;
 my @species      = $species_defs->valid_species;
@@ -43,8 +45,11 @@ my %core_dbs     = map { $species_defs->get_config($_, 'databases')->{DATABASE_C
 my $dbh          = $hub->database('core', $species[0])->db_handle;
 my $file;
 
+my $meta_data_adaptor = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($hub);
+die "Could not fetch MetaDataAdaptor - check DATABASE_METADATA configuration" unless $meta_data_adaptor;
+
 my $dispatch = {
-  Species   => \&print_species,
+  Genome    => \&print_genomes,
   Seqregion => \&print_seqregions,
 };
 
@@ -85,7 +90,7 @@ sub print_footer {
   }
 }
 
-sub print_species {
+sub print_genomes {
    
   my @meta_keys = qw(  
     assembly.accession
@@ -103,6 +108,18 @@ sub print_species {
     species.alias
     species.classification
   );
+
+  my @genome_methods = qw(
+    strain
+    genebuild
+    is_reference
+    has_pan_compara
+    has_peptide_compara
+    has_synteny
+    has_genome_alignments
+    has_other_alignments
+    has_variations
+  );
   
   my $key_to_field_name = sub {
     my $str = shift;
@@ -110,7 +127,7 @@ sub print_species {
     $str =~ s/\./_/;
     return $str;
   };
-  
+
   foreach my $db_name (sort keys %core_dbs) {
     print "$db_name\n";
     
@@ -135,7 +152,7 @@ sub print_species {
     # add entries
     
     foreach my $species_id (keys %$meta) {
-      my $production_name = $meta->{$species_id}->{'species.production_name'}->{meta_value};   
+      my $production_name = $meta->{$species_id}->{'species.production_name'}->{meta_value};  
       my $display_name    = $meta->{$species_id}->{'species.display_name'}->{meta_value}; 
       my $tax_id          = delete $meta->{$species_id}->{'species.taxonomy_id'}->{meta_value};   
   
@@ -159,9 +176,22 @@ sub print_species {
         }
       }   
       
+      my $genome = $meta_data_adaptor->genome($production_name);
+      foreach my $method (@genome_methods) {
+        my $value = escape($genome->$method || '');
+        $fields .= qq{<field name="$method">$value</field>\n};  
+      }
+      my $now = DateTime->now->ymd;
+
+      chomp $fields;
+
       print $file qq{
       <entry id="$production_name">
         <name>$display_name</name>
+        <dates>
+          <date value="$now" type="creation"/>
+          <date value="$now" type="last_modification"/>
+        </dates> 
         <cross_references>
           <ref dbname="ncbi_taxonomy_id" dbkey = "$tax_id" /> 
         </cross_references>
