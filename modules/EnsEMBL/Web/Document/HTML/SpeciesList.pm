@@ -28,7 +28,7 @@ sub render {
   my $html;
 
   if ($SiteDefs::LARGE_SPECIES_SET) {
-    $html = '<div><h3>All genomes</h3><p><a href="/species.html">View full list of all Ensembl Protists species</a></p></div>';
+    $html = qq(<div><h3>All genomes</h3><p><a href="/species.html">View full list of all $SiteDefs::SITE_NAME species</a></p></div>);
   } else {
     ## /info/about/species.html  -->  /species.html
     $html = $self->PREV::render(@_);
