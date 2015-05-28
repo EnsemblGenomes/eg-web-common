@@ -100,13 +100,9 @@ sub render {
     my $common    = $info->{'common'};
    
     my $common_html = sprintf(
-      '<a href="/%s/">
-         <div style="float:left;width:48px;height:48px;background-image:url(/i/species/48/default.png);margin-right:4px;">
-           <div style="width:48px;height:48px;background-image:url(/i/species/48/%s.png)"></div>
-         </div>
-      </a>
-      <a href="/%s" class="bigtext">%s</a>',
-      $dir, $dir, $dir, $common
+      '<a href="/%s/" style="float:left;padding-right:4px;"><img src="/i/species/48/%s.png" width="48" heeght="48" title="%s" /></a>
+       <a href="/%s" class="bigtext">%s</a>',
+      $dir, $dir, $common, $dir, $common
     );
 
     $table->add_row({
