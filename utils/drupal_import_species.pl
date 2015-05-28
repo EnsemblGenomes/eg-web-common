@@ -164,9 +164,9 @@ foreach my $species (keys %{$xml->{'node'}}) {
   my $image = Imager->new();
   $image->read(file => $tmpimg);
 
-  save_thumbnail($image, "$imgdir64/$Species.png", {xpixels => 64, ypixels => 64});
-  save_thumbnail($image, "$imgdir48/$Species.png", {xpixels => 48, ypixels => 48});
-  save_thumbnail($image, "$imgdir16/$Species.png", {xpixels => 16, ypixels => 16, type => 'nonprop'});
+  save_thumbnail($image, "$imgdir64/$Species.png", 64);
+  save_thumbnail($image, "$imgdir48/$Species.png", 48);
+  save_thumbnail($image, "$imgdir16/$Species.png", 16);
 
   unlink $tmpimg;
 }
@@ -185,10 +185,11 @@ sub info {
 }
 
 sub save_thumbnail {
-  my ($image, $filename, $scale_args) = @_;
+  my ($image, $filename, $size) = @_;
   info("Writing $filename");
-  my $thumb = $image->scale(%$scale_args);
-  $thumb->write(file => $filename);
+  my $thumb = $image->scale(xpixels => $size, ypixels => $size);
+     $thumb = $thumb->crop(right => $size, bottom => $size);
+     $thumb->write(file => $filename);
 }
 
 1;
