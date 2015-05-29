@@ -725,16 +725,27 @@ sub _user_track_settings {
   my ($self, $style, $format) = @_;
   my ($strand, @user_renderers);
       
-  if ($style =~ /^(wiggle|WIG)$/) {
+  if (lc($format) eq 'pairwise') {
+    $strand         = 'f';
+    @user_renderers = ('off', 'Off', 'interaction', 'Pairwise interaction',
+                        'interaction_label', 'Pairwise interaction with labels');
+  }
+  elsif ($style =~ /^(wiggle|WIG)$/) {
     $strand         = 'r';
 ## EG
     @user_renderers = ('off', 'Off', 'tiling', 'Wiggle plot', 'gradient', 'Gradient', 'pvalue', 'P-value');
 ##
-  } else {
-    $strand         = uc($format) eq 'VEP_INPUT' ? 'f' : 'b'; 
+  }
+  elsif (uc $format =~ /BED/) {
+    $strand = 'b';
+    @user_renderers = @{$self->{'alignment_renderers'}};
+    splice @user_renderers, 6, 0, 'as_transcript_nolabel', 'Structure', 'as_transcript_label', 'Structure with labels';
+  }
+  else {
+    $strand         = (uc($format) eq 'VEP_INPUT' || uc($format) eq 'VCF') ? 'f' : 'b';
     @user_renderers = (@{$self->{'alignment_renderers'}}, 'difference', 'Differences');
   }
-  
+
   return ($strand, \@user_renderers);
 }
 
