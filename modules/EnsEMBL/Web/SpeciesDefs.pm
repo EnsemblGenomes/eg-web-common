@@ -21,6 +21,8 @@ package EnsEMBL::Web::SpeciesDefs;
 #use strict;
 use warnings;
 
+use previous qw(retrieve);
+
 sub _get_WUBLAST_source_file { shift->_get_NCBIBLAST_source_file(@_) }
 
 sub _get_NCBIBLAST_source_file {
@@ -135,6 +137,16 @@ sub _merge_species_tree {
 ##      
       $a->{$key} = $b->{$key} unless exists $a->{$key};
   }
+}
+##
+
+
+## EG always return true so that we never force a config repack
+##    this allows us to run util scripts from a different server to where the configs were packed
+sub retrieve {
+  my $self = shift;
+  $self->PREV::retrieve;
+  return 1; 
 }
 ##
 
