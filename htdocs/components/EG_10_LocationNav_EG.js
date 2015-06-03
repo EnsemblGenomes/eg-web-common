@@ -19,64 +19,99 @@
 Ensembl.Panel.LocationNav = Ensembl.Panel.LocationNav.extend({
   
 // EG double-arrow buttons move two windows instaed of 1e6  
-  updateButtons: function() { // update button hrefs (and loc) at cur. pos
-    var panel = this;
-    var rs = this.currentLocations();
+  updateButtons: function(sliderVal) {
+    /*
+     * Update button hrefs (and location input) at cur. pos
+     */
+    sliderVal = Math.round(typeof sliderVal === 'undefined' ? this._val2pos() : sliderVal);
+    var rs    = this.currentLocations();
     var width = rs['r'][2]-rs['r'][1]+1;
-    $('.left_2',panel.el).attr('href',panel.arrow(-width * 2));
-    $('.left_1',panel.el).attr('href',panel.arrow(-width));
-    $('.zoom_in',panel.el).attr('href',panel.zoom(0.5));
-    $('.zoom_out',panel.el).attr('href',panel.zoom(2));
-    $('.right_1',panel.el).attr('href',panel.arrow(width));
-    $('.right_2',panel.el).attr('href',panel.arrow(width * 2));
-    $('#loc_r',panel.el).val(rs['r'][0]+':'+rs['r'][1]+'-'+rs['r'][2]);
+
+    this.elLk.left1.attr('href', this.arrowHref(-width));
+    this.elLk.left2.attr('href', this.arrowHref(-width * 2));
+    this.elLk.right1.attr('href', this.arrowHref(width));
+    this.elLk.right2.attr('href', this.arrowHref(width * 2));
+
+    this.elLk.zoomIn.attr('href', this.zoomHref(0.5)).toggleClass('disabled', sliderVal === 0).helptip(sliderVal === 0 ? 'disable' : 'enable');
+    this.elLk.zoomOut.attr('href', this.zoomHref(2)).toggleClass('disabled', sliderVal === 100).helptip(sliderVal === 100 ? 'disable' : 'enable');
+
+    this.elLk.regionInput.val(rs['r'][0] + ':' + rs['r'][1] + '-'+rs['r'][2]);
   },
-//   
+//
 
 // EG constrain to a given window and handle circular regions
   
-  zoom: function(factor) { // href for +/- buttons at cur pos. as string
-    var config = this.config();
-    var rs     = this.currentLocations();  
+  // zoom: function(factor) { // href for +/- buttons at cur pos. as string
+  //   var config = this.config();
+  //   var rs     = this.currentLocations();  
+  //   var start  = rs['r'][1];
+  //   var end    = rs['r'][2];
+  //   var width  = start > end ? end + config.end - start + 1 : end - start + 1;
+  //   rs = this.rescale(rs,width*factor);
+  //   if(factor>1) {
+  //     $.each(rs,function(k,v) {
+  //       if(v[1] == v[2]) { v[2]++; }
+  //     });
+  //   }   
+  //   return this.newLocation(rs);
+  // },
+
+  zoomHref: function (factor) {
+  /*
+   * Returns href for +/- buttons at cur pos. as string
+   */
+    var rs     = this.currentLocations();
     var start  = rs['r'][1];
     var end    = rs['r'][2];
     var width  = start > end ? end + config.end - start + 1 : end - start + 1;
-    rs = this.rescale(rs,width*factor);
-    if(factor>1) {
-      $.each(rs,function(k,v) {
-        if(v[1] == v[2]) { v[2]++; }
+    rs         = this.rescale(rs, width * factor);
+
+    if (factor > 1) {
+      $.each(rs, function (k, v) {
+        if (v[1] == v[2]) { v[2]++; }
       });
-    }   
-    return this.newLocation(rs);
+    }
+
+    return this.newHref(rs);
   },
 
-  rescale: function(rs,input) {
+  rescale: function(rs, newWidth) {
+  /*
+   * Resets the r params according to the new width provided
+   */    
     var panel = this;
-    var config = this.config();
-    input = Math.round(input);
+    var config = panel.sliderConfig;
+    newWidth  = Math.round(newWidth);
     var out = {};
+
     $.each(rs,function(k,v) {
       var start  = v[1];
       var end    = v[2];
       var width  = start > end ? end + config.end - start + 1 : end - start + 1;
       var centre = start + Math.round(width / 2);
       if (start > end  && centre > config.end) centre = centre - config.end + 1; // wrap for circular regions
-      var new_start = centre - Math.round(input / 2);
-      var new_end   = centre + Math.round(input / 2);
+      var new_start = centre - Math.round(newWidth / 2);
+      var new_end   = centre + Math.round(newWidth / 2);
       var new_region = [v[0], new_start, new_end, v[3]];
       out[k] = k == 'r' ? panel.constrainToWindow(new_region) : panel.constrainStart(new_region);
     });
+
     return out;
   },
 
-  arrow: function(step) { // href for arrow buttons at cur pos. as string
+  arrowHref: function (step) {
+  /*
+   * Returns href for the arrow buttons at cur pos. as string
+   */
     var panel = this;
-    var rs = this.currentLocations();
-    $.each(rs,function(k,v) {
+    var rs    = this.currentLocations();
+
+    $.each(rs,function(k, v) {
       var new_region = [v[0], v[1] + step, v[2] + step, v[3]];
       rs[k] = k == 'r' ? panel.constrainToWindow(new_region) : panel.constrainStart(new_region);
     });
-    return this.newLocation(rs);
+
+    return this.newHref(rs);
   },
 
   constrainStart: function(r) {
@@ -95,7 +130,7 @@ Ensembl.Panel.LocationNav = Ensembl.Panel.LocationNav.extend({
   },
 
   constrain: function(s, e) {
-    var config = this.config();
+    var config = this.sliderConfig;
     if (config.isCircular && config.start == 1) {
       // it's a circular region and we could potentially overlap the origin
       var max = config.end;
