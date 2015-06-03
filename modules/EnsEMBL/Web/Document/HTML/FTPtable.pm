@@ -173,7 +173,7 @@ vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_s
       {
       database => qq{<strong>$multi_sp Multi-species</strong>},
       mysql   => sprintf(qq{<a rel="external" title="%s" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/mysql/$compara">MySQL</a>},sprintf($title{compara},ucfirst $genomic_unit)),
-      emf     => qq{<a rel="external" title="$title{emf}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/emf/ensembl-compara/homologies">EMF</a>},
+      emf     => qq{<a rel="external" title="$title{emf}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/emf/ensembl-compara/homologies">EMF</a>},
       tsv     => qq{<a rel="external" title="$title{tsv}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/tsv/ensembl-compara">TSV</a>},
       maf     => qq{<a rel="external" title="$title{maf}" href="ftp://ftp.ensemblgenomes.org/pub/release-$rel/$genomic_unit/maf/ensembl-compara">MAF</a>},
       },
