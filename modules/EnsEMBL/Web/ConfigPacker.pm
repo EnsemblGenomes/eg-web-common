@@ -61,17 +61,19 @@ sub _summarise_generic {
 # With multi species DB there is no way to define the list of chromosomes for the karyotype in the ini file
 # The idea is the people who produce the DB can define the lists in the meta table using region.toplevel met key
 # In case there is no such definition of the karyotype - we just create the lists of toplevel regions 
-    if( $db_name =~ /CORE/) {
+    if($db_name =~ /CORE/) {
+      if ($self->is_collection('DATABASE_CORE')) {
         my $t_aref = $dbh->selectall_arrayref(
-                qq{SELECT cs.species_id, s.name FROM seq_region s, coord_system cs
-WHERE s.coord_system_id = cs.coord_system_id and cs.attrib = 'default_version' and cs.name in ('plasmid', 'chromosome')
-ORDER by cs.species_id, s.seq_region_id}
-                );
+          qq{SELECT cs.species_id, s.name FROM seq_region s, coord_system cs
+          WHERE s.coord_system_id = cs.coord_system_id AND cs.attrib = 'default_version' AND cs.name IN ('plasmid', 'chromosome')
+          ORDER BY cs.species_id, s.name, s.seq_region_id}
+        );
 
         foreach my $row ( @$t_aref ) {
             push @{$hash->{$row->[0]}{'region.toplevel'}}, $row->[1];
         }
-    }
+     }
+   }
 ##
     $t_aref  = $dbh->selectall_arrayref(
       'select meta_key,meta_value,meta_id, species_id
@@ -344,8 +346,7 @@ sub _munge_meta {
   $self->tree->{'SPP_IN_DB'} = scalar @sp_count;
     
 ## EG   
-  my $database_name = $self->tree->{'databases'}->{'DATABASE_CORE'}{'NAME'};
-  if ($database_name =~ /_collection/) {
+  if ($self->is_collection('DATABASE_CORE')) {
 ##    
     if ($meta_info->{0}{'species.group'}) {
       $self->tree->{'DISPLAY_NAME'} = $meta_info->{0}{'species.group'};
@@ -453,8 +454,13 @@ sub _munge_meta {
 
     # check if the karyotype/list of toplevel regions ( normally chroosomes) is defined in meta table
     @{$self->tree($species)->{'TOPLEVEL_REGIONS'}} = @{$meta_hash->{'regions.toplevel'}} if $meta_hash->{'regions.toplevel'};
-    @{$self->tree($species)->{'ENSEMBL_CHROMOSOMES'}} = ();                                                                      #nickl: need to explicitly define as empty array by default otherwise SpeciesDefs looks for a value at collection level
-    @{$self->tree($species)->{'ENSEMBL_CHROMOSOMES'}} = @{$meta_hash->{'region.toplevel'}} if $meta_hash->{'region.toplevel'};
+
+## EG    
+    if ($self->is_collection('DATABASE_CORE')) {
+      @{$self->tree($species)->{'ENSEMBL_CHROMOSOMES'}} = ();                                                                      #nickl: need to explicitly define as empty array by default otherwise SpeciesDefs looks for a value at collection level
+      @{$self->tree($species)->{'ENSEMBL_CHROMOSOMES'}} = @{$meta_hash->{'region.toplevel'}} if $meta_hash->{'region.toplevel'};
+    }
+##
 
     #If the top level regions are other than palsmid or chromosome, ENSEMBL_CHROMOSOMES is set to an empty array
     #in order to disable the 'Karyotype' and 'Chromosome summary' links in the menu tree
@@ -599,5 +605,13 @@ sub _configure_external_resources {
       }
   }
 }
+
+## EG
+sub is_collection {
+  my ($self, $db_name) = @_;
+  my $database_name = $self->tree->{'databases'}->{'DATABASE_CORE'}{'NAME'};
+  return $database_name =~ /_collection/;
+}
+##
 
 1;
