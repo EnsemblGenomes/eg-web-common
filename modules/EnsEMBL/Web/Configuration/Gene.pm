@@ -254,7 +254,7 @@ sub modify_tree {
 			      });
 
 	 (my $desc2 = "$cluster->{db}: $cluster->{description}") =~ s/_/ /g;
-	 $go_menu->append($self->create_node('Ontology/'.$oid, "$desc2 ($num)",
+	 $go_menu->append($self->create_node('Ontology/'.$oid, $desc2,
 					     [qw( go EnsEMBL::Web::Component::Gene::Ontology )],
 					     { 'availability' => 'gene', 'concise' => $desc2, 'url' =>  $url2 }
 			  ));
