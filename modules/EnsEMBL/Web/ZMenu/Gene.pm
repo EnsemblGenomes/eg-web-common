@@ -112,7 +112,7 @@ sub content {
     });
     
     $self->add_entry({
-      type       => 'Prediction method',
+      type       => 'Annotation method',
       label_html => $object->analysis->description
     });
   }
