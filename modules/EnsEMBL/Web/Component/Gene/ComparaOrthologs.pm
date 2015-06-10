@@ -24,6 +24,8 @@ use strict;
 
 use previous qw(buttons);
 
+our %button_set = %EnsEMBL::Web::Component::Gene::ComparaOrthologs::button_set;
+
 sub is_archaea {
   my ($self,$species) = @_;
   unless(exists($self->{'_archaea'})){
@@ -115,7 +117,6 @@ sub buttons {
   my $hub        = $self->hub;
   my $cdb        = $hub->param('cdb') || 'compara';
   my @buttons    = $self->PREV::buttons(@_);
-  my %button_set = %EnsEMBL::Web::Component::Gene::ComparaOrthologs::button_set;
 
   if ($button_set{'view'}) {
     
