@@ -69,6 +69,9 @@ sub features {
       $default_rgb_string = "$r,$g,$b";
     }
     foreach (@$features) {
+      if ($_->external_data->{'BlockCount'}) {
+        $self->{'my_config'}->set('has_blocks', 1);
+      }
       next if (defined $_->external_data->{'item_colour'} && $_->external_data->{'item_colour'}[0] =~ /^\d+,\d+,\d+$/);
       $_->external_data->{'item_colour'}[0] = $default_rgb_string;
     }
