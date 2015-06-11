@@ -18,6 +18,8 @@ limitations under the License.
 
 package EnsEMBL::Web::Component::Variation::Summary;
 
+use strict;
+
 sub content {
   my $self               = shift;
   my $hub                = $self->hub;
@@ -93,7 +95,7 @@ sub inter_homoeologues {
 
   foreach my $caption (keys %$attribs) {
     my $id      = $attribs->{$caption};
-    my $url     = $hub->url({ v => $name, vf => undef });
+    my $url     = $hub->url({ v => $id, vf => undef });
     push @rows, [ucfirst($caption), sprintf('<a href="%s">%s</a> %s', $url, $id)];
   } 
 
