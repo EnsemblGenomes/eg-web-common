@@ -1,12 +1,11 @@
 // $Revision: 1.7 $
 
-Ensembl.Panel.SpeciesList = Ensembl.Panel.extend({  
+Ensembl.Panel.SpeciesList = Ensembl.Panel.SpeciesList.extend({  
   init: function () {
     this.base();
-    
     var ac = $("#species_autocomplete", this.el);
     if (!ac.length) return;
-
+    
     ac.autocomplete({
       minLength: 3,
       source:   '/Multi/Ajax/species_autocomplete',

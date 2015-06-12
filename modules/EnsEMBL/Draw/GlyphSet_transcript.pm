@@ -1679,7 +1679,16 @@ sub colour_key {
   # get lost when the track is merged - needs rewrite of imageconfig merging code
 
 ## EG  
-  return 'merged' if $transcript->analysis and $transcript->analysis->logic_name =~ /ensembl_havana/;
+  if ($transcript->analysis) {
+    my $logic_name = $transcript->analysis->logic_name;
+
+    if ($transcript->biotype eq 'protein_coding') {
+      return 'merged_iwgsc_taestivum' if $logic_name eq 'iwgsc';
+      return 'merged_pgsb_taestivum'  if $logic_name eq 'pgsb_3b_taestivum' or $logic_name eq 'pgsb_taestivum ';
+    }
+
+    return 'merged' if $logic_name =~ /ensembl_havana/;
+  }
 ##
 
   # EG: the colour can be altered via an attribute assigned to the gene

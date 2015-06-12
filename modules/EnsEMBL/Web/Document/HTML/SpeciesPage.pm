@@ -43,6 +43,7 @@ sub render {
       'assembly'   => $species_defs->get_config($sp, 'ASSEMBLY_NAME'),
       'accession'  => $species_defs->get_config($sp, 'ASSEMBLY_ACCESSION'),
       'taxon_id'   => $species_defs->get_config($sp, 'TAXONOMY_ID'),
+      'group'      => $species_defs->get_config($sp, 'SPECIES_GROUP'),
       'variation'  => $species_defs->get_config($sp, 'databases')->{'DATABASE_VARIATION'},
       'regulation' => $species_defs->get_config($sp, 'databases')->{'DATABASE_FUNCGEN'},
     };
@@ -50,19 +51,17 @@ sub render {
 
   # add meta data from Ensembl Genomes API (if available)
   my $genome_info_adaptor = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($hub);
+  
   if ($genome_info_adaptor) {
     for my $genome (@{ $genome_info_adaptor->all_genomes_by_division }) {
       my $sp = ucfirst $genome->species;
-      my $sp_hash = $species{$sp};
-      if (!$sp_hash) {
+      if (!$species{$sp}) {
         warn "Warning: got meta data for genome '$sp' but this species is not configured. Skipping.";
         next; 
       }
-      $sp_hash = {%$sp_hash,
-        genome_align => $genome->has_genome_alignments,
-        other_align  => $genome->has_other_alignments,
-        pan_compara  => $genome->has_pan_compara,       
-      };
+      $species{$sp}->{genome_align} = $genome->has_genome_alignments;
+      $species{$sp}->{other_align}  = $genome->has_other_alignments;
+      $species{$sp}->{pan_compara}  = $genome->has_pan_compara;    
     }
   } else {
     warn "Warning: it looks like the Meta Data database is unavailable";
@@ -72,15 +71,16 @@ sub render {
       <input type="hidden" class="panel_type" value="Content">';
 
   my $columns = [
-    { key => 'common',       title => 'Common name',              width => '45%', align => 'left', sort => 'string' },
+    { key => 'common',       title => 'Name',                     width => '45%', align => 'left', sort => 'string' },
+    { key => 'group',        title => 'Classification',           width => '10%', align => 'left', sort => 'string' },
     { key => 'taxon_id',     title => 'Taxon ID',                 width => '10%', align => 'left', sort => 'integer' },
     { key => 'assembly',     title => 'Assembly',                 width => '10%', align => 'left' },
     { key => 'accession',    title => 'Accession',                width => '10%', align => 'left' },
-    { key => 'variation',    title => 'Variation database',       width => '5%',  align => 'center', sort => 'string' },
-    { key => 'regulation',   title => 'Regulation database',      width => '5%',  align => 'center', sort => 'string' },
-    { key => 'genome_align', title => 'Whole genome alignments',  width => '5%',  align => 'center', sort => 'string' },
-    { key => 'other_align',  title => 'Other alignments',         width => '5%',  align => 'center', sort => 'string' },
-    { key => 'pan_compara',  title => 'In pan-taxonomic compara', width => '5%',  align => 'center', sort => 'string' },
+    { key => 'variation',    title => 'Variation database',       width => '3%',  align => 'center', sort => 'string' },
+    { key => 'regulation',   title => 'Regulation database',      width => '3%',  align => 'center', sort => 'string' },
+    { key => 'genome_align', title => 'Whole genome alignments',  width => '3%',  align => 'center', sort => 'string' },
+    { key => 'other_align',  title => 'Other alignments',         width => '3%',  align => 'center', sort => 'string' },
+    { key => 'pan_compara',  title => 'In pan-taxonomic compara', width => '3%',  align => 'center', sort => 'string' },
   ];
 
   my $table = EnsEMBL::Web::Document::Table->new($columns, [], { 
@@ -107,6 +107,7 @@ sub render {
 
     $table->add_row({
       'common'       => $common_html,
+      'group'        => $info->{'group'},
       'taxon_id'     => $info->{'taxon_id'},
       'assembly'     => $info->{'assembly'},
       'accession'    => $info->{'accession'} || '-',

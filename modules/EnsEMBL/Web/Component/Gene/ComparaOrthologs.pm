@@ -20,8 +20,6 @@ package EnsEMBL::Web::Component::Gene::ComparaOrthologs;
 
 use strict;
 
-#our %button_set = %EnsEMBL::Web::Component::Gene::ComparaOrthologs::button_set;
-
 use previous qw(buttons);
 
 sub is_archaea {
@@ -86,7 +84,7 @@ sub _species_sets {
     my $orthologues = $orthologue_list->{$species} || {};
     foreach my $stable_id (keys %$orthologues) {
       my $orth_info = $orthologue_list->{$species}{$stable_id};
-      my $orth_desc = $orth_info->{'homology_desc'};
+      my $orth_desc = ucfirst($orth_info->{'homology_desc'});
       $species_sets->{'all'}{$orth_desc}++;
       $species_sets->{$group}{$orth_desc}++;
       $categories->{$orth_desc} = {key=>$orth_desc, title=>$orth_desc} unless exists $categories->{$orth_desc};
@@ -114,8 +112,8 @@ sub buttons {
   my $self       = shift;
   my $hub        = $self->hub;
   my $cdb        = $hub->param('cdb') || 'compara';
-  my @buttons    = $self->PREV::buttons(@_);
   my %button_set = %EnsEMBL::Web::Component::Gene::ComparaOrthologs::button_set;
+  my @buttons    = $self->PREV::buttons(@_);
 
   if ($button_set{'view'}) {
     
