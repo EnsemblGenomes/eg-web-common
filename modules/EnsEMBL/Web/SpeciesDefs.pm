@@ -35,7 +35,9 @@ sub _get_NCBIBLAST_source_file {
   my $unit = $self->GENOMIC_UNIT;
   my $path = $self->EBI_BLAST_DB_PREFIX || "ensemblgenomes/$unit";
   
-  if ($unit eq 'bacteria') { # add collection prefix
+  my $dataset = $self->get_config($species, 'SPECIES_DATASET');
+
+  if ($species ne $dataset) { # add collection prefix
     $species = join '/', ucfirst($self->get_config($species, 'SPECIES_DATASET')), $species;
   }
 
