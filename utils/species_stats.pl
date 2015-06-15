@@ -557,7 +557,11 @@ foreach my $spp (@valid_spp) {
             $row = stripe_row($rowcount);
             my $term = $glossary_lookup{$_};
             my $shift ='';
-            $shift = "&nbsp;&nbsp;&nbsp;" if $_ =~ /noncoding_?(.*)$/;
+            if ($_ =~ /noncoding_?(.*)$/) {
+              $shift = "&nbsp;&nbsp;&nbsp;";
+              $title{$_} = qq|<font size="1em">$title{$_}</font>|;
+            }
+
             my $header = $term ? qq(<span class="glossary_mouseover">$title{$_}<span class="floating_popup">$glossary{$term}</span></span>) : $title{$_};
             print STATS qq($row
               <td class="data">$shift $header:</td>
