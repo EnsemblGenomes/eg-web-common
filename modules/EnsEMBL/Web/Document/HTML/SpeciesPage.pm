@@ -61,25 +61,28 @@ sub render {
       }
       $species{$sp}->{genome_align} = $genome->has_genome_alignments;
       $species{$sp}->{other_align}  = $genome->has_other_alignments;
+      $species{$sp}->{compara}      = $genome->has_peptide_compara;
       $species{$sp}->{pan_compara}  = $genome->has_pan_compara;    
     }
   } else {
     warn "Warning: it looks like the Meta Data database is unavailable";
   }
 
-  my $html = '<div class="js_panel" id="species-table">
+  my $html = '<style>#species-table td {vertical-align:middle;}</style><div class="js_panel" id="species-table">
       <input type="hidden" class="panel_type" value="Content">';
 
   my $columns = [
-    { key => 'common',       title => 'Name',                     width => '45%', align => 'left', sort => 'string' },
-    { key => 'group',        title => 'Classification',           width => '10%', align => 'left', sort => 'string' },
-    { key => 'taxon_id',     title => 'Taxon ID',                 width => '10%', align => 'left', sort => 'integer' },
-    { key => 'assembly',     title => 'Assembly',                 width => '10%', align => 'left' },
-    { key => 'accession',    title => 'Accession',                width => '10%', align => 'left' },
+    { key => 'thumbnail',    title => '',                         width => '2%',  align => 'left', sort => 'none' },
+    { key => 'common',       title => 'Name',                     width => '47%', align => 'left', sort => 'string' },
+    { key => 'group',        title => 'Classification',           width => '8%', align => 'left', sort => 'string' },
+    { key => 'taxon_id',     title => 'Taxon ID',                 width => '8%', align => 'left', sort => 'integer' },
+    { key => 'assembly',     title => 'Assembly',                 width => '8%', align => 'left' },
+    { key => 'accession',    title => 'Accession',                width => '8%', align => 'left' },
     { key => 'variation',    title => 'Variation database',       width => '3%',  align => 'center', sort => 'string' },
     { key => 'regulation',   title => 'Regulation database',      width => '3%',  align => 'center', sort => 'string' },
     { key => 'genome_align', title => 'Whole genome alignments',  width => '3%',  align => 'center', sort => 'string' },
     { key => 'other_align',  title => 'Other alignments',         width => '3%',  align => 'center', sort => 'string' },
+    { key => 'compara',      title => 'In peptide compara',       width => '3%',  align => 'center', sort => 'string' },
     { key => 'pan_compara',  title => 'In pan-taxonomic compara', width => '3%',  align => 'center', sort => 'string' },
   ];
 
@@ -99,23 +102,23 @@ sub render {
     next unless $dir;
     my $common    = $info->{'common'};
    
-    my $common_html = sprintf(
-      '<a href="/%s/" style="float:left;padding-right:4px;"><img src="/i/species/48/%s.png" width="48" heeght="48" title="%s" /></a>
-       <a href="/%s" class="bigtext">%s</a>',
-      $dir, $dir, $common, $dir, $common
-    );
+    my $thumbnail_html = qq(<a href="/$dir/" style="padding-right:4px;"><img src="/i/species/48/$dir.png" width="48" height="48" title="$common" style="vertical-align:middle" /></a>);
+    my $common_html    = qq(<a href="/$dir" class="bigtext">$common</a>);
+    my $tick_html      = '<img src="/i/tick_16.png" width="16" height="16" />';
 
     $table->add_row({
+      'thumbnail'    => $thumbnail_html,
       'common'       => $common_html,
       'group'        => $info->{'group'},
       'taxon_id'     => $info->{'taxon_id'},
       'assembly'     => $info->{'assembly'},
       'accession'    => $info->{'accession'} || '-',
-      'variation'    => $info->{'variation'}    ? 'Y' : '-',
-      'regulation'   => $info->{'regulation'}   ? 'Y' : '-',
-      'genome_align' => $info->{'genome_align'} ? 'Y' : '-',
-      'other_align'  => $info->{'other_align'}  ? 'Y' : '-',
-      'pan_compara'  => $info->{'pan_compara'}  ? 'Y' : '-',
+      'variation'    => $info->{'variation'}    ? $tick_html : '-',
+      'regulation'   => $info->{'regulation'}   ? $tick_html : '-',
+      'genome_align' => $info->{'genome_align'} ? $tick_html : '-',
+      'other_align'  => $info->{'other_align'}  ? $tick_html : '-',
+      'compara'      => $info->{'compara'}      ? $tick_html : '-',
+      'pan_compara'  => $info->{'pan_compara'}  ? $tick_html : '-',
     });
   }
 
