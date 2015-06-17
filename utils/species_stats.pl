@@ -249,8 +249,8 @@ foreach my $spp (@valid_spp) {
     my %glossary_lookup   = (
       'coding'              => 'Protein coding',
       'alt_coding'          => 'Protein coding',
-      'shortnoncoding'      => 'Short non coding gene',
-      'alt_shortnoncoding'  => 'Short non coding gene',
+      'shortnoncoding'      => 'Small non coding gene',
+      'alt_shortnoncoding'  => 'Small non coding gene',
       'longnoncoding'       => 'Long non coding gene',
       'alt_longnoncoding'   => 'Long non coding gene',
       'miscnoncoding'       => 'Misc non coding genes',
