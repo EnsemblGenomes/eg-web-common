@@ -51,7 +51,7 @@ Ensembl.Panel.BlastForm = Ensembl.Panel.BlastForm.extend({
       $(['<div class="blast-message hidden">',
         '<div></div>',
         '<p><b>PLEASE NOTE</b></p>',
-        '<p>As of release 27, this tool is using <a href="http://www.ebi.ac.uk/Tools/sss/ncbiblast/">NCBI BLAST</a> instead of <a href="http://www.ebi.ac.uk/Tools/sss/wublast/">WU-BLAST</a>. Consequently new jobs may generate different results to existing saved jobs.</p>',
+        '<p>As of release 27, this tool is using <a href="http://www.ebi.ac.uk/Tools/sss/ncbiblast/">NCBI BLAST+</a> instead of <a href="http://www.ebi.ac.uk/Tools/sss/wublast/">WU-BLAST</a>. Consequently new jobs may generate different results to existing saved jobs.</p>',
         '<p><button>Don\'t show this again</button></p>',
         '</div>'
       ].join(''))
