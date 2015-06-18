@@ -23,3 +23,8 @@ select.ajax-species-selector {
   width: 350px;
 }
 
+/* blast message */
+div.blast-message          { background-color: [[MH_BG]]; border-radius: 10px; bottom: 20px; color: #fff; left: 20px; padding: 20px; position: fixed; width: 300px; z-index: 1000; box-shadow: 5px 5px 15px #666; }
+div.blast-message div      { position: absolute; top: -10px; right: -10px; height: 22px; width: 22px; background-image: url(/i/cp_close.png); cursor: pointer; }
+div.blast-message p        { margin: 0 0 7px 0; text-align: center; }
+div.blast-message p a      { color: inherit; font-weight: bold; }

@@ -14,24 +14,56 @@
  * limitations under the License.
  */
 
-Ensembl.Panel.BlastForm.prototype.resetSpecies = function(speciesList) {
-  if (typeof speciesList[0] !== 'object') {
-    // Todo: handle default species - currently it is passed as single production_name string 
-    //       and we don't have the display name. Instead we do nothing and rely on the name pre-populated
-    //       on the server-side. This means that using the 'Clear' button does not reset default species.
-    return;
-  }
+var tempEPBS = Ensembl.Panel.BlastForm.Sequence;
 
-  var seen   = {};
-  var unique = [];
-  $.each(speciesList, function(i, sp){
-    if (!seen[sp.key]) {
-      unique.push(sp);
-      seen[sp.key] = true;
+Ensembl.Panel.BlastForm = Ensembl.Panel.BlastForm.extend({
+  init: function () {
+    this.base();
+    this.showBlastMessage();
+  },
+  
+  resetSpecies: function(speciesList) {
+    if (typeof speciesList[0] !== 'object') {
+      // Todo: handle default species - currently it is passed as single production_name string 
+      //       and we don't have the display name. Instead we do nothing and rely on the name pre-populated
+      //       on the server-side. This means that using the 'Clear' button does not reset default species.
+      return;
     }
-  });
 
-  unique.sort(function(a,b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0 });
+    var seen   = {};
+    var unique = [];
+    $.each(speciesList, function(i, sp){
+      if (!seen[sp.key]) {
+        unique.push(sp);
+        seen[sp.key] = true;
+      }
+    });
 
-  setTimeout(function() { Ensembl.EventManager.trigger('updateTaxonSelection', unique) }, 200);
-};
+    unique.sort(function(a,b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0 });
+
+    setTimeout(function() { Ensembl.EventManager.trigger('updateTaxonSelection', unique) }, 200);
+  },
+
+  showBlastMessage: function() {
+    var notified    = Ensembl.cookie.get('ncbiblast_notified');
+
+    if (!notified) {
+      $(['<div class="blast-message hidden">',
+        '<div></div>',
+        '<p><b>PLEASE NOTE</b></p>',
+        '<p>As of release 27, this tool is using <a href="http://www.ebi.ac.uk/Tools/sss/ncbiblast/">NCBI BLAST</a> instead of <a href="http://www.ebi.ac.uk/Tools/sss/wublast/">WU-BLAST</a>. Consequently new jobs may generate different results to existing saved jobs.</p>',
+        '<p><button>Don\'t show this again</button></p>',
+        '</div>'
+      ].join(''))
+        .appendTo(document.body).show().find('button,div').on('click', function (e) {
+          Ensembl.cookie.set('ncbiblast_notified', 'yes');
+          $(this).parents('div').first().fadeOut(200);
+      }).filter('div').helptip({content:"Don't show this again"});
+      return true;
+    }
+
+    return false;
+  }
+});
+
+Ensembl.Panel.BlastForm.Sequence = tempEPBS;
