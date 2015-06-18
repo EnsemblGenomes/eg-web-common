@@ -798,13 +798,17 @@ sub _add_file_format_track {
   if ($args{'internal'}) {
     $desc = "Data served from a $args{'format'} file: $args{'description'}";
   } else {
+
+    my $from = $args{'source'}{'source_type'} =~ /^session|user$/i
+      ? sprintf( 'This data is attached to the %s, and comes from URL: %s', encode_entities($args{'source'}{'source_type'}), encode_entities($args{'source'}{'source_url'}) )
+      : sprintf( 'This data comes from URL: %s', encode_entities($args{'source'}{'source_url'}) );
+
     $desc = sprintf(
-      'Data retrieved from %s %s file on an external webserver. %s This data is attached to the %s, and comes from URL: %s',
+      'Data retrieved from %s %s file on an external webserver. %s<br />%s',
       $article,
       $args{'format'},
       $args{'description'},
-      encode_entities($args{'source'}{'source_type'}), 
-      encode_entities($args{'source'}{'source_url'})
+      $from,
     );
   }
   
