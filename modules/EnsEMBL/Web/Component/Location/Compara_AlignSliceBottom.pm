@@ -1,6 +1,6 @@
 =head1 LICENSE
 
-Copyright [2009-2014] EMBL-European Bioinformatics Institute
+Copyright [1999-2015] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,11 +16,7 @@ limitations under the License.
 
 =cut
 
-#############################################################################################
-# EG: This module is analogous to EnsEMBL::Web::Component::Location::Compara_AlignSliceBottom
-#############################################################################################
-
-package EnsEMBL::Web::Component::Gene::Compara_AlignSliceBottom;
+package EnsEMBL::Web::Component::Location::Compara_AlignSliceBottom;
 
 use strict;
 
@@ -31,18 +27,12 @@ sub content {
   my $hub          = $self->hub;
   my $species_defs = $hub->species_defs;
   my $object       = $self->object;
-  # EG:
-  my $slice        = $object->can('slice') ? $object->slice : $object->get_slice_object->Obj;
-  $slice = $slice->invert  if $slice->{'strand'} == -1;
-  # EG
   my $threshold    = 1000100 * ($species_defs->ENSEMBL_GENOME_SIZE || 1);
   my $align_params = $hub->param('align');
   my %options      = ( scores => $hub->param('opt_conservation_scores'), constrained => $hub->param('opt_constrained_elements') );
   my ($align)      = split '--', $align_params;
   
-  # EG:
-  return $self->_warning('Region too large', '<p>The region selected is too large to display in this view - use the navigation above to zoom in...</p>') if $slice->length > $threshold;
-  # EG
+  return $self->_warning('Region too large', '<p>The region selected is too large to display in this view - use the navigation above to zoom in...</p>') if $object->length > $threshold;
   return $self->_info('No alignment specified', '<p>Select the alignment you wish to display from the box above.</p>') unless $align;
   
   my $align_details = $species_defs->multi_hash->{'DATABASE_COMPARA'}->{'ALIGNMENTS'}->{$align};
@@ -84,7 +74,7 @@ sub content {
     });
     
     my ($species_name, $slice_name) = split ':', $_->{'name'};
-
+    
 ## EG use abbreviated species name  
     my $panel_caption = $species_defs->abbreviated_species_label($species_name) || 'Ancestral sequences';
 ##
@@ -111,7 +101,9 @@ sub content {
   
   return if $self->_export_image($image);
   
-  $image->{'panel_number'} = 'bottom';
+  $image->{'panel_number'}  = 'bottom';
+  $image->{'data_export'}   = 'Alignments';
+  $image->{'export_params'}   = ['align'];
   $image->imagemap = 'yes';
   $image->set_button('drag', 'title' => 'Click or drag to centre display');
   
@@ -125,6 +117,14 @@ sub content {
   $html .=  $alert_box;
   
   return $html;
+}
+
+sub export_options { return {'action' => 'Alignments', 'caption' => 'Download alignment'}; }
+
+sub get_export_data {
+## Get data for export
+  my $self      = shift;
+  return $self->hub->core_object('location');
 }
 
 1;
