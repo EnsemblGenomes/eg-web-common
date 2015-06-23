@@ -20,25 +20,6 @@ package EnsEMBL::Web::ImageConfig;
 
 use strict;
 
-## EG ENSEMBL-2967 - abbreviate long species names
-sub _abbreviate_species_name {
-  my ($self, $name, $threshold) = @_;
-
-  $threshold ||= 15;
-
-  if (length $name > $threshold) {
-    my @words = split /\s/, $name; 
-    if (@words == 2) {
-      $name = substr($words[0], 0, 1) . '. ' . $words[1];
-    } elsif (@words > 2) {
-      $name = join '. ', substr(shift @words, 0, 1), substr(shift @words, 0, 1), join(' ', @words);
-    }
-  }
-
-  return $name;
-}
-##
-
 sub add_alignments {
   my ($self, $key, $hashref, $species) = @_;
   
@@ -89,7 +70,7 @@ sub add_alignments {
         glyphset                   => '_alignment_pairwise',
         name                       => $other_label . ($type ?  " - $type" : ''),
 ## EG ENSEMBL-2967       
-        caption                    => $self->_abbreviate_species_name($other_label),
+        caption                    => $species_defs->abbreviated_species_label($other_species),
 ##        
         type                       => $row->{'type'},
         species                    => $other_species,
