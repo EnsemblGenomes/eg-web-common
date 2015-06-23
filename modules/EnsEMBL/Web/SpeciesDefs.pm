@@ -50,6 +50,26 @@ sub _get_NCBIBLAST_source_file {
   return sprintf '%s/%s.%s.%s', $path, $species, $assembly, $type;
 }
 
+## EG ENSEMBL-2967 - abbreviate long species names
+sub abbreviated_species_label {
+  my ($self, $species, $threshold) = @_;
+  $threshold ||= 15;
+
+  my $label = $self->species_label($species, 'no_formatting');
+
+  if (length $label > $threshold) {
+    my @words = split /\s/, $label;
+    if (@words == 2) {
+      $label = substr($words[0], 0, 1) . '. ' . $words[1];
+    } elsif (@words > 2) {
+      $label = join '. ', substr(shift @words, 0, 1), substr(shift @words, 0, 1), join(' ', @words);
+    }
+  }
+
+  return $label;
+}
+##
+
 #------------------------------------------------------------------------------
 # MULTI SPECIES
 #------------------------------------------------------------------------------
