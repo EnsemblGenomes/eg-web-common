@@ -189,8 +189,8 @@ sub info {
 sub save_largeimage {
   my ($image, $filename) = @_;
   info("Writing $filename");
-  if($image->getwidth() > 400 || $image->getheight() > 400){
-  my $large = $image->scale(xpixels => 400, ypixels => 400, type=>'min');
+  if($image->getwidth() > 700 || $image->getheight() > 700){
+  my $large = $image->scale(xpixels => 700, ypixels => 700, type=>'min');
   $large->write(file => $filename);
   } else {
   my $large = $image->copy();
