@@ -12,8 +12,11 @@ my $create = 0;
 my $create_index = 0;
 
 # from this id the species ids from collections will start 
-# they will follow this rule : $collectionOffset + collectionID * 1000
+# they will follow this rule : $collectionOffset + $collectionIndex * $collectionSize
+my $collectionIndex = 0; # global counter incremented for each collection 
 my $collectionOffset = 1000; 
+my $collectionSize = 1000;
+
 my %group_objects = (
     core => {
 	Exon => 1,
@@ -144,9 +147,8 @@ sub process_dbs {
 		    }
 		}
 #	    warn "* $species : $dbtype ($lastSID) \n";
-		if ($species =~ /\w+_(\d+)_collection/) {
-		    my $cid = $1;
-		    add_collection_db($db, $cid);
+		if ($species =~ /_collection/) {
+		    add_collection_db($db);
 		} else {
 		    add_species_db($db, $lastSID);
 		}
@@ -201,8 +203,10 @@ sub add_species_db {
 }
 
 sub add_collection_db {
-    my ($dbname, $cid) = @_;
-    my $offset = $cid * 1000 + $collectionOffset;
+    my ($dbname) = @_;
+
+    $collectionIndex ++;
+    my $offset = $collectionIndex * $collectionSize + $collectionOffset;
 
     warn "- Adding collection $dbname (from Species ID $offset)\n";
     if ($dbname =~ /([\w\_]+)_(core|otherfeatures)_([\d\_\w]+)/) {
