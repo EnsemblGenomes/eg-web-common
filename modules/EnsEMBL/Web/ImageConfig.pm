@@ -620,8 +620,10 @@ sub load_user_tracks {
     } else {
       $self->_add_flat_file_track($menu, 'url', $code, $url_sources{$code}{'source_name'},
         sprintf('
-          Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: %s',
-          encode_entities($url_sources{$code}{'source_type'}), encode_entities($url_sources{$code}{'source_url'})
+          Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: <a href="%s">%s</a>',
+          encode_entities($url_sources{$code}{'source_type'}), 
+          encode_entities($url_sources{$code}{'source_url'}),
+          encode_entities($url_sources{$code}{'source_url'})
         ),
         url      => $url_sources{$code}{'source_url'},
         format   => $url_sources{$code}{'format'},
@@ -676,10 +678,35 @@ sub load_user_tracks {
   $ENV{'CACHE_TAGS'}{'user_data'} = sprintf 'USER_DATA[%s]', md5_hex(join '|', map $_->id, $menu->nodes) if $menu->has_child_nodes;
 }
 
+sub load_configured_gff { 
+  warn "load_configured_gff";
+  shift->load_file_format('gff');
+}
+
+sub _add_gff_track {
+warn "custom _add_gff_track";  
+  my ($self, %args) = @_;
+
+  my $source = $args{source};
+
+  $self->_add_flat_file_track($args{menu}, 'url', $args{key}, $source->{'source_name'},
+    sprintf('
+      Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: <a href="%s">%s</a>',
+      encode_entities($source->{'source_type'}), 
+      encode_entities($source->{'source_url'}),
+      encode_entities($source->{'source_url'})
+    ),
+    url      => $source->{'source_url'},
+    format   => 'gff',
+    style    => $source->{'style'},
+    external => $args{external},
+    colour   => $args{colour},
+  );
+}
+
 sub _add_flat_file_track {
   my ($self, $menu, $sub_type, $key, $name, $description, %options) = @_;
   $menu ||= $self->get_node('user_data');
-  
   return unless $menu;
  
   my ($strand, $renderers) = $self->_user_track_settings($options{'style'}, $options{'format'});
@@ -730,51 +757,51 @@ sub _user_track_settings {
   return ($strand, \@user_renderers);
 }
 
-sub _add_file_format_track {
-  my ($self, %args) = @_;
-  my $menu = $args{'menu'} || $self->get_node('user_data');
+# sub _add_file_format_track {
+#   my ($self, %args) = @_;
+#   my $menu = $args{'menu'} || $self->get_node('user_data');
   
-  return unless $menu;
+#   return unless $menu;
   
-  %args = $self->_add_datahub_extras_options(%args) if $args{'source'}{'datahub'};
+#   %args = $self->_add_datahub_extras_options(%args) if $args{'source'}{'datahub'};
   
-  my $type    = lc $args{'format'};
-  my $article = $args{'format'} =~ /^[aeiou]/ ? 'an' : 'a';
-  my $desc;
+#   my $type    = lc $args{'format'};
+#   my $article = $args{'format'} =~ /^[aeiou]/ ? 'an' : 'a';
+#   my $desc;
   
-  if ($args{'internal'}) {
-    $desc = "Data served from a $args{'format'} file: $args{'description'}";
-  } else {
-## EG don't show attachment message for internally configured sources
-    my $from = $args{'source'}{'source_type'} =~ /^session|user$/i
-      ? sprintf( 'This data is attached to the %s, and comes from URL: %s', encode_entities($args{'source'}{'source_type'}), encode_entities($args{'source'}{'source_url'}) )
-      : sprintf( 'This data comes from URL: %s', encode_entities($args{'source'}{'source_url'}) );
+#   if ($args{'internal'}) {
+#     $desc = "Data served from a $args{'format'} file: $args{'description'}";
+#   } else {
+# ## EG don't show attachment message for internally configured sources
+#     my $from = $args{'source'}{'source_type'} =~ /^session|user$/i
+#       ? sprintf( 'This data is attached to the %s, and comes from URL: %s', encode_entities($args{'source'}{'source_type'}), encode_entities($args{'source'}{'source_url'}) )
+#       : sprintf( 'This data comes from URL: %s', encode_entities($args{'source'}{'source_url'}) );
 
-    $desc = sprintf(
-      'Data retrieved from %s %s file on an external webserver. %s<br />%s',
-      $article,
-      $args{'format'},
-      $args{'description'},
-      $from,
-    );
-##    
-  }
+#     $desc = sprintf(
+#       'Data retrieved from %s %s file on an external webserver. %s<br />%s',
+#       $article,
+#       $args{'format'},
+#       $args{'description'},
+#       $from,
+#     );
+# ##    
+#   }
   
-  my $track = $self->create_track($args{'key'}, $args{'source'}{'source_name'}, {
-    display     => 'off',
-    strand      => $args{source}{strand} || 'f',
-    format      => $args{'format'},
-    glyphset    => $type,
-    colourset   => $type,
-    renderers   => $args{'renderers'},
-    caption     => exists($args{'source'}{'caption'}) ? $args{'source'}{'caption'} : $args{'source'}{'source_name'},
-    url         => $args{'source'}{'source_url'},
-    description => $desc,
-    %{$args{'options'}}
-  });
+#   my $track = $self->create_track($args{'key'}, $args{'source'}{'source_name'}, {
+#     display     => 'off',
+#     strand      => $args{source}{strand} || 'f',
+#     format      => $args{'format'},
+#     glyphset    => $type,
+#     colourset   => $type,
+#     renderers   => $args{'renderers'},
+#     caption     => exists($args{'source'}{'caption'}) ? $args{'source'}{'caption'} : $args{'source'}{'source_name'},
+#     url         => $args{'source'}{'source_url'},
+#     description => $desc,
+#     %{$args{'options'}}
+#   });
   
-  $menu->append($track) if $track;
-}
+#   $menu->append($track) if $track;
+# }
 
 sub update_from_url {
   ## Tracks added "manually" in the URL (e.g. via a link)
