@@ -60,12 +60,13 @@ my $aboutdir    = "$plugin_root/htdocs/ssi/species";
 my $imgdir64    = "$plugin_root/htdocs/i/species/64";
 my $imgdir48    = "$plugin_root/htdocs/i/species/48";
 my $imgdir16    = "$plugin_root/htdocs/i/species/16";
+my $img_dir_large = "$plugin_root/htdocs/i/species/large";
 my $default_img = "$plugin_root/htdocs/i/default_species_large.png";
 my $image_path  = "$plugin_root/htdocs/img";
 
 $default_img = undef unless -e $default_img;
 
-make_dir($aboutdir, $imgdir64, $imgdir48, $imgdir16, $image_path);
+make_dir($aboutdir, $imgdir64, $imgdir48, $imgdir16, $img_dir_large, $image_path);
 
 printf STDERR ("Fetching %s ...\n", $url) unless $quiet;
 my $xmldoc = get($url) or die "Fetch $url failed: $!\n";
@@ -164,6 +165,7 @@ foreach my $species (keys %{$xml->{'node'}}) {
   my $image = Imager->new();
   $image->read(file => $tmpimg);
 
+  save_largeimage($image,"$img_dir_large/$Species.png");
   save_thumbnail($image, "$imgdir64/$Species.png", 64);
   save_thumbnail($image, "$imgdir48/$Species.png", 48);
   save_thumbnail($image, "$imgdir16/$Species.png", 16);
@@ -182,6 +184,18 @@ sub info {
   return if $quiet;
   my $message = shift;
   warn "$message\n";
+}
+
+sub save_largeimage {
+  my ($image, $filename) = @_;
+  info("Writing $filename");
+  if($image->getwidth() > 700 || $image->getheight() > 700){
+  my $large = $image->scale(xpixels => 700, ypixels => 700, type=>'min');
+  $large->write(file => $filename);
+  } else {
+  my $large = $image->copy();
+  $large->write(file => $filename);
+  }
 }
 
 sub save_thumbnail {

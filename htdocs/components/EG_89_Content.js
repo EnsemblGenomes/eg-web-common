@@ -4,6 +4,7 @@ Ensembl.Panel.Content = Ensembl.Panel.Content.extend({
     $('select.species-selector').each(function(){ $(this).speciesSelector() });
     $('select.ajax-species-selector').each(function(){ $(this).ajaxSpeciesSelector() });
     this.base();
+	this.el.find(".species_lightbox").fancybox();
   },
   
   dataTable: function () {

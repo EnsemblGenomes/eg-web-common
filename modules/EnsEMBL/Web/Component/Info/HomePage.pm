@@ -166,7 +166,7 @@ sub content {
       <div class="box-left">
         <div class="species-badge">';
 
-  $html .= qq(<img src="${img_url}species/64/$species.png" alt="" title="$sound" />) unless $self->is_bacteria;
+  $html .= qq(<a class="species_lightbox _ht" href="${img_url}species/large/$species.png" title="Click to enlarge"><img src="${img_url}species/64/$species.png" alt="" title="$sound" /></a>) unless $self->is_bacteria;
 
   if ($common_name =~ /\./) {
     $html .= qq(<h1>$display_name</h1>);
