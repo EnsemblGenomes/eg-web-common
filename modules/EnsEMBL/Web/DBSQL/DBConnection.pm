@@ -41,7 +41,7 @@ sub get_DBAdaptor {
 
   # if we have connected to the db before, return the adaptor from the cache
   return $self->{'_dbs'}{$species}{$database} if exists $self->{'_dbs'}{$species}{$database};
-warn "\n\n\nGET DBA $species, $database";    
+
   # try to retrieve the DBAdaptor from the Registry
   my $dba = $reg->get_DBAdaptor($species, $database);
   # warn "$species - $database - $dba";
