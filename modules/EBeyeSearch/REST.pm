@@ -86,7 +86,7 @@ sub get_facet_values {
   $args ||= {};
   $args->{facetcount} ||= 10;
   
-  my $results = $self->get($domain, {%$args, query => _escape($query), size => 0});
+  my $results = $self->get($domain, {%$args, query => $query, size => 0});
 
   my $facet_values = [];  
   foreach my $facet (@{$results->{facets}}) {
@@ -102,13 +102,13 @@ sub get_results {
   my ($self, $domain, $query, $args) = @_;
   $args ||= {};
 
-  return $self->get($domain, {%$args, query => _escape($query)});
+  return $self->get($domain, {%$args, query => $query});
 }
 
 sub get_results_count {
   my ($self, $domain, $query) = @_;
   
-  my $results = $self->get($domain, {query => _escape($query), size => 0});
+  my $results = $self->get($domain, {query => $query, size => 0});
   return $results->{hitCount} || 0;
 }
 
@@ -116,7 +116,7 @@ sub get_results_as_hashes {
   my ($self, $domain, $query, $args, $opts) = @_;
   $args ||= {};
 
-  my $results = $self->get($domain, {%$args, query => _escape($query)});
+  my $results = $self->get($domain, {%$args, query => $query});
 
   my $hashes = [];
   foreach my $entry (@{$results->{entries}}) {
