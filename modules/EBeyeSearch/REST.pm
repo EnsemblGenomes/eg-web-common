@@ -135,11 +135,4 @@ sub get_results_as_hashes {
   return $hashes;
 }
 
-my $escape_chars = quotemeta '+-&|!(){}[]^"~*?:\\';
-sub _escape {
-    my ( $self, $text ) = @_;
-    $text =~ s/([$escape_chars])/\\$1/g;
-    return $text;
-}
-
 1;
