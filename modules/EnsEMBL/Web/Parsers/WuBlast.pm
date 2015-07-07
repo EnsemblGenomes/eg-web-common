@@ -45,13 +45,16 @@ sub parse_xml {
 
     foreach my $align (@{ $hit->{alignments}->{alignment} }) {
       
-      my $qstart = $align->{querySeq}->{start};
-      my $qend   = $align->{querySeq}->{end};
-      my $qori   = $qstart < $qend ? 1 : -1;
+      my $q      = $align->{querySeq};
+      my $t      = $align->{matchSeq};
 
-      my $tstart = $align->{matchSeq}->{start};
-      my $tend   = $align->{matchSeq}->{end};
-      my $tori   = $tstart < $tend ? 1 : -1;
+      my $qstart = $q->{start} < $q->{end} ? $q->{start} : $q->{end};
+      my $qend   = $q->{start} < $q->{end} ? $q->{end} : $q->{start};
+      my $qori   = $q->{start} < $q->{end} ? 1 : -1;
+
+      my $tstart = $t->{start} < $t->{end} ? $t->{start} : $t->{end};
+      my $tend   = $t->{start} < $t->{end} ? $t->{end} : $t->{start};
+      my $tori   = $t->{start} < $t->{end} ? 1 : -1;
       
       my ($qframe, $tframe) = split /\s*\/\s*/, $align->{frame}; # E.g "+2 / -3"
 
@@ -69,8 +72,8 @@ sub parse_xml {
         score  => $align->{identity},
         evalue => $align->{expectation},
         pident => $align->{identity},
-        len    => length($align->{querySeq}->{content}),
-        aln    => btop($align->{querySeq}->{content}, $align->{matchSeq}->{content}),
+        len    => length($q->{content}),
+        aln    => btop($q->{content}, $t->{content}),
         desc   => $description,
       };
       
