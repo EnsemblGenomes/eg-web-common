@@ -21,16 +21,17 @@ limitations under the License.
 package EnsEMBL::Web::ZMenu::Gene;
 
 sub content {
-  my $self   = shift;
-  my $hub    = $self->hub;
-  my $object = $self->object;
-  my @xref   = $object->display_xref;
-  my $g      = $hub->param('g');
+  my $self         = shift;
+  my $hub          = $self->hub;
+  my $species_defs = $hub->species_defs;
+  my $object       = $self->object;
+  my @xref         = $object->display_xref;
+  my $g            = $hub->param('g');
 
   $self->caption($xref[0] ? "$xref[3]: $xref[0]" : 'Novel transcript');
 
   my $zmenu_label = $object->stable_id;
-  if ($hub->species_defs->GENOMIC_UNIT eq 'bacteria') {
+  if ($species_defs->GENOMIC_UNIT eq 'bacteria') {
     $zmenu_label = $xref[0] ? $xref[0]." (".$object->stable_id.")" : $object->stable_id;
   }
   
@@ -114,6 +115,22 @@ sub content {
     $self->add_entry({
       type       => 'Annotation method',
       label_html => $object->analysis->description
+    });
+  }
+
+warn "AN URL " . $species_defs->ANNOTATION_URL;
+
+  if (my $annotation_url = $species_defs->ANNOTATION_URL) {
+    
+    my ($sr, $start, $end) = ($object->seq_region_name, $object->seq_region_start, $object->seq_region_end);
+    $annotation_url =~ s/###SEQ_REGION###/$sr/;
+    $annotation_url =~ s/###START###/$start/;
+    $annotation_url =~ s/###END###/$end/;
+
+    $self->add_entry({
+      type  => 'Community annotation',
+      label => 'Click here to annotate',
+      link  => $annotation_url,
     });
   }
 
