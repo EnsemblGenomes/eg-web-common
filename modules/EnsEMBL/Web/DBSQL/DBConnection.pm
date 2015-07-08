@@ -41,7 +41,7 @@ sub get_DBAdaptor {
 
   # if we have connected to the db before, return the adaptor from the cache
   return $self->{'_dbs'}{$species}{$database} if exists $self->{'_dbs'}{$species}{$database};
-    
+
   # try to retrieve the DBAdaptor from the Registry
   my $dba = $reg->get_DBAdaptor($species, $database);
   # warn "$species - $database - $dba";
@@ -52,11 +52,10 @@ sub get_DBAdaptor {
   if (! $dba ) {
     my $sg = $hub->species_defs->get_config($species, "SPECIES_DATASET");
     $dba = $reg->get_DBAdaptor($sg, $database) if $sg;
-  }
-  
-  if ($dba) {
-    $dba->{_is_multispecies} = 1;
-    $dba->{_species_id} = $hub->species_defs->get_config($species, "SPECIES_META_ID");
+    if ($dba) {
+      $dba->{_is_multispecies} = 1;
+      $dba->{_species_id} = $hub->species_defs->get_config($species, "SPECIES_META_ID");
+    }
   }
 ##
 
