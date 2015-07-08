@@ -390,7 +390,8 @@ sub add_sequence_variations_default {
   foreach my $key_2 (sort keys %{$hashref->{'source'}{'counts'} || {}}) {
     next unless $hashref->{'source'}{'counts'}{$key_2} > 0;
     next if     $hashref->{'source'}{'somatic'}{$key_2} == 1;
-    
+    next if     $key_2 =~ /Inter-homoeologous/;
+
     # EG/1KG fix for ESP tracks:
     my $vf_track = {};
     $vf_track->{caption} = $key_2 =~ /^ESP$/ ? 'Exome Sequencing Project' : $key_2;
