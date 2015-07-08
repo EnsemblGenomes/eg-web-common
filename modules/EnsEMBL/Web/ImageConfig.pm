@@ -679,12 +679,10 @@ sub load_user_tracks {
 }
 
 sub load_configured_gff { 
-  warn "load_configured_gff";
   shift->load_file_format('gff');
 }
 
 sub _add_gff_track {
-warn "custom _add_gff_track";  
   my ($self, %args) = @_;
 
   my $source = $args{source};
@@ -701,6 +699,7 @@ warn "custom _add_gff_track";
     style    => $source->{'style'},
     external => $args{external},
     colour   => $args{colour},
+    display  => $args{display}
   );
 }
 
