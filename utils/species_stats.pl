@@ -468,13 +468,24 @@ foreach my $spp (@valid_spp) {
     }
 
     my $provider     = $SD->get_config($spp, "PROVIDER_NAME");
-    my $provider_url = $SD->get_config($spp, "PROVIDER_URL");
+    
     if ($provider) {
-      $provider = qq{<a href="$provider_url">$provider</a>} if $provider_url;
+    my $provider_url = $SD->get_config($spp, "PROVIDER_URL");   
+
+    my @providerVarOrList  = ref $provider eq 'ARRAY' ? @$provider : ($provider);
+    my @providerURLVarOrList = ref $provider_url eq 'ARRAY' ? @$provider_url : ($provider_url); 
+    my $providersLinks; 
+    foreach my $individualProvider(@providerVarOrList){
+	my $individualProviderURL = shift @providerURLVarOrList;
+	$providersLinks .= qq{<a href="$individualProviderURL">$individualProvider</a><br />} if $individualProviderURL;
+    }
+
+     # $provider = qq{<a href="$provider_url">$provider</a>} if $provider_url;
+     
       $row  = stripe_row(++$rowcount);
       print STATS qq($row
           <td class="data">Data source:</td>
-          <td class="value">$provider</td>
+          <td class="value">$providersLinks</td>
       </tr>
       );
     }
