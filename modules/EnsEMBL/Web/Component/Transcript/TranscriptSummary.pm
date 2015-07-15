@@ -1,6 +1,6 @@
 =head1 LICENSE
 
-Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+Copyright [1999-2015] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ limitations under the License.
 package EnsEMBL::Web::Component::Transcript::TranscriptSummary;
 
 use strict;
+use HTML::Entities  qw(encode_entities);
 
 use base qw(EnsEMBL::Web::Component::Transcript);
 
@@ -44,6 +45,7 @@ sub content {
   my $residues     = $translation ? $self->thousandify($translation->length) : 0;
   my @CCDS         = @{$transcript->get_all_DBLinks('CCDS')};
   my @Uniprot      = @{$transcript->get_all_DBLinks('Uniprot/SWISSPROT')};
+  my ($tsl)        = @{$transcript->get_all_Attributes('TSL')};
   my $html         = "<strong>Exons:</strong> $exons <strong>Coding exons:</strong> $coding_exons <strong>Transcript length:</strong> $basepairs bps";
   $html           .= " <strong>Translation length:</strong> $residues residues" if $residues;
 
@@ -62,6 +64,12 @@ sub content {
     $table->add_row('Uniprot', sprintf('<p>This transcript corresponds to the following Uniprot identifiers: %s</p>', join ', ', map $hub->get_ExtURL_link($_, 'Uniprot/SWISSPROT', $_), @Uniprot));
   }
 
+  ## add TSL info
+  if ($tsl && ($tsl = $tsl->value)) {
+    my $key = $tsl =~ s/^tsl([^\s]+).*$/TSL:$1/gr;
+    $table->add_row('Transcript Support Level (TSL)', sprintf('<span class="ts_flag">%s</span>', $self->helptip($key, $self->get_glossary_entry($key).$self->get_glossary_entry('TSL'))));
+  }
+  
 ## EG - ENSEMBL-3347 meaningless for EG
 #  $table->add_row('Ensembl version', $object->stable_id.'.'.$object->version);
 ##
@@ -122,7 +130,7 @@ sub content {
   ## add frameshift introns info
   my $frameshift_introns = $object->get_frameshift_introns;
 
-  $table->add_row('Frameshift introns', $self->glossary_mouseover('Frameshift intron', 'Frameshift introns') . " occur at intron number(s)  $frameshift_introns.") if $frameshift_introns;
+  $table->add_row('Frameshift introns', $self->glossary_helptip('Frameshift introns', 'Frameshift intron') . " occur at intron number(s)  $frameshift_introns.") if $frameshift_introns;
 
   ## add stop gained/lost variation info
   my @attrib_codes = qw(StopLost StopGained);
