@@ -262,6 +262,25 @@ sub modify_tree {
      }
   }
   $compara_menu->before( $go_menu );
+
+
+  my $sequence = $self->get_node('Sequence');
+  my $gene_families = $self->create_node('Gene_families', 'Gene families',
+    [qw( 
+      selector     EnsEMBL::Web::Component::Gene::GeneFamilySelector
+      genefamilies EnsEMBL::Web::Component::Gene::GeneFamilies 
+      )],
+    { 'availability' => 'gene database:compara', 'concise' => 'Gene families' }
+  );
+  $self->create_node( 'Gene_families/SaveFilter', '',
+    [], { 'availability' => 'gene database:compara', 'no_menu_entry' => 1,
+    'command' => 'EnsEMBL::Web::Command::GeneFamily::SaveFilter'}
+  );
+  $self->create_node( 'Gene_families/Sequence', '',
+    [qw( alignment EnsEMBL::Web::Component::Gene::GeneFamilySeq )],
+    { 'availability' => 'gene database:compara', 'no_menu_entry' => 1 }
+  );
+  $sequence->after($gene_families);
 }
 
 1;
