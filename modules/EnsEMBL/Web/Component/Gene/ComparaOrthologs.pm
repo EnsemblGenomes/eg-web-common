@@ -46,51 +46,58 @@ sub _species_sets {
     $set_order = [qw(all ensembl metazoa plants fungi protists bacteria archaea)];
   }
   
-
-  my $categories = {};
   my $species_sets = {
-    'ensembl'     => {'title' => 'Vertebrates', 'desc' => '', 'species' =>[]},
-    'metazoa'     => {'title' => 'Metazoa', 'desc'=>'', 'species'=>[]},
-    'plants'      => {'title' => 'Plants', 'desc' => '', 'species' => []},
-    'fungi'       => {'title' => 'Fungi', 'desc' => '', 'species' => []},
-    'protists'    => {'title' => 'Protists', 'desc' => '', 'species' => []},
-    'bacteria'    => {'title' => 'Bacteria', 'desc' => '', 'species' => []},
-    'archaea'     => {'title' => 'Archaea', 'desc' => '', 'species' => []},
-    'all'       =>   {'title' => 'All', 'desc' => '', 'species' => []},
+    'ensembl'     => {'title' => 'Vertebrates', 'desc' => '', 'species' => []},
+    'metazoa'     => {'title' => 'Metazoa',     'desc' => '', 'species' => []},
+    'plants'      => {'title' => 'Plants',      'desc' => '', 'species' => []},
+    'fungi'       => {'title' => 'Fungi',       'desc' => '', 'species' => []},
+    'protists'    => {'title' => 'Protists',    'desc' => '', 'species' => []},
+    'bacteria'    => {'title' => 'Bacteria',    'desc' => '', 'species' => []},
+    'archaea'     => {'title' => 'Archaea',     'desc' => '', 'species' => []},
+    'all'         => {'title' => 'All',         'desc' => '', 'species' => []},
   };
-
+  my $categories      = {};
   my $sets_by_species = {};
+  my $spsites         = $species_defs->ENSEMBL_SPECIES_SITE();
 
-  my $spsites =  $species_defs->ENSEMBL_SPECIES_SITE();
   foreach my $species (keys %$orthologue_list) {
     next if $skipped->{$species};
+    
     my $group = $spsites->{lc($species)};
+
     if($group eq 'bacteria'){
-      if($self->is_archaea(lc $species)){
-        $group='archaea';
-      }
-    }
-    elsif (!$is_pan){ # not the pan compara page - generate groups
+    
+      $group = 'archaea' if $self->is_archaea(lc $species);
+    
+    } elsif (!$is_pan){ 
+    
+      # not the pan compara page - generate groups
       $group = $species_defs->get_config($species, 'SPECIES_GROUP') || $spsites->{lc($species)} || 'Undefined';
+      
       if(!exists $species_sets->{$group}){
-        $species_sets->{$group} = {'title'=>ucfirst $group,'species'=>[]};
-        push(@$set_order,$group);
+        $species_sets->{$group} = {'title' => ucfirst $group, 'species' => []};
+        push @$set_order, $group;
       }
     }
 
-    push (@{$species_sets->{'all'}{'species'}}, $species);
+    push @{$species_sets->{'all'}{'species'}}, $species;
     my $sets = [];
 
     my $orthologues = $orthologue_list->{$species} || {};
+
     foreach my $stable_id (keys %$orthologues) {
-      my $orth_info = $orthologue_list->{$species}{$stable_id};
+      my $orth_info = $orthologue_list->{$species}->{$stable_id};
       my $orth_desc = ucfirst($orth_info->{'homology_desc'});
-      $species_sets->{'all'}{$orth_desc}++;
-      $species_sets->{$group}{$orth_desc}++;
-      $categories->{$orth_desc} = {key=>$orth_desc, title=>$orth_desc} unless exists $categories->{$orth_desc};
+
+      $species_sets->{'all'}->{$orth_desc}++;
+      $species_sets->{'all'}->{'all'}++;
+      $species_sets->{$group}->{$orth_desc}++;
+      $species_sets->{$group}->{'all'}++;
+      
+      $categories->{$orth_desc} = {key => $orth_desc, title => $orth_desc} unless exists $categories->{$orth_desc};
     }
-    push(@{$species_sets->{$group}{'species'}},$species);
-    push (@$sets, $group) if(exists $species_sets->{$group});
+    push @{$species_sets->{$group}{'species'}}, $species;
+    push (@$sets, $group) if exists $species_sets->{$group};
     $sets_by_species->{$species} = $sets;
   }
 
