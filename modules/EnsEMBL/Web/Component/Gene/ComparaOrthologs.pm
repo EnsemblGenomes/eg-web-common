@@ -47,14 +47,14 @@ sub _species_sets {
   }
   
   my $species_sets = {
-    'ensembl'     => {'title' => 'Vertebrates', 'desc' => '', 'species' => []},
-    'metazoa'     => {'title' => 'Metazoa',     'desc' => '', 'species' => []},
-    'plants'      => {'title' => 'Plants',      'desc' => '', 'species' => []},
-    'fungi'       => {'title' => 'Fungi',       'desc' => '', 'species' => []},
-    'protists'    => {'title' => 'Protists',    'desc' => '', 'species' => []},
-    'bacteria'    => {'title' => 'Bacteria',    'desc' => '', 'species' => []},
-    'archaea'     => {'title' => 'Archaea',     'desc' => '', 'species' => []},
-    'all'         => {'title' => 'All',         'desc' => '', 'species' => []},
+    'ensembl'     => {'title' => 'Vertebrates', 'desc' => '', 'species' => [], 'all' => 0},
+    'metazoa'     => {'title' => 'Metazoa',     'desc' => '', 'species' => [], 'all' => 0},
+    'plants'      => {'title' => 'Plants',      'desc' => '', 'species' => [], 'all' => 0},
+    'fungi'       => {'title' => 'Fungi',       'desc' => '', 'species' => [], 'all' => 0},
+    'protists'    => {'title' => 'Protists',    'desc' => '', 'species' => [], 'all' => 0},
+    'bacteria'    => {'title' => 'Bacteria',    'desc' => '', 'species' => [], 'all' => 0},
+    'archaea'     => {'title' => 'Archaea',     'desc' => '', 'species' => [], 'all' => 0},
+    'all'         => {'title' => 'All',         'desc' => '', 'species' => [], 'all' => 0},
   };
   my $categories      = {};
   my $sets_by_species = {};
@@ -75,7 +75,7 @@ sub _species_sets {
       $group = $species_defs->get_config($species, 'SPECIES_GROUP') || $spsites->{lc($species)} || 'Undefined';
       
       if(!exists $species_sets->{$group}){
-        $species_sets->{$group} = {'title' => ucfirst $group, 'species' => []};
+        $species_sets->{$group} = {'title' => ucfirst $group, 'species' => [], 'all' => 0};
         push @$set_order, $group;
       }
     }
