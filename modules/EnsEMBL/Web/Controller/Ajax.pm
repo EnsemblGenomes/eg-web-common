@@ -20,7 +20,7 @@ package EnsEMBL::Web::Controller::Ajax;
 
 use strict;
 
-sub species_autocomplete {
+sub ajax_species_autocomplete {
   my ($self, $hub) = @_;
   my $species_defs  = $hub->species_defs;
   my $term          = $hub->param('term'); # will return everything if no term specified

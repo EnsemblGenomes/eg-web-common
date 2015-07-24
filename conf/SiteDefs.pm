@@ -24,8 +24,8 @@ use Data::Dumper;
 sub update_conf {
   map {delete($SiteDefs::__species_aliases{$_}) } keys %SiteDefs::__species_aliases;
   
-  $SiteDefs::SITE_RELEASE_VERSION = 27;
-  $SiteDefs::SITE_RELEASE_DATE = 'June 2015';
+  $SiteDefs::SITE_RELEASE_VERSION = 28;
+  $SiteDefs::SITE_RELEASE_DATE = 'July 2015';
   
   $SiteDefs::SITE_MISSION = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
   
@@ -54,20 +54,6 @@ sub update_conf {
   $SiteDefs::APACHE_DIR    = '/etc/httpd';
   $SiteDefs::SAMTOOLS_DIR  = '/nfs/public/rw/ensembl/samtools';
   
-  $SiteDefs::ENSEMBL_USERDB_HOST = 'localhost';
-  $SiteDefs::ENSEMBL_USERDB_PORT = 3306;
-  $SiteDefs::ENSEMBL_USERDB_USER = 'ensrw';
-  $SiteDefs::ENSEMBL_USERDB_PASS = 'ensrw';
-  $SiteDefs::ENSEMBL_USERDB_NAME = 'ensembl_accounts';
-
-  $SiteDefs::ROSE_DB_DATABASES->{'user'}   = {
-    database  => $SiteDefs::ENSEMBL_USERDB_NAME,
-    host      => $SiteDefs::ENSEMBL_USERDB_HOST,
-    port      => $SiteDefs::ENSEMBL_USERDB_PORT,
-    username  => $SiteDefs::ENSEMBL_USERDB_USER || $SiteDefs::DATABASE_WRITE_USER,
-    password  => $SiteDefs::ENSEMBL_USERDB_PASS || $SiteDefs::DATABASE_WRITE_PASS,
-  };
-
   # TOOLS
 
   # Database key name for tools db as defined in MULTI.ini
