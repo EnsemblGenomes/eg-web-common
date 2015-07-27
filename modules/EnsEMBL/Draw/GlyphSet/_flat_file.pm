@@ -70,7 +70,11 @@ sub features {
   my %results;
   
   $self->{'_default_colour'} = $self->SUPER::my_colour($sub_type);
- 
+
+## EG: Cannot attach a track with seq_region_names to a translation object as there are no seq_region_names
+  next if $container->isa("Bio::EnsEMBL::Translation");
+##
+
   $parser->filter($container->seq_region_name, $container->start, $container->end);
 
   $self->{'parser'} = $parser;
