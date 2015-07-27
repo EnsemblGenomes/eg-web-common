@@ -33,7 +33,7 @@ sub content {
   my $ens_tran     = $object->Obj->canonical_transcript; # Link to protein sequence for cannonical or longest translation
   my $ens_prot;
   my $g            = $hub->param('g');
-  my $species_display_name = $hub->species_display_label($species);
+  my $species_display_name = $hub->species_defs->species_label($species);
   
   $self->SUPER::content;
   
