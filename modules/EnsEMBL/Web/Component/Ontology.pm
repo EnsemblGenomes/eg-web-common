@@ -71,7 +71,7 @@ sub content {
   $html .= '<div id="tabTableContent" class="tabContent" style="display:none;"> ' . $self->ontology_table($ochart) . '</div>' unless $go;
 
   $html = sprintf '<div class="js_panel"><input type="hidden" class="panel_type" value="Ontology"/>%s</div>', $html;
-  $html .= '<p>No ontology terms have been annotated to this entity.</p>' unless $terms_found;
+  #$html .= '<p>No ontology terms have been annotated to this entity.</p>' unless $terms_found;
   return $html;
 }
 
