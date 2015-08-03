@@ -68,16 +68,25 @@ sub modify_tree {
       }
     }
   }
+  
+  my $var_image_r;
+  if ($reg_name && $start && $end) {
+    # add some flanking
+    my $flank = int(abs($end - $start) * 0.1);
+    my $s = $start - $flank;
+    my $e = $end + $flank;
+    $s = 0 if $s < 0;
+    $var_image_r = $reg_name . ':' . $s . '-' . $e;
+  } else {
+    $var_image_r = $gene->seq_region_name . ':' . $gene->start . '-' . $gene->end;
+  }
 
-  my $var_menu = $self->get_node('Variation');
-
-  my $r = ($reg_name && $start && $end) ? $reg_name . ':' . $start . '-' . $end : $gene->seq_region_name . ':' . $gene->start . '-' . $gene->end;
   my $url = $hub->url(
     {
       type   => 'Gene',
       action => 'Variation_Gene/Image',
       g      => $hub->param('g') || $gene->stable_id,
-      r      => $r
+      r      => $var_image_r
     }
   );
 
@@ -93,7 +102,8 @@ sub modify_tree {
   );
   $variation_image->set('availability', 'gene database:variation not_patch');
   $variation_image->set('url' => $url);
-
+ 
+  my $var_menu = $self->get_node('Variation');
   $var_menu->append($variation_image);
 
   my $cdb_name = $self->hub->species_defs->COMPARA_DB_NAME || 'Comparative Genomics';
