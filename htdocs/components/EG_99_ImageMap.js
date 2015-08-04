@@ -1,21 +1,5 @@
 Ensembl.Panel.ImageMap =  Ensembl.Panel.ImageMap.extend({
 
-  makeZMenu: function (e, coords) {
-    var area = coords.r ? this.dragRegion : this.getArea(coords);
-
-    if (!area || area.a.klass.label) {
-      return;
-    }
-    
-    if (area.a.klass.nav) {
-      Ensembl.redirect(area.a.attrs.href);
-      return;
-    }
-    
-    this.zMenus['zmenu_' + area.a.coords.join('_')] = 1;
-
-    this.base(e, coords);
-  },
   
 
   makeImageMap: function () {
