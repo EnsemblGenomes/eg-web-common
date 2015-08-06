@@ -68,6 +68,7 @@ sub content {
       });
     }
 
+    $html .= sprintf '<p>Showing the top 25 hits from <a href="https://europepmc.org/search?query=%s">Europe PubMed Central</a></p>', uri_escape($query);
     $html .= $table->render;  
   }
 
@@ -82,7 +83,7 @@ sub get_gene_names {
   if ($obj->can('display_xref')) {
     if (my $xref = $obj->display_xref) {
       push @names, $xref->display_id;
-      push @names, @{$xref->get_all_synonyms}
+      #push @names, @{$xref->get_all_synonyms}
     }
   }
   
