@@ -37,7 +37,8 @@ sub update_conf {
   );
 
   push (@SiteDefs::ENSEMBL_LIB_DIRS, 
-    $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules'
+    $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules',
+    '/nfs/public/rw/ensembl/bioperl-1.6.1'
   );
   
   $SiteDefs::TEMPLATE_ROOT = $SiteDefs::ENSEMBL_SERVERROOT.'/eg-web-common/templates';
