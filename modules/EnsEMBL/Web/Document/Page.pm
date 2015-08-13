@@ -31,10 +31,9 @@ sub ajax_redirect {
   $url .= ($url =~ /\?/ ? ';' : '?') . '_backtrack=' . join ';_backtrack=', @backtrack if scalar @backtrack;
   $url .= ($url =~ /\?/ ? ';' : '?') . "wizard_back=$back" if $back;
 
-## EG - ENSEMBL-3972 the url seems to get decoded somewhere on the other side so we need to encode here.
-##      this (or an equiv fix) needs to go into core        
-##      REMOVE FOR EG29 as now fixed by ENSWEB-1510 in E82   
-  $url = uri_escape($url) unless $url =~ /ensembl\.org\/index\.html$/; # regex is a hack to make login work :/
+## EG - ENSEMBL-3972 the url seems to get decoded somewhere on the other side so we need to encode here
+##      for problematic assembly name - this should be fixed in core for E82    
+  $url = uri_escape($url) if $url =~ /IWGSC1\.0%2Bpopseq/; 
 ##
 
   if ($self->renderer->{'_modal_dialog_'}) {
