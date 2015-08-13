@@ -33,7 +33,7 @@ sub ajax_redirect {
 
 ## EG - ENSEMBL-3972 the url seems to get decoded somewhere on the other side so we need to encode here
 ##      for problematic assembly name - this should be fixed in core for E82    
-  $url = uri_escape($url) if $url =~ /IWGSC1\.0+popseq/; 
+  $url = uri_escape($url) if $url =~ /IWGSC1\.0%2Bpopseq/; 
 ##
 
   if ($self->renderer->{'_modal_dialog_'}) {
