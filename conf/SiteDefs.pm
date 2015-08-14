@@ -40,8 +40,6 @@ sub update_conf {
   $SiteDefs::APACHE_BIN    = '/usr/sbin/httpd';
   $SiteDefs::APACHE_DIR    = '/etc/httpd';
   $SiteDefs::SAMTOOLS_DIR  = '/nfs/public/rw/ensembl/samtools';
-   
-  $SiteDefs::OBJECT_TO_SCRIPT->{'Info'} = 'AltPage';
 
   # Does this site have a large species set?
   # (used by the interface to determine whether to use dropdown or auto-comeplete etc)
@@ -65,7 +63,9 @@ sub update_conf {
   $SiteDefs::ENSEMBL_MART_ENABLED   = 0;
   $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
 
-  # REST endpoints for external services
+  # EXTERNAL
+
+  # REST endpoints
   $SiteDefs::NCBIBLAST_REST_ENDPOINT = 'http://www.ebi.ac.uk/Tools/services/rest/ncbiblast';
   $SiteDefs::EBEYE_REST_ENDPOINT     = 'http://www.ebi.ac.uk/ebisearch/ws/rest';
 
