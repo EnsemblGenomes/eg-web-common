@@ -34,7 +34,8 @@ sub update_conf {
   );
 
   push (@SiteDefs::ENSEMBL_LIB_DIRS, 
-    $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules'
+    $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules',
+    '/nfs/public/rw/ensembl/bioperl-1.6.1'
   );
 
   $SiteDefs::APACHE_BIN    = '/usr/sbin/httpd';
