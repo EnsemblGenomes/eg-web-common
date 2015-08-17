@@ -21,83 +21,56 @@ package EnsEMBL::Draw::GlyphSet::bigwig;
 use strict;
 
 use List::Util qw(min max);
-use Bio::EnsEMBL::SimpleFeature;
-use Bio::EnsEMBL::ExternalData::BigFile::BigWigAdaptor;
 
 use base qw(EnsEMBL::Draw::GlyphSet::_alignment  EnsEMBL::Draw::GlyphSet_wiggle_and_block);
 
 # get the alignment features
 sub wiggle_features {
-  my ($self, $bins) = @_;
+  my ($self, $bins, $multi_key) = @_;
+  my $hub = $self->{'config'}->hub;
+  my $has_chrs = scalar(@{$hub->species_defs->ENSEMBL_CHROMOSOMES});
+  
+  my $wiggle_features = $multi_key ? $self->{'_cache'}{'wiggle_features'}{$multi_key} 
+                                   : $self->{'_cache'}{'wiggle_features'}; 
 
+  if (!$wiggle_features) {
+    my $slice     = $self->{'container'};
+    my $adaptor   = $self->bigwig_adaptor;
+    return [] unless $adaptor;
+
+    my $summary   = $adaptor->fetch_summary_array($slice->seq_region_name, $slice->start, $slice->end, $bins, $has_chrs);
 ## EG
-  my $slice = $self->{'container'};
-  if (!$self->{'_cache'}{'wiggle_features'}) {
-    my $summary = $self->bigwig_adaptor->fetch_extended_summary_array($slice->seq_region_name, $slice->start, $slice->end, $bins) || [];
-
-    # check summary by synonym name unless not found by name
+    # if not found by name, check for synonyms
     if ( !@$summary ){
       my $synonym_obj = $slice->get_all_synonyms(); # arrayref of Bio::EnsEMBL::SeqRegionSynonym objects
       foreach my $synonym (@$synonym_obj) {
-        $summary =  $self->bigwig_adaptor->fetch_extended_summary_array($synonym->name, $slice->start, $slice->end, $bins);
+        $summary =  $self->bigwig_adaptor->fetch_summary_array($synonym->name, $slice->start, $slice->end, $bins, $has_chrs);
         last if (ref $summary eq 'ARRAY' && @$summary > 0);
       }
     }
 ##
-
     my $bin_width = $slice->length / $bins;
     my $flip      = $slice->strand == -1 ? $slice->length + 1 : undef;
-    my @features;
+    $wiggle_features = [];
     
     for (my $i = 0; $i < $bins; $i++) {
-      next unless $summary->[$i]{'validCount'} > 0;
-      
-      push @features, {
+      next unless defined $summary->[$i];
+      push @$wiggle_features, {
         start => $flip ? $flip - (($i + 1) * $bin_width) : ($i * $bin_width + 1),
         end   => $flip ? $flip - ($i * $bin_width + 1)   : (($i + 1) * $bin_width),
-        score => $summary->[$i]{'sumData'} / $summary->[$i]{'validCount'},
+        score => $summary->[$i],
       };
     }
-    
-    $self->{'_cache'}{'wiggle_features'} = \@features;
+  
+    if ($multi_key) {
+      $self->{'_cache'}{'wiggle_features'}{$multi_key} = $wiggle_features;
+    }
+    else {
+      $self->{'_cache'}{'wiggle_features'} = $wiggle_features;
+    }
   }
   
-  return $self->{'_cache'}{'wiggle_features'};
-}
-
-sub draw_features {
-  my ($self, $wiggle) = @_;
-  my $slice        = $self->{'container'};
-  my $feature_type = $self->my_config('caption');
-  my $colour       = $self->my_config('colour');
-
-  # render wiggle if wiggle
-  if ($wiggle) {
-    my $max_bins   = min($self->{'config'}->image_width, $slice->length);
-    my $features   = $self->wiggle_features($max_bins);
-    my $viewLimits = $self->my_config('viewLimits');
-    my $no_titles  = $self->my_config('no_titles');
-    
-    my ($min_score, $max_score) = $self->min_max_score($features);
-    
-    # render wiggle plot        
-    $self->draw_wiggle_plot($features, {
-      min_score    => $min_score, 
-      max_score    => $max_score,
-## EG
-      description  => $self->my_config('name'),
-      #description  => $feature_type,
-##         
-      score_colour => $colour,         
-      no_titles    => defined $no_titles,
-    });
-    
-    $self->draw_space_glyph;
-  }
-
-  warn q{bigwig glyphset doesn't draw blocks} if !$wiggle || $wiggle eq 'both';
-  
-  return 0;
+  return $wiggle_features;
 }
 
 sub render_gradient {
@@ -131,6 +104,28 @@ sub render_pvalue {
     transform      => 'log2',
     decimal_places => 5,
   });
+}
+
+sub min_max_score {
+  my ($self, $features) = @_;
+
+  my $viewLimits = $self->my_config('viewLimits');
+  my $min_score;
+  my $max_score;
+
+  if ($viewLimits) {
+    ($min_score, $max_score) = split ':', $viewLimits;
+  } else {
+    $min_score = $features->[0]{'score'};
+    $max_score = $features->[0]{'score'};
+    
+    foreach my $feature (@$features) {
+      $min_score = min($min_score, $feature->{'score'});
+      $max_score = max($max_score, $feature->{'score'});
+    }
+  }
+
+  return $min_score, $max_score;
 }
 
 1;
