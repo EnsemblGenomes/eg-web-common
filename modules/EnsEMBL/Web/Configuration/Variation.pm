@@ -29,7 +29,6 @@ sub modify_tree {
 
   my $gencontext = $self->get_node('Context');
 
-  # S4 DAS
   $gencontext->after(
   $self->create_node('Population', 'Genotype frequency',
     [qw( 
