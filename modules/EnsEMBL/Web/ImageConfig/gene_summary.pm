@@ -42,6 +42,7 @@ sub init {
     polya_sites 
     replication_profiling
     regulatory_elements
+    tss
     transcriptome
     nucleosome
     dna_methylation

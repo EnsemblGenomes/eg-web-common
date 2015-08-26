@@ -229,8 +229,10 @@ sub menus {
     polya_sites            => 'Polyadenylation sites',  
     replication_profiling  => 'Replication Profiling',  
     regulatory_elements    => 'Regulatory Elements',    
+    tss                    => 'Transcription Start Sites',
     transcriptome          => 'Transcriptome',          
     nucleosome             => 'Nucleosome Positioning', 
+    polymerase             => 'Polymerase Usage',       
     dna_methylation        => 'DNA Methylation',        
     histone_mod            => 'Histone Modification', 
 #       
