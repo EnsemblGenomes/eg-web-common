@@ -31,7 +31,7 @@ sub add_alignments {
   
   my $alignments = {};
   my $self_label = $species_defs->species_label($species, 'no_formatting');
-  my $static     = $species_defs->ENSEMBL_SITETYPE eq 'Vega' ? '/info/data/comparative_analysis.html' : '/info/docs/compara/analyses.html';
+  my $static     = $species_defs->ENSEMBL_SITETYPE eq 'Vega' ? '/info/data/comparative_analysis.html' : '/info/genome/compara/analyses.html';
  
   foreach my $row (values %{$hashref->{'ALIGNMENTS'}}) {
     next unless $row->{'species'}{$species};
@@ -100,7 +100,7 @@ sub add_alignments {
       if ($row->{'conservation_score'}) {
         my ($program) = $hashref->{'CONSERVATION_SCORES'}{$row->{'conservation_score'}}{'type'} =~ /(.+)_CONSERVATION_SCORE/;
         
-        $options{'description'} = qq{<a href="/info/docs/compara/analyses.html#conservation">$program conservation scores</a> based on the $row->{'name'}};
+        $options{'description'} = qq{<a href="/info/genome/compara/analyses.html#conservation">$program conservation scores</a> based on the $row->{'name'}};
         
         $alignments->{'conservation'}{"$row->{'id'}_scores"} = {
           %options,
@@ -130,7 +130,7 @@ sub add_alignments {
         order       => sprintf('%12d::%s::%s', 1e12-$n_species*10-1, $row->{'type'}, $row->{'name'}),
         display     => 'off',
         renderers   => [ 'off', 'Off', 'compact', 'On' ],
-        description => qq{<a href="/info/docs/compara/analyses.html#conservation">$n_species way whole-genome multiple alignments</a>.; } . 
+        description => qq{<a href="/info/genome/compara/analyses.html#conservation">$n_species way whole-genome multiple alignments</a>.; } . 
                        join('; ', sort map { $species_defs->species_label($_, 'no_formatting') } grep { $_ ne 'ancestral_sequences' } keys %{$row->{'species'}}),
       };
     } 
@@ -208,14 +208,15 @@ sub menus {
   return $_[0]->{'menus'} ||= {
     # Sequence
     seq_assembly        => 'Sequence and assembly',
-    sequence            => [ 'Sequence',          'seq_assembly' ],
-    misc_feature        => [ 'Clones',            'seq_assembly' ],
-    genome_attribs      => [ 'Genome attributes', 'seq_assembly' ],
-    marker              => [ 'Markers',           'seq_assembly' ],
-    simple              => [ 'Simple features',   'seq_assembly' ],
-    ditag               => [ 'Ditag features',    'seq_assembly' ],
-    dna_align_other     => [ 'GRC alignments',    'seq_assembly' ],
-    
+    sequence            => [ 'Sequence',                'seq_assembly' ],
+    misc_feature        => [ 'Clones & misc. regions',  'seq_assembly' ],
+    genome_attribs      => [ 'Genome attributes',       'seq_assembly' ],
+    marker              => [ 'Markers',                 'seq_assembly' ],
+    simple              => [ 'Simple features',         'seq_assembly' ],
+    ditag               => [ 'Ditag features',          'seq_assembly' ],
+    dna_align_other     => [ 'GRC alignments',          'seq_assembly' ],
+    dna_align_compara   => [ 'Imported alignments',     'seq_assembly' ],
+
     # Transcripts/Genes
     gene_transcript     => 'Genes and transcripts',
     transcript          => [ 'Genes',                  'gene_transcript' ],
@@ -257,6 +258,7 @@ sub menus {
     
     # Variations
     variation           => 'Variation',
+    recombination       => [ 'Recombination & Accessibility', 'variation' ],
     somatic             => 'Somatic mutations',    
     ld_population       => 'Population features',
     
@@ -504,9 +506,9 @@ sub load_user_tracks {
   my $session  = $hub->session;
   my $user     = $hub->user;
   my $das      = $hub->get_all_das;
-  my $datahubs = $self->get_parameter('datahubs') == 1;
+  my $trackhubs = $self->get_parameter('trackhubs') == 1;
   my (%url_sources, %upload_sources);
-  
+
   $self->_load_url_feature($menu);
 
   foreach my $source (sort { ($a->caption || $a->label) cmp ($b->caption || $b->label) } values %$das) {
@@ -518,12 +520,12 @@ sub load_user_tracks {
     $self->add_das_tracks('user_data', $source);
   }
 
-  # Get the tracks that are temporarily stored - as "files" not in the DB....
-  # Firstly "upload data" not yet committed to the database...
-  # Then those attached as URLs to either the session or the User
-  # Now we deal with the url sources... again flat file
+  ## Data attached via URL
+
   foreach my $entry ($session->get_data(type => 'url')) {
+    next if $entry->{'no_attach'};
     next unless $entry->{'species'} eq $self->{'species'};
+
     $url_sources{"url_$entry->{'code'}"} = {
       source_type => 'session',
       source_name => $entry->{'name'} || $entry->{'url'},
@@ -541,6 +543,7 @@ sub load_user_tracks {
     };
   }
   
+  ## Data uploaded but not saved
   foreach my $entry ($session->get_data(type => 'upload')) {
     next unless $entry->{'species'} eq $self->{'species'};
    
@@ -575,9 +578,11 @@ sub load_user_tracks {
     }
   }
   
+  ## Data saved by the user  
   if ($user) {
     my @groups = $user->get_groups;
 
+    ## URL attached data
     foreach my $entry (grep $_->species eq $self->{'species'}, $user->get_records('urls'), map $user->get_group_records($_, 'urls'), @groups) {
       $url_sources{'url_' . $entry->code} = {
         source_name => $entry->name || $entry->url,
@@ -592,6 +597,7 @@ sub load_user_tracks {
       };
     }
     
+    ## Uploads that have been saved to the userdata database
     foreach my $entry (grep $_->species eq $self->{'species'}, $user->get_records('uploads'), map $user->get_group_records($_, 'uploads'), @groups) {
       my ($name, $assembly) = ($entry->name, $entry->assembly);
       
@@ -608,6 +614,7 @@ sub load_user_tracks {
     }
   }
 
+  ## Now we can add all remote (URL) data sources
   foreach my $code (sort { $url_sources{$a}{'source_name'} cmp $url_sources{$b}{'source_name'} } keys %url_sources) {
     my $add_method = lc "_add_$url_sources{$code}{'format'}_track";
     
@@ -618,13 +625,15 @@ sub load_user_tracks {
         source   => $url_sources{$code},
         external => 'user'
       );
-    } elsif (lc $url_sources{$code}{'format'} eq 'datahub') {
-      $self->_add_datahub($url_sources{$code}{'source_name'}, $url_sources{$code}{'source_url'}) if $datahubs;
+    } elsif (lc $url_sources{$code}{'format'} eq 'trackhub') {
+      $self->_add_trackhub($url_sources{$code}{'source_name'}, $url_sources{$code}{'source_url'}) if $trackhubs;
     } else {
       $self->_add_flat_file_track($menu, 'url', $code, $url_sources{$code}{'source_name'},
         sprintf('
-          Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: %s',
-          encode_entities($url_sources{$code}{'source_type'}), encode_entities($url_sources{$code}{'source_url'})
+          Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: <a href="%s">%s</a>',
+          encode_entities($url_sources{$code}{'source_type'}), 
+          encode_entities($url_sources{$code}{'source_url'}),
+          encode_entities($url_sources{$code}{'source_url'})
         ),
         url      => $url_sources{$code}{'source_url'},
         format   => $url_sources{$code}{'format'},
@@ -634,7 +643,7 @@ sub load_user_tracks {
     }
   }
   
-  # We now need to get a userdata adaptor to get the analysis info
+  ## And finally any saved uploads
   if (keys %upload_sources) {
     my $dbs        = EnsEMBL::Web::DBSQL::DBConnection->new($self->{'species'});
     my $dba        = $dbs->get_DBAdaptor('userdata');
@@ -739,7 +748,7 @@ sub _add_file_format_track {
   
   return unless $menu;
   
-  %args = $self->_add_datahub_extras_options(%args) if $args{'source'}{'datahub'};
+  %args = $self->_add_trackhub_extras_options(%args) if $args{'source'}{'trackhub'};
   
   my $type    = lc $args{'format'};
   my $article = $args{'format'} =~ /^[aeiou]/ ? 'an' : 'a';
@@ -805,7 +814,7 @@ sub update_from_url {
     my $format = $hub->param('format');
     my ($key, $renderer);
     
-    if (uc $format eq 'DATAHUB') {
+    if (uc $format eq 'TRACKHUB') {
       $key = $v;
     } else {
       my @split = split /=/, $v;
@@ -883,15 +892,15 @@ sub update_from_url {
         # We then have to create a node in the user_config
         my %ensembl_assemblies = %{$hub->species_defs->assembly_lookup};
 
-        if (uc $format eq 'DATAHUB') {
+        if (uc $format eq 'TRACKHUB') {
           my $info;
-          ($n, $info) = $self->_add_datahub($n, $p,1);
+          ($n, $info) = $self->_add_trackhub($n, $p,1);
           if ($info->{'error'}) {
             my @errors = @{$info->{'error'}||[]};
             $session->add_data(
               type     => 'message',
               function => '_warning',
-              code     => 'datahub:' . md5_hex($p),
+              code     => 'trackhub:' . md5_hex($p),
               message  => "There was a problem attaching trackhub $n: @errors",
             );
           }
@@ -953,7 +962,7 @@ sub update_from_url {
         }
         # We have to create a URL upload entry in the session
         my $message  = sprintf('Data has been attached to your display from the following URL: %s', encode_entities($p));
-        if (uc $format eq 'DATAHUB') {
+        if (uc $format eq 'TRACKHUB') {
           $message .= " Please go to '<b>Configure this page</b>' to choose which tracks to show (we do not turn on tracks automatically in case they overload our server).";
         }
         $session->add_data(

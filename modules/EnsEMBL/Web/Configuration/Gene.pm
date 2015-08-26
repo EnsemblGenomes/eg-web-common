@@ -197,29 +197,13 @@ sub modify_tree {
   my $family = $self->get_node('Family');
   $family->set('no_menu_entry', 1);
 
-### EG
-
   $compara_menu->after($pancompara_menu);
 
-  # S4 DAS
-  $self->delete_node('Expression');
-  foreach my $logic_name (qw(S4_LITERATURE S4_PUBMED)) {
-    if (my $source = $hub->get_das_by_logic_name($logic_name)) {
-      $compara_menu->before(
-        $self->create_node(
-          "das/$logic_name",
-          $logic_name,
-          [$source->renderer, "EnsEMBL::Web::Component::Gene::" . $source->renderer],
-          {
-            availability => 'gene',
-            concise      => $source->caption,
-            caption      => $source->caption,
-            full_caption => $source->label
-          }
-        )
-      );
-    }
-  }
+  $compara_menu->before( $self->create_node( 'Literature', 'Literature',
+    [qw(literature EnsEMBL::Web::Component::Gene::Literature)],
+    { 'availability' => 'gene' }
+  ));
+
 
   # get all ontologies mapped to this species
   my $go_menu = $self->create_submenu('GO', 'Ontology');

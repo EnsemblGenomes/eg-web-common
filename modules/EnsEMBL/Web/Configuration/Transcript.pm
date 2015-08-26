@@ -37,20 +37,6 @@ sub modify_tree {
   my $species_defs = $hub->species_defs;
   my $protein_variations = $self->get_node('ProtVariations');  
   
-  # S4 DAS
-  foreach my $logic_name (qw(S4_PROTEIN_STRUCTURE S4_PROTEIN)) {
-    if (my $source = $hub->get_das_by_logic_name($logic_name)) {
-      $protein_variations->after($self->create_node("das/$logic_name", $logic_name,
-        [$source->renderer, "EnsEMBL::Web::Component::Transcript::" . $source->renderer], {
-          availability => 'transcript', 
-          concise      => $source->caption, 
-          caption      => $source->caption, 
-          full_caption => $source->label
-        }
-      ));
-    }
-  }
-
   # Zoomable variation image
 
   # $var_menu->append($self->create_node('Variation_Transcript/Image', 'Variation image',
