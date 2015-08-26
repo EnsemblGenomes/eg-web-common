@@ -94,7 +94,7 @@ sub genome_search {
         <h3 class="first">Search for a genome</h3>
         <form id="species_autocomplete_form" action="species.html" style="margin-bottom:5px" method="get">
           <div>
-           <input name="search" type="text" id="species_autocomplete" class="ui-autocomplete-input inactive" style="width:95\%; margin: 0; padding-left:4px" title="Start typing the name of a genome..." value="Start typing the name of a genome...">
+           <input name="search" type="text" id="species_autocomplete" class="ui-autocomplete-input inactive" style="width:95\%; margin: 0; padding-left:3px" title="Start typing the name of a genome..." value="Start typing the name of a genome...">
           </div>
         </form>
         <p style="margin-bottom:0">
