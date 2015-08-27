@@ -72,6 +72,7 @@ sub init {
   $self->load_tracks;
   $self->load_configured_das;
   $self->load_configured_bed;
+  $self->load_configured_bigwig;
 
   $self->modify_configs(
     [ 'fg_regulatory_features_funcgen', 'transcript', 'prediction', 'variation' ],
