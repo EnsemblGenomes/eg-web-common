@@ -45,14 +45,16 @@ sub update_conf {
   # Does this site have a large species set?
   # (used by the interface to determine whether to use dropdown or auto-comeplete etc)
   $SiteDefs::LARGE_SPECIES_SET = 0;
-    
+  
+  #---------------------------------------------------------------------------- 
   # TOOLS
+  #----------------------------------------------------------------------------
 
   # Database key name for tools db as defined in MULTI.ini
   $SiteDefs::ENSEMBL_ORM_DATABASES->{'ticket'} = 'DATABASE_WEB_TOOLS';
 
-  # Which dispatcher to be used for the jobs (provide the appropriate values in your plugins)
-  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER = { 'Blast' => 'NcbiBlast' };
+  # use NcbiBlast dispatcher
+  $SiteDefs::ENSEMBL_TOOLS_JOB_DISPATCHER->{Blast} = 'NcbiBlast';
 
   # if enabled, the BLAST form will try to look sequences up from external dbs
   # best to diable for EG
@@ -64,7 +66,9 @@ sub update_conf {
   $SiteDefs::ENSEMBL_MART_ENABLED   = 0;
   $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
 
+  #----------------------------------------------------------------------------
   # EXTERNAL
+  #----------------------------------------------------------------------------
 
   # REST endpoints
   $SiteDefs::NCBIBLAST_REST_ENDPOINT = 'http://www.ebi.ac.uk/Tools/services/rest/ncbiblast';
