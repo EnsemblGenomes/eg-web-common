@@ -185,7 +185,7 @@ sub draw_gradient {
 
   if ($show_key) {
     my $x_offset    = -10;
-    my $y_offset    = 22;
+    my $y_offset    = 40;
     my $width       = 95;
     my $blocks      = $colour_grades; 
     my $block_size  = int( $width / $blocks );
