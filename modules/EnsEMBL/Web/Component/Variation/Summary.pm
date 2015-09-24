@@ -95,7 +95,7 @@ sub inter_homoeologues {
 
   foreach my $caption (keys %$attribs) {
     my $id      = $attribs->{$caption};
-    my $url     = $hub->url({ v => $id, vf => undef });
+    my $url     = $hub->url({ v => $id, __clear => 1 });
     push @rows, [ucfirst($caption), sprintf('<a href="%s">%s</a> %s', $url, $id)];
   } 
 
