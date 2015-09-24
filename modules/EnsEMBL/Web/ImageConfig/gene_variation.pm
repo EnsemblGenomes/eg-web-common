@@ -94,7 +94,7 @@ sub init_gene {
 
   $self->add_tracks('variation',
   # [ 'snp_join',         '', 'snp_join',         { display => 'on',     strand => 'b', menu => 'no', tag => 0, colours => $self->{'colours'}{'variation'}, context => 0 }],
-    [ 'geneexon_bgtrack', '', 'geneexon_bgtrack', { display => 'normal', strand => 'b', menu => 'no', tag => 1, colours => 'bisque', src => 'all'          }]
+    [ 'geneexon_bgtrack', '', 'geneexon_bgtrack', { display => 'normal', strand => 'b', menu => 'no', tag => 0, colours => 'bisque', src => 'all'          }]
   );
   
   $self->add_tracks('other',
