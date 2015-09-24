@@ -307,7 +307,7 @@ sub _assembly_text {
   $html .= '</div>'; #homepage-icon
 
   if ($sample_data->{POLYPLOID_REGION}) { 
-    my $url  = $species_defs->species_path . '/Location/MultiPolyploid?r=' . $sample_data->{'LOCATION_PARAM'};
+    my $url  = $species_defs->species_path . '/Location/MultiPolyploid?r=' . $sample_data->{'POLYPLOID_REGION'};
     $html .= qq(
       <div class="homepage-icon" style="padding-top:97px;">
         <a class="nodeco _ht" href="$url" title="Go to $sample_data->{POLYPLOID_REGION}"><img src="${img_url}96/region_polyploid.png" class="bordered" /><span>Polyploid example</span></a>
