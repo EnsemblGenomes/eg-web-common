@@ -1,0 +1,28 @@
+
+a.fbutton {
+  background-color:[[BUTTON_BG]];
+  border:double [[BUTTON_TEXT]] 3px;
+  color:[[BUTTON_TEXT]];
+  font-weight:bold;
+  margin-bottom: 3px;
+  cursor: pointer;
+  padding: 2px 6px;
+  text-decoration: none;
+}
+body.ie67 a.fbutton {
+  padding: 0 2px;
+  border: 0; /* double border doesnt work on IE6 & 7 */
+}
+a.fbutton:active, a.fbutton:hover {
+  background-color:[[BUTTON_BG_HOVER]] !important;
+}
+a.fbutton.disabled, input.fbutton.disabled:active {
+  background-color:#999;
+}
+
+
+form.homepage-search-form div.ff-right, 
+form.homepage-search-form div.ff-notes { padding-left: 0 !important; }
+form.homepage-search-form { text-align: left !important; }
+form.homepage-search-form fieldset { display: block; }
+form.homepage-search-form .ftext   { width: 70%; }
