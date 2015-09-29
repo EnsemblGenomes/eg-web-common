@@ -21,6 +21,10 @@ limitations under the License.
 package EnsEMBL::Web::Object::Gene;
 
 use Data::Dumper;
+use JSON;
+use EnsEMBL::Web::TmpFile::Text;
+use Compress::Zlib;
+
 use strict;
 use previous qw(
   counts 
@@ -216,6 +220,78 @@ sub gene_type {
   $type ||= $db;
   if( $type !~ /[A-Z]/ ){ $type = ucfirst($type) } #All lc, so format
   return $type;
+}
+
+sub filtered_family_data {
+  my ($self, $family) = @_;                                                                                              1;
+  my $hub       = $self->hub;
+  my $family_id = $family->stable_id;
+  
+  my $members = []; 
+  my $temp_file = EnsEMBL::Web::TmpFile::Text->new(prefix => 'genefamily', filename => "$family_id.json"); 
+   
+  if ($temp_file->exists) {
+    $members = from_json($temp_file->content);
+  } else {
+    my $member_objs = $family->get_all_Members;
+
+    # API too slow, use raw SQL to get name and desc for all genes   
+    my $gene_info = $self->database('compara')->dbc->db_handle->selectall_hashref(
+      'SELECT g.gene_member_id, g.display_label, g.description FROM family f 
+       JOIN family_member fm USING (family_id) 
+       JOIN seq_member s USING (seq_member_id) 
+       JOIN gene_member g USING (gene_member_id) 
+       WHERE f.stable_id = ?',
+      'gene_member_id',
+      undef,
+      $family_id
+    );
+
+    foreach my $member (@$member_objs) {
+      my $gene = $gene_info->{$member->gene_member_id};
+      push (@$members, {
+        name        => $gene->{display_label},
+        id          => $member->stable_id,
+        taxon_id    => $member->taxon_id,
+        description => $gene->{description},
+        species     => $member->genome_db->name
+      });  
+    }
+    $temp_file->print($hub->jsonify($members));
+  }  
+  
+  my $total_member_count  = scalar @$members;
+     
+  my $species;   
+  $species->{$_->{species}} = 1 for (@$members);
+  my $total_species_count = scalar keys %$species;
+ 
+  # apply filter from session
+ 
+  my @filter_species;
+  if (my $filter = $hub->session->get_data(type => 'genefamilyfilter', code => $hub->data_species . '_' . $family_id )) {
+    @filter_species = split /,/, uncompress( $filter->{filter} );
+  }
+    
+  if (@filter_species) {
+    $members = [grep {my $sp = $_->{species}; grep {$sp eq $_} @filter_species} @$members];
+    $species = {};
+    $species->{$_->{species}} = 1 for (@$members);
+  } 
+  
+  # return results
+  
+  my $data = {
+    members             => $members,
+    species             => $species,
+    member_count        => scalar @$members,
+    species_count       => scalar keys %$species,
+    total_member_count  => $total_member_count,
+    total_species_count => $total_species_count,
+    is_filtered         => @filter_species ? 1 : 0,
+  };
+  
+  return $data;
 }
 
 1;
