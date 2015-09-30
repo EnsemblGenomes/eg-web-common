@@ -19,10 +19,3 @@ a.fbutton:active, a.fbutton:hover {
 a.fbutton.disabled, input.fbutton.disabled:active {
   background-color:#999;
 }
-
-
-form.homepage-search-form div.ff-right, 
-form.homepage-search-form div.ff-notes { padding-left: 0 !important; }
-form.homepage-search-form { text-align: left !important; }
-form.homepage-search-form fieldset { display: block; }
-form.homepage-search-form .ftext   { width: 70%; }
