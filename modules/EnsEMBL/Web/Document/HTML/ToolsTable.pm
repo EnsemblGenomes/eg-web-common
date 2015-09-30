@@ -80,11 +80,11 @@ sub render {
 
   ## ASSEMBLY CONVERTER
   if (!$is_bacteria) {
-    $url = $hub->url({'species' => $sp, 'type' => 'UserData', 'action' => 'SelectFeatures'});
+    my $link = $hub->url({'species' => $sp, qw(type Tools action AssemblyConverter)});
     $table->add_row({
-      'name' => sprintf('<b><a class="modal_link nodeco" href="%s">Assembly converter</a></b>', $url),
+      'name' => sprintf('<b><a class="nodeco" href="%s">Assembly converter</a></b>', $link),
       'desc' => "Map (liftover) your data's coordinates to the current assembly.",
-      'tool' => sprintf('<a href="%s" class="modal_link nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $url, $img_url),
+      'tool' => sprintf('<a href="%s" class="modal_link nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $link, $img_url),
       'code' => '',
       'docs' => ''
     });
