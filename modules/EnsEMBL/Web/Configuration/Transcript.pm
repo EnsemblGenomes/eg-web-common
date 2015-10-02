@@ -56,9 +56,14 @@ sub modify_tree {
 
   # Ontology
 
-  my $go_menu = $self->get_node('GO');
-  $self->delete_node('Ontology/Image');
+  $self->create_node('Ontology/Table', 'Ontology',
+    [qw( go EnsEMBL::Web::Component::Transcript::Go )],
+    { 'availability' => 'transcript has_go', 'concise' => 'GO table' }
+  );
+
   $self->delete_node('Ontology/Table');
+  my $go_menu = $self->create_submenu('GO', 'Ontology');
+  $self->get_node('ExternalRecords')->after($go_menu);
 
   # get all ontologies mapped to this species
   my %olist = map {$_ => 1} @{$species_defs->DISPLAY_ONTOLOGIES ||[]};
