@@ -21,15 +21,15 @@ package EnsEMBL::Web::Component::Tools::Blast::InputForm;
 use strict;
 use warnings;
 use URI;
-use previous qw(get_form_node);
+use previous qw(get_cacheable_form_node);
 use List::Util qw(min);
 
-sub get_form_node {
+sub get_cacheable_form_node {
   my $self            = shift;
   my $hub             = $self->hub;
   my $species_defs    = $hub->species_defs;
-  my $form            = $self->PREV::get_form_node(@_);
-  my $default_species = $species_defs->valid_species($hub->species) ? $hub->species : undef;
+  my $form            = $self->PREV::get_cacheable_form_node(@_);
+  my $default_species = $species_defs->valid_species($hub->species) ? $hub->species : $hub->get_favourite_species->[0];
 
   my @species         = $hub->param('species') || $default_species || ();
   
