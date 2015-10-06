@@ -48,6 +48,14 @@ sub init {
     dna_methylation
     histone_mod 
 
+    wheat_alignment      
+    wheat_assembly       
+    wheat_transcriptomics
+    wheat_ests           
+    rnaseq_cultivar      
+    rnaseq_tissue        
+    resequencing  
+
     external_data
     user_data
     other

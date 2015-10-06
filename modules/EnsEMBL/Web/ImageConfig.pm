@@ -19,6 +19,7 @@ limitations under the License.
 package EnsEMBL::Web::ImageConfig;
 
 use strict;
+use previous qw(menus);
 
 sub add_alignments {
   my ($self, $key, $hashref, $species) = @_;
@@ -205,26 +206,11 @@ sub _add_mw_track {
 
 
 sub menus {
-  return $_[0]->{'menus'} ||= {
-    # Sequence
-    seq_assembly        => 'Sequence and assembly',
-    sequence            => [ 'Sequence',                'seq_assembly' ],
-    misc_feature        => [ 'Clones & misc. regions',  'seq_assembly' ],
-    genome_attribs      => [ 'Genome attributes',       'seq_assembly' ],
-    marker              => [ 'Markers',                 'seq_assembly' ],
-    simple              => [ 'Simple features',         'seq_assembly' ],
-    ditag               => [ 'Ditag features',          'seq_assembly' ],
-    dna_align_other     => [ 'GRC alignments',          'seq_assembly' ],
-    dna_align_compara   => [ 'Imported alignments',     'seq_assembly' ],
-
-    # Transcripts/Genes
-    gene_transcript     => 'Genes and transcripts',
-    transcript          => [ 'Genes',                  'gene_transcript' ],
-    prediction          => [ 'Prediction transcripts', 'gene_transcript' ],
-    lrg                 => [ 'LRG transcripts',        'gene_transcript' ],
-    rnaseq              => [ 'RNASeq models',          'gene_transcript' ],
-
-## EG used to organise fungi/protists external tracks
+  my $self  = shift;
+  my $menus = $self->PREV::menus(@_);
+  my $add   = {
+    
+    # used to organise fungi/protists external tracks
     chromatin_binding      => 'Chromatin binding',      
     pb_intron_branch_point => 'Intron Branch Point',    
     polya_sites            => 'Polyadenylation sites',  
@@ -236,58 +222,24 @@ sub menus {
     polymerase             => 'Polymerase Usage',       
     dna_methylation        => 'DNA Methylation',        
     histone_mod            => 'Histone Modification', 
-#       
     
-    # Supporting evidence
-    splice_sites        => 'Splice sites',
-    evidence            => 'Evidence',
-    
-    # Alignments
-    mrna_prot           => 'mRNA and protein alignments',
-    dna_align_cdna      => [ 'mRNA alignments',    'mrna_prot' ],
-    dna_align_est       => [ 'EST alignments',     'mrna_prot' ],
-    protein_align       => [ 'Protein alignments', 'mrna_prot' ],
-    protein_feature     => [ 'Protein features',   'mrna_prot' ],
-    rnaseq_bam          => [ 'RNASeq study',       'mrna_prot' ],
-    dna_align_rna       => 'ncRNA',
-    
-    # Proteins
-    domain              => 'Protein domains',
-    gsv_domain          => 'Protein domains',
-    feature             => 'Protein features',
-    
-    # Variations
-    variation           => 'Variation',
-    recombination       => [ 'Recombination & Accessibility', 'variation' ],
-    somatic             => 'Somatic mutations',    
-    ld_population       => 'Population features',
-    
-    # Regulation
-    functional          => 'Regulation',
-    
-    # Compara
-    compara             => 'Comparative genomics',
-    pairwise_blastz     => [ 'BLASTz/LASTz alignments',    'compara' ],
-    pairwise_other      => [ 'Pairwise alignment',         'compara' ],
-    pairwise_tblat      => [ 'Translated blat alignments', 'compara' ],
-    multiple_align      => [ 'Multiple alignments',        'compara' ],
-    conservation        => [ 'Conservation regions',       'compara' ],
-    synteny             => 'Synteny',
-    
-    # Other features
-    repeat              => 'Repeat regions',
-    oligo               => 'Oligo probes',
-    trans_associated    => 'Transcript features',
-    
-    # Info/decorations
-    information         => 'Information',
-    decorations         => 'Additional decorations',
-    other               => 'Additional decorations',
-    
-    # External data
-    user_data           => 'Your data',
-    external_data       => 'External data',
+    # used to organise plants external tracks
+    wheat_alignment        => 'Wheat SNPs and alignments',
+    wheat_assembly         => [ 'Wheat Assemblies and SNPs',           'wheat_alignment' ],
+    wheat_transcriptomics  => [ 'Wheat transcriptomics',               'wheat_alignment' ],
+    wheat_ests             => [ 'Wheat UniGene and ESTs',              'wheat_alignment' ],
+    rnaseq_cultivar        => [ 'RNASeq study of nine cultivars',      'mrna_prot' ],
+    rnaseq_tissue          => [ 'RNASeq study of eight growth stages', 'mrna_prot' ],
+    resequencing           => [ 'Resequencing', 'functional' ], 
+
   };
+
+  # EG ENSEMBL-3655 change terminology for Barley community
+  if ($self->hub->species =~ /Hordeum_vulgare/i ) {
+    $add->{prediction} = [ 'Low-confidence genes', 'gene_transcript' ];
+  }
+
+  return { %$menus, %$add };
 }
 
 ## Add the density display for the variation tracks
