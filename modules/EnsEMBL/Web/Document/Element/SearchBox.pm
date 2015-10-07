@@ -29,7 +29,7 @@ sub search_options {
     ($_[0]->hub->species and $_[0]->hub->species !~ /^(common|multi)$/i) ? (
     'ensemblthis'     => { 'label' => 'Search ' . $_[0]->species_defs->SPECIES_COMMON_NAME, 'icon' => 'search/ensembl.gif'  }) : (),
     'ensemblunit'     => { 'label' => "Search $sitename",       'icon' => 'search/ensemblunit.gif'      },
-    'ensembl_genomes' => { 'label' => 'Search Ensembl genomes', 'icon' => 'search/ensembl_genomes.gif'  },
+    'ensembl_genomes' => { 'label' => 'Search Ensembl Genomes', 'icon' => 'search/ensembl_genomes.gif'  },
     'ensembl_all'     => { 'label' => 'Search all species',     'icon' => 'search/ensembl.gif'          },
     'ebi'             => { 'label' => 'Search EBI',             'icon' => 'search/ebi.gif'              },
   ];
