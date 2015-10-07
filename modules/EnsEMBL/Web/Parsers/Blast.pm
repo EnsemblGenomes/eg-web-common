@@ -39,10 +39,9 @@ sub parse_xml {
   my @results;
 
   foreach my $hit_id (keys %$hits) {
-    my $hit = $hits->{$hit_id};
+    my $hit = $hits->{$hit_id}; 
     
     foreach my $align (@{ $hit->{alignments}->{alignment} }) {
-
       my $q      = $align->{querySeq};
       my $t      = $align->{matchSeq};
 
@@ -55,6 +54,9 @@ sub parse_xml {
       my $tori   = $t->{start} < $t->{end} ? 1 : -1;
       
       my ($qframe, $tframe) = split /\s*\/\s*/, $align->{frame} || ''; # E.g "+2 / -3"
+
+      my $desc = $hit->{description};  
+      $desc =~ s/.*description:"(.*)".*/$1/ if $desc =~ /description:/;
 
       my $result = {
         qid    => 'Query_1', #??
@@ -72,6 +74,7 @@ sub parse_xml {
         pident => $align->{identity},
         len    => length($q->{content}),
         aln    => btop($q->{content}, $t->{content}),
+        desc   => $desc,
       };
       
       push @results, $self->map_to_genome($result, $species, $source_type, $db);
