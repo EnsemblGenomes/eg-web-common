@@ -520,7 +520,7 @@ sub dumpGene {
         my @transcript_stable_ids = keys %{ $gene_data->{transcript_stable_ids} };
         
         # add variation features
-        if ($SNPDB) {
+        if ($DB eq 'core' && $SNPDB) {
           $gene_data->{snps} = $dbh->selectcol_arrayref(
             "SELECT DISTINCT(vf.variation_name) FROM $SNPDB.transcript_variation AS tv, $SNPDB.variation_feature AS vf
              WHERE vf.variation_feature_id = tv.variation_feature_id AND tv.feature_stable_id IN('" . join("', '", @transcript_stable_ids) . "')"
@@ -709,7 +709,7 @@ sub geneLineXML {
   my $genomic_unit         = $xml_data->{'genomic_unit'};
   my $location             = $xml_data->{'location'};
   my $transcripts          = $xml_data->{'transcript_stable_ids'} or die "transcripts not set";
-  my $snps                 = $xml_data->{'snps'};
+  my $snps                 = $xml_data->{'snps'} || [];
   my $orthologs            = $xml_data->{'orthologs'};
   my $peptides             = $xml_data->{'translation_stable_ids'} or die "peptides not set";
   my $exons                = $xml_data->{'exons'} or die "exons not set";
