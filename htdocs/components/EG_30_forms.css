@@ -19,3 +19,13 @@ a.fbutton:active, a.fbutton:hover {
 a.fbutton.disabled, input.fbutton.disabled:active {
   background-color:#999;
 }
+
+
+form.bgcolour ._stt_input.long_species_fieldset .form-field.long_species_field{ 
+  overflow: visible;
+}
+
+form.bgcolour ._stt_input.long_species_fieldset .form-field.long_species_field .ff-right{ 
+  margin-bottom: 0px;
+  padding-bottom: 15px;
+}
