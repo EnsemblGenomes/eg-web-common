@@ -130,9 +130,9 @@ sub content {
       data_table_config => { iDisplayLength => 25, aLengthMenu => [[25, 50, 100, -1], [25, 50, 100, "All"]] },
     }
   );
-  my $c = 0;  
+  
   foreach my $member (@{$data->{members}}) {
-    last if ++$c > 100;
+
     my $species_path = '/' . $member->{species};
 
     $table->add_row({
