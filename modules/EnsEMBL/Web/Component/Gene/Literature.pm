@@ -98,7 +98,9 @@ sub europe_pmc_articles {
   my $response = $self->_user_agent->get($uri);
 
   if ($response->is_success) {
-    eval { $articles = from_json($response->content)->{resultList}->{result} };
+    my $content = $response->content;
+    $content =~ s/^jsonp\((.*)\)$/$1/ if $content =~ /^jsonp/;
+    eval { $articles = from_json($content)->{resultList}->{result} };
     $error = $@ if $@;
   } else {
     $error = $response->status_line;
