@@ -29,3 +29,7 @@ form.bgcolour ._stt_input.long_species_fieldset .form-field.long_species_field .
   margin-bottom: 0px;
   padding-bottom: 15px;
 }
+
+form.bgcolour ._stt_input.long_species_fieldset .chosen-container{ 
+  min-width: 350px;
+}
