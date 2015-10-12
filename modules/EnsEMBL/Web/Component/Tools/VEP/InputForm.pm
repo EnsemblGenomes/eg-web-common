@@ -117,9 +117,11 @@ sub get_cacheable_form_node {
       'type'          => 'noedit',
       'noinput'       => 1,
       'is_html'       => 1,
-      'caption'       => sprintf('<span class="small"><b>Examples:&nbsp;</b>%s</span>',
-        join(', ', map { sprintf('<a href="#" class="_example_input" rel="%s">%s</a>', $_->{'value'}, $_->{'caption'}) } @$input_formats)
+## EG - we don't have examples for EG29    
+      'caption'       => sprintf('<span class="small"><b>Formats:&nbsp;</b>%s</span>',
+        join(', ', map { $_->{'caption'} } @$input_formats)
       )
+##      
     }, {
       'type'          => 'button',
       'name'          => 'preview',
