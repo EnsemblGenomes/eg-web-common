@@ -190,14 +190,13 @@ sub transcript_table {
 
   if ($description) {
 
-    my $link = $self->get_gene_display_link('[LINK]'); # [LINK] will get replaced by the external id later on
+    my ($url, $xref) = $self->get_gene_display_link($object->gene, $description);
 
-    if ($link) {
-      my $link_id   = $link->{'id'};
-      $link         = $link->{'link'} =~ s/\[LINK\]/$link_id/r;
-      $description  =~ s/$link_id/$link/;
+    if ($xref) {
+      $xref        = $xref->primary_id;
+      $description =~ s|$xref|<a href="$url" class="constant">$xref</a>|;
     }
-    
+
     $table->add_row('Description', $description);
   }  
 
