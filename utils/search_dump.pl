@@ -472,7 +472,7 @@ sub dumpGene {
          AND seq_region_attrib.seq_region_id = seq_region.seq_region_id
          AND seq_region_attrib.attrib_type_id = attrib_type.attrib_type_id
          AND meta.species_id=coord_system.species_id 
-         AND meta.meta_key = 'species.production_name' 
+         AND meta.meta_key = 'species.display_name' 
          AND attrib_type.name = 'Top Level'
        GROUP BY seq_region.seq_region_id  
        ORDER BY species_name, seqname, LENGTH DESC",
