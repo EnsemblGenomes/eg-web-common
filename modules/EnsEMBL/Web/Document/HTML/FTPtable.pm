@@ -72,18 +72,14 @@ sub render {
 
   my @rows;
   foreach my $spp (sort @species) {
-    (my $sp_name = $spp) =~ s/_/ /;
-     my $sp_dir =lc($spp);
-     my $sp_var = lc($spp).'_variation';
-     my $common = $species_defs->get_config($spp, 'SPECIES_COMMON_NAME');
-
-    my $genomic_unit = $species_defs->get_config($spp, 'GENOMIC_UNIT');
-    my $collection;
-    if($genomic_unit =~ /bacteria/i){
-      my $group = lc $species_defs->get_config($spp, 'SPECIES_GROUP');
-      $collection = $group . '_collection/'  if $group;
-    }
+    my $sp_name            = $spp =~ s/_/ /r;
+    my $common             = $species_defs->get_config($spp, 'SPECIES_COMMON_NAME');
+    my $genomic_unit       = $species_defs->get_config($spp, 'GENOMIC_UNIT');
+    my $dataset            = $species_defs->get_config($spp, 'SPECIES_DATASET');
+    my $sp_var             = lc($spp).'_variation';
+    my $sp_dir             = ($dataset eq $spp ? '' : lc($dataset) . '_collection/') . lc($spp);
     my $ftp_base_path_stub = "ftp://ftp.ensemblgenomes.org/pub/release-$rel/$genomic_unit";
+    
     my @mysql;
     foreach my $db( qw/core otherfeatures funcgen variation/){
       my $db_config =  $species_defs->get_config($spp, 'databases')->{'DATABASE_' . uc($db)};
@@ -95,19 +91,19 @@ sub render {
     }
         
     my $data = {
-species    => qq{<strong><i>$sp_name</i></strong>},
-dna        => qq{<a rel="external"  title="$title{'dna'}" href="$ftp_base_path_stub/fasta/$sp_dir/dna/">FASTA</a> (DNA)},
-cdna       => qq{<a rel="external"  title="$title{'cdna'}" href="$ftp_base_path_stub/fasta/$sp_dir/cdna/">FASTA</a> (cDNA)},
-cds        => qq{<a rel="external"  title="$title{'cds'}" href="$ftp_base_path_stub/fasta/$sp_dir/cds/">FASTA</a> (CDS)},
-ncrna      => qq{<a rel="external"  title="$title{'ncrna'}" href="$ftp_base_path_stub/fasta/$sp_dir/ncrna/">FASTA</a> (ncRNA)},
-prot       => qq{<a rel="external"  title="$title{'prot'}" href="$ftp_base_path_stub/fasta/$sp_dir/pep/">FASTA</a> (protein)},
-embl       => qq{<a rel="external"  title="$title{'embl'}" href="$ftp_base_path_stub/embl/} . $sp_dir . qq{/">EMBL</a>},
-genbank    => qq{<a rel="external"  title="$title{'genbank'}" href="$ftp_base_path_stub/genbank/} . $sp_dir . qq{/">GenBank</a>},
-gtf        => qq{<a rel="external"  title="$title{'gtf'}" href="$ftp_base_path_stub/gtf/$sp_dir">GTF</a>},
-gff3       => qq{<a rel="external"  title="$title{'gff3'}" href="$ftp_base_path_stub/gff3/$sp_dir">GFF3</a>},
-mysql      => join('<br/>',@mysql),
-tsv        => qq{<a rel="external"  title="$title{'tsv'}" href="$ftp_base_path_stub/tsv/$sp_dir/">TSV</a>},
-vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/vep/">VEP</a>},
+      species    => qq{<strong><i>$sp_name</i></strong>},
+      dna        => qq{<a rel="external"  title="$title{'dna'}" href="$ftp_base_path_stub/fasta/$sp_dir/dna/">FASTA</a> (DNA)},
+      cdna       => qq{<a rel="external"  title="$title{'cdna'}" href="$ftp_base_path_stub/fasta/$sp_dir/cdna/">FASTA</a> (cDNA)},
+      cds        => qq{<a rel="external"  title="$title{'cds'}" href="$ftp_base_path_stub/fasta/$sp_dir/cds/">FASTA</a> (CDS)},
+      ncrna      => qq{<a rel="external"  title="$title{'ncrna'}" href="$ftp_base_path_stub/fasta/$sp_dir/ncrna/">FASTA</a> (ncRNA)},
+      prot       => qq{<a rel="external"  title="$title{'prot'}" href="$ftp_base_path_stub/fasta/$sp_dir/pep/">FASTA</a> (protein)},
+      embl       => qq{<a rel="external"  title="$title{'embl'}" href="$ftp_base_path_stub/embl/} . $sp_dir . qq{/">EMBL</a>},
+      genbank    => qq{<a rel="external"  title="$title{'genbank'}" href="$ftp_base_path_stub/genbank/} . $sp_dir . qq{/">GenBank</a>},
+      gtf        => qq{<a rel="external"  title="$title{'gtf'}" href="$ftp_base_path_stub/gtf/$sp_dir">GTF</a>},
+      gff3       => qq{<a rel="external"  title="$title{'gff3'}" href="$ftp_base_path_stub/gff3/$sp_dir">GFF3</a>},
+      mysql      => join('<br/>',@mysql),
+      tsv        => qq{<a rel="external"  title="$title{'tsv'}" href="$ftp_base_path_stub/tsv/$sp_dir/">TSV</a>},
+      vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/vep/">VEP</a>},
     };
     my $db_hash = $hub->databases_species($spp, 'variation');
     if ($db_hash->{variation}) {
