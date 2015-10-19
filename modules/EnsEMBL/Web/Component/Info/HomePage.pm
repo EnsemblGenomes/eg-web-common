@@ -336,10 +336,10 @@ sub _assembly_text {
 
   # Link to assembly mapper
   if ($species_defs->ENSEMBL_AC_ENABLED) {
-    $html .= sprintf('<a href="%s" class="nodeco"><img src="%s24/tool.png" class="homepage-link" />Convert your data to %s coordinates</a></p>', $hub->url({'type' => 'Tools', 'action' => 'AssemblyConverter'}), $img_url, $assembly);
+    $html .= sprintf('<a href="%s" class="nodeco"><img src="%s24/tool.png" class="homepage-link" />Convert your data to %s coordinates</a></p>', $hub->url({'type' => 'Tools', 'action' => 'AssemblyConverter'}), $img_url, $current_assembly);
   }
   elsif (ref($species_defs->ASSEMBLY_MAPPINGS) eq 'ARRAY') {
-    $html .= sprintf('<a href="%s" class="modal_link nodeco" rel="modal_user_data"><img src="%s24/tool.png" class="homepage-link" />Convert your data to %s coordinates</a></p>', $hub->url({'type' => 'UserData', 'action' => 'SelectFeatures', __clear => 1}), $img_url, $assembly);
+    $html .= sprintf('<a href="%s" class="modal_link nodeco" rel="modal_user_data"><img src="%s24/tool.png" class="homepage-link" />Convert your data to %s coordinates</a></p>', $hub->url({'type' => 'UserData', 'action' => 'SelectFeatures', __clear => 1}), $img_url, $current_assembly);
   }
   
   $html .= sprintf '<p><a href="%s" class="modal_link nodeco" rel="modal_user_data">%sDisplay your data in %s</a></p>',
