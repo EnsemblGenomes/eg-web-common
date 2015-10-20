@@ -48,7 +48,7 @@ use EnsEMBL::Web::DBSQL::MetaDataAdaptor;
 
 
 use vars qw( $SERVERROOT $PRE $PLUGIN_ROOT $SCRIPT_ROOT $DEBUG $FUDGE $NOINTERPRO $NOSUMMARY $help $info @user_spp $allgenetypes $coordsys $list $pan_comp_species $ena $nogenebuild
-  $species_page);
+  $species_page $skip_existing);
 
 BEGIN{
   &GetOptions( 
@@ -67,6 +67,7 @@ BEGIN{
                'ena' => \$ena,
                'nogenebuild' => \$nogenebuild,
                'all_species_page' => \$species_page,
+               'skipexisting',   \$skip_existing,
   );
 
   pod2usage(-verbose => 2) if $info;
@@ -196,6 +197,12 @@ foreach my $spp (@valid_spp) {
     #print $fq_path_dir, "\n";
     &check_dir($fq_path_dir);
     my $fq_path_html = $fq_path_dir."stats_$spp.html";
+
+    if ($skip_existing and -f $fq_path_html) {
+        warn "**** $fq_path_html file already exists - skipping ****\n";
+        next;
+      }
+
     print STDERR "Writing $fq_path_html\n";
     open (STATS, ">$fq_path_html") or die "Cannot write $fq_path_html: $!";
 
