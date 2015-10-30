@@ -20,6 +20,7 @@ package EnsEMBL::Web::Component::TextSequence;
 
 use strict;
 use warnings;
+no warnings 'uninitialized';
 
 use previous qw(buttons);
 
