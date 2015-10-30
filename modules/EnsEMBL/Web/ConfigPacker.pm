@@ -25,7 +25,9 @@ use LWP::UserAgent;
 use JSON;
 use Data::Dumper;
 
-use previous qw(munge_config_tree _summarise_generic);
+use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
+
+use previous qw(munge_config_tree);
 
 sub munge_config_tree {
   my $self = shift;
@@ -92,7 +94,7 @@ sub _summarise_generic {
 ## EG : need to exclude HOMOEOLOGUES as well as PARALOGUES otherwise too many method link species sets that prevents web site from starting
 sub _summarise_compara_db {
   my ($self, $code, $db_name) = @_;
-  
+
   my $dbh = $self->db_connect($db_name);
   return unless $dbh;
   
@@ -198,20 +200,22 @@ sub _summarise_compara_db {
   );
   
   # We've done the DB hash... So lets get on with the DNA, SYNTENY and GENE hashes;
-  $res_aref = $dbh->selectall_arrayref('
-    select ml.type, gd1.name, gd2.name
-      from genome_db gd1, genome_db gd2, species_set ss1, species_set ss2,
-       method_link ml, method_link_species_set mls1,
-       method_link_species_set mls2
-     where mls1.method_link_species_set_id = mls2.method_link_species_set_id and
-       ml.method_link_id = mls1.method_link_id and
-       ml.method_link_id = mls2.method_link_id and
-       gd1.genome_db_id != gd2.genome_db_id and
-       mls1.species_set_id = ss1.species_set_id and
-       mls2.species_set_id = ss2.species_set_id and
-       ss1.genome_db_id = gd1.genome_db_id and
-       ss2.genome_db_id = gd2.genome_db_id
-  ');
+  unless ($self->is_bacteria) {
+    $res_aref = $dbh->selectall_arrayref('
+      select ml.type, gd1.name, gd2.name
+        from genome_db gd1, genome_db gd2, species_set ss1, species_set ss2,
+         method_link ml, method_link_species_set mls1,
+         method_link_species_set mls2
+       where mls1.method_link_species_set_id = mls2.method_link_species_set_id and
+         ml.method_link_id = mls1.method_link_id and
+         ml.method_link_id = mls2.method_link_id and
+         gd1.genome_db_id != gd2.genome_db_id and
+         mls1.species_set_id = ss1.species_set_id and
+         mls2.species_set_id = ss2.species_set_id and
+         ss1.genome_db_id = gd1.genome_db_id and
+         ss2.genome_db_id = gd2.genome_db_id
+    ');
+  }
   
   ## That's the end of the compara region munging!
 
@@ -502,6 +506,30 @@ sub _munge_meta {
     
     # convenience flag to determine if species is polyploidy
     $self->tree($species)->{POLYPLOIDY} = ($self->tree($species)->{PLOIDY} > 2);
+
+    #  munge EG genome info 
+    my $metadata_db = $self->full_tree->{MULTI}->{databases}->{DATABASE_METADATA};
+
+    if ($metadata_db) {
+      my $dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(
+        -USER   => $metadata_db->{USER},
+        -PASS   => $metadata_db->{PASS},
+        -PORT   => $metadata_db->{PORT},
+        -HOST   => $metadata_db->{HOST},
+        -DBNAME => $metadata_db->{NAME}
+      );
+
+      my $genome_info_adaptor = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC => $dbc);
+      
+      if ($genome_info_adaptor) {
+        my $dbname = $self->tree->{databases}->{DATABASE_CORE}->{NAME};
+        foreach my $genome (@{ $genome_info_adaptor->fetch_all_by_dbname($dbname) }) {
+          my $species = $genome->species;
+          $self->tree($species)->{'SEROTYPE'}     = $genome->serotype;
+          $self->tree($species)->{'PUBLICATIONS'} = $genome->publications;
+        }
+      }
+    } 
   }
 }
 
@@ -611,6 +639,11 @@ sub is_collection {
   my ($self, $db_name) = @_;
   my $database_name = $self->tree->{'databases'}->{'DATABASE_CORE'}{'NAME'};
   return $database_name =~ /_collection/;
+}
+
+sub is_bacteria {
+  my ($self, $db_name) = @_;
+  return $SiteDefs::ENSEMBL_SITETYPE =~ /bacteria/i
 }
 ##
 
