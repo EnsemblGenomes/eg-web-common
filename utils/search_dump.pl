@@ -521,12 +521,31 @@ sub dumpGene {
         
         # add variation features
         if ($DB eq 'core' && $SNPDB) {
-          $gene_data->{snps} = $dbh->selectcol_arrayref(
-            "SELECT DISTINCT(vf.variation_name) FROM $SNPDB.transcript_variation AS tv, $SNPDB.variation_feature AS vf
-             WHERE vf.variation_feature_id = tv.variation_feature_id AND tv.feature_stable_id IN('" . join("', '", @transcript_stable_ids) . "')"
+          $gene_data->{snps} = $dbh->selectall_arrayref(
+        #    "SELECT DISTINCT(vf.variation_name) FROM $SNPDB.transcript_variation AS tv, $SNPDB.variation_feature AS vf
+        #     WHERE vf.variation_feature_id = tv.variation_feature_id AND tv.feature_stable_id IN('" . join("', '", @transcript_stable_ids) . "')"
+             "SELECT feature_stable_id, variation.name, variation_synonym.name AS synonym
+              FROM $SNPDB.transcript_variation
+              INNER JOIN $SNPDB.variation_feature USING (variation_feature_id)
+              INNER JOIN $SNPDB.variation USING (variation_id)
+              LEFT JOIN $SNPDB.variation_synonym USING (variation_id)
+              WHERE feature_stable_id IN('" . join("', '", @transcript_stable_ids) . "')"         
           );
         }
-        
+
+
+        #use Data::Dumper;
+        #warn Dumper($gene_data->{snps});
+        my @all_snps;
+        foreach my $snp_record(@{$gene_data->{snps}}){
+          push @all_snps, $snp_record->[1] if defined($snp_record->[1]);
+          push @all_snps, $snp_record->[2] if defined($snp_record->[2]);
+        }
+        $gene_data->{snps} = \@all_snps;
+        #warn Dumper($gene_data->{snps});
+        #exit;
+
+ 
         # add probes and probesets
         if ($FUNCGENDB) {
           $gene_data->{probes} = [];
