@@ -41,7 +41,7 @@ sub handler_species {
   # Parse the initial path segments, looking for valid ENSEMBL_TYPE values
   my $seg    = shift @path_segments;
   my $script = $SiteDefs::OBJECT_TO_SCRIPT->{$seg};
-
+  
   if ($seg eq 'Component' || $seg eq 'ComponentAjax' || $seg eq 'ZMenu' || $seg eq 'Config' || $seg eq 'Json' || $seg eq 'Download') {
     $type   = shift @path_segments if $SiteDefs::OBJECT_TO_SCRIPT->{$path_segments[0]} || $seg eq 'ZMenu' || $seg eq 'Json' || $seg eq 'Download';
     $plugin = shift @path_segments if $seg eq 'Component';
@@ -51,9 +51,9 @@ sub handler_species {
   
   $action   = shift @path_segments;
   $function = shift @path_segments;
-  
+ 
   $r->custom_response($_, "/$species/Info/Error/$_") for (NOT_FOUND, HTTP_BAD_REQUEST, FORBIDDEN, AUTH_REQUIRED);
-    
+
   if ($flag && $script) {
 ## EG - add polyploid multi view
     $ENV{'ENSEMBL_FACTORY'}   = 'MultipleLocation' if $type eq 'Location' && $action =~ /^Multi(Ideogram.*|Top|Bottom|Polyploid)?$/;
