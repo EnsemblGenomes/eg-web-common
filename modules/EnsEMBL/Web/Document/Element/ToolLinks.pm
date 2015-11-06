@@ -27,12 +27,13 @@ sub links {
   my $sd    = $self->species_defs;
   my @links;
 
-  push @links, 'blast', sprintf '<a class="constant" href="%s">BLAST</a>', $self->hub->url({'species' => '', 'type' => 'Tools', 'action' => 'Blast'}) if $sd->ENSEMBL_BLAST_ENABLED;
+  push @links, 'blast', sprintf '<a class="constant" href="%s">BLAST</a>', $hub->url({'species' => $hub->species || 'Multi', 'type' => 'Tools', 'action' => 'Blast', 'function' => ''}) if $sd->ENSEMBL_BLAST_ENABLED;
   push @links, 'biomart',       '<a class="constant" href="/biomart/martview">BioMart</a>';
   push @links, 'tools',         '<a class="constant" href="/tools.html">Tools</a>';
-  push @links, 'downloads',     '<a class="constant" href="/downloads.html">Downloads</a>';
-  push @links, 'help',          '<a class="constant" href="/info/website/index.html">Help</a>';
+  push @links, 'downloads',     '<a class="constant" href="/info/website/ftp/index.html">Downloads</a>';
   push @links, 'docs',          '<a class="constant" href="http://www.ensemblgenomes.org/info">Documentation</a>';
+  push @links, 'help',          '<a class="constant" href="/info/website/index.html">Website help</a>';
+
 
   return \@links;
 }

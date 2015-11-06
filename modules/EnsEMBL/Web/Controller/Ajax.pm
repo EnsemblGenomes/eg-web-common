@@ -19,8 +19,15 @@ limitations under the License.
 package EnsEMBL::Web::Controller::Ajax;
 
 use strict;
+use Data::Dumper;
+use EnsEMBL::Web::TmpFile::Text;
+use EnsEMBL::Web::TaxonTree;
+use Storable qw(lock_retrieve lock_nstore);
+use JSON qw(from_json to_json);
+use Compress::Zlib;
 
-sub species_autocomplete {
+
+sub ajax_species_autocomplete {
   my ($self, $hub) = @_;
   my $species_defs  = $hub->species_defs;
   my $term          = $hub->param('term'); # will return everything if no term specified
@@ -91,5 +98,44 @@ sub species_autocomplete {
 
   print $self->jsonify($data);
 }
+
+
+sub ajax_gene_family_dynatree_js {
+  my ($self, $hub) = @_;
+  my $gene_family_id = $hub->param('gene_family_id');
+  my $r              = $hub->apache_handle;
+  my $tree;
+
+  my $species_defs  = $hub->species_defs;
+
+  # load cached gene family
+  my $family  = EnsEMBL::Web::TmpFile::Text->new(prefix => 'genefamily', filename => "$gene_family_id.json");
+  my $members = from_json($family->content);
+  my $species;
+  $species->{$_->{species}} = 1 for (@$members);
+  
+  my %plugin_dirs = @{$SiteDefs::ENSEMBL_PLUGINS};
+  
+  # load full tree and prune
+  my $sitename = $species_defs->ENSEMBL_SITENAME;
+  $sitename =~ /^Ensembl(\w+)$/;
+  my $division = "EG::".$1;
+
+  $tree = lock_retrieve($plugin_dirs{$division} . "/data/taxon_tree.packed") or die("failed to retrieve taxon tree ($@)");
+  $tree->prune($species);
+  $tree->collapse;
+  
+  # fetch selected species from session
+  my @selected_species;
+  if (my $data = $hub->session->get_data(type => 'genefamilyfilter', code => $hub->data_species . '_' . $gene_family_id )) {
+    @selected_species = split /,/, uncompress( $data->{filter} );
+  }
+  
+  # generate js with species selected and expanded
+  my $js = $tree->to_dynatree_js_variable('taxonTreeData', \@selected_species);
+  $r->content_type('application/javascript');
+  print $js;
+  }
+  
 
 1;

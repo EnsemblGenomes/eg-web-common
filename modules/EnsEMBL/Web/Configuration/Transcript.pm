@@ -37,20 +37,6 @@ sub modify_tree {
   my $species_defs = $hub->species_defs;
   my $protein_variations = $self->get_node('ProtVariations');  
   
-  # S4 DAS
-  foreach my $logic_name (qw(S4_PROTEIN_STRUCTURE S4_PROTEIN)) {
-    if (my $source = $hub->get_das_by_logic_name($logic_name)) {
-      $protein_variations->after($self->create_node("das/$logic_name", $logic_name,
-        [$source->renderer, "EnsEMBL::Web::Component::Transcript::" . $source->renderer], {
-          availability => 'transcript', 
-          concise      => $source->caption, 
-          caption      => $source->caption, 
-          full_caption => $source->label
-        }
-      ));
-    }
-  }
-
   # Zoomable variation image
 
   # $var_menu->append($self->create_node('Variation_Transcript/Image', 'Variation image',
@@ -70,9 +56,14 @@ sub modify_tree {
 
   # Ontology
 
-  my $go_menu = $self->get_node('GO');
-  $self->delete_node('Ontology/Image');
+  $self->create_node('Ontology/Table', 'Ontology',
+    [qw( go EnsEMBL::Web::Component::Transcript::Go )],
+    { 'availability' => 'transcript has_go', 'concise' => 'GO table' }
+  );
+
   $self->delete_node('Ontology/Table');
+  my $go_menu = $self->create_submenu('GO', 'Ontology');
+  $self->get_node('ExternalRecords')->after($go_menu);
 
   # get all ontologies mapped to this species
   my %olist = map {$_ => 1} @{$species_defs->DISPLAY_ONTOLOGIES ||[]};
@@ -98,8 +89,6 @@ sub modify_tree {
 
 	 my $go_hash  = $self->object ? $object->get_ontology_chart($dbname, $cluster->{root}) : {};
 	 next unless (%$go_hash);
-	 my @c = grep { $go_hash->{$_}->{selected} } keys %$go_hash;
-	 my $num = scalar(@c);
 	 
 	 my $url2 = $hub->url({
 	     type    => 'Transcript',
@@ -108,7 +97,7 @@ sub modify_tree {
 			      });
 
 	 (my $desc2 = "$cluster->{db}: $cluster->{description}") =~ s/_/ /g;
-	 $go_menu->append($self->create_node('Ontology/'.$oid, "$desc2 ($num)",
+	 $go_menu->append($self->create_node('Ontology/'.$oid, "$desc2",
 					     [qw( go EnsEMBL::Web::Component::Transcript::Ontology )],
 					     { 'availability' => 'transcript', 'concise' => $desc2, 'url' =>  $url2 }
 			  ));

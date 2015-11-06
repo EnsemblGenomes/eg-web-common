@@ -176,6 +176,4 @@ Ensembl.Panel.LocationNav = Ensembl.Panel.LocationNav.extend({
     return out;
   }
 
-//  
-
 });

@@ -101,7 +101,7 @@ sub update_jobs {
       file_put_contents($out_file, $text);
 
       my $xml = $self->_get('result', [ $job_ref, 'xml' ])->content;
-      file_put_contents($xml_file, $text);
+      file_put_contents($xml_file, $xml);
 
       my $parser   = EnsEMBL::Web::Parsers::Blast->new($self->hub);
       my $hits     = $parser->parse_xml($xml, $job_data->{species}, $job_data->{source});

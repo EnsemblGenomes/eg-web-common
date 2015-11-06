@@ -42,10 +42,19 @@ sub init {
     polya_sites 
     replication_profiling
     regulatory_elements
+    tss
     transcriptome
     nucleosome
     dna_methylation
     histone_mod 
+
+    wheat_alignment      
+    wheat_assembly       
+    wheat_transcriptomics
+    wheat_ests           
+    rnaseq_cultivar      
+    rnaseq_tissue        
+    resequencing  
 
     external_data
     user_data
@@ -71,6 +80,7 @@ sub init {
   $self->load_tracks;
   $self->load_configured_das;
   $self->load_configured_bed;
+  $self->load_configured_bigwig;
 
   $self->modify_configs(
     [ 'fg_regulatory_features_funcgen', 'transcript', 'prediction', 'variation' ],

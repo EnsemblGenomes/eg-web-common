@@ -48,7 +48,7 @@ use EnsEMBL::Web::DBSQL::MetaDataAdaptor;
 
 
 use vars qw( $SERVERROOT $PRE $PLUGIN_ROOT $SCRIPT_ROOT $DEBUG $FUDGE $NOINTERPRO $NOSUMMARY $help $info @user_spp $allgenetypes $coordsys $list $pan_comp_species $ena $nogenebuild
-  $species_page);
+  $species_page $skip_existing);
 
 BEGIN{
   &GetOptions( 
@@ -67,6 +67,7 @@ BEGIN{
                'ena' => \$ena,
                'nogenebuild' => \$nogenebuild,
                'all_species_page' => \$species_page,
+               'skipexisting',   \$skip_existing,
   );
 
   pod2usage(-verbose => 2) if $info;
@@ -196,6 +197,12 @@ foreach my $spp (@valid_spp) {
     #print $fq_path_dir, "\n";
     &check_dir($fq_path_dir);
     my $fq_path_html = $fq_path_dir."stats_$spp.html";
+
+    if ($skip_existing and -f $fq_path_html) {
+        warn "**** $fq_path_html file already exists - skipping ****\n";
+        next;
+      }
+
     print STDERR "Writing $fq_path_html\n";
     open (STATS, ">$fq_path_html") or die "Cannot write $fq_path_html: $!";
 
@@ -468,13 +475,24 @@ foreach my $spp (@valid_spp) {
     }
 
     my $provider     = $SD->get_config($spp, "PROVIDER_NAME");
-    my $provider_url = $SD->get_config($spp, "PROVIDER_URL");
+    
     if ($provider) {
-      $provider = qq{<a href="$provider_url">$provider</a>} if $provider_url;
+    my $provider_url = $SD->get_config($spp, "PROVIDER_URL");   
+
+    my @providerVarOrList  = ref $provider eq 'ARRAY' ? @$provider : ($provider);
+    my @providerURLVarOrList = ref $provider_url eq 'ARRAY' ? @$provider_url : ($provider_url); 
+    my $providersLinks; 
+    foreach my $individualProvider(@providerVarOrList){
+	my $individualProviderURL = shift @providerURLVarOrList;
+	$providersLinks .= qq{<a href="$individualProviderURL">$individualProvider</a><br />} if $individualProviderURL;
+    }
+
+     # $provider = qq{<a href="$provider_url">$provider</a>} if $provider_url;
+     
       $row  = stripe_row(++$rowcount);
       print STATS qq($row
           <td class="data">Data source:</td>
-          <td class="value">$provider</td>
+          <td class="value">$providersLinks</td>
       </tr>
       );
     }

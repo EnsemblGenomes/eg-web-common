@@ -20,6 +20,7 @@ package EnsEMBL::Web::Document::Image::Ontology;
 
 use EnsEMBL::Web::TmpFile::Text;
 use EnsEMBL::Web::TmpFile::Image;
+use HTML::Entities qw(encode_entities);
 use Data::Dumper;
 use strict;
 
@@ -295,7 +296,7 @@ sub create_dot{
 
 #    print $dot sprintf("%s [tooltip=\"%s\",label=\"%s\",URL=\"javascript:nodeMenu(\'%s\')\"%s];\n", $tid, $e->[0], $e->[1], $e->[0], $e->[2] ? ',fillcolor=lightblue' : '');
 
-    print $dot sprintf("%s [tooltip=\"%s\",label=\"%s\",URL=\"%s\"%s];\n", $tid, $self->node_title($e->[0]), $e->[1], $self->get_url($e->[0]), $e->[2] ? ',fillcolor=lightblue' : '');
+    print $dot sprintf("%s [tooltip=\"%s\",label=\"%s\",URL=\"%s\"%s];\n", $tid, $self->node_title($e->[0]), encode_entities($e->[1]), $self->get_url($e->[0]), $e->[2] ? ',fillcolor=lightblue' : '');
   }
 
   foreach my $e (@{$nodes->{'subset'} || []}) {

@@ -21,24 +21,24 @@ package EnsEMBL::Web::Component::Tools::Blast::InputForm;
 use strict;
 use warnings;
 use URI;
-use previous qw(get_form_node);
+use previous qw(get_cacheable_form_node);
 use List::Util qw(min);
 
-sub get_form_node {
+sub get_cacheable_form_node {
   my $self            = shift;
   my $hub             = $self->hub;
   my $species_defs    = $hub->species_defs;
-  my $form            = $self->PREV::get_form_node(@_);
+  my $form            = $self->PREV::get_cacheable_form_node(@_);
   my $default_species = $species_defs->valid_species($hub->species) ? $hub->species : $hub->get_favourite_species->[0];
 
-  my @species         = $hub->param('species') || $default_species;
+  my @species         = $hub->param('species') || $default_species || ();
   
   my $list            = join '<br />', map { $species_defs->species_display_label($_) } @species;
   my $checkboxes      = join '<br />', map { sprintf('<input type="checkbox" name="species" value="%s" checked>%s', $_, $_) } @species;
   
   # set uri for the modal link
-  my $modal_uri = URI->new("/${default_species}/Component/Blast/Web/TaxonSelector/ajax?");
-  $modal_uri->query_form(s => [map {lc($_)} @species]); 
+  my $modal_uri = URI->new(sprintf '/%s/Component/Blast/Web/TaxonSelector/ajax?', $default_species || 'Multi' );
+  $modal_uri->query_form(s => [map {lc($_)} @species]) if @species; 
   
   my $html = qq{
     <div class="js_panel taxon_selector_form">

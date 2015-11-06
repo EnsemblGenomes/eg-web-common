@@ -295,17 +295,23 @@ sub render_transcripts {
     $genes_to_filter = [];
   }
   else{
+    my %op_gene_logic_names;
     foreach my $gene (@$genes_to_filter) {
       my @ops = @{$gene->feature_Slice->get_all_Operons};
-      unless(0<@ops){
+      if (@ops){
+        $op_gene_logic_names{$gene->analysis->logic_name} = 1;
+      } else {
         $singleton_genes{$gene->dbID}=$gene;
       }
     }
-    # Don't restrict by logic name as we don't know the logic names for the operons
-    # this may need revisiting in future if we have operons from multiple sources
-    #foreach my $_logic_name(@{$self->my_config('logic_names')||[]}){
-      #my @ops = @{$container->get_all_Operons($_logic_name,undef,1)};
-      my @ops = @{$container->get_all_Operons};
+    # HACK: Only render operons if we know these are ENA genes (because 
+    #       currently we know we only have operons for that analysis).
+    #       Need to reimplement this using a generic method to get only 
+    #       operons that relate to the current alaysis, but I couldn't see 
+    #       how to do it.
+    if ($op_gene_logic_names{ena}){
+      my @ops = @{$container->get_all_Operons('regulondb_operon', undef, 1)};
+      #my @ops = @{$container->get_all_Operons()};
       foreach my $opn (@ops){
         next if ($operons{$opn->dbID});
         $opn = $opn->transfer($container);
@@ -317,7 +323,7 @@ sub render_transcripts {
           }
         }
       }
-    #}
+    }
     @$genes = map {$singleton_genes{$_}} keys %singleton_genes;
   }
 
@@ -1810,6 +1816,7 @@ sub _render_operon_genes{
     
     my $all_composite = $self->Composite();
     if(!$no_bump){$all_composite=$self;}
+
     foreach my $gene(@$genes){
 
     my $gene_strand = $gene->strand;

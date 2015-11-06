@@ -166,7 +166,7 @@ sub content {
       <div class="box-left">
         <div class="species-badge">';
 
-  $html .= qq(<img src="${img_url}species/64/$species.png" alt="" title="$sound" />) unless $self->is_bacteria;
+  $html .= qq(<a class="species_lightbox _ht" href="${img_url}species/large/$species.png" title="Click to enlarge"><img src="${img_url}species/64/$species.png" alt="" title="$sound" /></a>) unless $self->is_bacteria;
 
   if ($common_name =~ /\./) {
     $html .= qq(<h1>$display_name</h1>);
@@ -307,7 +307,7 @@ sub _assembly_text {
   $html .= '</div>'; #homepage-icon
 
   if ($sample_data->{POLYPLOID_REGION}) { 
-    my $url  = $species_defs->species_path . '/Location/MultiPolyploid?r=' . $sample_data->{'LOCATION_PARAM'};
+    my $url  = $species_defs->species_path . '/Location/MultiPolyploid?r=' . $sample_data->{'POLYPLOID_REGION'};
     $html .= qq(
       <div class="homepage-icon" style="padding-top:97px;">
         <a class="nodeco _ht" href="$url" title="Go to $sample_data->{POLYPLOID_REGION}"><img src="${img_url}96/region_polyploid.png" class="bordered" /><span>Polyploid example</span></a>
@@ -335,10 +335,11 @@ sub _assembly_text {
   }
 
   # Link to assembly mapper
-  my $mappings = $species_defs->ASSEMBLY_MAPPINGS;
-  if ($mappings && ref($mappings) eq 'ARRAY') {
-    my $am_url = $hub->url({'type' => 'UserData', 'action' => 'SelectFeatures'});
-    $html .= qq(<p><a href="$am_url" class="modal_link nodeco"><img src="${img_url}24/tool.png" class="homepage-link" />Convert your data to $assembly coordinates</a></p>);
+  if ($species_defs->ENSEMBL_AC_ENABLED) {
+    $html .= sprintf('<a href="%s" class="nodeco"><img src="%s24/tool.png" class="homepage-link" />Convert your data to %s coordinates</a></p>', $hub->url({'type' => 'Tools', 'action' => 'AssemblyConverter'}), $img_url, $current_assembly);
+  }
+  elsif (ref($species_defs->ASSEMBLY_MAPPINGS) eq 'ARRAY') {
+    $html .= sprintf('<a href="%s" class="modal_link nodeco" rel="modal_user_data"><img src="%s24/tool.png" class="homepage-link" />Convert your data to %s coordinates</a></p>', $hub->url({'type' => 'UserData', 'action' => 'SelectFeatures', __clear => 1}), $img_url, $current_assembly);
   }
   
   $html .= sprintf '<p><a href="%s" class="modal_link nodeco" rel="modal_user_data">%sDisplay your data in %s</a></p>',
@@ -410,8 +411,9 @@ sub _genebuild_text {
   $html .= qq(<p><a href="/$species/Info/Annotation/#genebuild" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about this genebuild</a></p>);
 
   if ($species_defs->ENSEMBL_FTP_URL) {
-    my $fasta_url = $hub->get_ExtURL('SPECIES_FTP_URL',{GENOMIC_UNIT=>$species_defs->GENOMIC_UNIT,VERSION=>$ensembl_version, FORMAT=>'fasta', SPECIES=> $self->is_bacteria ? $species_defs->SPECIES_DATASET . "_collection/" . lc $species : lc $species},{class=>'nodeco'});
-    my $gff3_url  = $hub->get_ExtURL('SPECIES_FTP_URL',{GENOMIC_UNIT=>$species_defs->GENOMIC_UNIT,VERSION=>$ensembl_version, FORMAT=>'gff3', SPECIES=> $self->is_bacteria ? $species_defs->SPECIES_DATASET . "_collection/" . lc $species : lc $species},{class=>'nodeco'});
+    my $dataset = $species_defs->SPECIES_DATASET;
+    my $fasta_url = $hub->get_ExtURL('SPECIES_FTP_URL',{GENOMIC_UNIT=>$species_defs->GENOMIC_UNIT,VERSION=>$ensembl_version, FORMAT=>'fasta', SPECIES=> ($dataset ne $species) ? lc($dataset) . "_collection/" . lc $species : lc $species},{class=>'nodeco'});
+    my $gff3_url  = $hub->get_ExtURL('SPECIES_FTP_URL',{GENOMIC_UNIT=>$species_defs->GENOMIC_UNIT,VERSION=>$ensembl_version, FORMAT=>'gff3', SPECIES=> ($dataset ne $species) ? lc($dataset) . "_collection/" . lc $species : lc $species},{class=>'nodeco'});
     $html .= qq[<p><img src="${img_url}24/download.png" alt="" class="homepage-link" />Download genes, cDNAs, ncRNA, proteins - <span class="center"><a href="$fasta_url" class="nodeco">FASTA</a> - <a href="$gff3_url" class="nodeco">GFF3</a></span></p>];
   }
   
@@ -585,8 +587,13 @@ sub _variation_text {
     $html .= '<h2>Variation</h2><p>This species currently has no variation database. However you can process your own variants using the Variant Effect Predictor:</p>';
   }
 
-  my $vep_url = $hub->url({'type' => 'UserData', 'action' => 'UploadVariations'});
-  $html .= qq(<p><a href="$vep_url" class="modal_link nodeco"><img src="${img_url}24/tool.png" class="homepage-link" />Variant Effect Predictor<img src="${img_url}vep_logo_sm.png" style="vertical-align:top;margin-left:12px" /></a></p>);
+  my $new_vep = $species_defs->ENSEMBL_VEP_ENABLED;
+  $html .= sprintf(
+    qq(<p><a href="%s" class="%snodeco">$self->{'icon'}Variant Effect Predictor<img src="%svep_logo_sm.png" style="vertical-align:top;margin-left:12px" /></a></p>),
+    $hub->url({'__clear' => 1, $new_vep ? qw(type Tools action VEP) : qw(type UserData action UploadVariations)}),
+    $new_vep ? '' : 'modal_link ',
+    $self->img_url
+  );
 
   return $html;
 }

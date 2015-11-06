@@ -71,7 +71,7 @@ sub content {
   $html .= '<div id="tabTableContent" class="tabContent" style="display:none;"> ' . $self->ontology_table($ochart) . '</div>' unless $go;
 
   $html = sprintf '<div class="js_panel"><input type="hidden" class="panel_type" value="Ontology"/>%s</div>', $html;
-  $html .= '<p>No ontology terms have been annotated to this entity.</p>' unless $terms_found;
+  #$html .= '<p>No ontology terms have been annotated to this entity.</p>' unless $terms_found;
   return $html;
 }
 
@@ -197,7 +197,7 @@ sub ontology_chart {
       $attr_prefix = "${bds}_gene";
     }
 
-    my $biomart_link = sprintf qq{/biomart/martview?VIRTUALSCHEMANAME=%s&ATTRIBUTES=%s.default.feature_page.ensembl_gene_id|%s.default.feature_page.ensembl_transcript_id&FILTERS=%s.default.filters.%s.\\"###ID###\\"&VISIBLEPANEL=resultspanel}, $vschema, $attr_prefix, $attr_prefix, $attr_prefix, $bm_filter;
+    my $biomart_link = sprintf qq{/biomart/martview?VIRTUALSCHEMANAME=%s&ATTRIBUTES=%s.default.feature_page.ensembl_gene_id|%s.default.feature_page.ensembl_transcript_id&FILTERS=%s.default.filters.%s.###ID###&VISIBLEPANEL=resultspanel}, $vschema, $attr_prefix, $attr_prefix, $attr_prefix, $bm_filter;
     $extlinks->{'Search BioMart'} = $biomart_link;
     $extlinks->{'Search BioMart'} = $biomart_link;
   }

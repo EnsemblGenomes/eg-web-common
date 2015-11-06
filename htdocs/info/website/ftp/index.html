@@ -6,7 +6,11 @@
 </head>
 
 <body>
-
+<style>
+  /* hide help nav and go fullscreen */
+  #page_nav, .breadcrumbs { display: none }
+  body.static #main {  margin-left: 0  }
+</style>
 <div class="info-box embedded-box float-right" style="margin-bottom:1em;">
 <h2 class="first">Custom data sets</h2>
 <p>If you want to filter or customise your download, please try <a href="http://www.ensembl.org/biomart/martview">Biomart</a>, a web-based querying tool.</p>
@@ -18,14 +22,6 @@
 
 <p>The data can also be downloaded directly from the [[SPECIESDEFS::ENSEMBL_SITETYPE]] <a href="[[SPECIESDEFS::ENSEMBL_FTP_URL]]/release-[[SPECIESDEFS::SITE_RELEASE_VERSION]]">FTP server</a>.</p>
 
-<h2>API Code</h2>
-
-<p>If you do not have access to git, you can obtain our latest API code as a gzipped tarball:</p>
-
-<p><a href="ftp://ftp.ensembl.org/pub/ensembl-api.tar.gz">Download complete API for this release</a></p>
-
-<p>Note: the API version needs to be the same as the databases you are accessing, so please use git to obtain a previous version if querying older databases.</p>
-
 <h2>Database dumps</h2>
 <p>
 Entire databases can be downloaded from our FTP site in a variety of formats. Please be aware that some of these files can run to many gigabytes of data.
@@ -35,6 +31,11 @@ Entire databases can be downloaded from our FTP site in a variety of formats. Pl
 
 <p>
 Each directory on <a href="ftp://ftp.ensemblgenomes.org/pub/" rel="external">ftp.ensemblgenomes.org</a> contains a <a href="ftp://ftp.ensemblgenomes.org/pub/current_README">README</a> file, explaining the directory structure.
+</p>
+
+<h2>Programatic data access</h2>
+<p>
+Data can be accessed programatically in a number of ways, including the <a href="http://ensemblgenomes.org/info/access/rest">REST service</a> and <a href="http://ensemblgenomes.org/info/access/api">Perl API</a>. For full details see the <a href="http://ensemblgenomes.org/info/access/programmatic">Programatic access</a> documenation.
 </p>
 
 [[SCRIPT::EnsEMBL::Web::Document::HTML::FTPtable]]
@@ -190,12 +191,6 @@ are:
 <p>
 <a href="/info/website/upload/bed.html">More information on the BED file format</a>
 </p>
-</dd>
-
-<dt class="bg2">Tarball</dt>
-<dd class="bg2">
-<p>
-The entire Ensembl API is gzipped and concatenated into a single TAR file. This is updated daily.</p>
 </dd>
 
 </dl>

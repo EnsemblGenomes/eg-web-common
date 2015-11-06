@@ -21,6 +21,7 @@ package EnsEMBL::Web::Component::Gene::ComparaOrthologs;
 use strict;
 
 use previous qw(buttons);
+our %button_set = %EnsEMBL::Web::Component::Gene::ComparaOrthologs::button_set;
 
 sub is_archaea {
   my ($self,$species) = @_;
@@ -46,51 +47,58 @@ sub _species_sets {
     $set_order = [qw(all ensembl metazoa plants fungi protists bacteria archaea)];
   }
   
-
-  my $categories = {};
   my $species_sets = {
-    'ensembl'     => {'title' => 'Vertebrates', 'desc' => '', 'species' =>[]},
-    'metazoa'     => {'title' => 'Metazoa', 'desc'=>'', 'species'=>[]},
-    'plants'      => {'title' => 'Plants', 'desc' => '', 'species' => []},
-    'fungi'       => {'title' => 'Fungi', 'desc' => '', 'species' => []},
-    'protists'    => {'title' => 'Protists', 'desc' => '', 'species' => []},
-    'bacteria'    => {'title' => 'Bacteria', 'desc' => '', 'species' => []},
-    'archaea'     => {'title' => 'Archaea', 'desc' => '', 'species' => []},
-    'all'       =>   {'title' => 'All', 'desc' => '', 'species' => []},
+    'ensembl'     => {'title' => 'Vertebrates', 'desc' => '', 'species' => [], 'all' => 0},
+    'metazoa'     => {'title' => 'Metazoa',     'desc' => '', 'species' => [], 'all' => 0},
+    'plants'      => {'title' => 'Plants',      'desc' => '', 'species' => [], 'all' => 0},
+    'fungi'       => {'title' => 'Fungi',       'desc' => '', 'species' => [], 'all' => 0},
+    'protists'    => {'title' => 'Protists',    'desc' => '', 'species' => [], 'all' => 0},
+    'bacteria'    => {'title' => 'Bacteria',    'desc' => '', 'species' => [], 'all' => 0},
+    'archaea'     => {'title' => 'Archaea',     'desc' => '', 'species' => [], 'all' => 0},
+    'all'         => {'title' => 'All',         'desc' => '', 'species' => [], 'all' => 0},
   };
-
+  my $categories      = {};
   my $sets_by_species = {};
+  my $spsites         = $species_defs->ENSEMBL_SPECIES_SITE();
 
-  my $spsites =  $species_defs->ENSEMBL_SPECIES_SITE();
   foreach my $species (keys %$orthologue_list) {
     next if $skipped->{$species};
+    
     my $group = $spsites->{lc($species)};
+
     if($group eq 'bacteria'){
-      if($self->is_archaea(lc $species)){
-        $group='archaea';
-      }
-    }
-    elsif (!$is_pan){ # not the pan compara page - generate groups
+    
+      $group = 'archaea' if $self->is_archaea(lc $species);
+    
+    } elsif (!$is_pan){ 
+    
+      # not the pan compara page - generate groups
       $group = $species_defs->get_config($species, 'SPECIES_GROUP') || $spsites->{lc($species)} || 'Undefined';
+      
       if(!exists $species_sets->{$group}){
-        $species_sets->{$group} = {'title'=>ucfirst $group,'species'=>[]};
-        push(@$set_order,$group);
+        $species_sets->{$group} = {'title' => ucfirst $group, 'species' => [], 'all' => 0};
+        push @$set_order, $group;
       }
     }
 
-    push (@{$species_sets->{'all'}{'species'}}, $species);
-    my $sets = [];
+    push @{$species_sets->{'all'}{'species'}}, $species;
+    my $sets = ['all'];
 
     my $orthologues = $orthologue_list->{$species} || {};
+
     foreach my $stable_id (keys %$orthologues) {
-      my $orth_info = $orthologue_list->{$species}{$stable_id};
+      my $orth_info = $orthologue_list->{$species}->{$stable_id};
       my $orth_desc = ucfirst($orth_info->{'homology_desc'});
-      $species_sets->{'all'}{$orth_desc}++;
-      $species_sets->{$group}{$orth_desc}++;
-      $categories->{$orth_desc} = {key=>$orth_desc, title=>$orth_desc} unless exists $categories->{$orth_desc};
+
+      $species_sets->{'all'}->{$orth_desc}++;
+      $species_sets->{'all'}->{'all'}++;
+      $species_sets->{$group}->{$orth_desc}++;
+      $species_sets->{$group}->{'all'}++;
+      
+      $categories->{$orth_desc} = {key => $orth_desc, title => $orth_desc} unless exists $categories->{$orth_desc};
     }
-    push(@{$species_sets->{$group}{'species'}},$species);
-    push (@$sets, $group) if(exists $species_sets->{$group});
+    push @{$species_sets->{$group}{'species'}}, $species;
+    push (@$sets, $group) if exists $species_sets->{$group};
     $sets_by_species->{$species} = $sets;
   }
 
@@ -112,7 +120,6 @@ sub buttons {
   my $self       = shift;
   my $hub        = $self->hub;
   my $cdb        = $hub->param('cdb') || 'compara';
-  my %button_set = %EnsEMBL::Web::Component::Gene::ComparaOrthologs::button_set;
   my @buttons    = $self->PREV::buttons(@_);
 
   if ($button_set{'view'}) {

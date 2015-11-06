@@ -42,9 +42,6 @@ sub modify_tree {
    [qw(vcf_feedback EnsEMBL::Web::Component::UserData::SliceFeedback)],
     { 'availability' => 1, 'no_menu_entry' => 1 }
   ));
- 
- # re-add the VEP tool 
- $self->get_node('SelectFeatures')->before($self->create_node('UploadVariations',  'Variant Effect Predictor', [qw(upload_snps       EnsEMBL::Web::Component::UserData::UploadVariations)]));
 }
 
 

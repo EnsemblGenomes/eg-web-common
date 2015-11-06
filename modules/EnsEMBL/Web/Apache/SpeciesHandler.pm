@@ -41,8 +41,8 @@ sub handler_species {
   # Parse the initial path segments, looking for valid ENSEMBL_TYPE values
   my $seg    = shift @path_segments;
   my $script = $SiteDefs::OBJECT_TO_SCRIPT->{$seg};
-
-  if ($seg eq 'Component' || $seg eq 'ZMenu' || $seg eq 'Config' || $seg eq 'Json' || $seg eq 'Download') {
+  
+  if ($seg eq 'Component' || $seg eq 'ComponentAjax' || $seg eq 'ZMenu' || $seg eq 'Config' || $seg eq 'Json' || $seg eq 'Download') {
     $type   = shift @path_segments if $SiteDefs::OBJECT_TO_SCRIPT->{$path_segments[0]} || $seg eq 'ZMenu' || $seg eq 'Json' || $seg eq 'Download';
     $plugin = shift @path_segments if $seg eq 'Component';
   } else {
@@ -51,9 +51,9 @@ sub handler_species {
   
   $action   = shift @path_segments;
   $function = shift @path_segments;
-  
+ 
   $r->custom_response($_, "/$species/Info/Error/$_") for (NOT_FOUND, HTTP_BAD_REQUEST, FORBIDDEN, AUTH_REQUIRED);
-    
+
   if ($flag && $script) {
 ## EG - add polyploid multi view
     $ENV{'ENSEMBL_FACTORY'}   = 'MultipleLocation' if $type eq 'Location' && $action =~ /^Multi(Ideogram.*|Top|Bottom|Polyploid)?$/;
@@ -89,10 +89,15 @@ sub handler_species {
     return HTTP_TEMPORARY_REDIRECT;
   }
   
-  my $redirect = get_redirect($script);
+  my $redirect = get_redirect($script, $type, $action);
   
   if ($redirect) {
-    my $newfile = join '/', '', $species, $redirect;
+    ($type, $action, $function) = split($redirect);
+    $ENV{'ENSEMBL_TYPE'}      = $type;
+    $ENV{'ENSEMBL_ACTION'}    = $action if $action;
+    $ENV{'ENSEMBL_FUNCTION'}  = $function if $function;
+
+    $newfile = join '/', '', $species, $redirect;
     warn "OLD LINK REDIRECT: $script $newfile" if $SiteDefs::ENSEMBL_DEBUG_FLAGS & $SiteDefs::ENSEMBL_DEBUG_HANDLER_ERRORS;
     
     $r->headers_out->add('Location' => join '?', $newfile, $querystring || ());
