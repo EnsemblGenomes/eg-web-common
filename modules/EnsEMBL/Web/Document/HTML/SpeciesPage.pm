@@ -105,13 +105,15 @@ sub render {
     my $thumbnail_html = qq(<a href="/$dir/" style="padding-right:4px;"><img src="/i/species/48/$dir.png" width="48" height="48" title="$common" style="vertical-align:middle" /></a>);
     my $common_html    = qq(<a href="/$dir" class="bigtext">$common</a>);
     my $tick_html      = '<img src="/i/tick_16.png" width="16" height="16" />';
+    my $uniprot_link   = qq(<a href="http://www.uniprot.org/taxonomy/$info->{'taxon_id'}" target="_blank">$info->{'taxon_id'}</a>);
+    my $ena_link       = qq(<a href="http://www.ebi.ac.uk/ena/data/view/$info->{'assembly'}" target="_blank">$info->{'assembly'}</a>);
 
     $table->add_row({
       'thumbnail'    => $thumbnail_html,
       'common'       => $common_html,
       'group'        => $info->{'group'},
-      'taxon_id'     => $info->{'taxon_id'},
-      'assembly'     => $info->{'assembly'},
+      'taxon_id'     => $uniprot_link,
+      'assembly'     => $ena_link,
       'accession'    => $info->{'accession'} || '-',
       'variation'    => $info->{'variation'}    ? $tick_html : '-',
       'regulation'   => $info->{'regulation'}   ? $tick_html : '-',
