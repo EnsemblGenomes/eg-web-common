@@ -35,13 +35,12 @@ sub features {
   my $format    = $self->format;
   my $slice     = $self->{'container'};
   my $raw_feats = $bba->fetch_features($slice->seq_region_name, $slice->start, $slice->end + 1);
-  
-## EG unless region name exists, check synonyms
-  if ( !@$raw_feats ){
-    my $synonym_obj = $slice->get_all_synonyms(); # arrayref of Bio::EnsEMBL::SeqRegionSynonym objects
-    foreach my $synonym (@$synonym_obj) {
-      $raw_feats =  $bba->fetch_features($synonym->name, $slice->start, $slice->end);
-      last if (ref $raw_feats eq 'ARRAY' && @$raw_feats > 0);
+
+## EG
+  unless (@$raw_feats) {
+    foreach my $synonym (@{ $slice->get_all_synonyms }) {
+      $raw_feats = $bba->fetch_features($synonym->name, $slice->start, $slice->end + 1);
+      last if @$raw_feats;
     }
   }
 ##
@@ -99,6 +98,49 @@ sub features {
   }
   
   return ($key => [ $features, { %$config, %{$format->parse_trackline($format->trackline)} } ]);
+}
+
+sub wiggle_features {
+  my ($self,$bins) = @_;
+
+  return $self->{'_cache'}->{'wiggle_features'} if exists $self->{'_cache'}->{'wiggle_features'};
+ 
+  my $slice = $self->{'container'}; 
+  my $adaptor = $self->bigbed_adaptor;
+  return [] unless $adaptor;
+  my $features = $adaptor->fetch_features($slice->seq_region_name, $slice->start, $slice->end);
+
+## EG
+  unless (@$features) {
+    foreach my $synonym (@{ $slice->get_all_synonyms }) {
+      $features = $adaptor->fetch_features($synonym->name, $slice->start, $slice->end);
+      last if @$raw_feats;
+    }
+  }
+##
+
+  $_->map($slice) for @$features;
+
+  my $flip = ($slice->strand == -1) ? ($slice->length + 1) : undef;
+  my @block_features;
+
+  for(my $i=0; $i<scalar(@$features); $i++) {
+    my $f = $features->[$i];
+    #print STDERR "f = $f start = " . $f->start . " end =  " . $f->end . "\n";
+
+    my ($a,$b) = ($f->start, $f->end);
+
+    push @block_features,{
+      start => $flip ? $flip - $b : $a,
+      end => $flip ? $flip - $a : $b,
+      score => $f->score,
+#      score => $f->extra_data->{thick_start}->[0],
+    };
+    #print STDERR "block feature $a $b " . $f->extra_data->{thick_start}->[0] . "\n";
+    #print STDERR "block feature $a $b " . $f->score . "\n";
+  }
+  
+  return $self->{'_cache'}->{'wiggle_features'} = \@block_features;
 }
 
 1;
