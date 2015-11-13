@@ -37,17 +37,8 @@ sub wiggle_features {
     my $slice     = $self->{'container'};
     my $adaptor   = $self->bigwig_adaptor;
     return [] unless $adaptor;
-
-    my $summary   = $adaptor->fetch_summary_array($slice->seq_region_name, $slice->start, $slice->end, $bins, $has_chrs);
-## EG
-    # if not found by name, check for synonyms
-    if ( !@$summary ){
-      my $synonym_obj = $slice->get_all_synonyms(); # arrayref of Bio::EnsEMBL::SeqRegionSynonym objects
-      foreach my $synonym (@$synonym_obj) {
-        $summary =  $self->bigwig_adaptor->fetch_summary_array($synonym->name, $slice->start, $slice->end, $bins, $has_chrs);
-        last if (ref $summary eq 'ARRAY' && @$summary > 0);
-      }
-    }
+## EG    
+    my $summary   = $self->fetch_summary_for_slice($slice, $bins, $has_chrs);
 ##
     my $bin_width = $slice->length / $bins;
     my $flip      = $slice->strand == -1 ? $slice->length + 1 : undef;
@@ -71,6 +62,52 @@ sub wiggle_features {
   }
   
   return $wiggle_features;
+}
+
+## get the alignment features
+sub wiggle_aggregate {
+  my ($self) = @_;
+  my $hub = $self->{'config'}->hub;
+  my $has_chrs = scalar(@{$hub->species_defs->ENSEMBL_CHROMOSOMES});
+
+  if (!$self->{'_cache'}{'wiggle_aggregate'}) {
+    my $slice     = $self->{'container'};
+    my $bins      = min($self->{'config'}->image_width, $slice->length);
+    my $adaptor   = $self->bigwig_adaptor;
+    return {} unless $adaptor;
+## EG
+#    my $values   = $adaptor->fetch_summary_array($slice->seq_region_name, $slice->start, $slice->end, $bins, $has_chrs);
+    my $values  = $self->fetch_summary_for_slice($slice, $bins, $has_chrs);
+##
+    my $bin_width = $slice->length / $bins;
+    my $flip      = $slice->strand == -1 ? $slice->length + 1 : undef;
+
+    $self->{'_cache'}{'wiggle_aggregate'} = {
+      unit => $bin_width,
+      length => $slice->length,
+      strand => $slice->strand,
+      max => max(@$values),
+      min => min(@$values),
+      values => $values,
+    };
+  }
+
+  return $self->{'_cache'}{'wiggle_aggregate'};
+}
+
+sub fetch_summary_for_slice {
+  my $self   = shift;
+  my $slice  = shift;
+  my $values = $self->bigwig_adaptor->fetch_summary_array($slice->seq_region_name, $slice->start, $slice->end, @_);
+  
+  unless (@$values) {
+    foreach my $synonym (@{ $slice->get_all_synonyms }) {
+      $values = $self->bigwig_adaptor->fetch_summary_array($synonym->name, $slice->start, $slice->end, @_);
+      last if @$values;
+    }
+  }
+  
+  return $values;
 }
 
 sub render_gradient {
