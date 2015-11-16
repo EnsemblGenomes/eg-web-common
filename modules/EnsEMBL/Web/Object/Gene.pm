@@ -294,4 +294,120 @@ sub filtered_family_data {
   return $data;
 }
 
+sub get_go_list {
+  my $self = shift ;
+  
+  # The array will have the list of ontologies mapped 
+  my $ontologies = $self->species_defs->SPECIES_ONTOLOGIES || return {};
+
+  my $dbname_to_match = shift || join '|', @$ontologies;
+  my $ancestor=shift;
+  my $gene = $self->gene;
+  my $goadaptor = $self->hub->get_databases('go')->{'go'};
+
+  my @goxrefs = @{$gene->get_all_DBLinks};
+  my @my_transcripts= @{$self->Obj->get_all_Transcripts};
+
+  my %hash;
+  my %go_hash;  
+  my $transcript_id;
+  foreach my $transcript (@my_transcripts) {    
+    $transcript_id = $transcript->stable_id;
+    
+    foreach my $goxref (sort { $a->display_id cmp $b->display_id } @{$transcript->get_all_DBLinks}) {
+      my $go = $goxref->display_id;
+      chomp $go; # Just in case
+      next unless ($goxref->dbname =~ /^($dbname_to_match)$/);
+
+      my ($otype, $go2) = $go =~ /([\w|\_]+):0*(\d+)/;
+      my $term;
+      
+      if(exists $hash{$go2}) {      
+        $go_hash{$go}{transcript_id} .= ",$transcript_id" if($go_hash{$go} && $go_hash{$go}{transcript_id}); # GO terms with multiple transcript
+        next;
+      }
+
+      my $info_text;
+      my $sources;
+
+      if ($goxref->info_type eq 'PROJECTION') {
+        $info_text= $goxref->info_text; 
+      }
+
+      my $evidence = '';
+## EG
+      my @extensions;
+##      
+      if ($goxref->isa('Bio::EnsEMBL::OntologyXref')) {
+        $evidence = join ', ', @{$goxref->get_all_linkage_types}; 
+
+        foreach my $e (@{$goxref->get_all_linkage_info}) {      
+          my ($linkage, $xref) = @{$e || []};
+          next unless $xref;
+          my ($did, $pid, $db, $db_name) = ($xref->display_id, $xref->primary_id, $xref->dbname, $xref->db_display_name);
+          my $label = "$db_name:$did";
+
+          #db schema won't (yet) support Vega GO supporting xrefs so use a specific form of info_text to generate URL and label
+          my $vega_go_xref = 0;
+          my $info_text = $xref->info_text;
+          if ($info_text =~ /Quick_Go:/) {
+            $vega_go_xref = 1;
+            $info_text =~ s/Quick_Go://;
+            $label = "(QuickGO:$pid)";
+          }
+          my $ext_url = $self->hub->get_ExtURL_link($label, $db, $pid, $info_text);
+          $ext_url = "$did $ext_url" if $vega_go_xref;
+          push @$sources, $ext_url;
+        }
+## EG
+        push @extensions, @{$goxref->get_extensions()};
+##        
+      }
+
+      $hash{$go2} = 1;
+
+      if (my $goa = $goadaptor->get_GOTermAdaptor) {
+        my $term;
+        eval { 
+          $term = $goa->fetch_by_accession($go); 
+        };
+
+        warn $@ if $@;
+
+        my $term_name = $term ? $term->name : '';
+        $term_name ||= $goxref->description || '';
+
+        my $has_ancestor = (!defined ($ancestor));
+        if (!$has_ancestor){
+          $has_ancestor=($go eq $ancestor);
+          my $term = $goa->fetch_by_accession($go);
+
+          if ($term) {
+            my $ancestors = $goa->fetch_all_by_descendant_term($term);
+            for(my $i=0; $i< scalar (@$ancestors) && !$has_ancestor; $i++){
+              $has_ancestor=(@{$ancestors}[$i]->accession eq $ancestor);
+            }
+          }
+        }
+     
+        if($has_ancestor){        
+          $go_hash{$go} = {
+            transcript_id => $transcript_id,
+            evidence => $evidence,
+            term     => $term_name,
+            info     => $info_text,
+            source   => join(' ,', @{$sources || []}),
+## EG
+            extensions => \@extensions,
+##
+          };
+        }
+      }
+
+    }
+  }
+
+  return \%go_hash;
+}
+
 1;
