@@ -22,34 +22,30 @@ use strict;
 use warnings;
 
 use List::Util qw(first);
-use HTML::Entities qw(encode_entities);
 
-use EnsEMBL::Web::File::Tools;
-use EnsEMBL::Web::Exceptions;
 use EnsEMBL::Web::VEPConstants qw(INPUT_FORMATS CONFIG_SECTIONS);
-use Bio::EnsEMBL::Variation::Utils::Constants;
 
-use parent qw(EnsEMBL::Web::Component::Tools::VEP);
-
+use parent qw(
+  EnsEMBL::Web::Component::Tools::VEP
+  EnsEMBL::Web::Component::Tools::InputForm
+);
 
 
 sub get_cacheable_form_node {
-  ## Gets the form tree node
-  ## This method returns the form object that can be cached once and then used for all requests (ie. it does not contian species specific or user specific fields)
-  ## @return EnsEMBL::Web::Form object
+
+
+  ## Abstract method implementation
   my $self            = shift;
   my $hub             = $self->hub;
+  my $object          = $self->object;
   my $sd              = $hub->species_defs;
-  my $species         = $self->_species;
-  my $form            = $self->new_tool_form('VEP');
-  my $fd              = $self->object->get_form_details;
+  my $species         = $object->species_list;
+  my $form            = $self->new_tool_form;
+  my $fd              = $object->get_form_details;
   my $input_formats   = INPUT_FORMATS;
 
-  # Placeholders for previous job json and species hidden inputs
-  $form->append_child('text', 'EDIT_JOB');
-  $form->append_child('text', 'SPECIES_INPUT');
 
-  my $input_fieldset = $form->add_fieldset({'legend' => 'Input', 'class' => @$species <= 100 ? '_stt_input' : ['long_species_fieldset', '_stt_input'] , 'no_required_notes' => 1});
+ my $input_fieldset = $form->add_fieldset({'class' => @$species <= 100 ? '' : 'long_species_fieldset' , 'no_required_notes' => 1});
 
   
 
@@ -108,6 +104,7 @@ sub get_cacheable_form_node {
     'label'         => 'Name for this data (optional)'
   });
 
+  
   $input_fieldset->add_field({
     'label'         => 'Either paste data',
     'elements'      => [{
@@ -130,6 +127,7 @@ sub get_cacheable_form_node {
       'helptip'       => 'See a quick preview of results for data pasted above',
     }]
   });
+
 
   $input_fieldset->add_field({
     'type'          => 'file',
@@ -174,42 +172,23 @@ sub get_cacheable_form_node {
   }
 
   ## Output options header
-  $form->add_fieldset('Output options');
+  $form->add_fieldset({'no_required_notes' => 1});
 
   ### Advanced config options
   my $sections = CONFIG_SECTIONS;
   foreach my $section (@$sections) {
-    my $method      = '_build_'.$section->{'id'};
-    my $config_div  = $form->append_child('div', {
-      'class'       => 'extra_configs_wrapper vep-configs',
-      'children'    => [{
-        'node_name'   => 'div',
-        'class'       => 'extra_configs_button',
-        'children'    => [{
-          'node_name'   => 'a',
-          'rel'         => '_vep'.$section->{'id'},
-          'class'       => [qw(toggle _slide_toggle set_cookie closed)],
-          'href'        => '#vep'.$section->{'id'},
-          'title'       => $section->{'caption'},
-          'inner_HTML'  => $section->{'title'}
-        }, {
-          'node_name'   => 'span',
-          'class'       => 'extra_configs_info',
-          'inner_HTML'  => $section->{'caption'}
-        }]
-      }, {
-        'node_name'   => 'div',
-        'class'       => ['extra_configs', 'toggleable', 'hidden', '_vep'.$section->{'id'}],
-      }]
-    });
 
-    $self->$method($form, $config_div->last_child); # add required fieldsets
+    $self->togglable_fieldsets($form, {
+      'title' => $section->{'title'},
+      'desc'  => $section->{'caption'}
+    }, $self->can('_build_'.$section->{'id'})->($self, $form));
   }
 
-  # Placeholder for Run/Close buttons
-  $form->append_child('text', 'BUTTONS_FIELDSET');
+  # Run/Close buttons
+  $self->add_buttons_fieldset($form, {'reset' => 'Clear', 'cancel' => 'Close form'});
 
   return $form;
+
 }
 
 
