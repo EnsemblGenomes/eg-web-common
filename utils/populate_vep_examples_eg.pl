@@ -17,7 +17,7 @@ use Bio::EnsEMBL::Variation::VariationFeature;
 use Getopt::Long;
 use FileHandle;
 
-my ($host, $port, $user, $pass, $chosen_species, $version, $dir, $formats);
+my ($host, $port, $user, $pass, $chosen_species, $version, $formats, $skip_bacteria, $dry_run);
 
 GetOptions(
 	'host=s'   => \$host,
@@ -26,8 +26,9 @@ GetOptions(
 	'port=i'   => \$port,
   'version=i' => \$version,
   'species=s' => \$chosen_species,
-  'dir=s'     => \$dir,
   'formats=s'  => \$formats,
+  'skip-bacteria' => \$skip_bacteria,
+  'dry-run' => \$dry_run,
 );
 
 my $reg = 'Bio::EnsEMBL::Registry';
@@ -40,7 +41,6 @@ $reg->load_registry_from_db(
   -db_version => $version,
 );
 
-$dir ||= '.';
 $formats ||= 'ensembl,vcf,id,hgvs,pileup';
 
 my @formats = split(',', $formats);
@@ -71,7 +71,7 @@ SPECIES: foreach my $species(@all_species) {
   my $sa = $reg->get_adaptor($species, 'core', 'slice');
 
 ## EG - skip bacteria
-  next if $sa->dbc->dbname =~ /^bacteria_\d+_collection/;
+  next if $skip_bacteria and $sa->dbc->dbname =~ /^bacteria_\d+_collection/;
 ##   
   
   my $ta = $reg->get_adaptor($species, 'core', 'transcript');
@@ -97,8 +97,6 @@ SPECIES: foreach my $species(@all_species) {
       $sth->fetch();
       push @{$web_data{"VEP_ID"}}, $name;
     }
-    
-    close OUT;
     
     $sth->finish(); 
   }
@@ -187,8 +185,10 @@ SPECIES: foreach my $species(@all_species) {
       adaptor        => $vfa,
       slice          => $slice
     });
-    
-    $con = join ",", @{$tmp_vf->consequence_type};
+    eval {
+     $con = join ",", @{$tmp_vf->consequence_type};
+    };
+    warn "Trapped: $@" if $@;  
   }
   
   if($con =~ /intron/) {
@@ -221,8 +221,10 @@ SPECIES: foreach my $species(@all_species) {
       adaptor        => $vfa,
       slice          => $slice
     });
-    
-    $con = join ",", @{$tmp_vf->consequence_type};
+    eval {
+     $con = join ",", @{$tmp_vf->consequence_type};
+    };
+    warn "Trapped: $@" if $@;  
   }
   
   if($con =~ /frameshift/) {
@@ -233,10 +235,11 @@ SPECIES: foreach my $species(@all_species) {
   my $meta = $reg->get_adaptor($species, 'core', 'MetaContainer');
  
   foreach my $key (keys %web_data) {
-    my $meta_key = 'sample.' . lc($key);
+    my $meta_key   = 'sample.' . lc($key);
     my $meta_value = join('\n', @{$web_data{$key}});
-    warn "STORE $meta_key = $meta_value";
-    $meta->store_key_value($meta_key, $meta_value);
+    my $msg        = $dry_run ? 'WOULD STORE' : 'STORE'; 
+    warn "$msg $meta_key = $meta_value";
+    $meta->store_key_value($meta_key, $meta_value) unless $dry_run;
   }
   
   # exit 0;
