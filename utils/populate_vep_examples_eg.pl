@@ -18,7 +18,7 @@ use Getopt::Long;
 use FileHandle;
 
 my ($host, $port, $user, $pass, $chosen_species, $version, $formats);
-my ($skip_bacteria, $only_bacteria, $dry_run);
+my ($skip_bacteria, $only_bacteria, $dry_run, $delete_existing);
 
 GetOptions(
 	'host=s'   => \$host,
@@ -31,6 +31,7 @@ GetOptions(
   'skip-bacteria' => \$skip_bacteria,
   'only-bacteria' => \$only_bacteria,
   'dry-run' => \$dry_run,
+  'delete-existing' => \$delete_existing,
 );
 
 die "Conflicting bacteria args" if $skip_bacteria and $only_bacteria;
@@ -237,7 +238,11 @@ SPECIES: foreach my $species(@all_species) {
   }
  
   my $meta = $reg->get_adaptor($species, 'core', 'MetaContainer');
- 
+  
+  if (!$dry_run and $delete_existing) {
+    $meta->dbc->db_handle->do("DELETE FROM meta WHERE species_id = ? AND meta_key like 'sample.vep%'", undef, $meta->species_id);
+  }
+
   foreach my $key (keys %web_data) {
     my $meta_key   = 'sample.' . lc($key);
     my $meta_value = join('\n', @{$web_data{$key}});
@@ -300,7 +305,7 @@ sub select_slice {
   # we want a slice with transcripts on
   while(scalar @$trs == 0) {
     $slice = shift @$slices;
-    $trs = $ta->fetch_all_by_Slice($slice);
+    $trs = eval { $ta->fetch_all_by_Slice($slice) } || [];
   }
   
   print STDERR "Chose slice ".$slice->seq_region_name."\n";
