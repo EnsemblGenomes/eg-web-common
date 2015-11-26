@@ -21,24 +21,27 @@ Ensembl.Panel.VEPForm = Ensembl.Panel.VEPForm.extend({
   init: function() {
     this.base();
     
-    $('select.ajax-species-selector').each(function(){ $(this).ajaxSpeciesSelector() });
+    var ajaxSelector = $('select.ajax-species-selector');
 
-    var panel = this;
+    if (ajaxSelector[0]) {
 
-    // Change the input value on click of the examples link
-    this.elLk.form.find('a._example_input').off('click').on('click', function(e) {
-      console.log('EG click');
-      e.preventDefault();
+      ajaxSelector.ajaxSpeciesSelector();
 
-      var species = $('select.ajax-species-selector').val();
-      console.log('sp', species);
+      var panel = this;
 
-      var text = panel.exampleData[species][this.rel];
-      if(typeof(text) === 'undefined' || !text.length) text = "";
-      text = text.replace(/\\n/g, "\n");
-    
-      panel.elLk.dataField.val(text).trigger('change');
-    });
+      // Change the input value on click of the examples link
+      this.elLk.form.find('a._example_input').off('click').on('click', function(e) {
+        e.preventDefault();
+
+        var species = ajaxSelector.val();
+
+        var text = panel.exampleData[species][this.rel];
+        if(typeof(text) === 'undefined' || !text.length) text = "";
+        text = text.replace(/\\n/g, "\n");
+      
+        panel.elLk.dataField.val(text).trigger('change');
+      });
+    }
 
   }
 });
