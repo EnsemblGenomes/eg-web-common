@@ -542,7 +542,7 @@ sub _summarise_go_db {
   #$self->_summarise_generic( $db_name, $dbh );
   # get the list of the available ontologies and skip the ontologies we do not use
   my $t_aref = $dbh->selectall_arrayref(
-"select o.namespace, o.name, t.accession, t.name 
+"select o.ontology_id, o.namespace, o.name, t.accession, t.name 
    from term t 
      left join ontology o using (ontology_id)  
        where t.is_root > 0 and 
@@ -551,13 +551,13 @@ sub _summarise_go_db {
 ");
 
   foreach my $row (@$t_aref) {
-    my ($oid, $ontology, $root_term, $description) = @$row;
+    my ($oid, $namespace, $ontology, $root_term, $description) = @$row;
     next unless ($ontology && $root_term);
     $oid =~ s/(-|\s)/_/g;
     $self->db_tree->{'ONTOLOGIES'}->{$oid} = {
       db => $ontology,
       root => $root_term,
-      description => $oid #$description
+      description => $namespace #$description
     };
   }
 
