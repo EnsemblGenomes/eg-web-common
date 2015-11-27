@@ -36,6 +36,9 @@ sub get_blast_form_options {
   ## Gets the list of options for dropdown fields in the blast input form
   my $self = shift;
 
+  # return if already cached
+  return $self->{'_form_options'} if $self->{'_form_options'};
+
   my $hub             = $self->hub;
   my $sd              = $self->species_defs;
   my @species         = $sd->valid_species;
@@ -81,10 +84,10 @@ sub get_blast_form_options {
     }
   }
 
-  return {
+  return $self->{'_form_options'} = {
     'options'         => $options,
-    'missing_sources' => $self->jsonify($missing_sources),
-    'combinations'    => $self->jsonify($blast_configs)
+    'missing_sources' => $missing_sources,
+    'combinations'    => $blast_configs
   };
 }
 
