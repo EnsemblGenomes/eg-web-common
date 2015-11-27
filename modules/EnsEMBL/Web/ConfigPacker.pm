@@ -554,6 +554,7 @@ sub _summarise_go_db {
     my ($oid, $namespace, $ontology, $root_term, $description) = @$row;
     next unless ($ontology && $root_term);
     $oid =~ s/(-|\s)/_/g;
+    $description =~ s/\s+$//; # hack to strip training whitespace
     $description =~ s/(-|\s)/_/g;
     $self->db_tree->{'ONTOLOGIES'}->{$oid} = {
       db => $ontology,

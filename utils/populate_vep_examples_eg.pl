@@ -18,7 +18,7 @@ use Getopt::Long;
 use FileHandle;
 
 my ($host, $port, $user, $pass, $chosen_species, $version, $formats);
-my ($skip_bacteria, $only_bacteria, $dry_run, $delete_existing, $start_from_species);
+my ($skip_bacteria, $only_bacteria, $dry_run, $delete_existing, $start_from_species, $skip_species);
 
 GetOptions(
 	'host=s'   => \$host,
@@ -32,7 +32,8 @@ GetOptions(
   'only-bacteria' => \$only_bacteria,
   'dry-run' => \$dry_run,
   'delete-existing' => \$delete_existing,
-  'start-from-species=s' => \$start_from_species
+  'start-from-species=s' => \$start_from_species,
+  'skip-species=s' => \$skip_species,
 );
 
 die "Conflicting bacteria args" if $skip_bacteria and $only_bacteria;
@@ -71,6 +72,8 @@ if ($start_from_species and $species lt $start_from_species) {
   warn "skipping $species\n";
   next;
 }
+
+next if ($species eq 'burkholderia_pseudomallei_1106b');
 
 ## EG - without this we get too many connection errors
 ##      maybe somewhete in this script the adaptors are not getting destroyed properly - I couldn't see where
