@@ -22,8 +22,7 @@ use Data::Dumper;
 ############################################################################
 # Script can be used for fungi, protists, plants and metazoa.
 # Advised to be run on your dev site (gunpowder). You can also run it
-# on a ves-hx-60 website but in this case  you won't be able to commit
-# new species config files created by this script.
+# on the admin website, just check the correct path $dir on the admin server.
 # To use for bacteria sample bacteria species needs to be added
 # to %sample_species hash.
 # Before running the script, check if $dir is correct.
