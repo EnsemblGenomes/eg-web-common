@@ -24,7 +24,11 @@ no warnings 'qw';
 
 sub CONFIGURATION_FIELDS {
   return [
-    'general'             => [
+    'general'             => {
+
+      'caption'             => '',
+
+      'fields'              => [
 
       'alignments'          => {
         'type'                => 'dropdown',
@@ -42,11 +46,16 @@ sub CONFIGURATION_FIELDS {
         'type'                => 'dropdown',
         'label'               => 'E-value threshold',
         'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(1e-200 1e-100 1e-50 1e-10 1e-5 1e-4 1e-3 1e-2 1e-1 1.0 10 100 1000 10000) ]
-      },
+      }
+      ]
 
-    ],
+    },
 
-    'scoring'             => [
+    'scoring'             => {
+
+       'caption'             => '',
+
+      'fields'              => [
 
       'dropoff'             => {
         'type'                => 'dropdown',
@@ -88,20 +97,24 @@ sub CONFIGURATION_FIELDS {
         'type'                => 'dropdown',
         'label'               => 'Compositional adjustments',
         'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(F D 1 2 3) ]                                
-      },
+      }
+      ]
 
-    ],
+    },
 
-    'filters_and_masking'  => [
+    'filters_and_masking'  => {
+
+      'caption'             => '',
+      'fields'              => [
 
       'filter'              => {
         'type'                => 'checklist',
         'label'               => 'Filter low complexity regions',
         'values'              => [ { 'value' => '1' } ],
         'commandline_values'  => {'1' => 'T', '' => 'F'}
-      },
-
+      }
     ]
+    }
 
   ];
 }

@@ -223,51 +223,7 @@ sub modify_tree {
     [qw(literature EnsEMBL::Web::Component::Gene::Literature)],
     { 'availability' => 'gene' }
   ));
-
-
-  # get all ontologies mapped to this species
-  my $go_menu = $self->create_submenu('GO', 'Ontology');
-  my %olist = map {$_ => 1} @{$species_defs->DISPLAY_ONTOLOGIES || []};
-
-  if (%olist) {
-
-    # get all ontologies available in the ontology db
-    my %clusters = $species_defs->multiX('ONTOLOGIES');
-
-    # get all the clusters that can generate a graph
-    my @clist = grep {$olist{$clusters{$_}->{db}}} sort {$clusters{$a}->{db} cmp $clusters{$b}->{db}} keys %clusters;    # Find if this ontology has been loaded into ontology db
-
-    foreach my $oid (@clist) {
-      my $cluster = $clusters{$oid};
-      my $dbname  = $cluster->{db};
-
-      # special case: there are many ontologies loaded into PBO - we only want to display gene_ex
-      if ($dbname eq 'PBO') {
-        next unless $oid eq 'gene_ex';
-      }
-
-      if ($dbname eq 'GO') {
-        $dbname = 'GO|GO_to_gene';
-      }
-      my $go_hash = $self->object ? $object->get_ontology_chart($dbname, $cluster->{root}) : {};
-      next unless (%$go_hash);
-      my @c = grep {$go_hash->{$_}->{selected}} keys %$go_hash;
-      my $num = scalar(@c);
-
-      my $url2 = $hub->url(
-        {
-          type   => 'Gene',
-          action => 'Ontology/' . $oid,
-          oid    => $oid
-        }
-      );
-
-      (my $desc2 = "$cluster->{db}: $cluster->{description}") =~ s/_/ /g;
-      $go_menu->append($self->create_node('Ontology/' . $oid, $desc2, [qw( go EnsEMBL::Web::Component::Gene::Ontology )], {'availability' => 'gene', 'concise' => $desc2, 'url' => $url2}));
-
-    }
-  }
-  $compara_menu->before($go_menu);
+  
 }
 
 1;

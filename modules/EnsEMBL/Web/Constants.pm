@@ -34,7 +34,7 @@ sub ONTOLOGY_SETTINGS {
     },
     'GO' => {
       extlinks => {
-	'View in QuickGO' => 'http://www.ebi.ac.uk/ego/GTerm?id=###ID###',
+	      'View in QuickGO' => 'http://www.ebi.ac.uk/ego/GTerm?id=###ID###',
       },
       biomart_filter => 'go_parent_term',
       name => 'Gene Ontology',
@@ -42,7 +42,7 @@ sub ONTOLOGY_SETTINGS {
     },      
     'PO' => {
       extlinks => {
-	'View in Plant Ontology' => 'http://www.plantontology.org/amigo/go.cgi?view=details&&query=###ID###',
+	      'View in Plant Ontology' => 'http://www.plantontology.org/amigo/go.cgi?view=details&&query=###ID###',
       },
       biomart_filter => 'po_parent_term',
       name => 'Plant Ontology',
