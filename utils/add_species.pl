@@ -20,7 +20,9 @@ use Config::Tiny;
 use Data::Dumper;
 
 ############################################################################
-# Script can be used for fungi and protists.
+# Script can be used for fungi, protists, plants and metazoa.
+# Advised to be run on your dev site (gunpowder). You can also run it
+# on the admin website, just check the correct path $dir on the admin server.
 # To use for bacteria sample bacteria species needs to be added
 # to %sample_species hash.
 # Before running the script, check if $dir is correct.
@@ -36,8 +38,8 @@ die "You should provide arguments: species_name and site. Ex: ./add_species.pl T
 my ($sp, $site, $server) = @ARGV;
 
 # preconfigure this
-my $dir = "/nfs/public/rw/ensembl/ensembl-genomes/release-22/$site";
-my $dir = "/homes/jk/ensembl/branch_76";
+#my $dir = "/nfs/public/rw/ensembl/ensembl-genomes/release-30/$site";
+my $dir = "/homes/jk/ensembl/master";
 
 # sample species used to copy over a config file and to add new species
 # in the config files after these.
@@ -49,10 +51,9 @@ my %sample_species = (
         plants   => 'Oryza_meridionalis',
 );
 
-#ensembl-webcode/eg-web-ensembl-configs/
-my $file=  -e $dir.'/ensembl-webcode/configs/'.$server.'/conf/ini-files/MULTI.ini' ?
-        $dir.'/ensembl-webcode/configs/'.$server.'/conf/ini-files/MULTI.ini' :
-        $dir.'/ebi-plugins/'.$server.'/conf/ini-files/MULTI.ini';
+my $file=  -e $dir.'/eg-web-ensembl-configs/'.$server.'/conf/ini-files/MULTI.ini' ?
+        $dir.'/eg-web-ensembl-configs/'.$server.'/conf/ini-files/MULTI.ini' :
+        $dir.'/eg-web-common/conf/ini-files/MULTI.ini';
 
 # cheking if database for a new species exists
 
@@ -126,9 +127,7 @@ delete $conf->{general}->{ONTOLOGY_SUBSETS};                        # Delete a v
 # Saving config
 $conf->write($new_species_config_name);
 
-my $file2 =  -e $dir.'/ensembl-webcode/configs/eg-hx/conf/ini-files/DEFAULTS.ini' ?
-        $dir.'/ensembl-webcode/configs/eg-hx/conf/ini-files/DEFAULTS.ini' :
-        $dir.'/ebi-plugins/eg-hx/conf/ini-files/DEFAULTS.ini';
+my $file2 =  $dir.'/eg-web-ensembl-configs/eg-hx/conf/ini-files/DEFAULTS.ini';
 
 $conf = Config::Tiny->read($file2);
 
