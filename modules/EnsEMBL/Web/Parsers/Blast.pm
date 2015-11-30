@@ -55,6 +55,15 @@ sub parse_xml {
       
       my ($qframe, $tframe) = split /\s*\/\s*/, $align->{frame} || ''; # E.g "+2 / -3"
 
+      if ($align->{strand}) {
+        $tori = $1 if $align->{strand} =~ /.*?\/(.*)/;
+        my %replace = (
+          'plus' => 1,
+          'minus' => -1
+        );
+        $tori =~ s/$_/$replace{$_}/ for keys %replace;
+      }
+
       my $desc = $hit->{description};  
       $desc =~ s/.*description:"(.*)".*/$1/ if $desc =~ /description:/;
 
