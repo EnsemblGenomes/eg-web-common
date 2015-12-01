@@ -28,6 +28,8 @@ use LWP::UserAgent;
 use XML::Simple;
 use URI;
 
+use Rose::DateTime::Util qw(parse_date);
+
 use EnsEMBL::Web::Exceptions;
 use EnsEMBL::Web::Utils::FileHandler qw(file_get_contents file_put_contents);
 use EnsEMBL::Web::Parsers::Blast;
@@ -105,8 +107,9 @@ sub update_jobs {
 
       my $parser   = EnsEMBL::Web::Parsers::Blast->new($self->hub);
       my $hits     = $parser->parse_xml($xml, $job_data->{species}, $job_data->{source});
-      my $orm_hits = [ map { {result_data => $_ || {}} } @$hits ];
-      
+      my $now      = parse_date('now');
+      my $orm_hits = [ map { {result_data => $_ || {}, created_at => $now } } @$hits ];
+            
       $job->result($orm_hits);
       $job->status('done');
       $job->dispatcher_status('done');      
