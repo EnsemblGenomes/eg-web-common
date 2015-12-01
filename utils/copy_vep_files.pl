@@ -4,11 +4,12 @@ use warnings;
 use File::Find  qw(find);
 use File::Slurp qw(read_dir);
 use File::Copy  qw(copy);
+use File::Path  qw(make_path);
 use Data::Dumper;
 
 # helper script to copy VEP and FASTA files for VEP tool
 
-my $vep_path   = $ARGV[0]; # comma separated list of source dirs for VEP cache tars 
+my $vep_path   = $ARGV[0]; # source dir for VEP cache tars 
 my $fasta_path = $ARGV[1]; # source dir for fasta (all divisions)
 my $dest_path  = $ARGV[2]; 
 
@@ -16,7 +17,11 @@ die "Usage: $0 <source-vep-path> <source-fasta-path> <dest-path>\n" unless $vep_
 
 die "Cannot find vep dir: $vep_path\n"     unless -d $vep_path;
 die "Cannot find fasta dir: $fasta_path\n" unless -d $fasta_path;
-die "Cannot find dest dir: $dest_path\n"   unless -d $dest_path;
+
+if (!-d $dest_path) {
+  make_path($dest_path) || die $!;
+  say "Created dest path $dest_path";
+}
 
 say "Finding fasta files...";
 
