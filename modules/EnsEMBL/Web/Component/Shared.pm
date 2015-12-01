@@ -197,7 +197,11 @@ sub transcript_table {
       $description =~ s|$xref|<a href="$url" class="constant">$xref</a>|;
     }
 
-    $table->add_row('Description', $description);
+## VB
+    $description =~ s/(Indian strain )\((.+)\)/$1 (<a href="\/Anopheles_stephensiI\/Gene\/Summary\?g=$2">$2<\/a>)/;
+##
+
+    $table->add_row('Description', "$description");
   }  
 
   my $location    = $hub->param('r') || sprintf '%s:%s-%s', $object->seq_region_name, $object->seq_region_start, $object->seq_region_end;
