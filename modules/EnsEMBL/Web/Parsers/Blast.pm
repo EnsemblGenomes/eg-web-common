@@ -56,12 +56,13 @@ sub parse_xml {
       my ($qframe, $tframe) = split /\s*\/\s*/, $align->{frame} || ''; # E.g "+2 / -3"
 
       if ($align->{strand}) {
-        $tori = $1 if $align->{strand} =~ /.*?\/(.*)/;
+        my $strand = $1 if $align->{strand} =~ /.*?\/(.*)/i;
         my %replace = (
           'plus' => 1,
           'minus' => -1
         );
-        $tori =~ s/$_/$replace{$_}/ for keys %replace;
+        $strand =~ s/$_/$replace{$_}/ for keys %replace;
+        $tori = $strand if $strand !~ /^none$/;
       }
 
       my $desc = $hit->{description};  
