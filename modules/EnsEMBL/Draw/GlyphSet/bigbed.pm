@@ -24,6 +24,11 @@ no warnings 'uninitialized';
 
 use base qw(EnsEMBL::Draw::GlyphSet::_alignment EnsEMBL::Draw::GlyphSet_wiggle_and_block);
 
+sub wiggle_subtitle {
+  my $self = shift;
+  return $self->my_config('longLabel') || $self->my_config('name') || $self->my_config('caption');
+}
+
 sub features {
   my ($self, $options) = @_;
   my %config_in = map { $_ => $self->my_config($_) } qw(colouredscore style);

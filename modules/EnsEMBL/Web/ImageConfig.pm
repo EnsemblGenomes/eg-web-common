@@ -460,9 +460,9 @@ sub load_user_tracks {
   my $das      = $hub->get_all_das;
   my $trackhubs = $self->get_parameter('trackhubs') == 1;
   my (%url_sources, %upload_sources);
-
+  
   $self->_load_url_feature($menu);
-
+  
   foreach my $source (sort { ($a->caption || $a->label) cmp ($b->caption || $b->label) } values %$das) {
     my $node = $self->get_node('das_' . $source->logic_name);
 
@@ -473,11 +473,10 @@ sub load_user_tracks {
   }
 
   ## Data attached via URL
-
   foreach my $entry ($session->get_data(type => 'url')) {
     next if $entry->{'no_attach'};
     next unless $entry->{'species'} eq $self->{'species'};
-
+    
     $url_sources{"url_$entry->{'code'}"} = {
       source_type => 'session',
       source_name => $entry->{'name'} || $entry->{'url'},
@@ -494,7 +493,7 @@ sub load_user_tracks {
 
     };
   }
-  
+ 
   ## Data uploaded but not saved
   foreach my $entry ($session->get_data(type => 'upload')) {
     next unless $entry->{'species'} eq $self->{'species'};
@@ -529,7 +528,7 @@ sub load_user_tracks {
       }));
     }
   }
-  
+
   ## Data saved by the user  
   if ($user) {
     my @groups = $user->get_groups;
@@ -565,7 +564,7 @@ sub load_user_tracks {
       }
     }
   }
-
+  
   ## Now we can add all remote (URL) data sources
   foreach my $code (sort { $url_sources{$a}{'source_name'} cmp $url_sources{$b}{'source_name'} } keys %url_sources) {
     my $add_method = lc "_add_$url_sources{$code}{'format'}_track";
@@ -642,12 +641,13 @@ sub load_user_tracks {
 
 sub _add_flat_file_track {
   my ($self, $menu, $sub_type, $key, $name, $description, %options) = @_;
+
   $menu ||= $self->get_node('user_data');
-  
+
   return unless $menu;
- 
+
   my ($strand, $renderers) = $self->_user_track_settings($options{'style'}, $options{'format'});
-  
+
   my $track = $self->create_track($key, $name, {
     display     => 'off',
     strand      => $strand,
@@ -662,14 +662,14 @@ sub _add_flat_file_track {
     description => $description,
     %options
   });
-  
+
   $menu->append($track) if $track;
 }
 
 sub _user_track_settings {
   my ($self, $style, $format) = @_;
   my ($strand, @user_renderers);
-      
+
   if (lc($format) eq 'pairwise') {
     $strand         = 'f';
     @user_renderers = ('off', 'Off', 'interaction', 'Pairwise interaction',
@@ -697,47 +697,48 @@ sub _user_track_settings {
 sub _add_file_format_track {
   my ($self, %args) = @_;
   my $menu = $args{'menu'} || $self->get_node('user_data');
-  
+
   return unless $menu;
-  
+
   %args = $self->_add_trackhub_extras_options(%args) if $args{'source'}{'trackhub'};
-  
+
   my $type    = lc $args{'format'};
   my $article = $args{'format'} =~ /^[aeiou]/ ? 'an' : 'a';
-  my $desc;
-  
-  if ($args{'internal'}) {
-    $desc = "Data served from a $args{'format'} file: $args{'description'}";
-  } else {
-## EG don't show attachment message for internally configured sources
-    my $from = $args{'source'}{'source_type'} =~ /^session|user$/i
-      ? sprintf( 'This data is attached to the %s, and comes from URL: %s', encode_entities($args{'source'}{'source_type'}), encode_entities($args{'source'}{'source_url'}) )
-      : sprintf( 'This data comes from URL: %s', encode_entities($args{'source'}{'source_url'}) );
+  my ($desc, $url);
 
+  if ($args{'internal'}) {
+    $desc = $args{'description'};
+    $url = join '/', $self->hub->species_defs->DATAFILE_BASE_PATH, lc $self->hub->species, $self->hub->species_defs->ASSEMBLY_VERSION, $args{'source'}{'dir'}, $args{'source'}{'file'};
+    $args{'options'}{'external'} = undef;
+  } else {
     $desc = sprintf(
-      'Data retrieved from %s %s file on an external webserver. %s<br />%s',
+      'Data retrieved from %s %s file on an external webserver. %s <p>%s comes from URL: <a href="%s">%s</a></p>',
       $article,
       $args{'format'},
       $args{'description'},
-      $from,
+## EG don't show attachment message for internally configured sources     
+      $args{'source'}{'source_type'} =~ /^session|user$/i ? sprintf('This data is attached to the %s, and', encode_entities($args{'source'}{'source_type'})) : 'This data', 
+##
+      encode_entities($args{'source'}{'source_url'}),
+      encode_entities($args{'source'}{'source_url'})
     );
-##    
   }
-  
-  my $track = $self->create_track($args{'key'}, $args{'source'}{'source_name'}, {
+ 
+  $self->generic_add($menu, undef, $args{'key'}, {}, {
     display     => 'off',
-    strand      => $args{source}{strand} || 'f',
+    strand      => 'f',
     format      => $args{'format'},
     glyphset    => $type,
     colourset   => $type,
     renderers   => $args{'renderers'},
+    name        => $args{'source'}{'source_name'},
     caption     => exists($args{'source'}{'caption'}) ? $args{'source'}{'caption'} : $args{'source'}{'source_name'},
-    url         => $args{'source'}{'source_url'},
+    labelcaption => $args{'source'}{'labelcaption'},
+    section     => $args{'source'}{'section'},
+    url         => $url || $args{'source'}{'source_url'},
     description => $desc,
     %{$args{'options'}}
   });
-  
-  $menu->append($track) if $track;
 }
 
 sub update_from_url {
@@ -846,7 +847,7 @@ sub update_from_url {
 
         if (uc $format eq 'TRACKHUB') {
           my $info;
-          ($n, $info) = $self->_add_trackhub($n, $p,1);
+          ($n, $info) = $self->_add_trackhub($n, $p);
           if ($info->{'error'}) {
             my @errors = @{$info->{'error'}||[]};
             $session->add_data(
@@ -951,93 +952,6 @@ sub update_from_url {
       message  => "The link you followed has made changes to these tracks: $tracks.",
     );
   }
-}
-
-sub add_somatic_mutations {
-  my ($self, $key, $hashref) = @_;
-  my $menu = $self->get_node('somatic');
-#EG ENSEMBL-2442 remove this track from config when there are no somatic variants
-  my $count = 0;
-#EG
-  
-  return unless $menu;
-  
-  my $somatic = $self->create_submenu('somatic_mutation', 'Somatic variants');
-  my %options = (
-    db         => $key,
-    glyphset   => '_variation',
-    strand     => 'r',
-    depth      => 0.5,
-    bump_width => 0,
-    colourset  => 'variation',
-    display    => 'off',
-    renderers  => [ 'off', 'Off', 'normal', 'Normal (collapsed for windows over 200kb)', 'compact', 'Collapsed', 'labels', 'Expanded with name (hidden for windows over 10kb)', 'nolabels', 'Expanded without name' ],
-  );
-  
-  # All sources
-  $somatic->append($self->create_track("somatic_mutation_all", "Somatic variants (all sources)", {
-    %options,
-    caption     => 'Somatic variants (all sources)',
-    description => 'Somatic variants from all sources'
-  }));
-  
-   
-  # Mixed source(s)
-  foreach my $key_1 (keys(%{$self->species_defs->databases->{'DATABASE_VARIATION'}{'SOMATIC_MUTATIONS'}})) {
-    if ($self->species_defs->databases->{'DATABASE_VARIATION'}{'SOMATIC_MUTATIONS'}{$key_1}{'none'}) {
-      (my $k = $key_1) =~ s/\W/_/g;
-      $somatic->append($self->create_track("somatic_mutation_$k", "$key_1 somatic variants", {
-        %options,
-        caption     => "$key_1 somatic variants",
-        source      => $key_1,
-        description => "Somatic variants from $key_1"
-      }));
-      $count++; #EG
-    }
-  }
-  
-  # Somatic source(s)
-  foreach my $key_2 (sort grep { $hashref->{'source'}{'somatic'}{$_} == 1 } keys %{$hashref->{'source'}{'somatic'}}) {
-    next unless $hashref->{'source'}{'counts'}{$key_2} > 0;
-    
-    $somatic->append($self->create_track("somatic_mutation_$key_2", "$key_2 somatic mutations (all)", {
-      %options,
-      caption     => "$key_2 somatic mutations (all)",
-      source      => $key_2,
-      description => "All somatic variants from $key_2"
-    }));
-    
-    my $tissue_menu = $self->create_submenu('somatic_mutation_by_tissue', 'Somatic variants by tissue');
-    
-    ## Add tracks for each tumour site
-    my %tumour_sites = %{$self->species_defs->databases->{'DATABASE_VARIATION'}{'SOMATIC_MUTATIONS'}{$key_2} || {}};
-    
-    foreach my $description (sort  keys %tumour_sites) {
-      next if $description eq 'none';
-      
-      my $phenotype_id           = $tumour_sites{$description};
-      my ($source, $type, $site) = split /\:/, $description;
-      my $formatted_site         = $site;
-      $site                      =~ s/\W/_/g;
-      $formatted_site            =~ s/\_/ /g;
-      
-      $tissue_menu->append($self->create_track("somatic_mutation_${key_2}_$site", "$key_2 somatic mutations in $formatted_site", {
-        %options,
-        caption     => "$key_2 $formatted_site tumours",
-        filter      => $phenotype_id,
-        description => $description
-      }));    
-      $count++; #EG
-    }
-    
-    $somatic->append($tissue_menu);
-  }
-  
-#EG ENSEMBL-2442 remove this track from config when there are no somatic variants
-  if($count){
-    $menu->append($somatic);
-  }
-  else {return undef;}
 }
 
 sub add_repeat_features {

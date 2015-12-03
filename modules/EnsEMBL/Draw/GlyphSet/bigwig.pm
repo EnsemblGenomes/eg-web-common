@@ -24,6 +24,11 @@ use List::Util qw(min max);
 
 use base qw(EnsEMBL::Draw::GlyphSet::_alignment  EnsEMBL::Draw::GlyphSet_wiggle_and_block);
 
+sub wiggle_subtitle {
+  my $self = shift;
+  return $self->my_config('longLabel') || $self->my_config('name') || $self->my_config('caption');
+}
+
 # get the alignment features
 sub wiggle_features {
   my ($self, $bins, $multi_key) = @_;

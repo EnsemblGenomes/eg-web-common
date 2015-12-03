@@ -73,8 +73,6 @@ sub availability {
     $self->{_availability}->{has_gene_supporting_evidence} = $counts->{gene_supporting_evidence};
   }
 
-warn Data::Dumper::Dumper $self->{_availability};
-
   return $self->{_availability};
 }
 
