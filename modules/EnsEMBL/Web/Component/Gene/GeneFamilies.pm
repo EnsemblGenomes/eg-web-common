@@ -89,7 +89,24 @@ sub content {
   }
   
   my $data = $object->filtered_family_data($family);
+
+
+### EG Start 
+
+  if($self->format eq 'Excel'){
+
+    my $excel_output = "Gene stable ID, Name, Discription, Taxon ID, Species \n";
+    foreach my $member (@{$data->{members}}) {
+      $excel_output .= sprintf('"%s","%s","%s","%s","%s"',$member->{id},$member->{name},$member->{description},$member->{taxon_id},$species_defs->species_display_label($member->{species}));
+      $excel_output .= "\n";
+    }
+    return $excel_output;
+
+  }
   
+  ### EG End 
+
+
   # family stats
     
   my $stats = $self->new_twocol;
@@ -110,7 +127,26 @@ sub content {
     );
   }
   $html .= sprintf '<a class="fbutton" target="_blank" href="%s">Download protein sequences</a> ', $hub->url({ action => 'Gene_families', function => 'Sequence', _format => 'Text', gene_family_id => $gene_family_id });
+  
+
+  ### EG Start 
+
+  $html .= sprintf (
+    '<a class="fbutton" target="_blank" href="%s">%s</a> ',
+     $hub->url({ action => 'Gene_families', _format => 'Excel', gene_family_id => $gene_family_id, filename => $data->{is_filtered} ? $gene_family_id."-filtered" : $gene_family_id}),
+     $data->{is_filtered} ? "Download $data->{member_count} filtered genes" : "Download all $data->{member_count} genes"
+     ) if $data->{member_count} > 1000;
   $html .= '</p>';
+
+  if($data->{member_count} > 1000){
+    $html .= "<p>";
+    $html .= sprintf 'Previewing first 1000 genes. Click \'Download\' button above to download all the %s genes', $data->{member_count};
+    $html .= " from your filter" if $data->{is_filtered};
+    $html .= ".</p>";
+  }
+
+  ### EG End
+
 
   # member table
   
@@ -130,6 +166,10 @@ sub content {
       data_table_config => { iDisplayLength => 25, aLengthMenu => [[25, 50, 100, -1], [25, 50, 100, "All"]] },
     }
   );
+
+  ### EG Start 
+
+  my $member_count = 0;
   
   foreach my $member (@{$data->{members}}) {
 
@@ -142,7 +182,14 @@ sub content {
       description => $member->{description},
       species     => '<a href="' . $species_path . '">' . $species_defs->species_display_label($member->{species}) . '</a>',
     });
+
+    $member_count++;
+    if($member_count == 1000){
+      last;
+    }
   }
+
+  ### EG End
    
   return $html . $table->render;
 }
