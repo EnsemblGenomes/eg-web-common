@@ -164,6 +164,7 @@ sub _add_bigwig_track {
     external => 'external',
     sub_type => 'bigwig',
     colour   => $args{'menu'}{'colour'} || $args{'source'}{'colour'} || 'red',
+    longLabel    => $args{'source'}{'longLabel'},
   };
   
   $options->{viewLimits} = $args{viewLimits} || $args{source}->{viewLimits};
