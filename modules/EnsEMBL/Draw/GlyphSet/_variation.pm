@@ -18,48 +18,7 @@ limitations under the License.
 
 package EnsEMBL::Draw::GlyphSet::_variation;
 
-sub highlight {
-  my $self = shift; 
-  my ($f, $composite, $pix_per_bp, $h, $hi_colour) = @_;
-
-  return if $self->my_config('style') && ($self->my_config('style') ne 'box'); 
-  
-  ## Get highlights
-  my %highlights;
-  @highlights{$self->highlights} = (1);
-
-  if ($self->{'config'}->core_object->{'variation'}){
-    my $var_id = $self->{'config'}->core_object->{'variation'}->name;
-    $var_id =~ s/rs//;  
-    $highlights{$var_id} = 1;
-  }
-
-  # Are we going to highlight self item
-  my $id = $f->variation_name;  
-     $id =~ s/^rs//;
- 
-  return unless $highlights{$id} || $highlights{"rs$id"};
- 
-  
-  $self->unshift(
-    $self->Rect({ # First a black box
-      x         => $composite->x - 3/$pix_per_bp,
-      y         => $composite->y - 1, # + makes it go down
-      width     => $composite->width + 6/$pix_per_bp,
-      height    => $h + 4,
-      colour    => 'black',
-      absolutey => 1,
-    }),
-    $self->Rect({ # Then a 1 pixel smaller white box
-      x         => $composite->x - 2/$pix_per_bp,
-      y         => $composite->y, # + makes it go down
-      width     => $composite->width + 4/$pix_per_bp,
-      height    => $h + 2,
-      colour    => 'white',
-      absolutey => 1,
-    })
-  );
-}
+use strict;
 
 sub render_histogram {
     my $self = shift;
