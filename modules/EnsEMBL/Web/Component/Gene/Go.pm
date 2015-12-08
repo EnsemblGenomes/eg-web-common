@@ -32,6 +32,7 @@ sub content {
   # ontology website.
   
   my $hub         = $self->hub;
+  my $function    = $hub->function;  
   my $adaptor     = $hub->get_databases('go')->{'go'}->get_OntologyTermAdaptor;
   my %clusters    = $hub->species_defs->multiX('ONTOLOGIES');
   my $terms_found = 0;
@@ -51,7 +52,7 @@ sub content {
   my $html    = '<ul>';
   my $tables  = '';
   my $i       = 0;
-  my $oid     = $hub->param('oid');
+  my $oid     = (grep { $clusters{$_}{'description'} eq $function } keys %clusters)[0];
   my $go_hash = $object->get_go_list($clusters{$oid}{'db'}, $clusters{$oid}{'root'});
 
   if (%$go_hash) {

@@ -24,6 +24,7 @@ use Data::Dumper;
 use JSON;
 use EnsEMBL::Web::TmpFile::Text;
 use Compress::Zlib;
+use Data::Dumper;
 
 use strict;
 use previous qw(
@@ -231,8 +232,10 @@ sub filtered_family_data {
   my $temp_file = EnsEMBL::Web::TmpFile::Text->new(prefix => 'genefamily', filename => "$family_id.json"); 
    
   if ($temp_file->exists) {
-    $members = from_json($temp_file->content);
-  } else {
+    $members = eval{from_json($temp_file->content)} || [];
+  } 
+
+  if(!@$members) {
     my $member_objs = $family->get_all_Members;
 
     # API too slow, use raw SQL to get name and desc for all genes   
@@ -257,7 +260,14 @@ sub filtered_family_data {
         species     => $member->genome_db->name
       });  
     }
+
+    if($temp_file->exists){
+        $temp_file->delete;
+        $temp_file->content('');
+    }
+
     $temp_file->print($hub->jsonify($members));
+    
   }  
   
   my $total_member_count  = scalar @$members;
