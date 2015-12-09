@@ -64,20 +64,7 @@ sub content {
     my @highlights           = $gene && $member ? ($gene->stable_id, $member->genome_db->dbID) : (undef, undef);
     my $hidden_genes_counter = 0;
     my $link                 = $hub->type eq 'GeneTree' ? '' : sprintf(' <a href="%s">%s</a>', $hub->url({ species => 'Multi', type => 'GeneTree', action => undef, gt => $tree_stable_id,  __clear => 1 }), $tree_stable_id);
-    my ($hidden_genome_db_ids, $highlight_species, $highlight_genome_db_id);
-    # EG
-    my @highlight_tags             = split(',',$hub->param('ht') || "");
-    my $highlight_map = $self->get_highlight_map($cdb,$tree->tree);
-    my @compara_highlights; # not to be confused with COMPARA_HIGHLIGHTS list
-    foreach my $ot_map (@$highlight_map){
-      my $xref = $ot_map->{'xref'};
-      if ( grep /^$xref$/, @highlight_tags ){
-        push (@compara_highlights, 
-          sprintf("%s,%s,%s", $xref, $ot_map->{'colour'}, join(',', @{$ot_map->{'members'}})) 
-        );
-      }
-    }
-    my $compara_highlights_str = join(';',@compara_highlights);
+    my (%hidden_genome_db_ids, $highlight_species, $highlight_genome_db_id);
 
 
     #EG: warning message is added to the top of the page to let the user know if an old GeneTree stable_ids is mapped to new GeneTree stable_ids
@@ -116,12 +103,24 @@ sub content {
           $highlight_gene = undef;
         }
     }
+  
+  # Get all the genome_db_ids in each clade
+  # Ideally, this should be stored in $hub->species_defs->multi_hash->{'DATABASE_COMPARA'}
+  # or any other centralized place, to avoid recomputing it many times
+  my %genome_db_ids_by_clade = map {$_ => []} @{ $self->hub->species_defs->TAXON_ORDER };
+  foreach my $species_name (keys %{$self->hub->get_species_info}) {
+    foreach my $clade (@{ $self->hub->species_defs->get_config($species_name, 'SPECIES_GROUP_HIERARCHY') }) {
+      push @{$genome_db_ids_by_clade{$clade}}, $hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'GENOME_DB'}{lc $species_name};
+    }
+  }
+  $genome_db_ids_by_clade{LOWCOVERAGE} = $self->hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'SPECIES_SET'}{'LOWCOVERAGE'};
+
     if (@hidden_clades) {
-  $hidden_genome_db_ids = '_';
+    %hidden_genome_db_ids = ();
 
   foreach my $clade (@hidden_clades) {
       my ($clade_name) = $clade =~ /group_([\w\-]+)_display/;
-      $hidden_genome_db_ids .= $hub->param("group_${clade_name}_genome_db_ids") . '_';
+      $hidden_genome_db_ids{$_} = 1 for @{ $genome_db_ids_by_clade{$clade_name} };
   }
 
   foreach my $this_leaf (@$leaves) {
@@ -131,14 +130,14 @@ sub content {
       next if $highlight_gene && $this_leaf->gene_member->stable_id eq $highlight_gene;
       next if $member && $genome_db_id == $member->genome_db_id;
 
-      if ($hidden_genome_db_ids =~ /_${genome_db_id}_/) {
+      if ($hidden_genome_db_ids{$genome_db_id}) {
       $hidden_genes_counter++;
       $this_leaf->disavow_parent;
       $tree = $tree->minimize_tree;
   }
   }
 
-    $html .= $self->_info('Hidden genes', "There are $hidden_genes_counter hidden genes in the tree. Use the 'configure page' link in the left panel to change the options.") if $hidden_genes_counter;
+    $html .= $self->_info('Hidden genes', "<p>There are $hidden_genes_counter hidden genes in the tree. Use the 'configure page' link in the left panel to change the options.</p>") if $hidden_genes_counter;
     }
 
     $image_config->set_parameters({
@@ -168,7 +167,7 @@ sub content {
     if (@collapsed_clades) {
       foreach my $clade (@collapsed_clades) {
         my ($clade_name) = $clade =~ /group_([\w\-]+)_display/;
-        my $extra_collapsed_nodes = $self->find_nodes_by_genome_db_ids($tree, [ split '_', $hub->param("group_${clade_name}_genome_db_ids") ], 'internal');
+      my $extra_collapsed_nodes = $self->find_nodes_by_genome_db_ids($tree, $genome_db_ids_by_clade{$clade_name}, 'internal');
 
         if (%$extra_collapsed_nodes) {
           $collapsed_nodes .= ',' if $collapsed_nodes;
@@ -181,21 +180,14 @@ sub content {
 
     if ($colouring =~ /^(back|fore)ground$/) {
       my $mode   = $1 eq 'back' ? 'bg' : 'fg';
-      my @clades = grep { $_ =~ /^group_.+_${mode}colour/ } $hub->param;
     
-            # Get all the genome_db_ids in each clade
-      my $genome_db_ids_by_clade;
-    
-      foreach my $clade (@clades) {
-          my ($clade_name) = $clade =~ /group_(.+)_${mode}colour/;
-          $genome_db_ids_by_clade->{$clade_name} = [ split '_', $hub->param("group_${clade_name}_genome_db_ids") ];
-      }
-    
-            # Sort the clades by the number of genome_db_ids. First the largest clades,
-            # so they can be overwritten later (see ensembl-draw/modules/Bio/EnsEMBL/GlyphSet/genetree.pm)
-      foreach my $clade_name (sort { scalar @{$genome_db_ids_by_clade->{$b}} <=> scalar @{$genome_db_ids_by_clade->{$a}} } keys %$genome_db_ids_by_clade) {
-        my $genome_db_ids = $genome_db_ids_by_clade->{$clade_name};
-        my $colour        = $hub->param("group_${clade_name}_${mode}colour") || 'magenta';
+    # TAXON_ORDER is ordered by increasing phylogenetic size. Reverse it to
+    # get the largest clades first, so that they can be overwritten later
+    # (see ensembl-webcode/modules/EnsEMBL/Draw/GlyphSet/genetree.pm)
+    foreach my $clade_name (reverse @{ $self->hub->species_defs->TAXON_ORDER }) {
+      next unless $hub->param("group_${clade_name}_${mode}colour");
+      my $genome_db_ids = $genome_db_ids_by_clade{$clade_name};
+      my $colour        = $hub->param("group_${clade_name}_${mode}colour");
         my $nodes         = $self->find_nodes_by_genome_db_ids($tree, $genome_db_ids, $mode eq 'fg' ? 'all' : undef);
     
         push @$coloured_nodes, { clade => $clade_name,  colour => $colour, mode => $mode, node_ids => [ keys %$nodes ] } if %$nodes;
@@ -208,7 +200,20 @@ sub content {
     push @highlights, $highlight_gene         || undef;
     push @highlights, $highlight_ancestor     || undef;
     push @highlights, $show_exons;
-    push @highlights, $compara_highlights_str || undef;
+    
+    # EG
+    my @highlight_tags             = split(',',$hub->param('ht') || "");
+    my $highlight_map = $self->get_highlight_map($cdb,$tree->tree);
+    #my @compara_highlights; # not to be confused with COMPARA_HIGHLIGHTS list
+    foreach my $ot_map (@$highlight_map){
+      my $xref = $ot_map->{'xref'};
+      if ( grep /^$xref$/, @highlight_tags ){
+        push (@highlights, 
+          sprintf("%s,%s,%s", $xref, $ot_map->{'colour'}, join(',', @{$ot_map->{'members'}})) 
+        );
+      }
+    }
+    #my $compara_highlights_str = join(';',@compara_highlights);
 
     my $image = $self->new_image($tree, $image_config, \@highlights);
 
@@ -216,14 +221,13 @@ sub content {
 
     my $image_id = $gene ? $gene->stable_id : $tree_stable_id;
     my $li_tmpl  = '<li><a href="%s">%s</a></li>';
-
     my @view_links;
+
 
     $image->image_type       = 'genetree';
     $image->image_name       = ($hub->param('image_width')||"tree") . "-$image_id";
     $image->imagemap         = 'yes';
     $image->{'panel_number'} = 'tree';
-    $image->set_button('drag', 'title' => 'Drag to select region');
 
     ## Need to pass gene name to export form 
     my $gene_name;
@@ -236,6 +240,8 @@ sub content {
     }
     $image->{'export_params'} = [['gene_name', $gene_name],['align', 'tree']];
     $image->{'data_export'}   = 'GeneTree';
+
+    $image->set_button('drag', 'title' => 'Drag to select region');
 
 # EG include the ht param
     if ($gene) {
@@ -259,10 +265,6 @@ sub content {
 
     return $html;
 }
-
-
-
-
 
 sub content_align {
     my $self = shift;
