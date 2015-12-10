@@ -362,6 +362,21 @@ sub _munge_meta {
     $self->tree->{'DISPLAY_NAME'} = $meta_info->{1}{'species.display_name'}[0];
   }
 
+## EG
+  my $metadata_db = $self->full_tree->{MULTI}->{databases}->{DATABASE_METADATA};
+  my $genome_info_adaptor;
+  if ($metadata_db) {
+    my $dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(
+      -USER   => $metadata_db->{USER},
+      -PASS   => $metadata_db->{PASS},
+      -PORT   => $metadata_db->{PORT},
+      -HOST   => $metadata_db->{HOST},
+      -DBNAME => $metadata_db->{NAME}
+    );
+    $genome_info_adaptor = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC => $dbc);
+  }
+##
+
   while (my ($species_id, $meta_hash) = each (%$meta_info)) {
     next unless $species_id && $meta_hash && ref($meta_hash) eq 'HASH';
 
@@ -507,30 +522,19 @@ sub _munge_meta {
     # convenience flag to determine if species is polyploidy
     $self->tree($species)->{POLYPLOIDY} = ($self->tree($species)->{PLOIDY} > 2);
 
-    #  munge EG genome info 
-    my $metadata_db = $self->full_tree->{MULTI}->{databases}->{DATABASE_METADATA};
-
-    if ($metadata_db) {
-      my $dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(
-        -USER   => $metadata_db->{USER},
-        -PASS   => $metadata_db->{PASS},
-        -PORT   => $metadata_db->{PORT},
-        -HOST   => $metadata_db->{HOST},
-        -DBNAME => $metadata_db->{NAME}
-      );
-
-      my $genome_info_adaptor = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC => $dbc);
-      
-      if ($genome_info_adaptor) {
-        my $dbname = $self->tree->{databases}->{DATABASE_CORE}->{NAME};
-        foreach my $genome (@{ $genome_info_adaptor->fetch_all_by_dbname($dbname) }) {
-          my $species = $genome->species;
-          $self->tree($species)->{'SEROTYPE'}     = $genome->serotype;
-          $self->tree($species)->{'PUBLICATIONS'} = $genome->publications;
-        }
+## EG - munge EG genome info 
+    if ($genome_info_adaptor) {
+      my $dbname = $self->tree->{databases}->{DATABASE_CORE}->{NAME};
+      foreach my $genome (@{ $genome_info_adaptor->fetch_all_by_dbname($dbname) }) {
+        my $species = $genome->species;
+        $self->tree($species)->{'SEROTYPE'}     = $genome->serotype;
+        $self->tree($species)->{'PUBLICATIONS'} = $genome->publications;
       }
-    } 
+    }
+##    
   }
+
+  $genome_info_adaptor->{dbc}->db_handle->disconnect if $genome_info_adaptor; # EG - hacky, but seems to be needed
 }
 
 # To get the available relations
