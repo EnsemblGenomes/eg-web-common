@@ -92,14 +92,14 @@ sub render {
 
 
   ## ID HISTORY CONVERTER
-  $url = $hub->url({'species' => $sp, 'type' => 'UserData', 'action' => 'UploadStableIDs'});
-  $table->add_row({
-    'name' => sprintf('<b><a class="modal_link nodeco" href="%s">ID History converter</a></b>', $url),
-    'desc' => 'Convert a set of Ensembl IDs from a previous release into their current equivalents.',
-    'tool' => sprintf('<a href="%s" class="modal_link nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $url, $img_url),
-    'code' => sprintf('<a href="https://github.com/Ensembl/ensembl-tools/tree/release/%s/scripts/id_history_converter" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $sd->ENSEMBL_VERSION, $img_url),
-    'docs' => ''
-  });
+  #$url = $hub->url({'species' => $sp, 'type' => 'UserData', 'action' => 'UploadStableIDs'});
+  #$table->add_row({
+  #  'name' => sprintf('<b><a class="modal_link nodeco" href="%s">ID History converter</a></b>', $url),
+  #  'desc' => 'Convert a set of Ensembl IDs from a previous release into their current equivalents.',
+  #  'tool' => sprintf('<a href="%s" class="modal_link nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $url, $img_url),
+  #  'code' => sprintf('<a href="https://github.com/Ensembl/ensembl-tools/tree/release/%s/scripts/id_history_converter" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $sd->ENSEMBL_VERSION, $img_url),
+  #  'docs' => ''
+  #});
 
   ## VIRTUAL MACHINE
   $url = sprintf 'ftp://ftp.ensemblgenomes.org/pub/release-%s/virtual_machines', $SiteDefs::SITE_RELEASE_VERSION;
