@@ -55,6 +55,7 @@ sub init {
     rnaseq_cultivar      
     rnaseq_tissue        
     resequencing  
+    dna_align_cdna
 
     external_data
     user_data
