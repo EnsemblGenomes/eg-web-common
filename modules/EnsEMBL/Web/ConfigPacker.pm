@@ -543,46 +543,30 @@ sub _summarise_go_db {
   my $db_name = 'DATABASE_GO';
   my $dbh     = $self->db_connect( $db_name );
   return unless $dbh;
-  #$self->_summarise_generic( $db_name, $dbh );
+
   # get the list of the available ontologies and skip the ontologies we do not use
-  my $t_aref = $dbh->selectall_arrayref(
-"select o.ontology_id, o.namespace, o.name, t.accession, t.name 
-   from term t 
-     left join ontology o using (ontology_id)  
-       where t.is_root > 0 and 
-             o.name not in ('OGMS', 'CHEBI', 'PR', 'PBO', 'SO', 'BTO', 'UO', 'UNKNOWN', 'CL', 'PCO')
-       order by o.name, o.namespace
-");
+  my $t_aref = $dbh->selectall_arrayref(q(
+    SELECT o.ontology_id, o.namespace, o.name, t.accession, t.name 
+    FROM term t 
+    LEFT JOIN ontology o USING (ontology_id)  
+    WHERE t.is_root > 0 
+    AND o.name NOT IN ('OGMS', 'CHEBI', 'PR', 'PBO', 'SO', 'BTO', 'UO', 'UNKNOWN', 'CL', 'PCO')
+    AND NOT (o.name = 'PHI' AND t.accession != 'PHI:0')
+    ORDER BY o.name, o.namespace
+  ));
 
   foreach my $row (@$t_aref) {
     my ($oid, $namespace, $ontology, $root_term, $description) = @$row;
     next unless ($ontology && $root_term);
     $oid =~ s/(-|\s)/_/g;
-    $description =~ s/\s+$//; # hack to strip training whitespace
-    $description =~ s/(-|\s)/_/g;
+    $description =~ s/\s+$//; # hack to strip trailing whitespace
+    $description =~ s/[-\s]/_/g;
     $self->db_tree->{'ONTOLOGIES'}->{$oid} = {
       db => $ontology,
       root => $root_term,
       description => $description 
     };
   }
-
-# # get the available relations
-# #           qq{select t.ontology_id, rt.name from relation r
-#   my $sql = qq{select o.namespace, rt.name from relation r
-# left join relation_type rt using (relation_type_id)
-# left join term t on child_term_id = term_id
-# join ontology  o on o.ontology_id = t.ontology_id
-# group by t.ontology_id, rt.name
-# } ;
-#   my $s_aref = $dbh->selectall_arrayref($sql);
-
-#   foreach my $row (@$s_aref) {
-#       my ($oid, $relation) = @$row;
-#       $oid =~ s/(-|\s)/_/g;
-#       next unless $self->db_tree->{'ONTOLOGIES'}->{$oid};
-#       push @{$self->db_tree->{'ONTOLOGIES'}->{$oid}->{relations}}, $relation;
-#   }
 
   $dbh->disconnect();
 }
