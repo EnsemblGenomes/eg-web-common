@@ -85,7 +85,9 @@ sub get_files_from_dir {
   my @types = ($type);
   @types = qw(gif png jpg jpeg) if $type eq 'image';
   @types = qw(css) if $type eq 'ie7css';
+## Skip image dir for bacteria
   foreach my $htdocs_dir (grep { !m/biomart/ && -d "$_/$dir" && !(m/bacteria/ && $type eq 'image')} reverse @{$species_defs->ENSEMBL_HTDOCS_DIRS || []}) {
+##
     foreach my $file (@{list_dir_contents("$htdocs_dir/$dir",{recursive=>1})}) {
       my $path = "$htdocs_dir/$dir/$file";
       next if $path =~ m!/minified/!;
