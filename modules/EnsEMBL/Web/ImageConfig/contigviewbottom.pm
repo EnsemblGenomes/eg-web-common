@@ -25,18 +25,6 @@ use warnings;
 
 use previous qw(init initialize);
 
-sub modify {
-  my $self = shift;
- 
-  $self->load_configured_bam;
-  $self->load_configured_bed;
-  $self->load_configured_bedgraph;
-  $self->load_configured_mw;
-
-  my $ml = $self->get_node('fg_methylation_legend');
-  $ml->remove if $ml;
-} 
-
 sub init {
   my $self = shift;
   
@@ -96,6 +84,14 @@ sub init {
   ));
 
   $self->PREV::init(@_);
+
+  $self->load_configured_bam;
+  $self->load_configured_bed;
+  $self->load_configured_bedgraph;
+  $self->load_configured_mw;
+
+  my $ml = $self->get_node('fg_methylation_legend');
+  $ml->remove if $ml;
 }
 
 sub initialize {
