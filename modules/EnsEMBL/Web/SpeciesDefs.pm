@@ -38,7 +38,7 @@ sub _get_NCBIBLAST_source_file {
   my $dataset = $self->get_config($species, 'SPECIES_DATASET');
 
   if ($species ne $dataset) { # add collection prefix
-    $species = join '/', ucfirst($self->get_config($species, 'SPECIES_DATASET')), $species;
+    $species = join '/', ucfirst($self->get_config($species, 'SPECIES_DATASET')), $unit eq 'bacteria' ? lcfirst($species) : $species;
   }
 
   return sprintf '%s/%s.%s.%s', $path, $species, $assembly, $type unless $type =~ /latestgp/;
