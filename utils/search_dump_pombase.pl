@@ -394,8 +394,9 @@ sub dumpGene {
         );
         
         foreach (@$xrefs, @$object_xrefs) {
-          $xrefs{$type}{ $_->[0] }{ $_->[3] }{ $_->[5] } = 1 if $_->[1];
+          $xrefs{$type}{ $_->[0] }{ $_->[3] }{ $_->[5] } = 1 if $_->[5];
           $xrefs{$type}{ $_->[0] }{ $_->[3] }{ $_->[2] } = 1 if $_->[2];
+          $xrefs{$type}{ $_->[0] }{ $_->[3] }{ $_->[1] } = 1 if $_->[1];
           ## remove the duplicates + Temp fix for metazoa data
           if (my $syn = $_->[4]) {
             $syn =~ s/^\'|\'$//g;
