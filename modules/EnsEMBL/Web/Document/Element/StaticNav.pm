@@ -46,7 +46,6 @@ sub content {
   
   foreach my $page (grep { !/^_/ && keys %{$this_tree->{$_}} } @page_order) {
     my $page_tree = $this_tree->{$page};
-    warn "PAGE $page";
     next unless $page_tree->{'_title'};
     
     my $url         = $page_tree->{'_path'};
