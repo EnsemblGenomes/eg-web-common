@@ -25,7 +25,7 @@ use Bio::EnsEMBL::Compara::DBSQL::XrefAssociationAdaptor;
 
 sub content {
   my $self        = shift;
-  my $cdb         = shift || 'compara';
+  my $cdb         = shift || $self->hub->param('cdb') || 'compara';
   my $hub         = $self->hub;
   my $object      = $self->object || $self->hub->core_object('gene');
   my $is_genetree = $object && $object->isa('EnsEMBL::Web::Object::GeneTree') ? 1 : 0;
@@ -228,7 +228,7 @@ sub content {
 
   my $image = $self->new_image($tree, $image_config, \@highlights);
   
-  return $html if $self->_export_image($image, 'no_text');
+  return if $self->_export_image($image, 'no_text');
 
   my $image_id = $gene ? $gene->stable_id : $tree_stable_id;
   my $li_tmpl  = '<li><a href="%s">%s</a></li>';
