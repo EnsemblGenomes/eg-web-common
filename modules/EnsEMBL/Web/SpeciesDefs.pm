@@ -91,16 +91,14 @@ sub _parse {
 
   my $tree          = {};
   my $db_tree       = {};
-  my $das_tree      = {};
-  my $config_packer = EnsEMBL::Web::ConfigPacker->new($tree, $db_tree, $das_tree);
+  my $config_packer = EnsEMBL::Web::ConfigPacker->new($tree, $db_tree);
   
   $self->_info_line('Parser', 'Child objects attached');
 
   # Parse the web tree to create the static content site map
-  $tree->{'STATIC_INFO'} = $self->_load_in_webtree;
+  $tree->{'STATIC_INFO'}  = $self->_load_in_webtree;
   ## Parse species directories for static content
   $tree->{'SPECIES_INFO'} = $self->_load_in_species_pages;
-  
   $self->_info_line('Filesystem', 'Trawled web tree');
   
   $self->_info_log('Parser', 'Parsing ini files and munging dbs');
@@ -111,23 +109,18 @@ sub _parse {
   
   # Loop for each species exported from SiteDefs
   # grab the contents of the ini file AND
-  # IF  the DB/DAS packed files exist expand them
-  # o/w attach the species databases/parse the DAS registry, 
-  # load the data and store the DB/DAS packed files
+  # IF  the DB packed files exist expand them
+  # o/w attach the species databases
+  # load the data and store the packed files
   foreach my $species (@$SiteDefs::ENSEMBL_DATASETS, 'MULTI') {
     $config_packer->species($species);
     
-    $self->process_ini_files($species, 'db', $config_packer, $defaults);
+    $self->process_ini_files($species, $config_packer, $defaults);
     $self->_merge_db_tree($tree, $db_tree, $species);
-    
-    if ($species ne 'MULTI') {
-      $self->process_ini_files($species, 'das', $config_packer, $defaults);
-      $self->_merge_db_tree($tree, $das_tree, $species);
-    }
   }
   
   $self->_info_log('Parser', 'Post processing ini files');
-   
+  
   # Loop over each tree and make further manipulations
   foreach my $species (@$SiteDefs::ENSEMBL_DATASETS, 'MULTI') {
     $config_packer->species($species);

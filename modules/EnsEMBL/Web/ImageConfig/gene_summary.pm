@@ -79,7 +79,6 @@ sub init {
   );
 
   $self->load_tracks;
-  $self->load_configured_das;
   $self->load_configured_bed;
   $self->load_configured_bigwig;
 

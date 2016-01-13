@@ -458,21 +458,11 @@ sub load_user_tracks {
   my $hub      = $self->hub;
   my $session  = $hub->session;
   my $user     = $hub->user;
-  my $das      = $hub->get_all_das;
   my $trackhubs = $self->get_parameter('trackhubs') == 1;
   my (%url_sources, %upload_sources);
   
   $self->_load_url_feature($menu);
   
-  foreach my $source (sort { ($a->caption || $a->label) cmp ($b->caption || $b->label) } values %$das) {
-    my $node = $self->get_node('das_' . $source->logic_name);
-
-    next if     $node && $node->get('node_type') eq 'track';
-    next unless $source->is_on($self->{'type'});
-    
-    $self->add_das_tracks('user_data', $source);
-  }
-
   ## Data attached via URL
   foreach my $entry ($session->get_data(type => 'url')) {
     next if $entry->{'no_attach'};
@@ -511,21 +501,23 @@ sub load_user_tracks {
         $self->_compare_assemblies($entry, $session);
       }
     } elsif ($entry->{'species'} eq $self->{'species'} && !$entry->{'nonpositional'}) {
-      my ($strand, $renderers) = $self->_user_track_settings($entry->{'style'}, $entry->{'format'});
+      my ($strand, $renderers, $default) = $self->_user_track_settings($entry->{'style'}, $entry->{'format'});
       $strand = $entry->{'strand'} if $entry->{'strand'};
       
       $menu->append($self->create_track("upload_$entry->{'code'}", $entry->{'name'}, {
-        external    => 'user',
-        glyphset    => '_flat_file',
-        colourset   => 'classes',
-        sub_type    => 'tmp',
-        file        => $entry->{'file'},
-        format      => $entry->{'format'},
-        caption     => $entry->{'name'},
-        renderers   => $renderers,
-        description => 'Data that has been temporarily uploaded to the web server.',
-        display     => 'normal', # turn on just uploaded user track by default ensembl-2124
-        strand      => $strand,
+        external        => 'user',
+        glyphset        => 'flat_file',
+        colourset       => 'userdata',
+        sub_type        => 'tmp',
+        file            => $entry->{'file'},
+        format          => $entry->{'format'},
+        style           => $entry->{'style'},
+        caption         => $entry->{'name'},
+        renderers       => $renderers,
+        description     => 'Data that has been temporarily uploaded to the web server.',
+        display         => 'normal', # turn on just uploaded user track by default ensembl-2124
+        default_display => $default,
+        strand          => $strand,
       }));
     }
   }
@@ -552,16 +544,38 @@ sub load_user_tracks {
     ## Uploads that have been saved to the userdata database
     foreach my $entry (grep $_->species eq $self->{'species'}, $user->get_records('uploads'), map $user->get_group_records($_, 'uploads'), @groups) {
       my ($name, $assembly) = ($entry->name, $entry->assembly);
-      
-      foreach my $analysis (split /, /, $entry->analyses) {
-        $upload_sources{$analysis} = {
-          source_name => $name,
-          source_type => 'user',
-          assembly    => $assembly,
-          style       => $entry->style,
-        };
+     
+      if ($entry->analyses) {
+        ## Data saved to userdata db
+        ## TODO - remove in due course
+        foreach my $analysis (split /, /, $entry->analyses) {
+          $upload_sources{$analysis} = {
+            source_name => $name,
+            source_type => 'user',
+            assembly    => $assembly,
+            style       => $entry->style,
+          };
         
-        $self->_compare_assemblies($entry, $session);
+          $self->_compare_assemblies($entry, $session);
+        }
+      }
+      else {
+        ## New saved-to-permanent-location
+        my ($strand, $renderers, $default) = $self->_user_track_settings($entry->style, $entry->format);
+        $menu->append($self->create_track("upload_$entry->code", $entry->name, {
+            external        => 'user',
+            glyphset        => 'flat_file',
+            colourset       => 'userdata',
+            sub_type        => 'user',
+            file            => $entry->file,
+            format          => $entry->format,
+            style           => $entry->style,
+            caption         => $entry->name,
+            renderers       => $renderers,
+            description     => 'Data that has been saved to the web server.',
+            display         => 'off',
+            default_display => $default,
+        }));
       }
     }
   }
@@ -609,7 +623,7 @@ sub load_user_tracks {
    
       $analysis->web_data->{'style'} ||= $upload_sources{$logic_name}{'style'};
      
-      my ($strand, $renderers) = $self->_user_track_settings($analysis->web_data->{'style'}, $analysis->program_version);
+      my ($strand, $renderers, $default) = $self->_user_track_settings($analysis->web_data->{'style'}, $analysis->program_version);
       my $source_name = encode_entities($upload_sources{$logic_name}{'source_name'});
       my $description = encode_entities($analysis->description) || "User data from dataset $source_name";
       my $caption     = encode_entities($analysis->display_label);
@@ -617,19 +631,20 @@ sub load_user_tracks {
          $strand      = $upload_sources{$logic_name}{'strand'} if $upload_sources{$logic_name}{'strand'};
       
       push @tracks, [ $logic_name, $caption, {
-        external    => 'user',
-        glyphset    => '_user_data',
-        colourset   => 'classes',
-        sub_type    => $upload_sources{$logic_name}{'source_type'} eq 'user' ? 'user' : 'tmp',
-        renderers   => $renderers,
-        source_name => $source_name,
-        logic_name  => $logic_name,
-        caption     => $caption,
-        data_type   => $analysis->module,
-        description => $description,
-        display     => 'off',
-        style       => $analysis->web_data,
-        format      => $analysis->program_version,
+        external        => 'user',
+        glyphset        => '_user_data',
+        colourset       => 'userdata',
+        sub_type        => $upload_sources{$logic_name}{'source_type'} eq 'user' ? 'user' : 'tmp',
+        renderers       => $renderers,
+        source_name     => $source_name,
+        logic_name      => $logic_name,
+        caption         => $caption,
+        data_type       => $analysis->module,
+        description     => $description,
+        display         => 'off',
+        default_display => $default,
+        style           => $analysis->web_data,
+        format          => $analysis->program_version,
         strand      => $strand,
       }];
     }
@@ -669,78 +684,30 @@ sub _add_flat_file_track {
 
 sub _user_track_settings {
   my ($self, $style, $format) = @_;
-  my ($strand, @user_renderers);
+  my ($strand, @user_renderers, $default);
 
   if (lc($format) eq 'pairwise') {
-    $strand         = 'f';
-    @user_renderers = ('off', 'Off', 'interaction', 'Pairwise interaction',
-                        'interaction_label', 'Pairwise interaction with labels');
+    @user_renderers = ('off', 'Off', 'interaction', 'Pairwise interaction');
   }
-  elsif ($style =~ /^(wiggle|WIG)$/) {
-    $strand         = 'r';
+  elsif (lc($format) eq 'bedgraph' || lc($format) eq 'wig' || $style =~ /^(wiggle|WIG)$/) {
+    @user_renderers = ('off', 'Off', 'tiling', 'Wiggle plot');
 ## EG
-    @user_renderers = ('off', 'Off', 'tiling', 'Wiggle plot', 'gradient', 'Gradient', 'pvalue', 'P-value');
+    push(@user_renderers, 'gradient', 'Gradient', 'pvalue', 'P-value') if lc($format) eq 'wig' || $style =~ /^(wiggle|WIG)$;
 ##
   }
-  elsif (uc $format =~ /BED/) {
-    $strand = 'b';
+  elsif (uc($format) =~ /BED|GFF|GTF/) {
     @user_renderers = @{$self->{'alignment_renderers'}};
     splice @user_renderers, 6, 0, 'as_transcript_nolabel', 'Structure', 'as_transcript_label', 'Structure with labels';
+    $default = 'as_transcript_label';
   }
   else {
-    $strand         = (uc($format) eq 'VEP_INPUT' || uc($format) eq 'VCF') ? 'f' : 'b';
     @user_renderers = (@{$self->{'alignment_renderers'}}, 'difference', 'Differences');
   }
 
-  return ($strand, \@user_renderers);
+  return ('b', \@user_renderers, $default);
 }
 
-sub _add_file_format_track {
-  my ($self, %args) = @_;
-  my $menu = $args{'menu'} || $self->get_node('user_data');
 
-  return unless $menu;
-
-  %args = $self->_add_trackhub_extras_options(%args) if $args{'source'}{'trackhub'};
-
-  my $type    = lc $args{'format'};
-  my $article = $args{'format'} =~ /^[aeiou]/ ? 'an' : 'a';
-  my ($desc, $url);
-
-  if ($args{'internal'}) {
-    $desc = $args{'description'};
-    $url = join '/', $self->hub->species_defs->DATAFILE_BASE_PATH, lc $self->hub->species, $self->hub->species_defs->ASSEMBLY_VERSION, $args{'source'}{'dir'}, $args{'source'}{'file'};
-    $args{'options'}{'external'} = undef;
-  } else {
-    $desc = sprintf(
-      'Data retrieved from %s %s file on an external webserver. %s <p>%s comes from URL: <a href="%s">%s</a></p>',
-      $article,
-      $args{'format'},
-      $args{'description'},
-## EG don't show attachment message for internally configured sources     
-      $args{'source'}{'source_type'} =~ /^session|user$/i ? sprintf('This data is attached to the %s, and', encode_entities($args{'source'}{'source_type'})) : 'This data', 
-##
-      encode_entities($args{'source'}{'source_url'}),
-      encode_entities($args{'source'}{'source_url'})
-    );
-  }
- 
-  $self->generic_add($menu, undef, $args{'key'}, {}, {
-    display     => 'off',
-    strand      => 'f',
-    format      => $args{'format'},
-    glyphset    => $type,
-    colourset   => $type,
-    renderers   => $args{'renderers'},
-    name        => $args{'source'}{'source_name'},
-    caption     => exists($args{'source'}{'caption'}) ? $args{'source'}{'caption'} : $args{'source'}{'source_name'},
-    labelcaption => $args{'source'}{'labelcaption'},
-    section     => $args{'source'}{'section'},
-    url         => $url || $args{'source'}{'source_url'},
-    description => $desc,
-    %{$args{'options'}}
-  });
-}
 
 sub update_from_url {
   ## Tracks added "manually" in the URL (e.g. via a link)
@@ -925,19 +892,6 @@ sub update_from_url {
           code     => 'url_data:' . md5_hex($p),
           message  => $message,
         );
-      } elsif ($type eq 'das') {
-        $p = uri_unescape($p);
-
-        my $logic_name = $session->add_das_from_string($p, $self->{'type'}, { display => $renderer });
-
-        if ($logic_name) {
-          $session->add_data(
-            type     => 'message',
-            function => '_info',
-            code     => 'das:' . md5_hex($p),
-            message  => sprintf('You have attached a DAS source with DSN: %s %s.', encode_entities($p), $self->get_node("das_$logic_name") ? 'to this display' : 'but it cannot be displayed on the specified image')
-          );
-        }
       }
     } else {
       $self->update_track_renderer($key, $renderer, $hub->param('toggle_tracks'));
@@ -994,8 +948,10 @@ sub add_repeat_features {
         colours     => $colours,
         description => $data->{$key_2}{'desc'},
         display     => 'off',
+## EG
         name => exists $data->{$key_2}->{web}->{name} ? $data->{$key_2}->{web}->{name} : $data->{$key_2}->{'name'},
         caption     => $data->{$key_2}->{'name'},
+##
         %options
       });
     }
