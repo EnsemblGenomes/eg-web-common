@@ -692,7 +692,7 @@ sub _user_track_settings {
   elsif (lc($format) eq 'bedgraph' || lc($format) eq 'wig' || $style =~ /^(wiggle|WIG)$/) {
     @user_renderers = ('off', 'Off', 'tiling', 'Wiggle plot');
 ## EG
-    push(@user_renderers, 'gradient', 'Gradient', 'pvalue', 'P-value') if lc($format) eq 'wig' || $style =~ /^(wiggle|WIG)$;
+    push(@user_renderers, 'gradient', 'Gradient', 'pvalue', 'P-value') if lc($format) eq 'wig' || $style =~ /^(wiggle|WIG)$/;
 ##
   }
   elsif (uc($format) =~ /BED|GFF|GTF/) {
