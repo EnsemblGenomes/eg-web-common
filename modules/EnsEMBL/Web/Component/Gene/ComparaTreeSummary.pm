@@ -64,7 +64,7 @@ sub content {
 #EG: warning message is added to the top of the page to let the user know if an old GeneTree stable_ids is mapped to new GeneTree stable_ids
 # EG highlight tree nodes by annotation
     my $hide                 = $hub->get_cookie_value('toggle_ht_table') eq 'closed';
-    my @ontology_terms       = split /,/, $hub->param('ht');
+    my @ontology_terms       = split /,/, $hub->param('ht') || [];
     my @highlight_map        = @{$self->get_highlight_map($cdb, $tree->tree) || []};
     my $highlight_tags_row   = undef;
     my $highlight_tags_table = '';
@@ -84,7 +84,7 @@ sub content {
     
     my $html = $tree->history_warn ? $self->_warning('Warning', $tree->history_warn) : '';
     
-    $html .= sprintf '<h3>GeneTree%s</h3>%s', $link;
+    $html .= sprintf '<h3>GeneTree%s</h3>', $link;
 
     $html .= $self->new_twocol(
       ['Number of genes',             scalar(@$leaves)                                                  ],
