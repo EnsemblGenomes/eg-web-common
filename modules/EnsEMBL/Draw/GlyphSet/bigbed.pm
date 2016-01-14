@@ -39,12 +39,12 @@ sub features {
   return [] unless $bba;
   my $format    = $self->format;
   my $slice     = $self->{'container'};
-  my $raw_feats = $bba->fetch_features($slice->seq_region_name, $slice->start, $slice->end + 1);
+  my $raw_feats = $bba->fetch_features($slice->seq_region_name, $slice->start, $slice->end + 1) || [];
 
 ## EG
   unless (@$raw_feats) {
     foreach my $synonym (@{ $slice->get_all_synonyms }) {
-      $raw_feats = $bba->fetch_features($synonym->name, $slice->start, $slice->end + 1);
+      $raw_feats = $bba->fetch_features($synonym->name, $slice->start, $slice->end + 1) || [];
       last if @$raw_feats;
     }
   }
@@ -118,8 +118,8 @@ sub wiggle_features {
 ## EG
   unless (@$features) {
     foreach my $synonym (@{ $slice->get_all_synonyms }) {
-      $features = $adaptor->fetch_features($synonym->name, $slice->start, $slice->end);
-      last if @$raw_feats;
+      $features = $adaptor->fetch_features($synonym->name, $slice->start, $slice->end) || [];
+      last if @$features;
     }
   }
 ##
