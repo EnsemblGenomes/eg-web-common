@@ -54,3 +54,5 @@ sub blast_options {
  ## @override
  return { 'no_button' => 0 };
 }
+
+1;
