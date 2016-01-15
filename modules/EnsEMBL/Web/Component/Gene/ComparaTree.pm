@@ -322,7 +322,7 @@ sub get_highlight_map{
   my ($self, $cdb_name, $tree) = @_;
   my $hub         = $self->hub;
   my $object      = $self->object || $self->hub->core_object('gene');
-  return [] if ($hub->species =~ /multi/i);
+  return [] if ($hub->species =~ /^multi$/i);
   if(exists $object->{'highlight_map'}){
     return $object->{'highlight_map'};
   }
