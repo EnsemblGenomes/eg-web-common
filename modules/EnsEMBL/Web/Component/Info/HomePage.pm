@@ -325,8 +325,8 @@ sub _assembly_text {
   # Link to FTP site
   if ($species_defs->ENSEMBL_FTP_URL) {
     my $ftp_url;
-    if ($self->is_bacteria) {
-      $ftp_url = sprintf '%s/release-%s/fasta/%s_collection/%s/dna/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, $species_defs->SPECIES_DATASET, lc $species;
+    if ($species_defs->SPECIES_DATASET ne $species) {
+      $ftp_url = sprintf '%s/release-%s/fasta/%s_collection/%s/dna/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, lc $species_defs->SPECIES_DATASET, lc $species;
     }
     else {
       $ftp_url = sprintf '%s/release-%s/fasta/%s/dna/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, lc $species;
