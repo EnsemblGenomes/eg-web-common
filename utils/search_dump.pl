@@ -33,17 +33,10 @@ use LibDirs;
 use utils::Tool;
 
 my (
-  $host,    $user,        $pass,   $port,     $species, $ind,
-  $release, $max_entries, $parallel, $dir,     $inifile,
-  $nogenetrees, $novariation, $noxrefs, $skip_existing, $noortholog, $nodomaindescription,
+  $host, $user, $pass,   $port, $species, $ind,
+  $release, $max_entries, $parallel, $dir, $skip_existing,
+  $nogenetrees, $novariation, $noxrefs, $noortholog, $nodomaindescription,
 );
-
-my %rHash = map { $_ } @ARGV;
-if ( $inifile = $rHash{'-inifile'} ) {
-  my $icontent = `cat $inifile`;
-  warn $icontent;
-  eval $icontent;
-}
 
 GetOptions(
   "host=s",        \$host,        "port=i",    \$port,
@@ -52,7 +45,6 @@ GetOptions(
   "index=s",       \$ind,         
   "max_entries=i", \$max_entries, "parallel",  \$parallel,
   "dir=s",         \$dir,         "help",      \&usage,
-  "inifile=s",     \$inifile,  
   "nogenetrees",   \$nogenetrees,
   "novariation",   \$novariation,
   "noxrefs",       \$noxrefs,
@@ -136,8 +128,6 @@ Usage: perl $0 <options>
   -dir          Directory to write output to. Defaults to /lustre/scratch1/ensembl/gp1/xml.
   -nogzip       Don't compress output as it's written.
   -help         This message.
-  -inifile      First take the arguments from this file. Then overwrite with what is provided in the command line
-
 EOF
 }
 
@@ -857,56 +847,6 @@ sub geneLineXML {
   $counter->();
   return $xml . $cross_references . $additional_fields . "\n</entry>";
 }
-
-
-sub geneLineTSV {
-  my ( $species, $dataset, $xml_data, $counter ) = @_;
-
-
-  my $external_identifiers = $xml_data->{'external_identifiers'} or die "external_identifiers not set";
-  my $gene_id = $xml_data->{'gene_stable_id'} or die "gen id not set";
-  $gene_id =~ s/</&lt;/g;
-  $gene_id =~ s/>/&gt;/g;
-
-
-  my $description          = $xml_data->{'description'};
-  my $gene_name            = encode_entities($xml_data->{'gene_name'});
-  my $display_name         = $xml_data->{'display_name'};
-
-  $display_name =~ s/</&lt;/g;
-  $display_name =~ s/>/&gt;/g;
-
-  $description =~ s/</&lt;/g;
-  $description =~ s/>/&gt;/g;
-  $description =~ s/'/&apos;/g;
-  $description =~ s/&/&amp;/g;
-
-  $gene_name =~ s/</&lt;/g;
-  $gene_name =~ s/>/&gt;/g;
-  $gene_name =~ s/'/&apos;/g;
-  $gene_name =~ s/&/&amp;/g;
-
-
-  my $xrefs;
-  # for some types of xref, merge the subtypes into the larger type
-  # e.g. Uniprot/SWISSPROT and Uniprot/TREMBL become just Uniprot
-  # synonyms are stored as additional fields rather than cross references
-  foreach my $ext_db_name ( keys %$external_identifiers ) {
-      my $matched_db_name = $ext_db_name;
-      if ( $ext_db_name =~ /(Uniprot|GOA|GO|Interpro|Medline|Sequence_Publications|EMBL)/ ) {
-	  $matched_db_name = $1;
-	  @{$xrefs->{$matched_db_name}} = map { encode_entities($_) } keys %{ $external_identifiers->{$ext_db_name} };
-      }
-  }
-  my $xrefs_str = join ';', map { join ',', @{$xrefs->{$_}||[]} } keys %$xrefs;
-  
-  my $url = sprintf qq{http://%s.ensembl.org/%s/Gene/Summary?g=%s;r=%s}, $xml_data->{'genomic_unit'}, $xml_data->{'system_name'}, $xml_data->{gene_stable_id}, $xml_data->{'location'};
-  my @fields;
-  push @fields, $gene_id, $xml_data->{'biotype'}, $gene_name, $xrefs_str, $url, $description;
-  $counter->();
-  return join "\t", @fields;
-}
-
 
 sub make_counter {
   my $start = shift;
