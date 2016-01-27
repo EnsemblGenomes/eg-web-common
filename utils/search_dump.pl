@@ -34,8 +34,8 @@ use utils::Tool;
 
 my (
   $host,    $user,        $pass,   $port,     $species, $ind,
-  $release, $max_entries, $nogzip, $parallel, $dir,     $inifile,
-  $nogenetrees, $novariation, $noxrefs, $skip_existing, $format, $noortholog, $nodomaindescription,
+  $release, $max_entries, $parallel, $dir,     $inifile,
+  $nogenetrees, $novariation, $noxrefs, $skip_existing, $noortholog, $nodomaindescription,
 );
 
 my %rHash = map { $_ } @ARGV;
@@ -49,7 +49,7 @@ GetOptions(
   "host=s",        \$host,        "port=i",    \$port,
   "user=s",        \$user,        "pass=s",    \$pass,
   "species=s",     \$species,     "release=s", \$release,
-  "index=s",       \$ind,         "nogzip!",   \$nogzip,
+  "index=s",       \$ind,         
   "max_entries=i", \$max_entries, "parallel",  \$parallel,
   "dir=s",         \$dir,         "help",      \&usage,
   "inifile=s",     \$inifile,  
@@ -57,25 +57,13 @@ GetOptions(
   "novariation",   \$novariation,
   "noxrefs",       \$noxrefs,
   "skipexisting",   \$skip_existing,
-  "format=s", \$format,
   "noortholog",       \$noortholog,
   "nodomaindescription", \$nodomaindescription,
   );
 
-$format  ||= 'ensembl';
 $ind     ||= 'ALL';
 $dir     ||= ".";
 $release ||= 'LATEST';
-
-
-if ($format eq 'solr') {
-    $novariation = 1;
-    $nogenetrees = 1;
-    $nogzip = 1;
-    $ind = 'Gene';
-    $noortholog = 1;
-}
-
 
 usage() and exit unless ( $host && $port && $user);
 
@@ -97,7 +85,6 @@ print "\nDatasets to process: \n  " . join("\n  ", @datasets) . "\n";
 my $entry_count;
 my $global_start_time = time;
 my $total             = 0;
-my $fh;
 
 foreach my $dataset ( @datasets ) {
   my $conf = $dbHash->{lc($dataset)};
@@ -108,9 +95,7 @@ foreach my $dataset ( @datasets ) {
 
     $dataset =~ s/_/ /g;
 
-    if ( $index eq 'Gene' ) {
-      &$function( ucfirst($dataset), $conf );
-    }
+    &$function( ucfirst($dataset), $conf );
   }
 }
 
@@ -194,18 +179,12 @@ sub get_databases {
 sub footer {
   my ($ecount) = @_;
 
-  unless ($format eq 'solr') { 
   p("</entries>");
   p("<entry_count>$ecount</entry_count>");
   p("</database>");
-}
+
   print "Dumped $ecount entries\n";
-  if ($nogzip) {
-    close(FILE) or die $!;
-  }
-  else {
-    $fh->close();
-  }
+  close(FILE) or die $!;
   $total += $ecount;
 }
 
@@ -226,12 +205,7 @@ sub p {
   my ($str) = @_;
   # TODO - encoding
   $str .= "\n";
-  if ($nogzip) {
-    print FILE $str or die "Can't write to file ", $!;
-  }
-  else {
-    print $fh $str or die "Can't write string: $str";
-  }
+  print FILE $str or die "Can't write to file ", $!;
 }
 
 sub format_date {
@@ -252,6 +226,27 @@ sub format_datetime {
   return sprintf "$d-$ms-$y %02d:%02d:%02d", $hh, $mm, $ss;
 }
 
+sub connect_db {
+  my $db_name = shift;
+
+  my $dsn = "DBI:mysql:host=$host";
+  $dsn .= ";port=$port" if ($port);
+
+  my $dbh;  
+  my $attempt = 0;
+  my $max_attempts = 100;
+  while (!$dbh and ++$attempt <= $max_attempts) {
+    eval { $dbh = DBI->connect( "$dsn:$db_name", $user, $pass ) };
+    warn "DBI connect error: $@" if $@;
+    if (!$dbh) {
+      warn "Failed DBI connect attempt $attempt of $max_attempts\n" if !$dbh;
+      sleep 5;
+    }
+  }
+
+  return $dbh;
+}
+
 sub dumpGene {
 
   my ( $dataset, $conf ) = @_;
@@ -265,20 +260,7 @@ sub dumpGene {
     print "\nSTART dumpGene\n";
     print "Database: $DBNAME\n";
       
-    my $dsn = "DBI:mysql:host=$host";
-    $dsn .= ";port=$port" if ($port);
-  
-    my $dbh;  
-    my $attempt = 0;
-    my $max_attempts = 100;
-    while (!$dbh and ++$attempt <= $max_attempts) {
-      eval { $dbh = DBI->connect( "$dsn:$DBNAME", $user, $pass ) };
-      warn "DBI connect error: $@" if $@;
-      if (!$dbh) {
-        warn "Failed DBI connect attempt $attempt of $max_attempts\n" if !$dbh;
-        sleep 5;
-      }
-    }
+    my $dbh = connect_db($DBNAME);
   
     my $has_stable_ids = $dbh->selectrow_array('SELECT COUNT(*) FROM gene WHERE stable_id IS NOT NULL');
     if (!$has_stable_ids) {
@@ -491,8 +473,7 @@ sub dumpGene {
       my $ortholog_lookup_pan = get_ortholog_lookup($conf, $production_name, 'pan_homology');
       
       (my $filename = "Gene_${species}_${DB}") =~ s/[\W]/_/g;
-      my $file = "$dir/$filename." . ($format eq 'solr' ? 'tsv' : 'xml');
-      $file .= ".gz" unless $nogzip;
+      my $file = "$dir/$filename.xml";
       my $start_time = time;
     
       if ($skip_existing and -f $file) {
@@ -504,14 +485,9 @@ sub dumpGene {
       print "Start time " . format_datetime($start_time) . "\n";
       print "Num seq regions: " . (scalar keys %{ $species_to_seq_region->{$species} }) . "\n";
       
-      if ($nogzip) {
-        open( FILE, ">$file" ) || die "Can't open $file: $!";
-      } else {
-        $fh = new IO::Zlib;
-        $fh->open( "$file", "wb9" ) || die("Can't open compressed stream to $file: $!");
-      }
+      open( FILE, ">$file" ) || die "Can't open $file: $!";
       
-      header( $DBNAME, $dataset, $DB ) unless $format eq 'solr';
+      header( $DBNAME, $dataset, $DB );
   
       # prepare the gene output sub
       # this is called when ready to ouput the gene line
@@ -565,11 +541,7 @@ sub dumpGene {
           }
         }      
         
-        if ($format eq 'solr') {
-  	      p geneLineTSV( $species, $dataset, $gene_data, $counter );
-        } else {
-  	      p geneLineXML( $species, $dataset, $gene_data, $counter );
-        }
+ 	      p geneLineXML( $species, $dataset, $gene_data, $counter );
       };
       
   
@@ -963,9 +935,7 @@ sub get_genetree_lookup {
       
       print "  $dbname\n";
 
-      my $dsn = "DBI:mysql:host=$host";
-      $dsn .= ";port=$port" if ($port);
-      my $compara_dbh = DBI->connect( "$dsn:$dbname", $user, $pass ) or die "DBI::error";
+      my $compara_dbh = connect_db($dbname);
 
       my $sql =
         "SELECT gm.stable_id AS gene, gtr.stable_id AS genetree
@@ -1021,9 +991,7 @@ sub get_ortholog_lookup {
 
   print "Building ortholog lookup for $species (compara_$compara_db)...\n";
   
-  my $dsn = "DBI:mysql:host=$host";
-  $dsn .= ";port=$port" if ($port);
-  my $compara_dbh = DBI->connect( "$dsn:$dbname", $user, $pass ) or die "DBI::error";    
+  my $compara_dbh = connect_db($dbname);
 
   my $orth_species_string = join('","', keys %$orth_species);
 
