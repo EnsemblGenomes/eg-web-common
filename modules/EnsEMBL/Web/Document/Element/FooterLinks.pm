@@ -24,17 +24,7 @@ use strict;
 
 sub content {
 
-  return qq(
-    <div class="twocol-right right">
-      <a href="http://www.ensemblgenomes.org">About&nbsp;Ensembl Genomes</a> |
-      <a href="http://www.ensemblgenomes.org/info/about/contact">Contact&nbsp;Us</a> | 
-      <a href="http://www.ebi.ac.uk/Information/termsofuse.html">EMBL-EBI Terms of use</a> | 
-      <a href="http://www.ebi.ac.uk/Information/Privacy.html">Privacy</a> | 
-      <a href="http://www.ensemblgenomes.org/info/about/cookies">Cookies</a> | 
-      <a href="/info/website/help/index.html">Help</a> 
-      <br />&nbsp;
-    </div>) 
-  ;
+  return '';
 }
 
 1;
