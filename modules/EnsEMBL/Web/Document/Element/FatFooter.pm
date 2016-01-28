@@ -36,9 +36,9 @@ sub content {
                 <p><a href="http://ensemblgenomes.org/info/about/contact">Contact us</a></p>
                 <p><a href="http://ensemblgenomes.org/info/publications">Citing Ensembl Genomes</a></p>
                 <p><a href="http://www.ebi.ac.uk/about/privacy">Privacy policy</a></p>
-                <p><a href="http://ensemblgenomes.org/info/about/legal">Disclaimer</a></p>
                 <p><a href="http://www.ensemblgenomes.org/info/about/cookies">Cookies</a></p>
                 <p><a href="http://www.ebi.ac.uk/Information/termsofuse.html">EMBL-EBI Terms of use</a></p>
+                <p><a href="http://ensemblgenomes.org/info/about/legal">Disclaimer</a></p>
               </div>
   );
 
@@ -53,13 +53,9 @@ sub content {
               </div>
   );
 
-  
-
-  $sister_sites .= '<p><a href="http://bacteria.ensembl.org">Ensembl Bacteria</a></p>' if $species_defs->ENSEMBL_SERVERNAME ne 'bacteria.ensembl.org';
-  $sister_sites .= '<p><a href="http://fungi.ensembl.org">Ensembl Fungi</a></p>' if $species_defs->ENSEMBL_SERVERNAME ne 'fungi.ensembl.org';
-  $sister_sites .= '<p><a href="http://plants.ensembl.org">Ensembl Plants</a></p>' if $species_defs->ENSEMBL_SERVERNAME ne 'plants.ensembl.org';
-  $sister_sites .= '<p><a href="http://protists.ensembl.org">Ensembl Protists</a></p>' if $species_defs->ENSEMBL_SERVERNAME ne 'protists.ensembl.org';
-  $sister_sites .= '<p><a href="http://metazoa.ensembl.org">Ensembl Metazoa</a></p>' if $species_defs->ENSEMBL_SERVERNAME ne 'metazoa.ensembl.org';
+  foreach("bacteria","fungi","plants","protists","metazoa"){
+    $sister_sites .= qq(<p><a href="http://$_.ensembl.org">Ensembl ${\ucfirst($_)}</a></p>) if $species_defs->EG_DIVISION ne $_;
+  }
 
   $html .= qq(
               <div class="column-four left">
