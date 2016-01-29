@@ -91,7 +91,7 @@ sub render {
     }
         
     my $data = {
-      species    => qq{<strong><i>$sp_name</i></strong>},
+      species    => qq{<strong><a href="/${\lc($spp)}">$sp_name</a></strong>},
       dna        => qq{<a rel="external"  title="$title{'dna'}" href="$ftp_base_path_stub/fasta/$sp_dir/dna/">FASTA</a> (DNA)},
       cdna       => qq{<a rel="external"  title="$title{'cdna'}" href="$ftp_base_path_stub/fasta/$sp_dir/cdna/">FASTA</a> (cDNA)},
       cds        => qq{<a rel="external"  title="$title{'cds'}" href="$ftp_base_path_stub/fasta/$sp_dir/cds/">FASTA</a> (CDS)},
