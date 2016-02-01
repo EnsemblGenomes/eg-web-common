@@ -25,7 +25,6 @@ use Carp;
 use File::Find;
 use Getopt::Long;
 use Data::Dumper;
-use HTML::Entities;
 use FindBin qw($Bin);
 use lib $Bin;
 use LibDirs;
@@ -397,6 +396,8 @@ sub dumpVariation {
 sub variationLineXML {
   my ($species_meta, $name, $synonyms, $genes, $phenotypes, $studies, $type, $source, $desc, $counter) = @_;
 
+  $desc = clean($desc);
+
   my $xml = qq(
 <entry id="$name">
   <name>$name</name>
@@ -409,7 +410,7 @@ sub variationLineXML {
     <field name="production_name">$species_meta->{production_name}</field>
     <field name="genomic_unit">$species_meta->{genomic_unit}</field>
     <field name="variation_source">$source</field>);
-    foreach (@$synonyms) {
+    foreach (map {clean($_)} @$synonyms) {
       $xml .= qq(
     <field name="synonym">$_</field>);
     }
@@ -417,11 +418,11 @@ sub variationLineXML {
       $xml .= qq(
     <field name="associated_gene">$_</field>);
     }
-    foreach (@$phenotypes) {
+    foreach (map {clean($_)} @$phenotypes) {
       $xml .= qq(
     <field name="phenotype">$_</field>);
     }
-    foreach (@$studies ) {
+    foreach (map {clean($_)} @$studies ) {
       $xml .= qq(
     <field name="study">$_</field>);
     }
@@ -864,7 +865,7 @@ sub geneLineXML {
   my $domain_descriptions  = $xml_data->{'domain_descriptions'};
   my $external_identifiers = $xml_data->{'external_identifiers'} or die "external_identifiers not set";
   my $description          = $xml_data->{'description'};
-  my $gene_name            = encode_entities($xml_data->{'gene_name'});
+  my $gene_name            = clean($xml_data->{'gene_name'});
   my $seq_region_name      = $xml_data->{'seq_region_name'};
   my $type                 = $xml_data->{'source'} . ' ' . $xml_data->{'biotype'} or die "problem setting type";
   my $haplotype            = $xml_data->{'haplotype'};
@@ -918,7 +919,7 @@ sub geneLineXML {
       if ( $ext_db_name =~ /_synonym/ ) {
         foreach my $ed_key ( keys %{ $external_identifiers->{$ext_db_name} } ) {
           #   $unique_synonyms->{$ed_key} = 1;
-          my $encoded = encode_entities($ed_key);
+          my $encoded = clean($ed_key);
           $synonyms .= qq{
 <field name="${matched_db_name}_synonym">$encoded</field>};
         }
@@ -932,7 +933,7 @@ sub geneLineXML {
     } else {
     
       foreach my $key ( keys %{ $external_identifiers->{$ext_db_name} } ) {
-        $key = encode_entities($key);
+        $key = clean($key);
         $ext_db_name =~ s/^Ens.*/ENSEMBL/;
 
         if ( $ext_db_name =~ /_synonym/ ) {
@@ -956,7 +957,7 @@ sub geneLineXML {
 </cross_references>};
 
   map { $synonyms .= qq{
-<field name="gene_synonym">} . encode_entities($_) . qq{</field> }
+<field name="gene_synonym">} . clean($_) . qq{</field> }
   } keys %$unique_synonyms;
 
   my $additional_fields .= qq{
@@ -976,32 +977,32 @@ sub geneLineXML {
 <field name="genomic_unit">$genomic_unit</field>} : '') 
     . ( join "", ( map { qq{
 <field name="transcript">$_</field>}
-      } map {encode_entities($_)} keys %$transcripts ) )
+      } map {clean($_)} keys %$transcripts ) )
     . qq{  
 <field name="exon_count">$exon_count</field> }
     . ( join "", ( map { qq{
 <field name="exon">$_</field>}
-      } map {encode_entities($_)} keys %$exons ) ) 
+      } map {clean($_)} keys %$exons ) ) 
     . qq{  
 <field name="domain_count">$domain_count</field> }
     . ( join "", ( map { qq{
 <field name="domain">$_</field>}
-      } map {encode_entities($_)} keys %$domains ) )
+      } map {clean($_)} keys %$domains ) )
     . ( join "", ( map { qq{
 <field name="peptide">$_</field>}
-      } map {encode_entities($_)} keys %$peptides ) )
+      } map {clean($_)} keys %$peptides ) )
     . ( join "", ( map { qq{
 <field name="genetree">$_</field>}
-      } map {encode_entities($_)} @$genetrees ) )
+      } map {clean($_)} @$genetrees ) )
     . ( join "", ( map { qq{
 <field name="probe">$_</field>}
-      } map {encode_entities($_)} @$probes ) )  
+      } map {clean($_)} @$probes ) )  
     . ( join "", ( map { qq{
 <field name="probeset">$_</field>}
-      } map {encode_entities($_)} @$probesets ) )  
+      } map {clean($_)} @$probesets ) )  
     . ( join "", ( map { qq{
 <field name="gene_synonym">$_</field>}
-      } map {encode_entities($_)} keys %$unique_synonyms ) )  
+      } map {clean($_)} keys %$unique_synonyms ) )  
     . qq{
 <field name="database">$database</field>      
 </additional_fields>};
