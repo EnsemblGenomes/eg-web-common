@@ -103,11 +103,11 @@ sub wiggle_aggregate {
 sub fetch_summary_for_slice {
   my $self   = shift;
   my $slice  = shift;
-  my $values = $self->bigwig_adaptor->fetch_summary_array($slice->seq_region_name, $slice->start, $slice->end, @_);
+  my $values = $self->bigwig_adaptor->fetch_summary_array($slice->seq_region_name, $slice->start, $slice->end, @_) || [];
   
   unless (@$values) {
     foreach my $synonym (@{ $slice->get_all_synonyms }) {
-      $values = $self->bigwig_adaptor->fetch_summary_array($synonym->name, $slice->start, $slice->end, @_);
+      $values = $self->bigwig_adaptor->fetch_summary_array($synonym->name, $slice->start, $slice->end, @_) || [];
       last if @$values;
     }
   }

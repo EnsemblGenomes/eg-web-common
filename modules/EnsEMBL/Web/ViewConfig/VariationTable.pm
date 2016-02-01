@@ -1,4 +1,4 @@
-package EnsEMBL::Web::ViewConfig::VariationTable
+package EnsEMBL::Web::ViewConfig::VariationTable;
 
 sub form {
 }
