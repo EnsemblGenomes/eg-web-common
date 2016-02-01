@@ -157,6 +157,8 @@ sub highlight_types_selector {
   my %types = (); 
   map { push( @{ $types{ $_->{'db_name'} } }, $_ ) } @$highlight_map;
   my @options = ();
+  my $update_url = $hub->url({type=>'Component/Gene',action=>'Web',function=>'ComparaTree', g1 => $hub->param('g1') || undef });
+  
   for my $db_name (keys %types){
     push(@options,{
       value=>$db_name,
@@ -171,6 +173,10 @@ sub highlight_types_selector {
     $form->append_child('input',{name=>'ht_table',class=>'table_filter',type=>'checkbox', checked=>1, value=>"type_$db_name"});
     $form->append_child('label',{inner_HTML=>sprintf("%s ",$db_name)});
   }
+
+  $form->append_child('input',{name=>'ht_table',class=>'clear_highlight_selectors',type=>'radio', value=>$update_url});
+  $form->append_child('label',{inner_HTML=>'Clear Highlight Selectors'});
+
   return $meta->render;
 }
 
