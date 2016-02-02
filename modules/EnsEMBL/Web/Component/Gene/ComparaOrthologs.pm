@@ -91,16 +91,17 @@ sub _species_sets {
       my $orth_desc = ucfirst($orth_info->{'homology_desc'});
 
       $species_sets->{'all'}->{$orth_desc}++;
-      $species_sets->{'all'}->{'all'}++;
       $species_sets->{$group}->{$orth_desc}++;
-      $species_sets->{$group}->{'all'}++;
       
       $categories->{$orth_desc} = {key => $orth_desc, title => $orth_desc} unless exists $categories->{$orth_desc};
     }
+    $species_sets->{$group}->{'all'}++;
     push @{$species_sets->{$group}{'species'}}, $species;
     push (@$sets, $group) if exists $species_sets->{$group};
     $sets_by_species->{$species} = $sets;
   }
+
+  $species_sets->{'all'}->{'all'} = @{$species_sets->{'all'}->{'species'}||[]};
 
   if(!$is_pan) {
     my @unorder = @$set_order;
