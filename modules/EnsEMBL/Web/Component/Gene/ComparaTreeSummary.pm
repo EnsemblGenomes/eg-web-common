@@ -72,10 +72,16 @@ sub content {
     if(@highlight_map){      
       my $type_selector = $self->highlight_types_selector(\@highlight_map);
       
+      my $update_url = $hub->url({type=>'Component/Gene',action=>'Web',function=>'ComparaTree', g1 => $hub->param('g1') || undef });
+      my $selected = $hub->param('ht') || undef;
+      
       my $button = sprintf(
           '<a rel="ht_table" class="button toggle no_img _slide_toggle set_cookie %s" href="#" title="Click to toggle the annotations table">
-           <span class="closed">Show annotations table</span><span class="open">Hide annotations table</span></a>',
-          $hide ? 'closed' : 'open'
+           <span class="closed">Show annotations table</span><span class="open">Hide annotations table</span></a>
+           <a class="button clear_highlight_selectors %s" onclick="return false;" href="%s" title="Click to clear the highlighting">
+           <span class="closed">Clear highlighting</span>
+           </a>',
+          $hide ? 'closed' : 'open', $selected ? 'show' : 'hide', $update_url
       ); 
 
       $highlight_tags_row   = ['Highlight annotations', $button];
@@ -96,6 +102,8 @@ sub content {
     )->render;
     
     $html .= $highlight_tags_table;
+
+
 #/EG
 
 
@@ -157,6 +165,7 @@ sub highlight_types_selector {
   my %types = (); 
   map { push( @{ $types{ $_->{'db_name'} } }, $_ ) } @$highlight_map;
   my @options = ();
+
   for my $db_name (keys %types){
     push(@options,{
       value=>$db_name,
@@ -171,6 +180,7 @@ sub highlight_types_selector {
     $form->append_child('input',{name=>'ht_table',class=>'table_filter',type=>'checkbox', checked=>1, value=>"type_$db_name"});
     $form->append_child('label',{inner_HTML=>sprintf("%s ",$db_name)});
   }
+
   return $meta->render;
 }
 
