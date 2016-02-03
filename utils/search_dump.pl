@@ -24,13 +24,13 @@ use DBI;
 use Carp;
 use File::Find;
 use Getopt::Long;
-use IO::Zlib;
 use Data::Dumper;
-use HTML::Entities;
 use FindBin qw($Bin);
 use lib $Bin;
 use LibDirs;
 use utils::Tool;
+
+$| = 1; # disable buffering to allow real-time output when running on LSF
 
 my (
   $host, $user, $pass,   $port, $species, $ind,
@@ -126,7 +126,6 @@ Usage: perl $0 <options>
   -release      Release of the database to dump. Defaults to 'latest'.
   -pass         Password for user.
   -dir          Directory to write output to. Defaults to /lustre/scratch1/ensembl/gp1/xml.
-  -nogzip       Don't compress output as it's written.
   -help         This message.
 EOF
 }
@@ -237,12 +236,208 @@ sub connect_db {
   return $dbh;
 }
 
+sub dumpVariation {
+  my ($dataset, $conf) = @_;
+  
+  my $core_db      = $conf->{core}->{$release};
+  my $variation_db = $conf->{variation}->{$release};
+  return unless $core_db and $variation_db;
+
+  print "\nSTART dumpVariation\n";
+  print "Database: $variation_db\n";
+
+  my $core_dbh      = connect_db($core_db);
+  my $variation_dbh = connect_db($variation_db);
+  my $counter       = make_counter(0);
+  my $filename      = "Variation_${dataset}" =~ s/[\W]/_/gr; #/
+  my $file          = "$dir/$filename.xml";
+  my $start_time    = time;
+
+  if ($skip_existing and -f $file) {
+    warn "**** Index file already exists - skipping ****\n";
+    return;
+  }
+
+  print "Dumping to $file\n";
+  print "Start time " . format_datetime($start_time) . "\n";
+ 
+  print "  Fetching species meta data\n";
+  my %species_meta = (
+    species         => $dataset,
+    taxon_id        => $core_dbh->selectrow_arrayref("SELECT meta_value FROM meta WHERE meta_key = 'species.taxonomy_id'")->[0],
+    display_name    => $core_dbh->selectrow_arrayref("SELECT meta_value FROM meta WHERE meta_key = 'species.display_name'")->[0],
+    production_name => $core_dbh->selectrow_arrayref("SELECT meta_value FROM meta WHERE meta_key = 'species.production_name'")->[0],
+    genomic_unit    => lc($core_dbh->selectrow_arrayref("SELECT meta_value FROM meta WHERE meta_key = 'species.division'")->[0]) =~ s/^ensembl//r #/
+  );
+
+  my $sources = { map { @$_ } @{$variation_dbh->selectall_arrayref( "select source_id, name from source" )} };
+  
+  ## get extra SNP info
+  print "  Fetching extra SNP info (phenotypes etc)\n";
+  my %snp_extra = map { ($_->[0] => $_) } @{$variation_dbh->selectall_arrayref(q(
+    SELECT v.variation_id,
+      group_concat( distinct sta.name SEPARATOR '; ') AS lsi,
+      group_concat( distinct st.external_reference SEPARATOR ';') AS st,
+      group_concat( distinct pfa1.value SEPARATOR ';') AS gn,
+      group_concat( distinct pfa2.value SEPARATOR ';') AS vars,
+      group_concat( distinct
+        if(
+          isnull(p.name),
+          p.description,
+          concat( p.description,' (',p.name,')' )
+        )
+        SEPARATOR ';'
+      ) AS phen
+    FROM phenotype_feature AS pf left join
+      variation AS v ON v.name = pf.object_id left join
+      phenotype AS p ON p.phenotype_id = pf.phenotype_id left join
+      study AS st ON st.study_id=pf.study_id left join
+      associate_study AS sa ON sa.study1_id=st.study_id left join
+      study AS sta ON sta.study_id=sa.study2_id left join
+      ( phenotype_feature_attrib AS pfa1
+        join attrib_type AS at1 on pfa1.attrib_type_id = at1.attrib_type_id and at1.code = 'associated_gene' )
+      on pfa1.phenotype_feature_id = pf.phenotype_feature_id left join 
+      ( phenotype_feature_attrib AS pfa2
+        join attrib_type AS at2 on pfa2.attrib_type_id = at2.attrib_type_id and at2.code = 'variation_names' )
+      on pfa2.phenotype_feature_id = pf.phenotype_feature_id
+    WHERE pf.type = 'Variation' AND pf.is_significant = 1
+    GROUP BY v.variation_id
+    ORDER BY v.variation_id
+  ))};
+
+  ## get synonym info
+  print "  Fetching all synonyms\n";
+  my $synonyms;
+  my $sth = $variation_dbh->prepare(qq(
+    SELECT v.variation_id,
+    GROUP_CONCAT(vs.source_id,' ',vs.name)
+    FROM variation v, variation_synonym vs
+    WHERE v.variation_id = vs.variation_id
+    GROUP BY v.variation_id
+  ));
+  $sth->execute;
+  while ( my ($variation_id,$syns) = $sth->fetchrow_array ) {
+    $synonyms->{$variation_id} = $syns;
+  }
+
+  ## get failed mappings
+  print "  Fetching failed mappings\n";
+  my $failures;
+  $sth = $variation_dbh->prepare(qq(
+    SELECT v.variation_id, fd.description
+    FROM variation v, failed_variation fv, failed_description fd
+    WHERE v.variation_id = fv.variation_id
+    AND fv.failed_description_id = fd.failed_description_id
+  ));
+  $sth->execute;
+  while ( my ($variation_id,$desc) = $sth->fetchrow_array ) {
+    $failures->{$variation_id} = $desc;
+  }
+
+  # Statement to get all variations, both mapped, failed and the precious non-mapped, non-failed
+  print "  Preparing to get all SNPs\n";
+  $sth = $variation_dbh->prepare(qq(
+    SELECT v.variation_id, v.name, v.source_id, v.somatic
+    FROM variation v
+  ));
+  $sth->execute() or die "Error:", $DBI::errstr;
+
+  print "  Processing all SNPs\n";
+  open( FILE, ">$file" ) || die "Can't open $file: $!";
+  header( $variation_db, $dataset, 'variation' );
+
+  while ( my $rowcache = $sth->fetchall_arrayref( undef, 10_000 ) ) {
+    while ( my $row = shift( @{$rowcache} ) ) {
+      my $variation_id       = $row->[0];
+      my $variation_name     = $row->[1];
+      my $source_id          = $row->[2];
+      my $synonym_list       = $synonyms->{$variation_id};
+      my $failed_desc        = $failures->{$variation_id};
+      my $somatic_mutation   = $row->[3];
+
+      my %synonyms;
+      foreach my $syn (split /,/, $synonym_list) {
+        my ($source_id, $sname) = split / /,$syn;
+        $synonyms{$sname} = 1
+      }
+      my @syns = keys %synonyms;
+
+      my (%genes, @phenotypes, @studies);
+      my $type       = $somatic_mutation ? 'Somatic Mutation' : 'Variant';
+      my $snp_source = $sources->{ $source_id };
+      my $x          = $snp_extra{$variation_id};
+      if( $x ) {
+        foreach my $g ($x->[3]) {
+          foreach (split ';', $g) {
+            $genes{$_}++ if $_;
+          }
+        }
+        push @syns,       split ';', $x->[1];
+        push @syns,       split ';', $x->[4];
+        push @phenotypes, $x->[5] if $x->[5];
+        push @studies,    split ';', $x->[2];
+      }
+      
+      my $desc = sprintf( "A $snp_source $type.%s%s%s%s%s",
+        @phenotypes   ? ' Phenotype(s): '        . (join ', ', @phenotypes)         . '.' : '',
+        %genes        ? ' Gene Association(s): ' . (join ', ', keys %genes)         . '.' : '',
+        $failed_desc  ? " $failed_desc."                                                  : ''
+      );
+
+      p( variationLineXML( \%species_meta, $variation_name, \@syns, \%genes, \@phenotypes, \@studies, $type, $snp_source, $desc, $counter ) );
+    }
+  }
+
+  footer( $counter->() );
+
+  print "END dumpVariation\n";
+}
+
+sub variationLineXML {
+  my ($species_meta, $name, $synonyms, $genes, $phenotypes, $studies, $type, $source, $desc, $counter) = @_;
+
+  $desc = clean($desc);
+
+  my $xml = qq(
+<entry id="$name">
+  <name>$name</name>
+  <cross_references>
+    <ref dbname="ncbi_taxonomy_id" dbkey = "$species_meta->{taxon_id}" />
+  </cross_references>
+  <additional_fields>
+    <field name="description">$desc</field>
+    <field name="species">$species_meta->{display_name}</field>
+    <field name="production_name">$species_meta->{production_name}</field>
+    <field name="genomic_unit">$species_meta->{genomic_unit}</field>
+    <field name="variation_source">$source</field>);
+    foreach (map {clean($_)} @$synonyms) {
+      $xml .= qq(
+    <field name="synonym">$_</field>);
+    }
+    foreach (keys %$genes) {
+      $xml .= qq(
+    <field name="associated_gene">$_</field>);
+    }
+    foreach (map {clean($_)} @$phenotypes) {
+      $xml .= qq(
+    <field name="phenotype">$_</field>);
+    }
+    foreach (map {clean($_)} @$studies ) {
+      $xml .= qq(
+    <field name="study">$_</field>);
+    }
+    $xml .= qq(
+   </additional_fields> 
+</entry>);
+  $counter->();
+  return $xml;
+}
+
 sub dumpGene {
 
   my ( $dataset, $conf ) = @_;
 
   foreach my $DB (qw(core otherfeatures)) {
-    my $SNPDB     = $novariation ? undef : eval { $conf->{variation}->{$release} };
     my $FUNCGENDB = eval { $conf->{funcgen}->{$release} };
     my $DBNAME    = $conf->{$DB}->{$release} or warn "$dataset $DB $release: no database not found";
     next unless $DBNAME;
@@ -484,34 +679,7 @@ sub dumpGene {
       my $output_gene = sub() {
         my ($gene_data) = shift;
         my @transcript_stable_ids = keys %{ $gene_data->{transcript_stable_ids} };
-        
-        # add variation features
-        if ($DB eq 'core' && $SNPDB) {
-          $gene_data->{snps} = $dbh->selectall_arrayref(
-        #    "SELECT DISTINCT(vf.variation_name) FROM $SNPDB.transcript_variation AS tv, $SNPDB.variation_feature AS vf
-        #     WHERE vf.variation_feature_id = tv.variation_feature_id AND tv.feature_stable_id IN('" . join("', '", @transcript_stable_ids) . "')"
-             "SELECT feature_stable_id, variation.name, variation_synonym.name AS synonym
-              FROM $SNPDB.transcript_variation
-              INNER JOIN $SNPDB.variation_feature USING (variation_feature_id)
-              INNER JOIN $SNPDB.variation USING (variation_id)
-              LEFT JOIN $SNPDB.variation_synonym USING (variation_id)
-              WHERE feature_stable_id IN('" . join("', '", @transcript_stable_ids) . "')"         
-          );
-        }
-
-
-        #use Data::Dumper;
-        #warn Dumper($gene_data->{snps});
-        my @all_snps;
-        foreach my $snp_record(@{$gene_data->{snps}}){
-          push @all_snps, $snp_record->[1] if defined($snp_record->[1]);
-          push @all_snps, $snp_record->[2] if defined($snp_record->[2]);
-        }
-        $gene_data->{snps} = \@all_snps;
-        #warn Dumper($gene_data->{snps});
-        #exit;
-
- 
+         
         # add probes and probesets
         if ($FUNCGENDB) {
           $gene_data->{probes} = [];
@@ -690,7 +858,6 @@ sub geneLineXML {
   my $genomic_unit         = $xml_data->{'genomic_unit'};
   my $location             = $xml_data->{'location'};
   my $transcripts          = $xml_data->{'transcript_stable_ids'} or die "transcripts not set";
-  my $snps                 = $xml_data->{'snps'} || [];
   my $orthologs            = $xml_data->{'orthologs'};
   my $peptides             = $xml_data->{'translation_stable_ids'} or die "peptides not set";
   my $exons                = $xml_data->{'exons'} or die "exons not set";
@@ -698,7 +865,7 @@ sub geneLineXML {
   my $domain_descriptions  = $xml_data->{'domain_descriptions'};
   my $external_identifiers = $xml_data->{'external_identifiers'} or die "external_identifiers not set";
   my $description          = $xml_data->{'description'};
-  my $gene_name            = encode_entities($xml_data->{'gene_name'});
+  my $gene_name            = clean($xml_data->{'gene_name'});
   my $seq_region_name      = $xml_data->{'seq_region_name'};
   my $type                 = $xml_data->{'source'} . ' ' . $xml_data->{'biotype'} or die "problem setting type";
   my $haplotype            = $xml_data->{'haplotype'};
@@ -752,7 +919,7 @@ sub geneLineXML {
       if ( $ext_db_name =~ /_synonym/ ) {
         foreach my $ed_key ( keys %{ $external_identifiers->{$ext_db_name} } ) {
           #   $unique_synonyms->{$ed_key} = 1;
-          my $encoded = encode_entities($ed_key);
+          my $encoded = clean($ed_key);
           $synonyms .= qq{
 <field name="${matched_db_name}_synonym">$encoded</field>};
         }
@@ -766,7 +933,7 @@ sub geneLineXML {
     } else {
     
       foreach my $key ( keys %{ $external_identifiers->{$ext_db_name} } ) {
-        $key = encode_entities($key);
+        $key = clean($key);
         $ext_db_name =~ s/^Ens.*/ENSEMBL/;
 
         if ( $ext_db_name =~ /_synonym/ ) {
@@ -783,10 +950,6 @@ sub geneLineXML {
   }
 
   $cross_references .= ( join "", ( map { qq{
-<ref dbname="ensemblvariation" dbkey="$_"/>}
-  } @$snps));
-
-  $cross_references .= ( join "", ( map { qq{
 <ref dbname="$_->[1]" dbkey="$_->[0]"/>}
   } @$orthologs ) );
   
@@ -794,7 +957,7 @@ sub geneLineXML {
 </cross_references>};
 
   map { $synonyms .= qq{
-<field name="gene_synonym">} . encode_entities($_) . qq{</field> }
+<field name="gene_synonym">} . clean($_) . qq{</field> }
   } keys %$unique_synonyms;
 
   my $additional_fields .= qq{
@@ -814,38 +977,62 @@ sub geneLineXML {
 <field name="genomic_unit">$genomic_unit</field>} : '') 
     . ( join "", ( map { qq{
 <field name="transcript">$_</field>}
-      } map {encode_entities($_)} keys %$transcripts ) )
+      } map {clean($_)} keys %$transcripts ) )
     . qq{  
 <field name="exon_count">$exon_count</field> }
     . ( join "", ( map { qq{
 <field name="exon">$_</field>}
-      } map {encode_entities($_)} keys %$exons ) ) 
+      } map {clean($_)} keys %$exons ) ) 
     . qq{  
 <field name="domain_count">$domain_count</field> }
     . ( join "", ( map { qq{
 <field name="domain">$_</field>}
-      } map {encode_entities($_)} keys %$domains ) )
+      } map {clean($_)} keys %$domains ) )
     . ( join "", ( map { qq{
 <field name="peptide">$_</field>}
-      } map {encode_entities($_)} keys %$peptides ) )
+      } map {clean($_)} keys %$peptides ) )
     . ( join "", ( map { qq{
 <field name="genetree">$_</field>}
-      } map {encode_entities($_)} @$genetrees ) )
+      } map {clean($_)} @$genetrees ) )
     . ( join "", ( map { qq{
 <field name="probe">$_</field>}
-      } map {encode_entities($_)} @$probes ) )  
+      } map {clean($_)} @$probes ) )  
     . ( join "", ( map { qq{
 <field name="probeset">$_</field>}
-      } map {encode_entities($_)} @$probesets ) )  
+      } map {clean($_)} @$probesets ) )  
     . ( join "", ( map { qq{
 <field name="gene_synonym">$_</field>}
-      } map {encode_entities($_)} keys %$unique_synonyms ) )  
+      } map {clean($_)} keys %$unique_synonyms ) )  
     . qq{
 <field name="database">$database</field>      
 </additional_fields>};
 
   $counter->();
   return $xml . $cross_references . $additional_fields . "\n</entry>";
+}
+
+#XML encode those non-standard characters in gene names and descriptions (order of regexps is important)
+sub clean {
+  my ($text,$field) = @_;
+  $text =~ s/&/&amp;/g;
+  $text =~ s/<i>//g;
+  $text =~ s/<\/i>//g;
+  $text =~ s/<sup>/-/g;
+  $text =~ s/<\/sup>/-/g;
+  $text =~ s/<em>//g;
+  $text =~ s/<\/em>//g;
+  $text =~ s/</&lt;/g;
+  $text =~ s/>/&gt;/g;
+  $text =~ s/'/&#44;/g;
+  $text =~ s/"/&quot;/g;
+  $text =~ s/ & / &amp; /g;
+  $text =~ s/</&lt;/g;
+  $text =~ s/>/&gt;/g;
+
+  if ($text =~ /[<>]/) {
+    warn "WARNING: Unsupported character $text in field $field\n";
+  }
+  return $text;
 }
 
 sub make_counter {
