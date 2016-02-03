@@ -9,3 +9,12 @@ li p {
 div.image_container.ui-state-disabled {
   opacity: 1;
 }
+
+
+a.clear_highlight_selectors.show{
+	display: inline-block;
+}
+
+a.clear_highlight_selectors.hide{
+	display: none;
+}
