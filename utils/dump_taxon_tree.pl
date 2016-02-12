@@ -194,6 +194,20 @@ if ($dump_binary) {
 exit;
 
 #------------------------------------------------------------------------------
+# Count number of dbas in a given (sub)tree
+
+sub count_dbas {
+  my ($tree, $sub) = @_;
+  my $n = 0;
+  $tree->traverse_tree(sub {
+    my ($node, $depth) = @_;
+    $n += scalar(@{$node->dba()});
+    return;
+  });
+  return $n;
+}
+
+#------------------------------------------------------------------------------
 # Dump JavaScript for the taxon tree interface
 
 sub node_to_dynatree {
@@ -223,7 +237,7 @@ sub node_to_dynatree {
     
     push @output, {
       key      => $name,
-      title    => $name . ' (' . $node->count_leaves . ')',
+      title    => $name . ' (' . count_dbas($node) . ')',
       children => [ sort {$a->{title} cmp $b->{title}} @children ],
       isFolder => \"1" 
     };
