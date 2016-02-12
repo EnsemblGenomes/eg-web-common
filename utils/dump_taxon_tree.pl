@@ -42,6 +42,7 @@ use LibDirs;
 use lib "$LibDirs::SERVERROOT/ensemblgenomes-api/modules";
 use lib "$LibDirs::SERVERROOT/eg-web-bacteria/modules";
 
+$| = 1; # disable buffering - helps when running on LSF
 my $NO_CACHE = 1; # don't cache the registry
 
 use Bio::EnsEMBL::Registry;
