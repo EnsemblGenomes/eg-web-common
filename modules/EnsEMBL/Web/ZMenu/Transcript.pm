@@ -152,6 +152,22 @@ sub content {
     });
   }
 
+## EG
+  if (my $annotation_url = $hub->species_defs->ANNOTATION_URL) {
+    
+    my ($sr, $start, $end) = ($object->seq_region_name, $object->seq_region_start, $object->seq_region_end);
+    $annotation_url =~ s/###SEQ_REGION###/$sr/;
+    $annotation_url =~ s/###START###/$start/;
+    $annotation_url =~ s/###END###/$end/;
+
+    $self->add_entry({
+      type  => 'Community annotation',
+      label => 'Click here to annotate',
+      link  => $annotation_url,
+    });
+  } 
+##    
+
 }
 
 1;

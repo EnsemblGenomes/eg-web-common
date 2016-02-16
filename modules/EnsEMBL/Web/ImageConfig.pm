@@ -655,6 +655,30 @@ sub load_user_tracks {
   $ENV{'CACHE_TAGS'}{'user_data'} = sprintf 'USER_DATA[%s]', md5_hex(join '|', map $_->id, $menu->nodes) if $menu->has_child_nodes;
 }
 
+sub load_configured_gff { 
+  shift->load_file_format('gff');
+}
+
+sub _add_gff_track {
+  my ($self, %args) = @_;
+
+  my $source = $args{source};
+
+  $self->_add_flat_file_track($args{menu}, 'url', $args{key}, $source->{'source_name'},
+    $args{description} ||
+    sprintf('
+      Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: <a href="%s">%s</a>',
+      encode_entities($source->{'source_type'}), 
+      encode_entities($source->{'source_url'}),
+      encode_entities($source->{'source_url'})
+    ),
+    url         => $source->{'source_url'},
+    format      => 'gff',
+    display     => $args{display} || 'off',
+    description => $args{description}
+  );
+}
+
 sub _add_flat_file_track {
   my ($self, $menu, $sub_type, $key, $name, $description, %options) = @_;
 
@@ -706,8 +730,6 @@ sub _user_track_settings {
 
   return ('b', \@user_renderers, $default);
 }
-
-
 
 sub update_from_url {
   ## Tracks added "manually" in the URL (e.g. via a link)
