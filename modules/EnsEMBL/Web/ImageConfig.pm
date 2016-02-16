@@ -210,7 +210,9 @@ sub menus {
   my $self  = shift;
   my $menus = $self->PREV::menus(@_);
   my $add   = {
-    
+    # community annotation
+    cap                 => [ 'WebApollo gene models', 'gene_transcript' ],
+
     # used to organise fungi/protists external tracks
     chromatin_binding      => 'Chromatin binding',      
     pb_intron_branch_point => 'Intron Branch Point',    
