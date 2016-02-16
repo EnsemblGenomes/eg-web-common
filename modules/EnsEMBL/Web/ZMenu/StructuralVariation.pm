@@ -109,7 +109,7 @@ sub feature_content {
   
   $self->add_entry({
     type  => 'Source',
-    label => $variation->source,
+    label => $variation->source()->name(),
   });
   
   if (defined $study_name) {
