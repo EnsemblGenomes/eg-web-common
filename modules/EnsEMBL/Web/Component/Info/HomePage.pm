@@ -694,11 +694,12 @@ sub _has_compara {
         my $object_adaptor = $db->get_adaptor($object_type);
   
         if (my $member = $member_adaptor->fetch_by_stable_id($sample_gene_id)) {
-          if ($object_type eq 'Family' and $self->is_bacteria) {
+          if ($object_type eq 'Family') {
             $member = $member->get_all_SeqMembers->[0];
+            $has_compara = $object_adaptor->fetch_by_SeqMember($member) ? 1 : 0;
+          } else {
+            $has_compara = $object_adaptor->fetch_all_by_Member($member) ? 1 : 0;
           }
-          my $objects = $object_adaptor->fetch_all_by_Member($member);
-          $has_compara = @$objects;
         }
       }
     } else { 
