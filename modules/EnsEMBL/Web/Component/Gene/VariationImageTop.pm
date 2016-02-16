@@ -40,7 +40,7 @@ sub _content {
   my $no_snps = shift;
   my $ic_type = shift || 'gene_variation'; 
   my $hub     = $self->hub;
-  my $object  = $self->object;
+  my $object  = $self->object || $hub->core_object(lc($hub->param('data_type')));
   my $image_width  = $self->image_width || 800;  
   my $context      = $object->param( 'context' ) || 100; 
   my $extent       = $context eq 'FULL' ? 1000 : $context;
