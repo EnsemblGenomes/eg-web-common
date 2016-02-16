@@ -640,6 +640,30 @@ sub load_user_tracks {
   $ENV{'CACHE_TAGS'}{'user_data'} = sprintf 'USER_DATA[%s]', md5_hex(join '|', map $_->id, $menu->nodes) if $menu->has_child_nodes;
 }
 
+sub load_configured_gff { 
+  shift->load_file_format('gff');
+}
+
+sub _add_gff_track {
+  my ($self, %args) = @_;
+
+  my $source = $args{source};
+
+  $self->_add_flat_file_track($args{menu}, 'url', $args{key}, $source->{'source_name'},
+    $args{description} ||
+    sprintf('
+      Data retrieved from an external webserver. This data is attached to the %s, and comes from URL: <a href="%s">%s</a>',
+      encode_entities($source->{'source_type'}), 
+      encode_entities($source->{'source_url'}),
+      encode_entities($source->{'source_url'})
+    ),
+    url         => $source->{'source_url'},
+    format      => 'gff',
+    display     => $args{display} || 'off',
+    description => $args{description}
+  );
+}
+
 sub _add_flat_file_track {
   my ($self, $menu, $sub_type, $key, $name, $description, %options) = @_;
 
@@ -693,53 +717,6 @@ sub _user_track_settings {
   }
 
   return ($strand, \@user_renderers);
-}
-
-sub _add_file_format_track {
-  my ($self, %args) = @_;
-  my $menu = $args{'menu'} || $self->get_node('user_data');
-
-  return unless $menu;
-
-  %args = $self->_add_trackhub_extras_options(%args) if $args{'source'}{'trackhub'};
-
-  my $type    = lc $args{'format'};
-  my $article = $args{'format'} =~ /^[aeiou]/ ? 'an' : 'a';
-  my ($desc, $url);
-
-  if ($args{'internal'}) {
-    $desc = $args{'description'};
-    $url = join '/', $self->hub->species_defs->DATAFILE_BASE_PATH, lc $self->hub->species, $self->hub->species_defs->ASSEMBLY_VERSION, $args{'source'}{'dir'}, $args{'source'}{'file'};
-    $args{'options'}{'external'} = undef;
-  } else {
-    $desc = sprintf(
-      'Data retrieved from %s %s file on an external webserver. %s <p>%s comes from URL: <a href="%s">%s</a></p>',
-      $article,
-      $args{'format'},
-      $args{'description'},
-## EG don't show attachment message for internally configured sources     
-      $args{'source'}{'source_type'} =~ /^session|user$/i ? sprintf('This data is attached to the %s, and', encode_entities($args{'source'}{'source_type'})) : 'This data', 
-##
-      encode_entities($args{'source'}{'source_url'}),
-      encode_entities($args{'source'}{'source_url'})
-    );
-  }
- 
-  $self->generic_add($menu, undef, $args{'key'}, {}, {
-    display     => 'off',
-    strand      => 'f',
-    format      => $args{'format'},
-    glyphset    => $type,
-    colourset   => $type,
-    renderers   => $args{'renderers'},
-    name        => $args{'source'}{'source_name'},
-    caption     => exists($args{'source'}{'caption'}) ? $args{'source'}{'caption'} : $args{'source'}{'source_name'},
-    labelcaption => $args{'source'}{'labelcaption'},
-    section     => $args{'source'}{'section'},
-    url         => $url || $args{'source'}{'source_url'},
-    description => $desc,
-    %{$args{'options'}}
-  });
 }
 
 sub update_from_url {

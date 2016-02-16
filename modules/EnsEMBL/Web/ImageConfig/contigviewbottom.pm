@@ -89,6 +89,7 @@ sub init {
   $self->load_configured_bed;
   $self->load_configured_bedgraph;
   $self->load_configured_mw;
+  $self->load_configured_gff;
 
   my $ml = $self->get_node('fg_methylation_legend');
   $ml->remove if $ml;
