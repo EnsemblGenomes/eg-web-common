@@ -14,32 +14,35 @@
  * limitations under the License.
  */
 
-var tempEPBS = Ensembl.Panel.BlastForm.Sequence;
+if (Ensembl.Panel.BlastForm) {
 
-Ensembl.Panel.BlastForm = Ensembl.Panel.BlastForm.extend({
- 
-  resetSpecies: function(speciesList) {
-    if (typeof speciesList[0] !== 'object') {
-      // Todo: handle default species - currently it is passed as single production_name string 
-      //       and we don't have the display name. Instead we do nothing and rely on the name pre-populated
-      //       on the server-side. This means that using the 'Clear' button does not reset default species.
-      return;
+  var tempEPBS = Ensembl.Panel.BlastForm.Sequence;
+
+  Ensembl.Panel.BlastForm = Ensembl.Panel.BlastForm.extend({
+   
+    resetSpecies: function(speciesList) {
+      if (typeof speciesList[0] !== 'object') {
+        // Todo: handle default species - currently it is passed as single production_name string 
+        //       and we don't have the display name. Instead we do nothing and rely on the name pre-populated
+        //       on the server-side. This means that using the 'Clear' button does not reset default species.
+        return;
+      }
+
+      var seen   = {};
+      var unique = [];
+      $.each(speciesList, function(i, sp){
+        if (!seen[sp.key]) {
+          unique.push(sp);
+          seen[sp.key] = true;
+        }
+      });
+
+      unique.sort(function(a,b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0 });
+
+      setTimeout(function() { Ensembl.EventManager.trigger('updateTaxonSelection', unique) }, 200);
     }
 
-    var seen   = {};
-    var unique = [];
-    $.each(speciesList, function(i, sp){
-      if (!seen[sp.key]) {
-        unique.push(sp);
-        seen[sp.key] = true;
-      }
-    });
+  });
 
-    unique.sort(function(a,b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0 });
-
-    setTimeout(function() { Ensembl.EventManager.trigger('updateTaxonSelection', unique) }, 200);
-  }
-
-});
-
-Ensembl.Panel.BlastForm.Sequence = tempEPBS;
+  Ensembl.Panel.BlastForm.Sequence = tempEPBS;
+}

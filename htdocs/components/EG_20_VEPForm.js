@@ -13,35 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+if (Ensembl.Panel.VEPForm) {
+  Ensembl.Panel.VEPForm = Ensembl.Panel.VEPForm.extend({
 
-Ensembl.Panel.VEPForm = Ensembl.Panel.VEPForm.extend({
+    // add ajax species selector
 
-  // add ajax species selector
-
-  init: function() {
-    this.base();
-    
-    var ajaxSelector = $('select.ajax-species-selector');
-
-    if (ajaxSelector[0]) {
-
-      ajaxSelector.ajaxSpeciesSelector();
-
-      var panel = this;
-
-      // Change the input value on click of the examples link
-      this.elLk.form.find('a._example_input').off('click').on('click', function(e) {
-        e.preventDefault();
-
-        var species = ajaxSelector.val();
-
-        var text = panel.exampleData[species][this.rel];
-        if(typeof(text) === 'undefined' || !text.length) text = "";
-        text = text.replace(/\\n/g, "\n");
+    init: function() {
+      this.base();
       
-        panel.elLk.dataField.val(text).trigger('change');
-      });
-    }
+      var ajaxSelector = $('select.ajax-species-selector');
 
-  }
-});
+      if (ajaxSelector[0]) {
+
+        ajaxSelector.ajaxSpeciesSelector();
+
+        var panel = this;
+
+        // Change the input value on click of the examples link
+        this.elLk.form.find('a._example_input').off('click').on('click', function(e) {
+          e.preventDefault();
+
+          var species = ajaxSelector.val();
+
+          var text = panel.exampleData[species][this.rel];
+          if(typeof(text) === 'undefined' || !text.length) text = "";
+          text = text.replace(/\\n/g, "\n");
+        
+          panel.elLk.dataField.val(text).trigger('change');
+        });
+      }
+
+    }
+  });
+}
