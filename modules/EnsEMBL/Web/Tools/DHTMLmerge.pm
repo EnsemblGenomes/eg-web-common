@@ -24,6 +24,8 @@ use warnings;
 use EnsEMBL::Web::Utils::FileSystem qw(list_dir_contents);
 use EnsEMBL::Web::Exceptions;
 
+use previous qw(get_filegroups);
+
 # Set to something truthy for more verbose logging of minification
 my $DEBUG = 0;
 
@@ -35,9 +37,11 @@ sub get_filegroups {
   ## @return List of hashrefs as accepted by constructor of EnsEMBL::Web::Tools::DHTMLmerge::FileGroup
   my ($species_defs, $type) = @_;
 
+  my @file_groups = PREV::get_filegroups($species_defs, $type);
+
   my $dir = 'components';
   $dir = '.' if $type eq 'image';
-  return {
+  return @file_groups, {
     'group_name'  => 'components',
     'files'       => get_files_from_dir($species_defs, $type, $dir),
     'condition'   => sub { 1 },

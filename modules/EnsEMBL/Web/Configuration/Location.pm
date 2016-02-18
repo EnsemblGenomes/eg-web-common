@@ -20,9 +20,13 @@ package EnsEMBL::Web::Configuration::Location;
 
 use strict;
 
+use previous qw(modify_tree);
+
 sub modify_tree {
   my $self  = shift;
   my $species_defs = $self->hub->species_defs;
+
+  $self->PREV::modify_tree;
   
   if ($species_defs->POLYPLOIDY) {
     
