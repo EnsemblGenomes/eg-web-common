@@ -22,3 +22,5 @@ select.species-selector,
 select.ajax-species-selector {
   width: 350px;
 }
+
+.zmenu .loc-webapollo { background-image: url("/i/16/rev/pencil.png");       }

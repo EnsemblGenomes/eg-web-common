@@ -93,7 +93,6 @@ sub render {
 
 
   ## ID HISTORY CONVERTER
- 
   my $tools_limit = '50MB';
   
   if ($sd->ENSEMBL_IDM_ENABLED) {
