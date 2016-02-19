@@ -210,6 +210,8 @@ sub menus {
   my $self  = shift;
   my $menus = $self->PREV::menus(@_);
   my $add   = {
+    dna_align_rna          => [ 'RNA alignments', 'mrna_prot' ],
+
     # webapollo
     cap                    => [ 'WebApollo gene models', 'gene_transcript' ],
 
@@ -234,7 +236,6 @@ sub menus {
     rnaseq_cultivar        => [ 'RNASeq study of nine cultivars',      'mrna_prot' ],
     rnaseq_tissue          => [ 'RNASeq study of eight growth stages', 'mrna_prot' ],
     resequencing           => [ 'Resequencing', 'functional' ], 
-
   };
 
   # EG ENSEMBL-3655 change terminology for Barley community
