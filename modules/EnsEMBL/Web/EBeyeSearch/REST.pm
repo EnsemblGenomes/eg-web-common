@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package EBeyeSearch::REST;
+package EnsEMBL::Web::EBeyeSearch::REST;
 
 # Simple client for EBeye search REST service
 # http://www.ebi.ac.uk/Tools/webservices/services/eb-eye_rest
@@ -66,7 +66,7 @@ sub get {
   
   my $can_accept;
   eval { $can_accept = HTTP::Message::decodable() };
-
+  
   $debug && warn "GET " . $uri->as_string;
 
   my $response = $self->user_agent->get($uri->as_string, 'Accept-Encoding' => $can_accept);
