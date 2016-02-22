@@ -35,7 +35,7 @@ my $VIRTUAL_COLUMNS = {
   'specieslist'       => [qw(favourites list)],
   'urls'              => [qw(format cloned_from)],
   'invitation'        => [qw(invitation_code email)],
-  'upload'            => [qw(filename filesize name code md5 format species assembly share_id analyses browser_switches style display nearest timestamp cloned_from)],
+  'upload'            => [qw(filename filesize name code md5 format species assembly share_id analyses browser_switches style display nearest timestamp cloned_from colour)],
   'favourite_tracks'  => [qw(tracks)],
 ## EG  
   'genefamilyfilter'  => [qw(filter)]
