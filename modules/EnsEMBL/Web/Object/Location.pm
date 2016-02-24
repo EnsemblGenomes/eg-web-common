@@ -45,21 +45,24 @@ sub count_alignments {
   my $cdb           = shift || 'DATABASE_COMPARA';
   my $c             = $self->SUPER::count_alignments($cdb);
 ## EG
-  my $hub           = $self->hub;
-  my $seq_region    = $self->slice->seq_region_name;
+  unless ($self->{_patch_alignment_count}) {
+    my $c;
+    my $hub           = $self->hub;
+    my $seq_region    = $self->slice->seq_region_name;
 
-  if ($hub->species_defs->POLYPLOIDY) {
-    
-    my $gc = $hub->database('core')->get_adaptor('GenomeContainer');
-    my @components = @{ $gc->get_genome_components };
-    $c->{'patch'} = @components - 1;
+    if ($hub->species_defs->POLYPLOIDY) {
+      my $gc = $hub->database('core')->get_adaptor('GenomeContainer');
+      my @components = @{ $gc->get_genome_components };
+      $c->{'patch'} = @components - 1;
 
-  } else {
-    $c->{'patch'} = scalar @{ $hub->intra_species_alignments($cdb, $self->species, $seq_region) };
-    $c->{'patch'} ++ if $c->{'patch'}; # because we want to include the reference region in the count
+    } else {
+      $c->{'patch'} = scalar @{ $hub->intra_species_alignments($cdb, $self->species, $seq_region) };
+      $c->{'patch'} ++ if $c->{'patch'}; # because we want to include the reference region in the count
+    }
+    $self->{_patch_alignment_count} = $c;
   }
-##  
-  return $c; 
+##
+  return $self->{_patch_alignment_count};
 }
 
 sub chr_short_name {
