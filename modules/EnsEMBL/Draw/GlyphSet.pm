@@ -56,6 +56,8 @@ sub init_label {
   my $component = $config->get_parameter('component');
   my $hover     = $component && !$hub->param('export') && $node->get('menu') ne 'no';
   my $class     = random_string(8);
+  ## Store this where the glyphset can find it later...
+  $self->{'hover_label_class'} = $class;
 
   if ($hover) {
     my $fav       = $config->get_favourite_tracks->{$track};
@@ -129,28 +131,30 @@ sub bump_row {
   $key ||= '_bump';
 
   ($end, $start) = ($start, $end) if $end < $start;
-
-  $start = 1 if $start < 1;
+  $start         = 1 if $start < 1;
+  my $row_length = $self->{$key}{'length'};
   
-  return -1 if $end > $self->{$key}{'length'} && $truncate_if_outside; # used to not display partial text labels
+  return -1 if $end > $row_length && $truncate_if_outside; # used to not display partial text labels
   
-  $end = $self->{$key}{'length'} if $end > $self->{$key}{'length'};
-
+  $end   = $row_length if $end > $row_length;
   $start = floor($start);
   $end   = ceil($end);
-  
+
+
+## EG  
   #the following line is added for the purposes of CircularSlice presentation                                                                                                               
   #otherwise an error is generated                                                                                                                                                                         
   ($end, $start) = ($start, $end) if $end < $start;
+##
 
   my $length  = $end - $start + 1;
-  my $element = '0' x $self->{$key}{'length'};
+  my $element = '0' x $row_length;
   my $row     = 0;
 
   substr($element, $start, $length) = '1' x $length;
   
   while ($row < $self->{$key}{'rows'}) {
-    unless ($self->{$key}{'array'}[$row]) { # We have no entries in this row - so create a new row
+    if (!$self->{$key}{'array'}[$row]) { # We have no entries in this row - so create a new row
       $self->{$key}{'array'}[$row] = $element;
       return $row;
     }
