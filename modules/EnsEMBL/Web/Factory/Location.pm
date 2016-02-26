@@ -27,33 +27,20 @@ sub _create_from_slice {
     my $projection = $slice->project($self->__level);
     
     if ($projection) {
-      my $projected_slice = shift @$projection; # take first element
+      my ($projected_slice) = map $_->[2]->is_reference ? $_->[2] : (), @$projection;
       
-      $slice = $projected_slice->[2];
+      $slice = $projected_slice || $projection->[0][2];
       
       my $start  = $slice->start;
       my $end    = $slice->end;
       my $region = $slice->seq_region_name;
-       
-      # take all other elements in case something has gone wrong
-      foreach (@$projection) {
-
-        if ($_->[2]->seq_region_name ne $region) {
-          $self->problem('fatal', 'Slice does not map to single ' . $self->__level, 'end and start on different seq regions');
-          return undef;
-        }
-        
-        $start = $_->[2]->start if $_->[2]->start < $start;
-        $end   = $_->[2]->end   if $_->[2]->end   > $end;
-      }
       
       if ($slice->seq_region_name ne $real_chr) {
-
-        my $feat = new Bio::EnsEMBL::Feature(
-            -start  => 1, 
-            -end    => $slice->length, 
-            -strand => 1, 
-            -slice  => $slice 
+        my $feat = Bio::EnsEMBL::Feature->new(
+          -start  => 1, 
+          -end    => $slice->length, 
+          -strand => 1, 
+          -slice  => $slice 
         );
         
         my $altlocs = $feat->get_all_alt_locations(1) || [];
@@ -65,9 +52,9 @@ sub _create_from_slice {
           }
         }
       }
-
+## EG
       $location = $self->new_location($slice, $type);
-      
+##      
       my $object_types = { %{$self->hub->object_types}, Exon => 'g' }; # Use gene factory to generate tabs when using exon to find location
       
       $self->param($object_types->{$type}, $id) if $object_types->{$type};
@@ -83,7 +70,16 @@ sub _create_from_slice {
 
 sub new_location {
   my ($self, $slice, $type) = @_;
+  
+  if ($slice->start > $slice->end && !$slice->is_circular) {
+    $self->problem('fatal', 'Invalid location',
+      sprintf 'The start position of the location you have entered <strong>(%s:%s-%s)</strong> is greater than the end position.', $slice->seq_region_name, $self->thousandify($slice->start), $self->thousandify($slice->end)
+    );
+    
+    return undef;
+  }
 
+## EG
   $type ||= '';
 
   my $start = $slice->start;
@@ -95,14 +91,17 @@ sub new_location {
     $start =  int($mid - ($threshold/2)) > $start ? int($mid - ($threshold/2)) : $start;
     $end   =  int($mid + ($threshold/2)) < $end   ? int($mid + ($threshold/2)) : $end;
   } 
-  
+## EG
+
   my $location = $self->new_object('Location', {
     type               => 'Location',
     real_species       => $self->__species,
     name               => $slice->seq_region_name,
     seq_region_name    => $slice->seq_region_name,
+## EG
     seq_region_start   => $start, 
     seq_region_end     => $end,   
+##
     seq_region_strand  => 1,
     seq_region_type    => $slice->coord_system->name,
     raw_feature_strand => 1,
