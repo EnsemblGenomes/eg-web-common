@@ -1,9 +1,0 @@
-<table class="edge">
-  <tr>
-    <td>
-      <table class="two-column">
-        [%- content -%]
-      </table>
-    </td>
-  </tr>
-</table>
