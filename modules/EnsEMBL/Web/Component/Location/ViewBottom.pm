@@ -30,8 +30,15 @@ sub content {
   return $self->_warning('Region too large', '<p>The region selected is too large to display in this view - use the navigation above to zoom in...</p>') if $object->length > $threshold;
   
   my $slice        = $object->slice;
+  my $length       = $slice->end - $slice->start + 1;
   my $image_config = $hub->get_imageconfig('contigviewbottom');
   
+  $image_config->set_parameters({
+    container_width => $length,
+    image_width     => $image_width || 800, # hack at the moment
+    slice_number    => '1|3'
+  });
+
   ## Force display of individual low-weight markers on pages linked to from Location/Marker
   if (my $marker_id = $hub->param('m')) {
     $image_config->modify_configs(
@@ -54,22 +61,15 @@ sub content {
   }
 ##
 
-  my $length = $slice->end - $slice->start + 1;
-
   # Add multicell configuration
-  $image_config->set_parameters({
-      container_width => $length,
-      image_width     => $image_width || 800, # hack at the moment
-      slice_number    => '1|3'
-  });
-  $image_config->{'data_by_cell_line'} = $self->new_object('Slice', $slice, $object->__data)->get_cell_line_data($image_config) if keys %{$hub->species_defs->databases->{'DATABASE_FUNCGEN'}{'tables'}{'cell_type'}{'ids'}};
+  $image_config->{'data_by_cell_line'} = $self->new_object('Slice', $slice, $object->__data)->get_cell_line_data_closure($image_config) if keys %{$hub->species_defs->databases->{'DATABASE_FUNCGEN'}{'tables'}{'cell_type'}{'ids'}};
   $image_config->_update_missing($object);
   
-  my $info = $self->_add_object_track($image_config);
+  my $info  = $self->_add_object_track($image_config);
   my $image = $self->new_image($slice, $image_config, $object->highlights);
-
+  
 	return if $self->_export_image($image);
-
+  
   $image->{'panel_number'} = 'bottom';
   $image->imagemap         = 'yes';
   $image->set_button('drag', 'title' => 'Click or drag to centre display');
