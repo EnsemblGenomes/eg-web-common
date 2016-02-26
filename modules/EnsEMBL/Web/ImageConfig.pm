@@ -297,37 +297,6 @@ sub load_configured_msa {
   }
 }
 
-sub _add_vcf_track {
-  my ($self, %args) = @_;
-  my ($menu, $source) = ($args{'menu'}, $args{'source'});
-
-  $menu ||= $self->get_node('user_data');
-  return unless $menu;
-
-  my $time = $source->{'timestamp'};
-
-  my $key = $args{'key'} || 'vcf_' . $time . '_' . md5_hex($self->{'species'} . ':' . $source->{'source_url'});
-
-  my $sname =  $source->{'source_name'} ||  $source->{'name'};
-
-  my $track = $self->create_track($key, $sname, {
-      display     => 'off',
-      glyphset    => 'vcf',
-      sources     => undef,
-      strand      => $source->{strand} || 'f',
-      depth       => 0.5,
-      bump_width  => 0,
-      format      => $source->{'format'},
-      colourset   => 'variation',
-      renderers   => [off => 'Off', histogram => 'Density', compact => 'Compact'],
-      caption     => $source->{'caption'} || $sname,
-      url         => $source->{'source_url'} || $source->{url},
-      description => $source->{'description'} || sprintf('Data retrieved from a VCF file on an external webserver. This data is attached to the %s, and comes from URL: %s', encode_entities($source->{'source_type'}), encode_entities($source->{'source_url'} || $source->{'url'})),
-  });
-
-  $menu->append($track) if $track;
-}
-
 # adds variation tracks the old, hacky way
 sub add_sequence_variations_default {
   my ($self, $key, $hashref, $options) = @_;
