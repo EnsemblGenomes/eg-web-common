@@ -121,39 +121,7 @@ sub buttons {
   my $self       = shift;
   my $hub        = $self->hub;
   my $cdb        = $hub->param('cdb') || 'compara';
-  my @buttons;
-
-
-  if ($button_set{'download'}) {
-
-    my $gene    =  $self->object->Obj;
-
-    my $dxr  = $gene->can('display_xref') ? $gene->display_xref : undef;
-    my $name = $dxr ? $dxr->display_id : $gene->stable_id;
-
-    my $params  = {
-                  'type'        => 'DataExport',
-                  'action'      => 'Orthologs',
-                  'data_type'   => 'Gene',
-                  'component'   => 'ComparaOrthologs',
-                  'data_action' => $hub->action,
-                  'gene_name'   => $name,
-                };
-
-    ## Add any species settings
-    foreach (grep { /^species_/ } $hub->param) {
-      $params->{$_} = $hub->param($_);
-    }
-
-    push @buttons, {
-                    'url'     => $hub->url($params),
-                    'caption' => 'Download orthologues',
-#EG - ENSEMBL-4218
-                    'class'   => 'export _modal_link_post',
-#EG
-                    'modal'   => 1
-                    };
-  }
+  my @buttons    = $self->PREV::buttons(@_);
 
   if ($button_set{'view'}) {
     
