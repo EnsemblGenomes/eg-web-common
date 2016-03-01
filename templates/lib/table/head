@@ -1,3 +1,0 @@
-<th [% IF headclass %]class="[%- headclass -%]"[% END %] >
- [% content %]
-</th>
