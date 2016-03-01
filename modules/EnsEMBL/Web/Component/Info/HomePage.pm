@@ -454,21 +454,12 @@ sub _compara_text {
 
   # EG family
   if ($self->is_bacteria) {
-
     $tree_url = $species_defs->species_path . '/Gene/Gene_families?g=' . $sample_data->{'GENE_PARAM'};
     $html .= qq(
       <a class="nodeco _ht" href="$tree_url" title="Go to gene families for $tree_text"><img src="${img_url}96/gene_families.png" class="bordered" /><span>Gene families</span></a>
     ) if $self->has_compara('Family');
-
   }
-  else {
-
-    $tree_url = $species_defs->species_path . '/Gene/Family?g=' . $sample_data->{'GENE_PARAM'};
-    $html .= qq(
-      <a class="nodeco _ht" href="$tree_url" title="Go to protein families for $tree_text"><span>Protein families</span></a>
-    ) if $self->has_compara('Family');
-
-  }
+  #
 
   # EG pan tree
   $tree_url = $species_defs->species_path . '/Gene/Compara_Tree/pan_compara?g=' . $sample_data->{'GENE_PARAM'};

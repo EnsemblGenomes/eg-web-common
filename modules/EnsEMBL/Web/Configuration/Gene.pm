@@ -28,6 +28,9 @@ sub modify_tree {
   my $object       = $self->object;
   my $summary      = $self->get_node('Summary');
 
+
+  $self->delete_node('Family'); # delete protein family page
+
   my $sequence = $self->get_node('Sequence');
   my $gene_families = $self->create_node('Gene_families', 'Gene families',
     [qw( 
@@ -213,9 +216,6 @@ sub modify_tree {
   }
 
   $pancompara_menu->append($ol_node);
-
-  my $family = $self->get_node('Family');
-  $family->set('no_menu_entry', 1);
 
   $compara_menu->after($pancompara_menu);
 
