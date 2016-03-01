@@ -5,7 +5,7 @@ Ensembl.Panel.ModalContent = Ensembl.Panel.ModalContent.extend({
     this.base();
     $('select.species-selector').each(function(){ $(this).speciesSelector() });
     $('select.ajax-species-selector').each(function(){ $(this).ajaxSpeciesSelector() });
-  }
+  },
 
 
   getContent: function (link, url) {
