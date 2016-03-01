@@ -158,7 +158,7 @@ sub _add_flat_file_track {
 
   return unless $menu;
 
-  my ($strand, $renderers) = $self->_user_track_settings($options{'style'}, $options{'format'});
+  my ($strand, $renderers, $default) = $self->_user_track_settings($options{'style'}, $options{'format'});
 
   my $track = $self->create_track($key, $name, {
     display         => 'off',
