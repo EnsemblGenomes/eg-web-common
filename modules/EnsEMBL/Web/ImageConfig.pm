@@ -161,17 +161,18 @@ sub _add_flat_file_track {
   my ($strand, $renderers) = $self->_user_track_settings($options{'style'}, $options{'format'});
 
   my $track = $self->create_track($key, $name, {
-    display     => 'off',
-    strand      => $strand,
-    external    => 'external',
-    glyphset    => '_flat_file',
-    colourset   => 'classes',
+    display         => 'off',
+    strand          => $strand,
+    external        => 'external',
+    glyphset        => 'flat_file',
+    colourset       => 'userdata',
 ## EG    
-    caption     => $options{caption} || $name,
+    caption         => $options{caption} || $name,
 ##
-    sub_type    => $sub_type,
-    renderers   => $renderers,
-    description => $description,
+    sub_type        => $sub_type,
+    renderers       => $renderers,
+    default_display => $default,
+    description     => $description,
     %options
   });
 
@@ -281,7 +282,7 @@ sub add_alignments {
         $type        = sprintf '%sLASTz %s', $1, lc $2;
         $description = "$type pairwise alignments";
       } elsif ($row->{'type'} =~ /TRANSLATED_BLAT/) {
-        $type        = '';
+        $type        = 'TBLAT';
         $menu_key    = 'pairwise_tblat';
         $description = 'Trans. BLAT net pairwise alignments';
       } else {
@@ -291,7 +292,7 @@ sub add_alignments {
         $description = 'Pairwise alignments';
       }
       
-      $description  = qq{<a href="$static" class="cp-external">$description</a> between $self_label and $other_label"};
+      $description  = qq{<a href="$static" class="cp-external">$description</a> between $self_label and $other_label};
       $description .= " $1" if $row->{'name'} =~ /\((on.+)\)/;
 
       $alignments->{$menu_key}{$row->{'id'}} = {
@@ -467,7 +468,7 @@ sub _add_bedgraph_track {
       url           => $source->{'source_url'},
       format        => 'BEDGRAPH',
       style         => 'wiggle',
-      display       => $source->{'display'} || 'tiling',
+      display       => $source->{'display'} || 'signal',
       description   => $description,
       external_link => $source->{'external_link'},
    );
