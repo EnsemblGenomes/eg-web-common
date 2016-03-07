@@ -365,7 +365,7 @@ sub dumpGene {
 
             # Interpro
             $xrefs = $dbh->selectall_arrayref(
-              "SELECT pf.translation_id, x.display_label, x.dbprimary_acc, ed.db_name, es.synonym, x.description
+              "SELECT pf.translation_id, pf.hit_description, .interpro_ac, ed.db_name, es.synonym, x.description
                FROM (protein_feature AS pf, interpro AS i, xref AS `x`, external_db AS ed)
                LEFT JOIN external_synonym AS es ON es.xref_id = x.xref_id
                WHERE pf.hit_name = i.id AND i.interpro_ac = x.dbprimary_acc 
