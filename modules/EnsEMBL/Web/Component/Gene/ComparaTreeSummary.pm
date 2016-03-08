@@ -71,8 +71,9 @@ sub content {
 
     if(@highlight_map){      
       my $type_selector = $self->highlight_types_selector(\@highlight_map);
+
       
-      my $update_url = $hub->url({type=>'Component/Gene',action=>'Web',function=>'ComparaTree', g1 => $hub->param('g1') || undef });
+      my $update_url = $hub->url({type=>'Component/Gene',action=>'Web',function=>'ComparaTree', g1 => $hub->param('g1') || undef, collapse => $hub->param('collapse') || undef });
       my $selected = $hub->param('ht') || undef;
       
       my $button = sprintf(
