@@ -23,6 +23,8 @@ use Data::Dumper;
 
 sub update_conf {
   map {delete($SiteDefs::__species_aliases{$_}) } keys %SiteDefs::__species_aliases;
+
+  $SiteDefs::ENSEMBL_COHORT = 'EnsemblGenomes';
   
   $SiteDefs::SITE_RELEASE_VERSION = 31;
   $SiteDefs::SITE_RELEASE_DATE    = 'March 2015';
