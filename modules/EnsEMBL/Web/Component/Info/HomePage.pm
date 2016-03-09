@@ -689,7 +689,7 @@ sub _has_compara {
             $member = $member->get_all_SeqMembers->[0];
             $has_compara = $object_adaptor->fetch_by_SeqMember($member) ? 1 : 0;
           } else {
-            $has_compara = $object_adaptor->fetch_all_by_Member($member) ? 1 : 0;
+            $has_compara = @{$object_adaptor->fetch_all_by_Member($member)} ? 1 : 0;
           }
         }
       }
