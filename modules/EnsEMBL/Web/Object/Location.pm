@@ -44,9 +44,9 @@ sub count_alignments {
   my $self          = shift;
   my $cdb           = shift || 'DATABASE_COMPARA';
   my $c             = $self->SUPER::count_alignments($cdb);
+
 ## EG
   unless ($self->{_patch_alignment_count}) {
-    my $c;
     my $hub           = $self->hub;
     my $seq_region    = $self->slice->seq_region_name;
 
@@ -62,6 +62,7 @@ sub count_alignments {
     $self->{_patch_alignment_count} = $c;
   }
 ##
+
   return $self->{_patch_alignment_count};
 }
 
