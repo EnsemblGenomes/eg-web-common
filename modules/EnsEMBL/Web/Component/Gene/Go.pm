@@ -77,7 +77,8 @@ sub biomart_link {
   my ($self, $term) = @_;
 
   #return '' unless $self->hub->species_defs->ENSEMBL_MART_ENABLED;
- 
+  return '' if $SiteDefs::EG_DIVISION eq 'bacteria';
+
   my $vschema        = sprintf '%s_mart', $self->hub->species_defs->GENOMIC_UNIT;
   my (@species)      = split /_/, $self->object->species;
   my $attr_prefix    = lc(substr($species[0], 0, 1) . $species[1] . "_eg_gene");
