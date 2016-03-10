@@ -37,7 +37,7 @@ sub modify_tree {
       selector     EnsEMBL::Web::Component::Gene::GeneFamilySelector
       genefamilies EnsEMBL::Web::Component::Gene::GeneFamilies 
       )],
-    { 'availability' => 'gene database:compara', 'concise' => 'Gene families' }
+    { 'availability' => 'gene database:compara family', 'concise' => 'Gene families' }
   );
   $self->create_node( 'Gene_families/SaveFilter', '',
     [], { 'availability' => 'gene database:compara', 'no_menu_entry' => 1,
