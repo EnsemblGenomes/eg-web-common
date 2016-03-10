@@ -335,7 +335,7 @@ sub _assembly_text {
   }
 
   # Link to assembly mapper
-  if ($species_defs->ENSEMBL_AC_ENABLED) {
+  if ($species_defs->ENSEMBL_AC_ENABLED and $species_defs->ASSEMBLY_CONVERTER_FILES) {
     $html .= sprintf('<a href="%s" class="nodeco"><img src="%s24/tool.png" class="homepage-link" />Convert your data to %s coordinates</a></p>', $hub->url({'type' => 'Tools', 'action' => 'AssemblyConverter'}), $img_url, $current_assembly);
   }
   elsif (ref($species_defs->ASSEMBLY_MAPPINGS) eq 'ARRAY') {
