@@ -14,8 +14,8 @@ my $vep_path   = $ARGV[0]; # source dir for VEP cache tars
 my $fasta_path = $ARGV[1]; # source dir for fasta (all divisions)
 my $dest_path  = $ARGV[2]; 
 
-my $skip_existsing = 0;
-GetOptions( 'skip_existsing' => \$skip_existsing );
+my $skip_existing = 0;
+GetOptions( 'skip-existing' => \$skip_existing );
 
 die "Usage: $0 <source-vep-path> <source-fasta-path> <dest-path>\n" unless $vep_path and $fasta_path and $dest_path;
 
@@ -49,7 +49,7 @@ foreach my $vep_file (@vep_files) {
 
   my $genome_path = "$dest_path/$genome";
 
-  if ($skip_existsing and -d $genome_path) {
+  if ($skip_existing and -d $genome_path) {
     say "  already exists - skipping";
     next;
   }
