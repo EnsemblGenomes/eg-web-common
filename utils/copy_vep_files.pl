@@ -6,12 +6,16 @@ use File::Slurp qw(read_dir);
 use File::Copy  qw(copy);
 use File::Path  qw(make_path);
 use Data::Dumper;
+use Getopt::Long;
 
 # helper script to copy VEP and FASTA files for VEP tool
 
 my $vep_path   = $ARGV[0]; # source dir for VEP cache tars 
 my $fasta_path = $ARGV[1]; # source dir for fasta (all divisions)
 my $dest_path  = $ARGV[2]; 
+
+my $skip_existsing = 0;
+GetOptions( 'skip_existsing' => \$skip_existsing );
 
 die "Usage: $0 <source-vep-path> <source-fasta-path> <dest-path>\n" unless $vep_path and $fasta_path and $dest_path;
 
@@ -43,13 +47,19 @@ foreach my $vep_file (@vep_files) {
   my $genome = $vep_file =~ s/^.*\/(.+)_vep_.*$/$1/r;#/
   say "\n$genome";
 
+  my $genome_path = "$dest_path/$genome";
+
+  if ($skip_existsing and -d $genome_path) {
+    say "  already exists - skipping";
+    next;
+  }
+
   # extract vep
   my $tar = "tar -zx --directory $dest_path --file $vep_file";
   say $tar;
   system $tar;
   
   # copy fasta
-  my $genome_path    = "$dest_path/$genome";
   my ($assembly_dir) = read_dir($genome_path); # assumes only one assembly dir per genome, may need to revisit
   my ($fasta_file)   = grep {/${genome}\./i} @fasta_files; 
   my $assembly_path  = "$genome_path/$assembly_dir";
