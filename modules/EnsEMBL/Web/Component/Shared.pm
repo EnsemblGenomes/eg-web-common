@@ -186,55 +186,53 @@ sub transcript_table {
     </a>',
     $show ? 'open' : 'closed'
   );
-  
+  my $about_count;
 
   if ($description) {
 
     my ($url, $xref) = $self->get_gene_display_link($object->gene, $description);
 
     if ($xref) {
-      $xref        = $xref->primary_id;
+## EG - returns xref as string
+#      $xref        = $xref->primary_id;
+##
       $description =~ s|$xref|<a href="$url" class="constant">$xref</a>|;
     }
 
     $table->add_row('Description', $description);
   }
-    
 
   my $location    = $hub->param('r') || sprintf '%s:%s-%s', $object->seq_region_name, $object->seq_region_start, $object->seq_region_end;
 
-  my $site_type         = $hub->species_defs->ENSEMBL_SITETYPE; 
-  my @SYNONYM_PATTERNS  = qw(%HGNC% %ZFIN%);
-  my (@syn_matches, $syns_html, $about_count);
-  push @syn_matches,@{$object->get_database_matches($_)} for @SYNONYM_PATTERNS;
-
-  my $gene = $page_type eq 'gene' ? $object->Obj : $object->gene;
-  
-  $self->add_phenotype_link($gene, $table); #function in mobile plugin
-  
-  foreach (@{$object->get_similarity_hash(0, $gene)}) {
-    next unless $_->{'type'} eq 'PRIMARY_DB_SYNONYM';
-    my $id           = $_->display_id;
-    my $synonym     = $self->get_synonyms($id, @syn_matches);
-    next unless $synonym;
-    $syns_html .= "<p>$synonym</p>";
-  }
+## EG - don't do Ensembl specific synonym stuff (not applicable and v.slow)
+  #my @SYNONYM_PATTERNS  = qw(%HGNC% %ZFIN%);
+  #my (@syn_matches, $syns_html, $about_count);
+  #push @syn_matches,@{$object->get_database_matches($_)} for @SYNONYM_PATTERNS;
+ 
+  # foreach (@{$object->get_similarity_hash(0, $gene)}) {
+  #   next unless $_->{'type'} eq 'PRIMARY_DB_SYNONYM';
+  #   my $id           = $_->display_id;
+  #   my $synonym     = $self->get_synonyms($id, @syn_matches);
+  #   next unless $synonym;
+  #   $syns_html .= "<p>$synonym</p>";
+  # }
+##
 
 ## EG
-  if ($syns_html) {
-      $table->add_row('Synonyms', $syns_html);
-  } else { # check if synonyms are attached  via display xref .. 
-      my ($display_name) = $object->display_xref;
-      if (my $xref = $object->Obj->display_xref) {
-        if (my $sn = $xref->get_all_synonyms) {
-            my $syns = join ', ', grep { $_ && ($_ ne $display_name) } @$sn;
-            if ($syns) {
-              $table->add_row('Synonyms', "$syns",);
-            }
+  # check if synonyms are attached  via display xref .. 
+  my ($display_name) = $object->display_xref;
+  if (my $xref = $object->Obj->display_xref) {
+    if (my $sn = $xref->get_all_synonyms) {
+        my $syns = join ', ', grep { $_ && ($_ ne $display_name) } @$sn;
+        if ($syns) {
+          $table->add_row('Synonyms', "$syns",);
         }
-      }
+    }
   }
 ##
+
+  my $gene = $page_type eq 'gene' ? $object->Obj : $object->gene;
+  $self->add_phenotype_link($gene, $table); #function in mobile plugin
 
   my $seq_region_name  = $object->seq_region_name;
   my $seq_region_start = $object->seq_region_start;
@@ -430,14 +428,17 @@ sub transcript_table {
         $protein_length = $translation->length;
       }
 
-      my $dblinks = $_->get_all_DBLinks;
-      if (my @CCDS = grep { $_->dbname eq 'CCDS' } @$dblinks) { 
+## EG - faster to use the API for filtering
+      if (my @CCDS = @{ $_->get_all_DBLinks('CCDS') }) { 
+##        
         my %T = map { $_->primary_id => 1 } @CCDS;
         @CCDS = sort keys %T;
         $ccds = join ', ', map $hub->get_ExtURL_link($_, 'CCDS', $_), @CCDS;
       }
       foreach my $k (keys %extra_links) {
-        if(my @links = grep {$_->status ne 'PRED' } grep { $_->dbname =~ /$extra_links{$k}->{'match'}/i } @$dblinks) {
+## EG - faster to use the API for filtering        
+        if(my @links = grep {$_->status ne 'PRED' } @{ $_->get_all_DBLinks($extra_links{$k}->{'match'}) }) {
+##          
           my %T = map { $_->primary_id => $_->dbname } @links;
           my $cell = '';
           my $i = 0;
@@ -462,7 +463,7 @@ sub transcript_table {
          push @flags, $self->helptip("CDS 3' incomplete", $trans_3_desc);
         }
         if ($trans_attribs->{$tsi}{'TSL'}) {
-          my $tsl = uc($trans_attribs->{$tsi}{'TSL'} =~ s/^tsl([^\s]+).*$/$1/gr);
+          my $tsl = uc($trans_attribs->{$tsi}{'TSL'} =~ s/^tsl([^\s]+).*$/$1/gr); #/
           push @flags, $self->helptip("TSL:$tsl", $self->get_glossary_entry("TSL:$tsl").$self->get_glossary_entry('TSL'));
         }
       }
@@ -697,5 +698,41 @@ sub about_feature {
   
   return $counts_summary;
 }
+
+## EG - hacked to avoid using the v.slow $gene->get_all_DBLinks()
+##      todo: find a better solution using the API
+sub get_gene_display_link {
+  ## @param Gene object
+  ## @param Gene xref object or description string
+  my ($self, $gene, $xref) = @_;
+  
+  my $hub = $self->hub;
+  my $dbname;
+  my $primary_id;
+  
+  if ($xref && !ref $xref) { 
+    # description string    
+    my $details = { map { split ':', $_, 2 } split ';', $xref =~ s/^.+\[|\]$//gr }; #/
+    if ($details->{'Source'} and $details->{'Acc'}) {
+      my $dbh     = $hub->database($self->object->get_db)->dbc->db_handle;
+      $dbname     = $dbh->selectrow_array('SELECT db_name FROM external_db WHERE db_display_name = ?', undef, $details->{'Source'});
+      $primary_id = $details->{'Acc'};
+    }
+  } else { 
+    # xref object
+    if ($xref->info_type ne 'PROJECTION') {;
+      $dbname     = $xref->dbname;
+      $primary_id = $xref->primary_id;
+    }
+  }
+
+  warn $xref;
+  warn "$dbname --- $primary_id";
+
+  my $url = $hub->get_ExtURL($dbname, $primary_id) if $dbname and $primary_id;
+
+  return $url ? ($url, $primary_id) : ()
+}
+##
 
 1;
