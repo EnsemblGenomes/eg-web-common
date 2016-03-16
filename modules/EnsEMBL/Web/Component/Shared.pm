@@ -726,9 +726,6 @@ sub get_gene_display_link {
     }
   }
 
-  warn $xref;
-  warn "$dbname --- $primary_id";
-
   my $url = $hub->get_ExtURL($dbname, $primary_id) if $dbname and $primary_id;
 
   return $url ? ($url, $primary_id) : ()
