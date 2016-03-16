@@ -402,10 +402,12 @@ sub transcript_table {
     
     my @rows;
    
+## EG matches need to support mysql LIKE instead of regex
     my %extra_links = (
-      uniprot => { match => "^UniProt/[SWISSPROT|SPTREMBL]", name => "UniProt", order => 0 },
-      refseq => { match => "^RefSeq", name => "RefSeq", order => 1 },
+      uniprot => { match => "UniProt/S%", name => "UniProt", order => 0 },
+      refseq => { match => "RefSeq%", name => "RefSeq", order => 1 },
     );
+##
     my %any_extras;
  
     foreach (map { $_->[2] } sort { $a->[0] cmp $b->[0] || $a->[1] cmp $b->[1] } map { [ $_->external_name, $_->stable_id, $_ ] } @$transcripts) {
