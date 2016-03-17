@@ -401,6 +401,8 @@ sub _munge_meta {
       $self->tree($species)->{$key} = $value;
     }
 
+    $self->tree($species)->{'DISPLAY_NAME'} = $self->tree($species)->{'SPECIES_COMMON_NAME'};
+
     ## Do species group
     my $taxonomy = $meta_hash->{'species.classification'};
     
