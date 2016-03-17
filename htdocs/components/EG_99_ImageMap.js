@@ -8,7 +8,6 @@ Ensembl.Panel.ImageMap =  Ensembl.Panel.ImageMap.extend({
   hashChange: function () {
     if (!!window.location.pathname.match(/\/Variation_Gene\/Image/)) {
       if (this.hashChangeReload || this.lastImage) {
-        this.elLk.exportMenu.remove();
         Ensembl.Panel.Content.prototype.hashChange.call(this);
       }
       
