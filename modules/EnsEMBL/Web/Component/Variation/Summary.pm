@@ -117,8 +117,7 @@ sub variation_source {
   if ($version =~ /^(20\d{2})(\d{2})/) {
     $version = "$2/$1";
   }
-  warn $object;
-  warn $object->source_description;
+  
   ## parse description for links
   (my $description = $object->source_description) =~ s/(\w+) \[(http:\/\/[\w\.\/]+)\]/<a href="$2" class="constant">$1<\/a>/; 
   
