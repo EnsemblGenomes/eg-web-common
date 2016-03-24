@@ -32,7 +32,7 @@ sub content {
   my $object       = $self->object;
   my $html;
   
-  my $query = sprintf '"%s"', join('" OR "', @{$self->get_gene_names});
+  my $query = sprintf 'FULL_EXACT:"%s"', join('" OR FULL_EXACT:"', @{$self->get_gene_names});
   my ($articles, $error) = $self->europe_pmc_articles($query);
 
   if ($error) {
