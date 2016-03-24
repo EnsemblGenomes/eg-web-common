@@ -189,12 +189,19 @@ sub info {
 sub save_largeimage {
   my ($image, $filename) = @_;
   info("Writing $filename");
+  
+  my $large;
+  
   if($image->getwidth() > 700 || $image->getheight() > 700){
-  my $large = $image->scale(xpixels => 700, ypixels => 700, type=>'min');
-  $large->write(file => $filename);
+    $large = $image->scale(xpixels => 700, ypixels => 700, type=>'min');
   } else {
-  my $large = $image->copy();
-  $large->write(file => $filename);
+    $large = $image->copy();
+  }
+
+  if ($large) {
+    $large->write(file => $filename);
+  } else {
+    info("*** Failed to create image for $filename ***");
   }
 }
 
@@ -202,8 +209,12 @@ sub save_thumbnail {
   my ($image, $filename, $size) = @_;
   info("Writing $filename");
   my $thumb = $image->scale(xpixels => $size, ypixels => $size);
+  if ($thumb) {
      $thumb = $thumb->crop(right => $size, bottom => $size);
      $thumb->write(file => $filename);
+  } else {
+    info("*** Failed to create image for $filename ***");
+  }
 }
 
 1;
