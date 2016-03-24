@@ -32,8 +32,8 @@ sub content {
   my $object       = $self->object;
   my $html;
   
-  my $query = sprintf '"%s"', join('" OR "', @{$self->get_gene_names});
-  my ($articles, $error) = $self->europe_pmc_articles($query);
+  my $query = sprintf 'FULL_EXACT:"%s" AND SPECIES="%s"', join('" OR FULL_EXACT:"', @{$self->get_gene_names}),$hub->species_defs->SCIENTIFIC_NAME;
+  my ($articles, $error) = $self->europe_pmc_articles($query.'&pageSize=50');
 
   if ($error) {
   
@@ -68,7 +68,7 @@ sub content {
       });
     }
 
-    $html .= sprintf '<p>Showing the top 25 hits from <a href="https://europepmc.org/search?query=%s">Europe PubMed Central</a></p>', uri_escape($query);
+    $html .= sprintf '<p>Showing the top %d hits from <a href="https://europepmc.org/search?query=%s">Europe PubMed Central</a></p>', scalar(@$articles),uri_escape($query);
     $html .= $table->render;  
   }
 
