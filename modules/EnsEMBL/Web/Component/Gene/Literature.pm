@@ -68,7 +68,9 @@ sub content {
       });
     }
 
-    $html .= sprintf '<p>Showing the top 25 hits from <a href="https://europepmc.org/search?query=%s">Europe PubMed Central</a></p>', uri_escape($query);
+    $html .= scalar(@$articles) == 0 ?
+             sprintf '<p>There are no hits for this gene from <a href="https://europepmc.org/search?query=%s">Europe PubMed Central</a></p>', uri_escape($query) : 
+             sprintf '<p>Showing the top %d hits from <a href="https://europepmc.org/search?query=%s">Europe PubMed Central</a></p>', scalar(@$articles), uri_escape($query);
     $html .= $table->render;  
   }
 
