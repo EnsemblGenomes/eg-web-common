@@ -53,6 +53,9 @@ sub content {
         class      => 'no_col_toggle',
         data_table => 1, 
         exportable => 0,
+        data_table_config => {
+            iDisplayLength => 10
+        },
       }
     );
 
