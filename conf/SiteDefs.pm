@@ -77,7 +77,6 @@ sub update_conf {
   $SiteDefs::EBEYE_REST_ENDPOINT     = 'http://www.ebi.ac.uk/ebisearch/ws/rest';
 
   # EG rest server
-  $SiteDefs::ENSEMBL_REST_URL     = 'http://rest.ensemblgenomes.org';
   $SiteDefs::ENSEMBL_REST_DOC_URL = 'http://ensemblgenomes.org/info/access/rest';
 }
 
