@@ -33,7 +33,7 @@ sub content {
   my $html;
   
   my $query = sprintf 'FULL_EXACT:"%s" AND SPECIES="%s"', join('" OR FULL_EXACT:"', @{$self->get_gene_names}),$hub->species_defs->SPECIES_SCIENTIFIC_NAME;
-  my ($articles, $error) = $self->europe_pmc_articles($query);
+  my ($articles, $error) = $self->europe_pmc_articles($query.'&pageSize=50');
 
   if ($error) {
   
