@@ -87,7 +87,7 @@ sub get_cacheable_form_node {
          'name'   => 'species',
          'values' => [{
            'value' => $hub->data_species,
-           'caption' => $hub->species_defs->species_display_label($hub->data_species)
+           'caption' => $hub->data_species =~ /^Multi$/ ? 'Select a species' : $hub->species_defs->species_display_label($hub->data_species)
           }]
         }]
     });
