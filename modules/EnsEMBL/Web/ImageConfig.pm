@@ -27,6 +27,8 @@ sub menus {
   my $add   = {
     dna_align_rna          => [ 'RNA alignments', 'mrna_prot' ],
 
+    ms_domain              => 'Mass spectrometry peptides',
+    
     # community annotation
     cap                    => [ 'WebApollo gene models', 'gene_transcript' ],
 
@@ -87,6 +89,47 @@ sub _add_flat_file_track {
   });
 
   $menu->append($track) if $track;
+}
+
+sub add_protein_features {
+  my ($self, $key, $hashref) = @_;
+
+  # We have three separate glyphsets in this in this case
+  # P_feature, P_domain, P_ms_domain - plus domains get copied onto gsv_domain as well
+  my %menus = (
+    domain     => [ 'domain',    'P_domain',    'normal' ],
+    feature    => [ 'feature',   'P_feature',   'normal' ],
+    ms_domain  => [ 'ms_domain', 'P_ms_domain', 'normal' ],
+    alignment  => [ 'alignment', 'P_domain',    'off'    ],
+    gsv_domain => [ 'domain',    'gsv_domain',  'normal' ]
+  );
+
+  return unless grep $self->get_node($_), keys %menus;
+
+  my ($keys, $data) = $self->_merge($hashref->{'protein_feature'});
+
+  foreach my $menu_code (keys %menus) {
+    my $menu = $self->get_node($menu_code);
+    
+    next unless $menu;
+    
+    my $type     = $menus{$menu_code}[0];
+    my $gset     = $menus{$menu_code}[1];
+    my $renderer = $menus{$menu_code}[2];
+    
+    foreach (@$keys) {
+      next if $self->tree->get_node("${type}_$_");
+      next if $type ne ($data->{$_}{'type'} || 'feature'); # Don't separate by db in this case
+      
+      $self->generic_add($menu, $key, "${type}_$_", $data->{$_}, {
+        glyphset  => $gset,
+        colourset => 'protein_feature',
+        display   => $renderer,
+        depth     => 1e6,
+        strand    => $gset =~ /P_/ ? 'f' : 'b',
+      });
+    }
+  }
 }
 
 sub add_repeat_features {

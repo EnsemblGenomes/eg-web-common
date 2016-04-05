@@ -41,7 +41,21 @@ sub content {
     }
   } 
   
-  $self->caption("$hit_name ($hit_db)");
+  (my $hit_db_spaces = $hit_db) =~ s/_/ /g;
+  
+  my $ms_domain = 0;
+  #my %web_data = %{$pf->analysis->web_data};
+  if (exists $pf->analysis->web_data->{'type'}) {
+    if ($pf->analysis->web_data->{'type'} eq 'ms_domain') {
+      $ms_domain = 1;
+    }
+  }
+  
+  if ($ms_domain) {
+    $self->caption("$hit_name");
+  } else {
+    $self->caption("$hit_name ($hit_db_spaces)");
+  }
 
   my $record_link = $hub->get_ExtURL($hit_db, $hit_name);
   if ($hit_db eq 'Gene3D' && $hit_name=~/:/){
@@ -49,24 +63,37 @@ sub content {
     $record_link = $hub->get_ExtURL($hit_db, $ext_id) if $ext_id;
   } 
   
-  $self->add_entry({
-    type  => 'View record',
-    label => $hit_name,
-    link  => $record_link,
-  });
+  if ($ms_domain) {
+    $self->add_entry({
+      type  => 'Study',
+      label => $hit_db_spaces,
+      link  => $record_link,
+      external => 1,
+    });
+  } else {
+    $self->add_entry({
+      type  => 'View record',
+      label => $hit_name,
+      link  => $record_link,
+      external => 1,
+    });
+  }
   
   if ($interpro_ac) {
     $self->add_entry({
       type  => 'View InterPro',
       label => $interpro_ac,
-      link  => $hub->get_ExtURL('interpro', $interpro_ac)
+      link  => $hub->get_ExtURL('interpro', $interpro_ac),
+      external => 1,
     });
   }
   
+  if (!$ms_domain) {
   $self->add_entry({
     type  => 'Description',
     label => $pf->idesc
   });
+  }
   
   $self->add_entry({
     type  => 'Position',
