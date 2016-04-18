@@ -33,7 +33,7 @@ if (Ensembl.Panel.GenoverseMenu) {
             '<a class="loc-icon-a constant _action_' + action.toLowerCase() + 'Here" href="' + url + '"><span class="loc-icon ' + cssCls + '"></span>' + action + ' to region (' + bps + ' bp)</a>' ];
 
       if ( $('#annotation-url').length ) {
-        menu.push('<a class="loc-icon-a constant" href="%"><span class="loc-icon loc-webapollo"></span>View region in WebApollo</a>'.replace('%', 
+        menu.push('<a class="loc-icon-a constant _action_extlink" href="%"><span class="loc-icon loc-webapollo"></span>View region in WebApollo</a>'.replace('%', 
           $('#annotation-url').val()
             .replace('###SEQ_REGION###', this.drag.chr)
             .replace('###START###', this.drag.start)
@@ -46,7 +46,19 @@ if (Ensembl.Panel.GenoverseMenu) {
         'Region: ' + this.drag.chr + ':' + this.drag.start + '-' + this.drag.end
       );
   ////    
-    }
-  });
+    },
   
+  //// EG - hack to make extlinks work
+    menuLinkClick: function (link, e) {
+      var action = (link.className.match(/_action_(\w+)/) || ['']).pop();
+
+      if (action === 'extlink') {
+        Ensembl.redirect(link.href);
+      } else {
+        this.base(link, e);
+      } 
+    }
+  ////
+  });
+
 }
