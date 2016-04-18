@@ -99,7 +99,9 @@ sub add_protein_features {
   my %menus = (
     domain     => [ 'domain',    'P_domain',    'normal' ],
     feature    => [ 'feature',   'P_feature',   'normal' ],
+## EG    
     ms_domain  => [ 'ms_domain', 'P_ms_domain', 'normal' ],
+##
     alignment  => [ 'alignment', 'P_domain',    'off'    ],
     gsv_domain => [ 'domain',    'gsv_domain',  'normal' ]
   );
