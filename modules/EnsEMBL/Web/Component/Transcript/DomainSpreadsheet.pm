@@ -32,13 +32,17 @@ sub content {
   
   my $hub      = $self->hub;
   my $analyses = $object->table_info($object->get_db, 'protein_feature')->{'analyses'} || {};
+## EG  
   my (@domains, @ms_domains, @others);
-  
+##
+
   foreach (keys %$analyses) {
     if ($analyses->{$_}{'web'}{'type'} eq 'domain') {
       push @domains, @{$translation->get_all_ProteinFeatures($_)};
+## EG
     } elsif ($analyses->{$_}{'web'}{'type'} eq 'ms_domain') {
       push @ms_domains, @{$translation->get_all_ProteinFeatures($_)};
+##
     } else {
       push @others,  @{$translation->get_all_ProteinFeatures($_)};
     }
@@ -109,7 +113,8 @@ sub content {
     
     $html .= '<h2>Domains</h2>' . $table->render;
   }
-  
+
+## EG  
   if (@ms_domains) {
     my $table = $self->new_table([], [], { data_table => 1 });
     
@@ -142,6 +147,7 @@ sub content {
     
     $html .= '<h2>Mass spectrometry peptides</h2>' . $table->render;
   }
+##
   
   if (@others) {
     my $table = $self->new_table([], [], { data_table => 1 });
