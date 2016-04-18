@@ -16,13 +16,12 @@ limitations under the License.
 
 =cut
 
-# $Id: DomainSpreadsheet.pm,v 1.3 2013-12-18 14:43:41 jk10 Exp $
-
 package EnsEMBL::Web::Component::Transcript::DomainSpreadsheet;
 
 use strict;
 
 # replaced domain->analysis->db with domain->analysis->display_label
+# added separate table for MS peptides
 
 sub content {
   my $self        = shift;
@@ -33,22 +32,26 @@ sub content {
   
   my $hub      = $self->hub;
   my $analyses = $object->table_info($object->get_db, 'protein_feature')->{'analyses'} || {};
-  my (@others, @domains);
+  my (@domains, @ms_domains, @others);
   
   foreach (keys %$analyses) {
     if ($analyses->{$_}{'web'}{'type'} eq 'domain') {
       push @domains, @{$translation->get_all_ProteinFeatures($_)};
+    } elsif ($analyses->{$_}{'web'}{'type'} eq 'ms_domain') {
+      push @ms_domains, @{$translation->get_all_ProteinFeatures($_)};
     } else {
       push @others,  @{$translation->get_all_ProteinFeatures($_)};
     }
   }
   
   my @domain_keys = grep { $analyses->{$_}{'web'}{'type'} eq 'domain' } keys %$analyses;
-  my @other_keys  = grep { $analyses->{$_}{'web'}{'type'} ne 'domain' } keys %$analyses;
+  my @ms_domain_keys = grep { $analyses->{$_}{'web'}{'type'} eq 'ms_domain' } keys %$analyses;
+  my @other_keys     = grep { $analyses->{$_}{'web'}{'type'} !~ /domain/ } keys %$analyses;
   my @domains     = map  { @{$translation->get_all_ProteinFeatures($_)} } @domain_keys;
+  my @ms_domains     = map  { @{$translation->get_all_ProteinFeatures($_)} } @ms_domain_keys;
   my @others      = map  { @{$translation->get_all_ProteinFeatures($_)} } @other_keys;
 
-  return unless @others || @domains;
+  return unless @domains || @ms_domains || @others;
 
   my $html = '';
   
@@ -105,6 +108,39 @@ sub content {
     }
     
     $html .= '<h2>Domains</h2>' . $table->render;
+  }
+  
+  if (@ms_domains) {
+    my $table = $self->new_table([], [], { data_table => 1 });
+    
+    $table->add_columns(
+      { key => 'source', title => 'Peptide source', width => '15%', sort => 'string'                        },
+      { key => 'start',  title => 'Start',          width => '10%', sort => 'numeric', hidden_key => '_loc' },
+      { key => 'end',    title => 'End',            width => '10%', sort => 'numeric'                       },
+      { key => 'desc',   title => 'Description',    width => '45%', sort => 'string'                        },
+      { key => 'acc',    title => 'Accession',      width => '20%', sort => 'string'                        },
+    );
+    
+    foreach my $ms_domain (
+      sort {
+        $a->idesc cmp $b->idesc || 
+        $a->start <=> $b->start || 
+        $a->end   <=> $b->end   || 
+        $a->analysis->display_label cmp $b->analysis->display_label 
+      } @ms_domains
+    ) {
+      
+      $table->add_row({
+        source => $ms_domain->analysis->display_label,
+        desc   => $ms_domain->analysis->description,
+        acc    => $ms_domain->hseqname,
+        start  => $ms_domain->start,
+        end    => $ms_domain->end,
+        _loc   => join('::', $ms_domain->start, $ms_domain->end),
+      });
+    }
+    
+    $html .= '<h2>Mass spectrometry peptides</h2>' . $table->render;
   }
   
   if (@others) {
