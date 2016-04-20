@@ -20,9 +20,6 @@ package EnsEMBL::Web::Component::Gene::ComparaOrthologs;
 
 use strict;
 
-use previous qw(buttons);
-our %button_set = %EnsEMBL::Web::Component::Gene::ComparaOrthologs::button_set;
-
 sub is_archaea {
   my ($self,$species) = @_;
   unless(exists($self->{'_archaea'})){
