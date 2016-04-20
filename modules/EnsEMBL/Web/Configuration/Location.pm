@@ -20,7 +20,10 @@ package EnsEMBL::Web::Configuration::Location;
 
 use strict;
 
-use previous qw(modify_tree);
+use previous qw(
+  modify_tree 
+  add_external_browsers
+);
 
 sub modify_tree {
   my $self  = shift;
@@ -42,6 +45,32 @@ sub modify_tree {
       )
     );
     
+  }
+}
+
+## EG add community annotation link
+sub add_external_browsers {
+  my $self         = shift;
+  
+  $self->PREV::add_external_browsers(@_);
+
+  my $hub          = $self->hub;
+  my $object       = $self->object;
+  my $species_defs = $hub->species_defs;
+
+  if (my $annotation_url = $species_defs->ANNOTATION_URL) {
+    
+    my ($sr, $start, $end) = ($object->seq_region_name, $object->seq_region_start, $object->seq_region_end);
+    $annotation_url =~ s/###SEQ_REGION###/$sr/;
+    $annotation_url =~ s/###START###/$start/;
+    $annotation_url =~ s/###END###/$end/;
+
+    $self->get_other_browsers_menu->prepend(
+      $self->create_node(
+        'Community annotation', 'Community annotation', [], 
+        { url => $annotation_url, raw => 1, external => 1 }
+      )
+    );
   }
 }
 
