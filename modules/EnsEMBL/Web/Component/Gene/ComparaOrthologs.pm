@@ -117,40 +117,4 @@ sub in_archaea {
   
 }
 
-sub buttons {
-  my $self       = shift;
-  my $hub        = $self->hub;
-  my $cdb        = $hub->param('cdb') || 'compara';
-  my @buttons    = $self->PREV::buttons(@_);
-
-  if ($button_set{'view'}) {
-    
-    push @buttons, {
-      url => $hub->url({
-        action   => 'Compara_Ortholog', 
-        function => 'PepSequence'.($cdb =~ /pan/ ? '_pan_compara' : ''), 
-        _format  => 'Text'
-      }),
-      caption => 'Download protein sequences',
-      class   => 'export',
-      modal   => 0
-    };
-
-    push @buttons, {
-      url => $hub->url({
-        action   => 'Compara_Ortholog', 
-        function => 'PepSequence'.($cdb =~ /pan/ ? '_pan_compara' : ''), 
-        _format  => 'Text',
-        seq      => 'cds'
-      }),
-      caption => 'Download DNA sequences',
-      class   => 'export',
-      modal   => 0
-    };
-
-  }
-
-  return @buttons;
-}
-
 1;
