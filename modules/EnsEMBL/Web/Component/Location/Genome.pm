@@ -71,36 +71,36 @@ sub content {
     $config->get_node('Vannotation_status_left')->set('display', $config->get_node('Vannotation_status_right')->get('display'));
   }
 
-  if ($self->hub->param('ftype') eq 'Gene') {
-    my $dba = Bio::EnsEMBL::Registry->get_DBAdaptor( $self->hub->species, 'core' ) || die("Can't connect to database");
-    my $sa = $dba->get_SliceAdaptor();
+  # if ($self->hub->param('ftype') eq 'Gene') {
+  #   my $dba = Bio::EnsEMBL::Registry->get_DBAdaptor( $self->hub->species, 'core' ) || die("Can't connect to database");
+  #   my $sa = $dba->get_SliceAdaptor();
 
-    my $obs;
-    my %attr_types;
+  #   my $obs;
+  #   my %attr_types;
 
-    foreach my $chr (@$chromosomes) {
-      my $slice = $sa->fetch_by_region( 'chromosome', $chr );
+  #   foreach my $chr (@$chromosomes) {
+  #     my $slice = $sa->fetch_by_region( 'chromosome', $chr );
 
-      # get some attributes of the slice
-      foreach my $gene ( @{ $slice->get_all_Genes } ) {
-        my $attr = $gene->get_all_Attributes('PHIbase_mutant');
+  #     # get some attributes of the slice
+  #     foreach my $gene ( @{ $slice->get_all_Genes } ) {
+  #       my $attr = $gene->get_all_Attributes('PHIbase_mutant');
         
-        if (@$attr > 0) {  
-          my @values = grep { $_ && $_->value() ne 'unaffected_pathogenicity'} @$attr;
-          if (scalar @values > 0) {
-            $attr_types{$gene->stable_id} = $values[0]->{'value'};
-            push @$obs, $gene;
-          }
-        }
-      }
+  #       if (@$attr > 0) {  
+  #         my @values = grep { $_ && $_->value() ne 'unaffected_pathogenicity'} @$attr;
+  #         if (scalar @values > 0) {
+  #           $attr_types{$gene->stable_id} = $values[0]->{'value'};
+  #           push @$obs, $gene;
+  #         }
+  #       }
+  #     }
 
-      my $genes = EnsEMBL::Web::Data::Bio::Gene->new($self->hub, @$obs);
-      my $features = $genes->convert_to_drawing_parameters;
-      my $extra_columns = [{'key' => 'description', 'title' => 'Description'}];
+  #     my $genes = EnsEMBL::Web::Data::Bio::Gene->new($self->hub, @$obs);
+  #     my $features = $genes->convert_to_drawing_parameters;
+  #     my $extra_columns = [{'key' => 'description', 'title' => 'Description'}];
 
-      $html = $self->_render_genes($features, $config, \%attr_types);
-    }
-  } else {
+  #     $html = $self->_render_genes($features, $config, \%attr_types);
+  #   }
+  # } else {
     if ($id) {
       my $object = $self->builder->create_objects('Feature', 'lazy');
       if ($object && $object->can('convert_to_drawing_parameters')) {
@@ -108,7 +108,7 @@ sub content {
       }
     }
     $html = $self->_render_features($id, $features, $config);
-  }
+  # }
 
   return $html;
 }
