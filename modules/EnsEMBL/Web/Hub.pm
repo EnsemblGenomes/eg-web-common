@@ -32,7 +32,9 @@ use List::Util qw(min max);
 
 sub intra_species_alignments {
   my ($self, $cdb, $species, $slice_or_seq_region) = @_;
-  
+
+  return [] unless $self->species_defs->HAS_INTRASPECIES_ALIGNMENTS;
+
   my $slice;
   my $seq_region;
 
