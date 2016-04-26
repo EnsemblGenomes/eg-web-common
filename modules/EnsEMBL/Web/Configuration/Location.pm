@@ -58,7 +58,7 @@ sub add_external_browsers {
   my $object       = $self->object;
   my $species_defs = $hub->species_defs;
 
-  if (my $annotation_url = $species_defs->ANNOTATION_URL) {
+  if ($object and my $annotation_url = $species_defs->ANNOTATION_URL) {
     
     my ($sr, $start, $end) = ($object->seq_region_name, $object->seq_region_start, $object->seq_region_end);
     $annotation_url =~ s/###SEQ_REGION###/$sr/;
