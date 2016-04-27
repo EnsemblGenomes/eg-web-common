@@ -119,7 +119,7 @@ sub process_data {
     my $go_link     = $hub->get_ExtURL_link($go, $extdb, $go);
     my $mart_link   = $self->biomart_link($go) ? "<li>".$self->biomart_link($go)."</li>": "";
 
-    my $loc_link    = '<li><a rel="notexternal" href="' . $hub->url({type  => 'Location', action => 'Genome', ftype => 'Gene', id  => $go}) . ( $chromosomes && scalar @$chromosomes && $hub->species_defs->MAX_CHR_LENGTH ? '">View on karyotype</a></li>' : '">View associated genes</a></li>' );
+    my $loc_link    = '<li><a rel="notexternal" href="' . $hub->url({type  => 'Location', action => 'Genome', ftype => 'Gene', id  => $go, gotype => $extdb}) . ( $chromosomes && scalar @$chromosomes && $hub->species_defs->MAX_CHR_LENGTH ? '">View on karyotype</a></li>' : '">View associated genes</a></li>' );
 
     my $goslim      = $hash->{'goslim'} || {};
     my $row         = {};
