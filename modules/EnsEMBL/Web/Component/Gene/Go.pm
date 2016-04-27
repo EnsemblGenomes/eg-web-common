@@ -112,17 +112,14 @@ sub process_data {
   my @row_styles;
 ##
 
-## EG
   my $chromosomes = $hub->species_defs->ENSEMBL_CHROMOSOMES;
-##
 
   foreach my $go (sort keys %$data) {
     my $hash        = $data->{$go} || {};
     my $go_link     = $hub->get_ExtURL_link($go, $extdb, $go);
     my $mart_link   = $self->biomart_link($go) ? "<li>".$self->biomart_link($go)."</li>": "";
-## EG: Only show the karyotype link for assembled genomes, otherwise this just links to a page with an error
-    my $loc_link    = $chromosomes && scalar @$chromosomes && $hub->species_defs->MAX_CHR_LENGTH ? '<li><a rel="notexternal" href="'.$hub->url({type  => 'Location', action => 'Genome', ftype => 'Gene', id  => $go}).'">View on karyotype</a></li>' : '';
-##
+
+    my $loc_link    = '<li><a rel="notexternal" href="' . $hub->url({type  => 'Location', action => 'Genome', ftype => 'Gene', id  => $go}) . ( $chromosomes && scalar @$chromosomes && $hub->species_defs->MAX_CHR_LENGTH ? '">View on karyotype</a></li>' : '">View associated genes</a></li>' );
 
     my $goslim      = $hash->{'goslim'} || {};
     my $row         = {};
