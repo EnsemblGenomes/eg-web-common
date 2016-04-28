@@ -335,11 +335,21 @@ sub _render_features {
   if ($has_internal_data) { 
     unless ($hub->param('ph')) { ## omit h3 header for phenotypes
       $title = 'Location';
-      $title .= 's' if $mapped_features > 1;
+      $title .= 's' if $total_features > 1;
       $title .= ' of ';
-      my ($data_type, $assoc_name);
+      my ($data_type, $assoc_name, $go_link);
       my $ftype = $hub->param('ftype');
-      if (grep (/$ftype/, keys %$features)) {
+      my $go    = $hub->param('gotype');
+
+      #add extra description only for GO (gene ontologies) which is determined by param gotype in url
+      if ( $go ) {
+        my $adaptor = $hub->get_databases('go')->{'go'}->get_OntologyTermAdaptor;
+        my $go_hash = $adaptor->fetch_by_accession($id);
+        my $go_name = $go_hash->{name};
+        $go_link    = $hub->get_ExtURL_link($id, $go, $id)." ".$go_name; #get_ExtURL_link will return a text if $go is not valid
+      }
+      
+      if ( grep (/$ftype/, keys %$features) && !$id ) {
         $data_type = $ftype;
       }
       else {
@@ -348,7 +358,7 @@ sub _render_features {
         $assoc_name = $hub->param('name');
         unless ($assoc_name) {
           $assoc_name = $xref_type.' ';
-          $assoc_name .= $id;
+          $assoc_name .= $go_link ? $go_link : $id;
           $assoc_name .= " ($xref_name)" if $xref_name;
         }
       }
@@ -357,7 +367,7 @@ sub _render_features {
       ## De-camelcase names
       foreach (sort keys %$features) {
         my $pretty = $feature_display_name->{$_} || $self->decamel($_);
-        $pretty .= 's' if $mapped_features > 1;
+        $pretty .= 's' if $total_features > 1;
         $names{$_} = $pretty;
       }
 
