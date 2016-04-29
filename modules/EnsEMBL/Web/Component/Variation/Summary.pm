@@ -30,54 +30,26 @@ sub content {
   my ($feature_slice)    = map { $_->dbID == $vf ? $_->feature_Slice : () } @$variation_features; # get slice for variation feature
   my $avail              = $object->availability;  
 
-  my $info_box;
+  my ($info_box);
   if ($variation->failed_description || (scalar keys %{$object->variation_feature_mapping} > 1)) { 
     ## warn if variation has been failed
     $info_box = $self->multiple_locations($feature_slice, $variation->failed_description); 
   }
-
-  my $transcript_url  = $hub->url({ action => "Variation", action => "Mappings",    vf => $vf });
-  my $genotype_url    = $hub->url({ action => "Variation", action => "Individual",  vf => $vf });
-  my $phenotype_url   = $hub->url({ action => "Variation", action => "Phenotype",   vf => $vf });
-  my $citation_url    = $hub->url({ action => "Variation", action => "Citations",   vf => $vf });
- 
-  my @str_array;
-  push @str_array, sprintf('overlaps <a href="%s">%s %s</a>', 
-                      $transcript_url, 
-                      $avail->{has_transcripts}, 
-                      $avail->{has_transcripts} eq "1" ? "transcript" : "transcripts"
-                  ) if($avail->{has_transcripts});
-  push @str_array, sprintf('has <a href="%s">%s individual %s</a>', 
-                      $genotype_url, 
-                      $avail->{has_individuals}, 
-                      $avail->{has_individuals} eq "1" ? "genotype" : "genotypes" 
-                  )if($avail->{has_individuals});
-  push @str_array, sprintf('is associated with <a href="%s">%s %s</a>', 
-                      $phenotype_url, 
-                      $avail->{has_ega}, 
-                      $avail->{has_ega} eq "1" ? "phenotype" : "phenotypes"
-                  ) if($avail->{has_ega});  
-  push @str_array, sprintf('is mentioned in <a href="%s">%s %s</a>', 
-                      $citation_url, 
-                      $avail->{has_citation}, 
-                      $avail->{has_citation} eq "1" ? "citation" : "citations" 
-                  ) if($avail->{has_citation});
-
-  my $summary_table = $self->new_twocol(
+  
+  my @str_array = $self->feature_summary($avail);
+  
+  my $summary_table = $self->new_twocol(    
     $self->variation_source,
     $self->alleles($feature_slice),
     $self->location,
     $feature_slice ? $self->co_located($feature_slice) : (),
     $self->most_severe_consequence($variation_features),
-## EG    
-    #$self->validation_status,
-##    
     $self->evidence_status,
     $self->clinical_significance,
     $self->synonyms,
 ## EG
     $self->inter_homoeologues,
-##
+##    
     $self->hgvs,
     $self->sets,
     @str_array ? ['About this variant', sprintf('This variant %s.', $self->join_with_and(@str_array))] : ()
@@ -85,6 +57,7 @@ sub content {
 
   return sprintf qq{<div class="summary_panel">$info_box%s</div>}, $summary_table->render;
 }
+
 
 ## EG ENSEMBL-3426 link to inter-homoeologues
 sub inter_homoeologues {
