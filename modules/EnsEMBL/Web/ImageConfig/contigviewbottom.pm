@@ -57,6 +57,7 @@ sub init {
     dna_align_compara
     oligo
     repeat
+    cap
 
     chromatin_binding
     pb_intron_branch_point

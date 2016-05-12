@@ -443,9 +443,10 @@ sub _add_gff_track {
       encode_entities($source->{'source_url'})
     ),
     url         => $source->{'source_url'},
-    format      => 'gff',
+    format      => 'gff3',
     display     => $args{display} || 'off',
-    description => $args{description}
+    description => $args{description},
+    type        => 'url'
   );
 }
 
