@@ -166,4 +166,38 @@ sub retrieve {
 ##
 
 
+## ENSWEB-2542 - backport assembly hashing fix for EG31 (will be in released in E85)
+## See https://github.com/Ensembl/ensembl-webcode/commit/62b36a7a41b4ff92925be4e0e521869443ccd09d
+sub assembly_lookup {
+### Hash used to check if a given file or trackhub contains usable data
+### @param old_assemblies - flag to indicate that older assemblies should be included
+### @return lookup Hashref
+###   The keys of this hashref are of the following two types:
+###       - species_assembly    - used for attaching remote indexed files
+###       - USCS identifier     - used for checking trackhubs
+  my ($self, $old_assemblies) = @_;
+  my $lookup = {};
+  foreach ($self->valid_species) {
+    my $assembly = $self->get_config($_, 'ASSEMBLY_VERSION');
+    ## A bit clunky, but it makes code cleaner in use
+    $lookup->{$_.'_'.$assembly} = [$_, $assembly, 0];
+    ## Now look up UCSC assembly names
+    if ($self->get_config($_, 'UCSC_GOLDEN_PATH')) {
+      $lookup->{$self->get_config($_, 'UCSC_GOLDEN_PATH')} = [$_, $assembly, 0];
+    }
+    if ($old_assemblies) {
+      ## Include past UCSC assemblies
+      if ($self->get_config($_, 'UCSC_ASSEMBLIES')) {
+        my %ucsc = @{$self->get_config($_, 'UCSC_ASSEMBLIES')||[]};
+        while (my($k, $v) = each(%ucsc)) {
+          $lookup->{$k} = [$_, $v, 1];
+        }
+      }
+    }
+  }
+  return $lookup;
+}
+##
+
+
 1;
