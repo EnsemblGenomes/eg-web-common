@@ -60,7 +60,7 @@ sub content {
 ##
 
 # EG add ht param
-  my $unhighlight          = $highlight_gene ? $hub->url({action => 'Compara_Tree', function => $url_function, g1 => undef, collapse => $collapsed_nodes, ht => $hub->param('ht') }) : '';
+  my $unhighlight          = $highlight_gene ? $hub->url({ g1 => undef, collapse => $collapsed_nodes, ht => $hub->param('ht') }) : '';
   my $image_width          = $self->image_width       || 800;
   my $colouring            = $hub->param('colouring') || 'background';
   my $collapsability       = $is_genetree ? '' : ($vc->get('collapsability') || $hub->param('collapsability'));
@@ -268,12 +268,12 @@ sub content {
 
 # EG include the ht param
   if ($gene) {
-    push @view_links, sprintf $li_tmpl, $hub->url({ action => 'Compara_Tree', function => $url_function, ht => $hub->param('ht'), collapse => $collapsed_to_gene, g1 => $highlight_gene }), $highlight_gene ? 'View current genes only'        : 'View current gene only';
-    push @view_links, sprintf $li_tmpl, $hub->url({ action => 'Compara_Tree', function => $url_function, ht => $hub->param('ht'), collapse => $collapsed_to_para || undef, g1 => $highlight_gene }), $highlight_gene ? 'View paralogs of current genes' : 'View paralogs of current gene';
+    push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => $collapsed_to_gene, g1 => $highlight_gene }), $highlight_gene ? 'View current genes only'        : 'View current gene only';
+    push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => $collapsed_to_para || undef, g1 => $highlight_gene }), $highlight_gene ? 'View paralogs of current genes' : 'View paralogs of current gene';
   }
 
-  push @view_links, sprintf $li_tmpl, $hub->url({ action => 'Compara_Tree', function => $url_function, ht => $hub->param('ht'), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
-  push @view_links, sprintf $li_tmpl, $hub->url({ action => 'Compara_Tree', function => $url_function, ht => $hub->param('ht'), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
+  push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
+  push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
   push @view_links, sprintf $li_tmpl, $unhighlight, 'Switch off highlighting' if $highlight_gene;
 # /EG
 
