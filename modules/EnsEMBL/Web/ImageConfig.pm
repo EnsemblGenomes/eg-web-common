@@ -21,6 +21,14 @@ package EnsEMBL::Web::ImageConfig;
 use strict;
 use previous qw(menus);
 
+our $pretty_method = {
+  BLASTZ_NET          => 'BlastZ',
+  LASTZ_NET           => 'LastZ',
+  TRANSLATED_BLAT_NET => 'Translated Blat',
+  SYNTENY             => 'Synteny',
+  ATAC                => 'ATAC',
+};
+
 sub menus {
   my $self  = shift;
   my $menus = $self->PREV::menus(@_);
@@ -216,8 +224,8 @@ sub add_alignments {
   
   my $alignments = {};
   my $self_label = $species_defs->species_label($species, 'no_formatting');
-  my $static     = $species_defs->ENSEMBL_SITETYPE eq 'Vega' ? '/info/data/comparative_analysis.html' : '/info/genome/compara/analyses.html';
- 
+  my $static     = $species_defs->ENSEMBL_SITETYPE eq 'Vega' ? '/info/data/comparative_analysis.html' : 'http://ensemblgenomes.org/info/data/whole_genome_alignment';
+
   foreach my $row (values %{$hashref->{'ALIGNMENTS'}}) {
     next unless $row->{'species'}{$species};
    
@@ -246,9 +254,17 @@ sub add_alignments {
         $menu_key    = 'pairwise_other';
         $description = 'Pairwise alignments';
       }
-      
-      $description  = qq{<a href="$static" class="cp-external">$description</a> between $self_label and $other_label};
+
+      $description = qq{<ul><li><a href="$static" class="cp-external">$description</a> between <i>$self_label</i> and <i>$other_label</i>};
       $description .= " $1" if $row->{'name'} =~ /\((on.+)\)/;
+      $description .= qq(</li>);
+
+      if ( defined $row->{'id'} ) {
+          my $mlss_link = "/mlss.html?mlss=" . $row->{'id'};
+          my $pretty_type = $pretty_method->{$row->{'type'}};
+          $description .= qq(<li><a href="$mlss_link"><i>$self_label</i> vs <i>$other_label</i> $pretty_type Results</a></li>);
+      }
+      $description .= qq(</ul>);
 
       $alignments->{$menu_key}{$row->{'id'}} = {
         db                         => $key,
@@ -285,7 +301,7 @@ sub add_alignments {
       if ($row->{'conservation_score'}) {
         my ($program) = $hashref->{'CONSERVATION_SCORES'}{$row->{'conservation_score'}}{'type'} =~ /(.+)_CONSERVATION_SCORE/;
         
-        $options{'description'} = qq{<a href="/info/genome/compara/analyses.html#conservation">$program conservation scores</a> based on the $row->{'name'}};
+        $options{'description'} = qq{<a href="http://ensemblgenomes.org/info/data/whole_genome_alignment">$program conservation scores</a> based on the $row->{'name'}};
         
         $alignments->{'conservation'}{"$row->{'id'}_scores"} = {
           %options,
@@ -315,7 +331,7 @@ sub add_alignments {
         order       => sprintf('%12d::%s::%s', 1e12-$n_species*10-1, $row->{'type'}, $row->{'name'}),
         display     => 'off',
         renderers   => [ 'off', 'Off', 'compact', 'On' ],
-        description => qq{<a href="/info/genome/compara/analyses.html#conservation">$n_species way whole-genome multiple alignments</a>.; } . 
+        description => qq{<a href="http://ensemblgenomes.org/info/data/whole_genome_alignment">$n_species way whole-genome multiple alignments</a>.; } . 
                        join('; ', sort map { $species_defs->species_label($_, 'no_formatting') } grep { $_ ne 'ancestral_sequences' } keys %{$row->{'species'}}),
       };
     } 
