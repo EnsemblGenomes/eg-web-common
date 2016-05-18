@@ -258,61 +258,37 @@ sub get_compara_alignments {
   my ($compara_db, $methods) = @_;
 
   return unless $compara_db;
-
-  my $mlss_adaptor    = $compara_db->get_adaptor('MethodLinkSpeciesSet');
-  my $genome_adaptor  = $compara_db->get_adaptor('GenomeDB');
- 
-  my $data = {};
-  my $species = {};
-# existence of this tag defines if stats are available
-  my $stats_tag = 'num_blocks';
   
-  ## Munge all the necessary information
-  foreach my $method (@{$methods||[]}) {
-    my $mls_sets  = $mlss_adaptor->fetch_all_by_method_link_type($method);
-    
-    foreach my $mlss (@$mls_sets) {
-
-	my $ref_species = $mlss->get_value_for_tag("reference_species");
-
-	my @gdbs = @{$mlss->species_set_obj->genome_dbs ||[]};
-
-	my $ref_genome_db;
-
-	if ($ref_species) {
-	    if (my @found = grep { $_->name eq $ref_species } @gdbs) {
-		$ref_genome_db = $found[0];
-	    }
-	} else {
-	    $ref_genome_db = $gdbs[0];
-	}
-
-	if ($ref_genome_db) {
-        ## Add to full list of species
-	    my $ref_name = $ref_genome_db->name;
-	    my @non_ref_genome_dbs = grep {$_->dbID != $ref_genome_db->dbID} @gdbs;
-
-
-        ## Build data matrix
-
-	    if (scalar(@non_ref_genome_dbs)) {
-          # Alignment between 2+ species
-		foreach my $nonref_db (@non_ref_genome_dbs) {
-		    $data->{$ref_name}->{align}->{$nonref_db->name}->{$method} = [$mlss->dbID,  $mlss->has_tag($stats_tag) ? 1 : 0];
-		    $data->{$nonref_db->name}->{align}->{$ref_name}->{$method} = [$mlss->dbID,  $mlss->has_tag($stats_tag) ? 1 : 0];
-		}
-	    } else {
-            # Self-alignment. No need to increment $species->{$ref_name} as it has been done earlier
-	    # EG  skip self  alignments - for wheat it is a polyploid view
-
-#		$data->{$ref_name}->{align}->{$ref_name}->{$method} = [ $mlss->dbID, $mlss->has_tag($stats_tag) ? 1 : 0];
-	    }
-	} else {
-	    warn "Can't get ref genome db for ", $mlss->name;
-	}
-    }
-  }
-
+ my $dbh = $compara_db->dbc->db_handle;
+ 
+ my $genome_dbs = $dbh->selectall_arrayref(
+          "SELECT ml.type, gd.name, mlss.method_link_species_set_id, ss.species_set_id, 
+           mlsst_ref.value AS ref_species, mlsst_blocks.value AS num_blocks
+           FROM method_link ml
+                JOIN method_link_species_set mlss USING (method_link_id)
+                JOIN species_set ss USING (species_set_id)
+                JOIN genome_db gd USING (genome_db_id)
+                LEFT JOIN method_link_species_set_tag mlsst_ref USING (method_link_species_set_id)
+                LEFT JOIN method_link_species_set_tag mlsst_blocks USING (method_link_species_set_id)
+           WHERE 
+                ml.type IN ('SYNTENY', 'TRANSLATED_BLAT_NET', 'BLASTZ_NET', 'LASTZ_NET', 'ATAC')
+                AND mlsst_ref.tag = 'reference_species'
+                AND mlsst_blocks.tag = 'num_blocks'
+                ORDER BY name", { Slice => {} }
+        ); 
+        
+        
+        my $data = {};
+        
+        if(scalar(@$genome_dbs)){
+            foreach my $genome_db(@$genome_dbs){
+                if($genome_db->{'ref_species'} ne $genome_db->{'name'}){
+                    $data->{$genome_db->{'ref_species'}}->{align}->{$genome_db->{'name'}}->{$genome_db->{'type'}} = [$genome_db->{'method_link_species_set_id'},  $genome_db->{'num_blocks'} ? 1 : 0];
+                    $data->{$genome_db->{'name'}}->{align}->{$genome_db->{'ref_species'}}->{$genome_db->{'type'}} = [$genome_db->{'method_link_species_set_id'},  $genome_db->{'num_blocks'} ? 1 : 0];
+                }
+            }
+         }
+            
   return $data;
 }
 
