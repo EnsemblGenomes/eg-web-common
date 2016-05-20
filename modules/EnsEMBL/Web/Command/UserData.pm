@@ -23,7 +23,7 @@ use strict;
 ## ENSWEB-2542 - backport assembly hashing fix for EG31 (will be in released in E85)
 ## see https://github.com/Ensembl/ensembl-webcode/commit/62b36a7a41b4ff92925be4e0e521869443ccd09d
 ## and https://github.com/Ensembl/ensembl-webcode/commit/bafbceee608cf145c600867e8c747a43270ac1b2
-sub attach {
+sub XXXattach {
 ### Attach a remote file and return the parameters needed for a redirect
 ### @param attachable EnsEMBL::Web::File::AttachedFormat object
 ### @return array - redirect action plus hashref of parameters

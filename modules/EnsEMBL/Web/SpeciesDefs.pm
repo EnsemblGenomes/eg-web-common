@@ -168,7 +168,7 @@ sub retrieve {
 
 ## ENSWEB-2542 - backport assembly hashing fix for EG31 (will be in released in E85)
 ## See https://github.com/Ensembl/ensembl-webcode/commit/62b36a7a41b4ff92925be4e0e521869443ccd09d
-sub assembly_lookup {
+sub XXXassembly_lookup {
 ### Hash used to check if a given file or trackhub contains usable data
 ### @param old_assemblies - flag to indicate that older assemblies should be included
 ### @return lookup Hashref
