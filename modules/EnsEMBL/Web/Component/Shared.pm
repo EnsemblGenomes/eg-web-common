@@ -613,7 +613,7 @@ sub about_feature {
     
     push @str_array, sprintf('%s %s', 
                         $avail->{has_transcripts}, 
-                        $avail->{has_transcripts} eq "1" ? "transcript (<a href='$splice_url'>splice variant</a>)" : "transcripts (<a href='$splice_url'>splice variants)</a>"
+                        $avail->{has_transcripts} eq "1" ? "transcript (<a href='$splice_url'>splice variant</a>)" : "transcripts (<a href='$splice_url'>splice variants</a>)"
                     ) if($avail->{has_transcripts});
     push @str_array, sprintf('%s gene %s', 
                         $avail->{has_alt_alleles}, 
