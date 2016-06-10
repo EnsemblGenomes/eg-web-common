@@ -26,8 +26,8 @@ sub update_conf {
 
   $SiteDefs::ENSEMBL_COHORT = 'EnsemblGenomes';
   
-  $SiteDefs::SITE_RELEASE_VERSION = 31;
-  $SiteDefs::SITE_RELEASE_DATE    = 'March 2015';
+  $SiteDefs::SITE_RELEASE_VERSION = 32;
+  $SiteDefs::SITE_RELEASE_DATE    = 'August 2015';
   $SiteDefs::SITE_MISSION         = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
     
   @SiteDefs::ENSEMBL_PERL_DIRS    = (
