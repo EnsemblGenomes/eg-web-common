@@ -78,6 +78,7 @@ use vars qw(@ISA @EXPORT_OK);
     &hgvs_variant_notation 
     &format_hgvs_string
     &get_hgvs_alleles
+    &get_3prime_seq_offset
     &SO_variation_class 
     &align_seqs 
     &strain_ambiguity_code
@@ -736,6 +737,47 @@ sub get_hgvs_alleles{
   return ($ref_allele, $alt_allele) ;
 }
 
+=head2 get_3prime_seq_offset
+  Arg[1]     : allele sequence
+  Arg[2]     : downstream flank
+  Description: Compare an allele to its 3' sequence to define the most 3'
+               description of the change for HGVS
+  Returntype : string or undef if this allele is not in the
+  Exceptions : none
+  Status     : Experimental
+=cut
+sub get_3prime_seq_offset{
+
+  my $seq_to_check  = shift;
+  my $post_seq      = shift;
+
+  my $offset = 0;
+
+  return ($seq_to_check, $offset)  unless defined  $post_seq;
+
+  ## get length of pattern to check 
+  my $check_length = length($post_seq) - length($seq_to_check);
+
+  ## move along sequence after deletion looking for match to start of deletion
+  for (my $n = 0; $n<= $check_length; $n++ ){
+
+    ## check each position in deletion/ following seq for match
+    my $check_next_al  = substr( $seq_to_check, 0, 1);
+    my $check_next_ref = substr( $post_seq, $n, 1);
+
+    ## stop if the sequences differ
+    last if $check_next_al ne $check_next_ref;
+
+    ## move position of deletion along
+    $offset++;
+
+    ## modify deleted sequence - remove start & append to end
+    $seq_to_check = substr($seq_to_check,1);
+    $seq_to_check .= $check_next_ref;
+  }
+
+  return ($seq_to_check, $offset);
+}
 
 =head2 align_seqs
 
