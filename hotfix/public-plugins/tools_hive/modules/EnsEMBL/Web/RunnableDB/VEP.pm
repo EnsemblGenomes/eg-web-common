@@ -41,13 +41,13 @@ sub fetch_input {
     my $abs_location = sprintf '%s/%s', $code_root, $self->param_required($_);
     throw exception('HiveException', "Script $abs_location doesn't exist, or is not executable.") unless -x $abs_location;
     $self->param($_, $abs_location);
-    $script_path = $abs_location =~ s/(\/[^\/]+$)//r if $_ eq 'script'; # script path also needs to go into perl_bin 
+    $script_path = $abs_location =~ s/(\/[^\/]+$)//r if $_ eq 'script'; #/ script path also needs to go into perl_bin 
   }
 
   # set up perl bin with the required library locations
   try {
 ## EG - ignore eg-web folders (need to find a better way to do this...)
-    my @modules   = map { -d "$code_root/$_/modules" ? "-I $code_root/$_/modules" : () } grep {$_ !~ /eg-web/}  @{list_dir_contents($code_root)};
+    my @modules   = map { -d "$code_root/$_/modules" ? "-I $code_root/$_/modules" : () } grep {/^ensembl/}  @{list_dir_contents($code_root)};
 ##    
     my $perl_bin  = join ' ', $self->param_required('perl_bin'), '-I', $self->param_required('bioperl_dir'), '-I', $script_path, @modules;
     $self->param('perl_bin', $perl_bin);
@@ -55,8 +55,12 @@ sub fetch_input {
     throw exception('HiveException', $_->message(1));
   };
 
+
+## EG make cache_dir optional 
   # other required params
-  $self->param_required($_) for qw(work_dir config job_id cache_dir);
+  #$self->param_required($_) for qw(work_dir config job_id cache_dir);
+  $self->param_required($_) for qw(work_dir config job_id);
+##  
 }
 
 sub run {
@@ -71,10 +75,18 @@ sub run {
   my $plugins_path    = $self->param('plugins_path');
      $plugins_path    = $plugins_path ? $plugins_path =~ /^\// ? "-I $plugins_path" : sprintf('-I %s/%s', $self->param('code_root'), $plugins_path) : '';
 
-  $options->{"--$_"}  = '' for qw(force quiet safe vcf tabix stats_text cache); # we need these options set on always!
+  $options->{"--$_"}  = '' for qw(force quiet safe vcf tabix stats_text); # we need these options set on always!
   $options->{"--$_"}  = sprintf '"%s/%s"', $work_dir, delete $config->{$_} for qw(input_file output_file stats_file);
   $options->{"--$_"}  = $config->{$_} eq 'yes' ? '' : $config->{$_} for grep { defined $config->{$_} && $config->{$_} ne 'no' } keys %$config;
-  $options->{"--dir"} = $self->param('cache_dir');
+
+## EG use cache only if cache_dir supplied
+  if ($self->param('cache_dir')){
+    $options->{"--dir"}   = $self->param('cache_dir');
+    $options->{"--cache"} = '';
+  } else {
+    $options->{"--database"} = '';
+  }
+##
 
   # send warnings to STDERR
   $options->{"--warning_file"} = "STDERR";
