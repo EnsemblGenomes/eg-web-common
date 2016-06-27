@@ -34,10 +34,11 @@ sub is_archaea {
 
 sub _species_sets {
 ## Group species into sets - separate method so it can be pluggable easily
-  my ($self, $orthologue_list, $skipped) = @_;
-
+  my ($self, $orthologue_list, $skipped, $orthologue_map, $cdb) = @_;
+  
+  my $hub          = $self->hub;
   my $species_defs  = $self->hub->species_defs;
-
+  my %all_analysed_species = $self->_get_all_analysed_species($cdb);
   my $set_order = [];
   my $is_pan = $self->hub->function eq 'pan_compara';
   if($is_pan){
@@ -54,21 +55,23 @@ sub _species_sets {
     'archaea'     => {'title' => 'Archaea',     'desc' => '', 'species' => [], 'all' => 0},
     'all'         => {'title' => 'All',         'desc' => '', 'species' => [], 'all' => 0},
   };
-  my $categories      = {};
+  
   my $sets_by_species = {};
   my $spsites         = $species_defs->ENSEMBL_SPECIES_SITE();
+  my ($ortho_type);
+  
 
-  foreach my $species (keys %$orthologue_list) {
+  foreach my $species (keys %all_analysed_species) {
     next if $skipped->{$species};
     
     my $group = $spsites->{lc($species)};
+    my $sets = [];
+    my $orthologues = $orthologue_list->{$species} || {};
+    my $no_ortho = 0;
 
     if($group eq 'bacteria'){
-    
       $group = 'archaea' if $self->is_archaea(lc $species);
-    
     } elsif (!$is_pan){ 
-    
       # not the pan compara page - generate groups
       $group = $species_defs->get_config($species, 'SPECIES_GROUP') || $spsites->{lc($species)} || 'Undefined';
       
@@ -78,35 +81,42 @@ sub _species_sets {
       }
     }
 
-    push @{$species_sets->{'all'}{'species'}}, $species;
-    my $sets = ['all'];
-
-    my $orthologues = $orthologue_list->{$species} || {};
+    if (!$orthologue_list->{$species} && $species ne $self->hub->species) {
+      $no_ortho = 1;
+    }
 
     foreach my $stable_id (keys %$orthologues) {
       my $orth_info = $orthologue_list->{$species}->{$stable_id};
       my $orth_desc = ucfirst($orth_info->{'homology_desc'});
-
-      $species_sets->{'all'}->{$orth_desc}++;
-      $species_sets->{$group}->{$orth_desc}++;
-      
-      $categories->{$orth_desc} = {key => $orth_desc, title => $orth_desc} unless exists $categories->{$orth_desc};
+      $ortho_type->{$species}{$orth_desc} = 1;
     }
-    $species_sets->{$group}->{'all'}++;
-    push @{$species_sets->{$group}{'species'}}, $species;
-    push (@$sets, $group) if exists $species_sets->{$group};
-    $sets_by_species->{$species} = $sets;
+    
+    if ($species ne $self->hub->species && !$ortho_type->{$species}{'1-to-1'} && !$ortho_type->{$species}{'1-to-many'}
+          && !$ortho_type->{$species}{'Many-to-many'}) {
+      $no_ortho = 1;
+    }
+    
+    
+    foreach my $ss_name ('all', $group) {
+      push @{$species_sets->{$ss_name}{'species'}}, $species;
+      push (@$sets, $ss_name) if exists $species_sets->{$ss_name};
+      while (my ($k, $v) = each (%{$ortho_type->{$species}})) {
+        $species_sets->{$ss_name}{$k} += $v;
+      }
+      $species_sets->{$ss_name}{'none'}++ if $no_ortho;
+      $species_sets->{$ss_name}{'all'}++ if $species ne $self->hub->species;
+    }
+      
+      $sets_by_species->{$species} = $sets;
   }
-
-  $species_sets->{'all'}->{'all'} = @{$species_sets->{'all'}->{'species'}||[]};
 
   if(!$is_pan) {
     my @unorder = @$set_order;
     @$set_order = sort(@unorder);
     unshift(@$set_order, 'all');
   }
-
-  return ($species_sets, $sets_by_species, $set_order, $categories);
+  
+  return ($species_sets, $sets_by_species, $set_order);
 }
 
 sub in_archaea {
