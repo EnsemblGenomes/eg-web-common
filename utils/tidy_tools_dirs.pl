@@ -57,12 +57,16 @@ use EnsEMBL::Web::SpeciesDefs;
 use EnsEMBL::Web::Utils::FileSystem qw(remove_empty_path);
 
 GetOptions(
-  'dry'       => \(my $dry     = 0), 
-  'hours=i'   => \(my $hours   = 1),
-  'v|verbose' => \(my $verbose = 0),
+  'dry'            => \(my $dry          = 0), 
+  'hours=i'        => \(my $hours        = 1),
+  'offset-hours=i' => \(my $offset_hours = 0),
+  'v|verbose'      => \(my $verbose      = 0),
 );
 
+my $total_hours = $offset_hours + $hours;
+
 print "INFO: Tidying jobs folders for jobs deleted in last $hours hours\n";
+print "INFO: Time offset by $offset_hours hours\n" if $offset_hours;
 print "INFO: This is a dry run\n" if $dry;
 
 # Get db connection
@@ -85,7 +89,8 @@ ORM::EnsEMBL::Rose::DbConnection->register_database($db);
 my $jobs_iterator = ORM::EnsEMBL::DB::Tools::Manager::Job->get_objects_iterator(
   'query'         => [ 
     'status'      => 'deleted',  
-    'modified_at' => {'ge_sql' => "NOW() - INTERVAL $hours HOUR"},
+    'modified_at' => {'le_sql' => "NOW() - INTERVAL $offset_hours HOUR"},
+    'modified_at' => {'ge_sql' => "NOW() - INTERVAL $total_hours HOUR"},
   ],
   'sort_by'       => 'modified_at ASC',
   'debug'         => 0,
