@@ -44,7 +44,7 @@ sub content {
   }
 
   my $annotation_link = '';
-  warn "url " . $hub->species_defs->ANNOTATION_URL;
+  #warn "url " . $hub->species_defs->ANNOTATION_URL;
   if (my $annotation_url = $hub->species_defs->ANNOTATION_URL) {
     my $object = $self->object;
     my ($sr, $start, $end) = ($object->seq_region_name, $object->seq_region_start, $object->seq_region_end);
@@ -60,7 +60,7 @@ sub content {
     );
   }
 
-  warn "$annotation_link";
+  #warn "$annotation_link";
 
   return qq{
       <div class="navbar print_hide" style="width:$image_width">
