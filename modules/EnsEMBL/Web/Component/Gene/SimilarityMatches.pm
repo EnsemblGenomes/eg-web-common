@@ -2,6 +2,8 @@ package EnsEMBL::Web::Component::Gene::SimilarityMatches;
 
 use strict;
 
+# remove after merge of https://github.com/Ensembl/ensembl-webcode/pull/458
+
 sub get_matches_by_transcript {
   my $self          = shift;
   my $transcript    = shift;
