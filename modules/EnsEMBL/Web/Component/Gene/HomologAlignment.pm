@@ -23,8 +23,6 @@ package EnsEMBL::Web::Component::Gene::HomologAlignment;
 use strict;
 
 use Bio::AlignIO;
-
-use EnsEMBL::Web::Constants;
 use base qw(EnsEMBL::Web::Component::Gene);
 
 sub content {
@@ -36,7 +34,6 @@ sub content {
   my $species_defs = $hub->species_defs;
   my $gene_id      = $self->object->stable_id;
   my $second_gene  = $hub->param('g1');
-  my $homology_id  = $hub->param('hom_id');
   my $seq          = $hub->param('seq');
   my $text_format  = $hub->param('text_format');
   my (%skipped, $html);
@@ -183,10 +180,10 @@ sub get_homologies {
   my $hub          = $self->hub;
   my $cdb          = shift || $hub->param('cdb') || 'compara';
   my $object       = $self->object || $hub->core_object('gene');
+  my $gene_id      = $object->stable_id;
 
   my $database     = $hub->database($cdb);
-  my $qm           = $database->get_GeneMemberAdaptor->fetch_by_stable_id($object->stable_id); # gene_id
-
+  my $qm           = $database->get_GeneMemberAdaptor->fetch_by_stable_id($gene_id);
   my $homologies;
   my $action        = $hub->param('data_action') || $hub->action;
 
