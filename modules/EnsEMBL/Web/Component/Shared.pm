@@ -202,13 +202,14 @@ sub transcript_table {
     $table->add_row('Description', $description);
   }
 
-  my $location    = $hub->param('r') || sprintf '%s:%s-%s', $object->seq_region_name, $object->seq_region_start, $object->seq_region_end;
+  my $location    = sprintf '%s:%s-%s', $object->seq_region_name, $object->seq_region_start, $object->seq_region_end;
 
 ## EG - don't do Ensembl specific synonym stuff (not applicable and v.slow)
   #my @SYNONYM_PATTERNS  = qw(%HGNC% %ZFIN%);
   #my (@syn_matches, $syns_html, $about_count);
   #push @syn_matches,@{$object->get_database_matches($_)} for @SYNONYM_PATTERNS;
- 
+  #
+
   # foreach (@{$object->get_similarity_hash(0, $gene)}) {
   #   next unless $_->{'type'} eq 'PRIMARY_DB_SYNONYM';
   #   my $id           = $_->display_id;
@@ -217,7 +218,7 @@ sub transcript_table {
   #   $syns_html .= "<p>$synonym</p>";
   # }
 ##
-
+  
 ## EG
   # check if synonyms are attached  via display xref .. 
   my ($display_name) = $object->display_xref;
@@ -239,7 +240,7 @@ sub transcript_table {
   my $seq_region_end   = $object->seq_region_end;
 
   my $location_html = sprintf(
-    '<a href="%s" class="constant mobile-nolink">%s: %s-%s</a> %s.',
+    '<a href="%s" class="constant mobile-nolink dynamic-link">%s: %s-%s</a> %s.',
     $hub->url({
       type   => 'Location',
       action => 'View',
@@ -319,15 +320,13 @@ sub transcript_table {
   my $gene = $object->gene;
 
   #text for tooltips
-  my $gencode_desc    = "The GENCODE set is the gene set for human and mouse. GENCODE Basic is a subset of representative transcripts (splice variants).";
-  my $trans_5_3_desc  = "5' and 3' truncations in transcript evidence prevent annotation of the start and the end of the CDS.";
-  my $trans_5_desc    = "5' truncation in transcript evidence prevents annotation of the start of the CDS.";
-  my $trans_3_desc    = "3' truncation in transcript evidence prevents annotation of the end of the CDS.";
+  my $gencode_desc    = qq(The GENCODE set is the gene set for human and mouse. <a href="/Help/Glossary?id=500" class="popup">GENCODE Basic</a> is a subset of representative transcripts (splice variants).);
   my $gene_html       = '';
   my $transc_table;
 
   if ($gene) {
-    my $transcript  = $page_type eq 'transcript' ? $object->stable_id : $hub->param('t');
+    my $version     = $object->version ? ".".$object->version : "";
+    my $transcript  = $page_type eq 'transcript' ? $object->stable_id.$version : $hub->param('t');
     my $transcripts = $gene->get_all_Transcripts;
     my $count       = @$transcripts;
     my $plural      = 'transcripts';
@@ -393,7 +392,7 @@ sub transcript_table {
        { key => 'name',       sort => 'string',  title => 'Name'          },
        { key => 'transcript', sort => 'html',    title => 'Transcript ID' },
        { key => 'bp_length',  sort => 'numeric', label => 'bp', title => 'Length in base pairs'},
-       { key => 'protein',    sort => 'html',    label => 'Protein', title => 'Protein length in amino acids' },
+       { key => 'protein',sort => 'html_numeric',label => 'Protein', title => 'Protein length in amino acids' },
        { key => 'translation',sort => 'html',    title => 'Translation ID', 'hidden' => 1 },
        { key => 'biotype',    sort => 'html',    title => 'Biotype', align => 'left' },
     );
@@ -453,19 +452,11 @@ sub transcript_table {
         }
       }
       if ($trans_attribs->{$tsi}) {
-        if ($trans_attribs->{$tsi}{'CDS_start_NF'}) {
-          if ($trans_attribs->{$tsi}{'CDS_end_NF'}) {
-            push @flags, $self->helptip("CDS 5' and 3' incomplete", $trans_5_3_desc);
-          }
-          else {
-            push @flags, $self->helptip("CDS 5' incomplete", $trans_5_desc);
-          }
-        }
-        elsif ($trans_attribs->{$tsi}{'CDS_end_NF'}) {
-         push @flags, $self->helptip("CDS 3' incomplete", $trans_3_desc);
+        if (my $incomplete = $self->get_CDS_text($trans_attribs->{$tsi})) {
+          push @flags, $incomplete;
         }
         if ($trans_attribs->{$tsi}{'TSL'}) {
-          my $tsl = uc($trans_attribs->{$tsi}{'TSL'} =~ s/^tsl([^\s]+).*$/$1/gr); #/
+          my $tsl = uc($trans_attribs->{$tsi}{'TSL'} =~ s/^tsl([^\s]+).*$/$1/gr);#/
           push @flags, $self->helptip("TSL:$tsl", $self->get_glossary_entry("TSL:$tsl").$self->get_glossary_entry('TSL'));
         }
       }
@@ -492,7 +483,7 @@ sub transcript_table {
       $extras{$_} ||= '-' for(keys %extra_links);
       my $row = {
         name        => { value => $_->display_xref ? $_->display_xref->display_id : 'Novel', class => 'bold' },
-        transcript  => sprintf('<a href="%s">%s</a>', $url, $tsi),
+        transcript  => sprintf('<a href="%s">%s%s</a>', $url, $tsi, $version),
         bp_length   => $transcript_length,
         protein     => $protein_url ? sprintf '<a href="%s" title="View protein">%saa</a>', $protein_url, $protein_length : 'No protein',
         translation => $protein_url ? sprintf '<a href="%s" title="View protein">%s</a>', $protein_url, $translation_id : '-',
@@ -532,7 +523,7 @@ sub transcript_table {
     
     $transc_table = $self->new_table(\@columns, \@rows, {
       data_table        => 1,
-      data_table_config => { asStripClasses => [ '', '' ], oSearch => { sSearch => '', bRegex => 'false', bSmart => 'false' } },
+      data_table_config => { bPaginate => 'false', asStripClasses => [ '', '' ], oSearch => { sSearch => '', bRegex => 'false', bSmart => 'false' } },
       toggleable        => 1,
       class             => 'fixed_width' . ($show ? '' : ' hide'),
       id                => 'transcripts_table',
@@ -553,152 +544,6 @@ sub transcript_table {
   $table->add_row($page_type eq 'gene' ? 'Transcripts' : 'Gene', $gene_html) if $gene_html;
 
   return sprintf '<div class="summary_panel">%s%s</div>', $table->render, $transc_table ? $transc_table->render : '';
-}
-
-# return the same columns; implemented in mobile plugin to remove some columns
-sub table_removecolumn { 
-  my ($self, @columns) = @_;
-  
-  return @columns;
-}
-
-#implemented in mobile plugin (having this as  a separate function so that we dont have to overwrite transcript_table function in the plugin)
-sub add_phenotype_link {
-  return "";
-}
-
-# since counts form left nav is gone, we are adding it in the description  (called in transcript_table function)
-sub about_feature {
-  my ($self) = @_;  
-  
-  my $hub         = $self->hub;
-  my $object      = $self->object;
-  my $avail       = $object->availability;
-  my $gene        = $object->gene;
-  
-  my $page_type   = ref($self) =~ /::Gene\b/ ? 'gene' : 'transcript';
-  
-  my (@str_array, $counts_summary);
-  
-  if ($page_type eq 'gene') {
-    my $ortholog_url = $hub->url({
-      type   => 'Gene',
-      action => 'Compara_Ortholog',
-      g      => $gene->stable_id
-    });
-    
-    my $paralog_url = $hub->url({
-      type   => 'Gene',
-      action => 'Compara_Paralog',
-      g      => $gene->stable_id
-    });
-    
-    my $protein_url = $hub->url({
-      type   => 'Gene',
-      action => 'Family',
-      g      => $gene->stable_id
-    });
-
-    my $phenotype_url = $hub->url({
-      type   => 'Gene',
-      action => 'Phenotype',
-      g      => $gene->stable_id
-    });    
-
-    my $splice_url = $hub->url({
-      type   => 'Gene',
-      action => 'Splice',
-      g      => $gene->stable_id
-    });        
-    
-    push @str_array, sprintf('%s %s', 
-                        $avail->{has_transcripts}, 
-                        $avail->{has_transcripts} eq "1" ? "transcript (<a href='$splice_url'>splice variant</a>)" : "transcripts (<a href='$splice_url'>splice variants</a>)"
-                    ) if($avail->{has_transcripts});
-    push @str_array, sprintf('%s gene %s', 
-                        $avail->{has_alt_alleles}, 
-                        $avail->{has_alt_alleles} eq "1" ? "allele" : "alleles"
-                    ) if($avail->{has_alt_alleles});
-    push @str_array, sprintf('<a href="%s">%s %s</a>', 
-                        $ortholog_url, 
-                        $avail->{has_orthologs}, 
-                        $avail->{has_orthologs} eq "1" ? "orthologue" : "orthologues"
-                    ) if($avail->{has_orthologs});
-    push @str_array, sprintf('<a href="%s">%s %s</a>',
-                        $paralog_url, 
-                        $avail->{has_paralogs}, 
-                        $avail->{has_paralogs} eq "1" ? "paralogue" : "paralogues"
-                    ) if($avail->{has_paralogs});    
-    push @str_array, sprintf('is a member of <a href="%s">%s Ensembl protein %s</a>', $protein_url, 
-                        $avail->{family_count}, 
-                        $avail->{family_count} eq "1" ? "family" : "families"
-                    ) if($avail->{family_count});
-    push @str_array, sprintf('is associated with <a href="%s">%s %s</a>', 
-                        $phenotype_url, 
-                        $avail->{has_phenotypes}, 
-                        $avail->{has_phenotypes} eq "1" ? "phenotype" : "phenotypes"
-                    ) if($avail->{has_phenotypes});
-   
-    $counts_summary  = sprintf('This gene has %s.',$self->join_with_and(@str_array));  
-  }
-  
-  if ($page_type eq 'transcript') {
-    my $exon_url = $hub->url({
-      type   => 'Transcript',
-      action => 'Exons',
-      g      => $gene->stable_id
-    }); 
-    
-    my $similarity_url = $hub->url({
-      type   => 'Transcript',
-      action => 'Similarity',
-      g      => $gene->stable_id
-    }); 
-    
-    my $oligo_url = $hub->url({
-      type   => 'Transcript',
-      action => 'Oligos',
-      g      => $gene->stable_id
-    });     
-
-    my $domain_url = $hub->url({
-      type   => 'Transcript',
-      action => 'Domains',
-      g      => $gene->stable_id
-    });
-    
-    my $variation_url = $hub->url({
-      type   => 'Transcript',
-      action => 'ProtVariations',
-      g      => $gene->stable_id
-    });     
-   
-    push @str_array, sprintf('<a href="%s">%s %s</a>', 
-                        $exon_url, $avail->{has_exons}, 
-                        $avail->{has_exons} eq "1" ? "exon" : "exons"
-                      ) if($avail->{has_exons});
-                      
-    push @str_array, sprintf('is annotated with <a href="%s">%s %s</a>', 
-                        $domain_url, $avail->{has_domains}, 
-                        $avail->{has_domains} eq "1" ? "domain and feature" : "domains and features"
-                      ) if($avail->{has_domains});
-
-    push @str_array, sprintf('is associated with <a href="%s">%s %s</a>', 
-                        $variation_url, 
-                        $avail->{has_variations}, 
-                        $avail->{has_variations} eq "1" ? "variation" : "variations",
-                      ) if($avail->{has_variations});    
-    
-    push @str_array, sprintf('maps to <a href="%s">%s oligo %s</a>',    
-                        $oligo_url,
-                        $avail->{has_oligos}, 
-                        $avail->{has_oligos} eq "1" ? "probe" : "probes"
-                      ) if($avail->{has_oligos});
-                
-    $counts_summary  = sprintf('<p>This transcript has %s.</p>', $self->join_with_and(@str_array));
-  }
-  
-  return $counts_summary;
 }
 
 ## EG - hacked to avoid using the v.slow $gene->get_all_DBLinks()
