@@ -35,24 +35,32 @@ sub render {
   my $is_bacteria = $sd->GENOMIC_UNIT eq 'bacteria'; 
   my $url;
 
+  my $sitename = $sd->ENSEMBL_SITETYPE;
+  my $html = '<h2>Processing your data</h2>';
+
+  ## Table for online tools
   my $table = EnsEMBL::Web::Document::Table->new([
-      { key => 'name', title => 'Name', width => '20%', align => 'left' },
-      { key => 'desc', title => 'Description', width => '50%', align => 'left' },
-      { key => 'tool', title => 'Online tool', width => '10%', align => 'center' },
-      { key => 'code', title => 'Download code', width => '10%', align => 'center' },
-      { key => 'docs', title => 'Documentation', width => '10%', align => 'center' },
+      { key => 'name',  title => 'Name',            width => '20%', align => 'left' },
+      { key => 'desc',  title => 'Description',     width => '40%', align => 'left' },
+      { key => 'tool',  title => 'Online tool',     width => '10%', align => 'center' },
+      { key => 'limit', title => 'Upload limit',    width => '10%', align => 'center' },
+      { key => 'code',  title => 'Download script', width => '10%', align => 'center' },
+      { key => 'docs',  title => 'Documentation',   width => '10%', align => 'center' },
     ], [], { cellpadding => 4 }
   );
+
+  my $tools_limit = '50MB';
 
   ## VEP
   if ($sd->ENSEMBL_VEP_ENABLED) {
     my $vep_link = $hub->url({'species' => $sp, $new_vep ? qw(type Tools action VEP)});
     $table->add_row({
-      'name' => sprintf('<a href="%s" class="%snodeco"><b>Variant Effect Predictor</b><br /><img src="%svep_logo_sm.png" alt="[logo]" /></a>', $vep_link,  $new_vep ? '' : 'modal_link ', $img_url),
-      'desc' => 'Analyse your own variants and predict the functional consequences of known and unknown variants via our Variant Effect Predictor (VEP) tool.',
-      'tool' => sprintf('<a href="%s" class="%snodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $vep_link, $new_vep ? '' : 'modal_link ', $img_url),
-      'code' => sprintf('<a href="https://github.com/Ensembl/ensembl-tools/archive/release/%s.zip" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $sd->ENSEMBL_VERSION, $img_url),
-      'docs' => '',
+      'name'  => sprintf('<a href="%s" class="%snodeco"><b>Variant Effect Predictor</b><br /><img src="%svep_logo_sm.png" alt="[logo]" /></a>', $vep_link,  $new_vep ? '' : 'modal_link ', $img_url),
+      'desc'  => 'Analyse your own variants and predict the functional consequences of known and unknown variants via our Variant Effect Predictor (VEP) tool.',
+      'limit' => $tools_limit.'*',
+      'tool'  => sprintf('<a href="%s" class="%snodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $vep_link, $new_vep ? '' : 'modal_link ', $img_url),
+      'code'  => sprintf('<a href="https://github.com/Ensembl/ensembl-tools/archive/release/%s.zip" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $sd->ENSEMBL_VERSION, $img_url),
+      'docs'  => '',
     });
   }
 
@@ -63,43 +71,31 @@ sub render {
       'name' => sprintf('<b><a class="nodeco" href="%s">BLAST/BLAT</a></b>', $link),
       'desc' => 'Search our genomes for your DNA or protein sequence.',
       'tool' => sprintf('<a href="%s" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $link, $img_url),
+      'limit' => $tools_limit,
       'code' => '',
       'docs' => ''
     });
   }
 
-  ## BIOMART
-  if (!$is_bacteria) {
-    $table->add_row({
-      'name' => '<b><a class="nodeco" href="/biomart/martview">BioMart</a></b>',
-      'desc' => 'Use this data-mining tool to export custom datasets from Ensembl.',
-      'tool' => sprintf('<a href="/biomart/martview" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $img_url),
-      'code' => sprintf('<a href="http://biomart.org" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download code from biomart.org" /></a>', $img_url),
-      'docs' => sprintf('<a href="http://www.biomart.org/biomart/mview/help.html" class="popup"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
-    });
-  }
 
   ## ASSEMBLY CONVERTER
-  if (!$is_bacteria) {
+  if ($sd->ENSEMBL_AC_ENABLED) {
     my $link = $hub->url({'species' => $sp, qw(type Tools action AssemblyConverter)});
     $table->add_row({
-      'name' => sprintf('<b><a class="nodeco" href="%s">Assembly converter</a></b>', $link),
-      'desc' => "Map (liftover) your data's coordinates to the current assembly.",
-      'tool' => sprintf('<a href="%s" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $link, $img_url),
-      'code' => '',
-      'docs' => ''
+      'name'  => sprintf('<b><a class="nodeco" href="%s">Assembly Converter</a></b>', $link),
+      'desc'  => "Map (liftover) your data's coordinates to the current assembly.",
+      'tool'  => sprintf('<a href="%s" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $link, $img_url),
+      'limit' => $tools_limit,
+      'code'  => '',
+      'docs'  => '',
     });
   }
 
-
-
   ## ID HISTORY CONVERTER
-  my $tools_limit = '50MB';
-  
   if ($sd->ENSEMBL_IDM_ENABLED) {
     my $link = $hub->url({'species' => $sp, qw(type Tools action IDMapper)});
     $table->add_row({
-      'name'  => sprintf('<b><a class="nodeco" href="%s">ID History converter</a></b>', $link),
+      'name'  => sprintf('<b><a class="nodeco" href="%s">ID History Converter</a></b>', $link),
       'desc'  => 'Convert a set of Ensembl IDs from a previous release into their current equivalents.',
       'tool'  => sprintf('<a href="%s" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $link, $img_url),
       'limit' => $tools_limit,
@@ -107,6 +103,66 @@ sub render {
       'docs'  => '',
     });
   }
+
+  ## Allele frequency
+  if ($sd->ENSEMBL_AF_ENABLED) {
+    my $link = $hub->url({'species' => $sp, qw(type Tools action AlleleFrequency)});
+    $table->add_row({
+      'name'  => sprintf('<b><a class="nodeco" href="%s">Allele frequency calculator</a></b>', $link),
+      'desc'  => "This tool calculates population-wide allele frequency for sites within the chromosomal region defined from a VCF file and populations defined in a sample panel file.",
+      'tool'  => sprintf('<a href="%s" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $link, $img_url),
+      'limit' => '',
+      'code'  => '',
+      'docs'  => '',
+  }
+
+  ## VCF to PED
+  if ($sd->ENSEMBL_VP_ENABLED) {
+    my $link = $hub->url({'species' => $sp, qw(type Tools action VcftoPed)});
+    $table->add_row({
+      'name'  => sprintf('<b><a class="nodeco" href="%s">VCF to PED converter</a></b>', $link),
+      'desc'  => "Parse a vcf file to create a linkage pedigree file (ped) and a marker information file, which together may be loaded into ld visualization tools like Haploview.",
+      'tool'  => sprintf('<a href="%s" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $link, $img_url),
+      'limit' => '',
+      'code'  => sprintf('<a href="ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/browser/vcf_to_ped_converter/version_1.1/vcf_to_ped_convert.pl" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $img_url),
+      'docs'  => '',
+    });
+  }
+
+
+  $html .= $table->render;
+
+  $html .= '* For larger datasets we provide an API script that can be downloaded (you will also need to install our Perl API, below, to run the script).';
+
+  ## Table of other tools
+
+  $html .= qq(<h2 class="top-margin">Accessing $sitename data</h2>);
+
+  $table = EnsEMBL::Web::Document::Table->new([
+      { key => 'name', title => 'Name', width => '20%', align => 'left' },
+      { key => 'desc', title => 'Description', width => '30%', align => 'left' },
+      { key => 'from', title => 'Get it from:', width => '30%', align => 'center' },
+      { key => 'docs', title => 'Documentation', width => '10%', align => 'center' },
+    ], [], { cellpadding => 4 }
+  );
+
+  ## BIOMART
+  if ($sd->ENSEMBL_MART_ENABLED) {
+    $table->add_row({
+      'name' => '<b><a href="/biomart/martview">BioMart</a></b>',
+      'desc' => "Use this data-mining tool to export custom datasets from $sitename.",
+      'from' => qq(<a href="/biomart/martview">$sitename Biomart</a>),
+      'docs' => sprintf('<a href="/info/data/biomart/index.html" class="popup"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
+    });
+  }
+
+  ## PERL API 
+  $table->add_row({
+    'name' => '<b>Ensembl Perl API</b>',
+    'desc' => 'Programmatic access to all Ensembl data using simple Perl scripts',
+    'from' => qq(<a href="https://github.com/Ensembl">GitHub</a> or <a href="ftp://ftp.ensembl.org/pub/ensembl-api.tar.gz" rel="external">FTP download</a> (current release only)),
+    'docs' => sprintf('<a href="/info/docs/api/"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
+  });
 
   ## VIRTUAL MACHINE
   $url = sprintf 'ftp://ftp.ensemblgenomes.org/pub/release-%s/virtual_machines', $SiteDefs::SITE_RELEASE_VERSION;
@@ -128,8 +184,9 @@ sub render {
       'docs' => sprintf('<a href="%s"><img src="%s16/info.png" alt="Documentation" /></a>', $sd->ENSEMBL_REST_DOC_URL || $rest_url, $img_url)
     });
   }
+  $html .= $table->render;
 
-  return $table->render;
+  return $html;
 }
 
 1;
