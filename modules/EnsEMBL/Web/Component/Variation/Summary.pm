@@ -26,6 +26,7 @@ sub content {
   my $object             = $self->object;
   my $variation          = $object->Obj;
   my $vf                 = $hub->param('vf');
+  my $var_id             = $hub->param('v');
   my $variation_features = $variation->get_all_VariationFeatures;
   my ($feature_slice)    = map { $_->dbID == $vf ? $_->feature_Slice : () } @$variation_features; # get slice for variation feature
   my $avail              = $object->availability;  
@@ -46,13 +47,15 @@ sub content {
     $self->most_severe_consequence($variation_features),
     $self->evidence_status,
     $self->clinical_significance,
+    $self->hgvs,
+    $self->object->vari_class eq 'SNP' ? () : $self->three_prime_co_located(),
     $self->synonyms,
 ## EG
     $self->inter_homoeologues,
 ##    
-    $self->hgvs,
     $self->sets,
-    @str_array ? ['About this variant', sprintf('This variant %s.', $self->join_with_and(@str_array))] : ()
+    @str_array ? ['About this variant', sprintf('This variant %s.', $self->join_with_and(@str_array))] : (),
+    ($hub->species eq 'Homo_sapiens' && $hub->snpedia_status) ? $var_id && $self->snpedia($var_id) : ()
   );
 
   return sprintf qq{<div class="summary_panel">$info_box%s</div>}, $summary_table->render;
