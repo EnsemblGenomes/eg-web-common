@@ -30,9 +30,6 @@ sub content {
   # remove 'Ensembl version' row table row
   $html =~ s|<div[^<>]*><div[^<>]*>Ensembl version</div><div[^<>]*><p>[^<>]+</p></div></div>||;
   
-  # fix typo
-  $html =~ s/Uniprot/UniProtKB/;
-  
   return $html;
 }
 
