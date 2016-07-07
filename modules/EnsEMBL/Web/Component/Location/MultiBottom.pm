@@ -40,7 +40,8 @@ sub content {
   return $self->_warning('Region too large', '<p>The region selected is too large to display in this view - use the navigation above to zoom in...</p>') if $object->length > $threshold;
   
   my $image_width     = $self->image_width;
-  my $primary_slice   = $object->slice;
+  my $padding         = $hub->create_padded_region();
+  my $primary_slice   = $object->slice->expand($padding->{flank5}, $padding->{flank3});
   my $primary_species = $hub->species;
   my $primary_strand  = $primary_slice->strand;
   my $slices          = $object->multi_locations;
@@ -49,7 +50,9 @@ sub content {
   my $max             = scalar @$slices;
   my $base_url        = $hub->url($hub->multi_params);
   my $gene_join_types = EnsEMBL::Web::Constants::GENE_JOIN_TYPES;
+## EG add ATAC
   my $methods         = { ATAC => 1, BLASTZ_NET => $hub->param('opt_pairwise_blastz'), LASTZ_NET => $hub->param('opt_pairwise_blastz'), TRANSLATED_BLAT_NET => $hub->param('opt_pairwise_tblat'), LASTZ_PATCH => $hub->param('opt_pairwise_lpatch'), LASTZ_RAW => $hub->param('opt_pairwise_raw') };
+##  
   my $join_alignments = grep $_ ne 'off', values %$methods;
   my $join_genes      = $hub->param('opt_join_genes_bottom') eq 'on';
 
