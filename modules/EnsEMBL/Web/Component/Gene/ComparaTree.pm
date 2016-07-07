@@ -345,8 +345,9 @@ sub get_highlight_map{
       my $desc;
       $desc = $entry->description if($entry);
       if(!$desc && $db_name =~ /^GO$/i){
-        my $term   = $goa->fetch_by_accession($xref); 
-        $desc = $term->name || $term->definition;
+        if (my $term = $goa->fetch_by_accession($xref)) { 
+          $desc = $term->name || $term->definition;
+        }
       }
       my @members = map { $_->stable_id } @{$adaptor->get_members_for_xref($tree,$xref,$db_name)};
       push (@mapped_terms,{ xref=>$xref, db_name=>$db_name, members=>\@members, colour=>$colour, desc=>$desc});
