@@ -338,9 +338,6 @@ sub _assembly_text {
   if ($species_defs->ENSEMBL_AC_ENABLED and $species_defs->ASSEMBLY_CONVERTER_FILES) {
     $html .= sprintf('<a href="%s" class="nodeco"><img src="%s24/tool.png" class="homepage-link" />Convert your data to %s coordinates</a></p>', $hub->url({'type' => 'Tools', 'action' => 'AssemblyConverter'}), $img_url, $current_assembly);
   }
-  elsif (ref($species_defs->ASSEMBLY_MAPPINGS) eq 'ARRAY') {
-    $html .= sprintf('<a href="%s" class="modal_link nodeco" rel="modal_user_data"><img src="%s24/tool.png" class="homepage-link" />Convert your data to %s coordinates</a></p>', $hub->url({'type' => 'UserData', 'action' => 'SelectFeatures', __clear => 1}), $img_url, $current_assembly);
-  }
   
   $html .= sprintf '<p><a href="%s" class="modal_link nodeco" rel="modal_user_data">%sDisplay your data in %s</a></p>',
     $hub->url({ type => 'UserData', action => 'SelectFile', __clear => 1 }), qq|<img src="${img_url}24/page-user.png" class="homepage-link" />|, $species_defs->ENSEMBL_SITETYPE;
@@ -579,13 +576,13 @@ sub _variation_text {
     $html .= '<h2>Variation</h2><p>This species currently has no variation database. However you can process your own variants using the Variant Effect Predictor:</p>';
   }
 
-  my $new_vep = $species_defs->ENSEMBL_VEP_ENABLED;
-  $html .= sprintf(
-    qq(<p><a href="%s" class="%snodeco">$self->{'icon'}Variant Effect Predictor<img src="%svep_logo_sm.png" style="vertical-align:top;margin-left:12px" /></a></p>),
-    $hub->url({'__clear' => 1, $new_vep ? qw(type Tools action VEP) : qw(type UserData action UploadVariations)}),
-    $new_vep ? '' : 'modal_link ',
-    $self->img_url
-  );
+  if ($species_defs->ENSEMBL_VEP_ENABLED) {
+    $html .= sprintf(
+      qq(<p><a href="%s" class="nodeco">$self->{'icon'}Variant Effect Predictor<img src="%svep_logo_sm.png" style="vertical-align:top;margin-left:12px" /></a></p>),
+      $hub->url({'__clear' => 1, qw(type Tools action VEP)}),
+      $self->img_url
+    );
+  }
 
   return $html;
 }

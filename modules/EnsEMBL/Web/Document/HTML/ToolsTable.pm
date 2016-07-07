@@ -45,15 +45,16 @@ sub render {
   );
 
   ## VEP
-  my $new_vep  = $sd->ENSEMBL_VEP_ENABLED;
-  my $vep_link = $hub->url({'species' => $sp, $new_vep ? qw(type Tools action VEP) : qw(type UserData action UploadVariations)});
-  $table->add_row({
-    'name' => sprintf('<a href="%s" class="%snodeco"><b>Variant Effect Predictor</b><br /><img src="%svep_logo_sm.png" alt="[logo]" /></a>', $vep_link,  $new_vep ? '' : 'modal_link ', $img_url),
-    'desc' => 'Analyse your own variants and predict the functional consequences of known and unknown variants via our Variant Effect Predictor (VEP) tool.',
-    'tool' => sprintf('<a href="%s" class="%snodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $vep_link, $new_vep ? '' : 'modal_link ', $img_url),
-    'code' => sprintf('<a href="https://github.com/Ensembl/ensembl-tools/archive/release/%s.zip" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $sd->ENSEMBL_VERSION, $img_url),
-    'docs' => '',
-  });
+  if ($sd->ENSEMBL_VEP_ENABLED) {
+    my $vep_link = $hub->url({'species' => $sp, $new_vep ? qw(type Tools action VEP)});
+    $table->add_row({
+      'name' => sprintf('<a href="%s" class="%snodeco"><b>Variant Effect Predictor</b><br /><img src="%svep_logo_sm.png" alt="[logo]" /></a>', $vep_link,  $new_vep ? '' : 'modal_link ', $img_url),
+      'desc' => 'Analyse your own variants and predict the functional consequences of known and unknown variants via our Variant Effect Predictor (VEP) tool.',
+      'tool' => sprintf('<a href="%s" class="%snodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $vep_link, $new_vep ? '' : 'modal_link ', $img_url),
+      'code' => sprintf('<a href="https://github.com/Ensembl/ensembl-tools/archive/release/%s.zip" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $sd->ENSEMBL_VERSION, $img_url),
+      'docs' => '',
+    });
+  }
 
   ## BLAST
   if ($sd->ENSEMBL_BLAST_ENABLED) {
