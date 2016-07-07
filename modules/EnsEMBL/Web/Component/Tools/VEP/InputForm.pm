@@ -40,7 +40,7 @@ sub get_cacheable_form_node {
   my $object          = $self->object;
   my $sd              = $hub->species_defs;
   my $species         = $object->species_list;
-  my $form            = $self->new_tool_form;
+  my $form            = $self->new_tool_form({'class' => 'vep-form'});
   my $fd              = $object->get_form_details;
   my $input_formats   = INPUT_FORMATS;
 
@@ -101,7 +101,7 @@ sub get_cacheable_form_node {
   $input_fieldset->add_field({
     'type'          => 'string',
     'name'          => 'name',
-    'label'         => 'Name for this data (optional)'
+    'label'         => 'Name for this job (optional)'
   });
 
   
@@ -110,6 +110,7 @@ sub get_cacheable_form_node {
     'elements'      => [{
       'type'          => 'text',
       'name'          => 'text',
+      'class'         => 'vep-input',
     }, {
       'type'          => 'noedit',
       'noinput'       => 1,
@@ -120,12 +121,10 @@ sub get_cacheable_form_node {
     }, {
       'type'          => 'button',
       'name'          => 'preview',
-      'class'         => 'hidden',
-      'value'         => 'Instant results for first variant &rsaquo;',
-      'helptip'       => 'See a quick preview of results for data pasted above',
+      'class'         => 'hidden quick-vep-button',
+      'value'         => 'Run instant VEP for current line &rsaquo;',
     }]
   });
-
 
   $input_fieldset->add_field({
     'type'          => 'file',
