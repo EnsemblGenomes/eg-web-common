@@ -1,6 +1,7 @@
 =head1 LICENSE
 
 Copyright [1999-2015] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+Copyright [2016] EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -107,7 +108,7 @@ sub content {
 
 ## EG - ENSEMBL-3455
     my $display_name     = $hub->species eq 'arabidopsis_thaliana'     ? $self->_get_tair_urls($data->{'Name'}) : $data->{'Name'};
-    my $display_genotype = $hub->species eq 'aaccharomyces_cerevisiae' ? substr($genotype, 0, index($genotype, '|')) : $genotype;
+    my $display_genotype = $hub->species eq 'saccharomyces_cerevisiae' ? substr($genotype, 0, index($genotype, '|')) : $genotype;
     
     my $row = {
       Sample      => "<small id=\"$data->{'Name'}\">$display_name</small>",
