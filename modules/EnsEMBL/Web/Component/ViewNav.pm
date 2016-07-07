@@ -28,11 +28,11 @@ sub _init {
 }
 
 sub content {
-  my $self             = shift;
-
-  my $hub              = $self->hub;
-  my $image_width      = $self->image_width . 'px';
-  my $url              = $hub->url({'type' => 'Location', 'action' => 'View'});
+  my $self        = shift;
+  my $hub         = $self->hub;
+  my $image_width = $self->image_width . 'px';
+  my $r           = $hub->create_padded_region()->{'r'} || $hub->param('r');
+  my $url         = $hub->url({'type' => 'Location', 'action' => 'View', 'r' => $r});
 
 ## EG  
   my $polyploid_link = '';
@@ -44,7 +44,6 @@ sub content {
   }
 
   my $annotation_link = '';
-  #warn "url " . $hub->species_defs->ANNOTATION_URL;
   if (my $annotation_url = $hub->species_defs->ANNOTATION_URL) {
     my $object = $self->object;
     my ($sr, $start, $end) = ($object->seq_region_name, $object->seq_region_start, $object->seq_region_end);
@@ -59,8 +58,6 @@ sub content {
       $annotation_url
     );
   }
-
-  #warn "$annotation_link";
 
   return qq{
       <div class="navbar print_hide" style="width:$image_width">
