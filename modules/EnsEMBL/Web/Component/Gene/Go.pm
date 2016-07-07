@@ -147,7 +147,7 @@ sub process_data {
       my $url        = $hub->url({
         species     => $species,
         type        => 'Gene',
-        action      => $type eq 'translation' ? 'Ontology' : 'Summary',
+        action      => $type eq 'translation' ? 'Ontologies/'.$hub->function : 'Summary',
         $param_type => $gene,
         __clear     => 1,
       });
