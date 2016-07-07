@@ -86,7 +86,24 @@ sub content {
 #    ['Number of ambiguous',         $self->get_num_nodes_with_tag($tree, 'node_type', 'dubious')      ],
 #    ['Number of gene split events', $self->get_num_nodes_with_tag($tree, 'node_type', 'gene_split')   ]
 #  )->render;
+  if ($hub->type eq 'Gene') {
+    if ($tree->tree->clusterset_id ne $clusterset_id) {
+      $html .= $self->_info('Phylogenetic model selection',
+        sprintf(
+          'The phylogenetic model <I>%s</I> is not available for this tree. Showing the default (consensus) tree instead.', $clusterset_id
+          )
+      );
+    } elsif ($clusterset_id ne 'default') {
 
+      my $text = sprintf(
+          'The tree displayed here has been built with the phylogenetic model <I>%s</I>. It has then been merged with trees built with other models to give the final tree and homologies. Data shown here may be inconsistent with the rest of the comparative analyses, especially homologies.', $clusterset_id
+      );
+      my $rank = $tree->tree->get_tagvalue('k_score_rank');
+      my $score = $tree->tree->get_tagvalue('k_score');
+      $text .= sprintf('<br/>This tree is the <b>n&deg;%d</b> closest to the final tree, with a K-distance of <b>%f</b>, as computed by <a href="http://molevol.cmima.csic.es/castresana/Ktreedist.html">Ktreedist</a>.', $rank, $score) if $rank;
+      $html .= $self->_info('Phylogenetic model selection', $text);
+    }
+  }
   if ($highlight_gene) {
     my $highlight_gene_display_label;
     
@@ -159,6 +176,7 @@ sub content {
   });
   
   # Keep track of collapsed nodes
+  my $collapsed_nodes = $hub->param('collapse');
   my ($collapsed_to_gene, $collapsed_to_para);
   
   if (!$is_genetree) {
@@ -265,20 +283,21 @@ sub content {
   $image->{'remove_reset'}  = 1;
 
   $image->set_button('drag', 'title' => 'Drag to select region');
-
 # EG include the ht param
+  my $default_view_url = $hub->url({ ht => $hub->param('ht'), collapse => $collapsed_to_gene, g1 => $highlight_gene });
+
   if ($gene) {
-    push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => $collapsed_to_gene, g1 => $highlight_gene }), $highlight_gene ? 'View current genes only'        : 'View current gene only';
+    push @view_links, sprintf '<li><a href="%s">%s</a> (Default) </li>', $default_view_url, $highlight_gene ? 'View current genes only' : 'View current gene only';
     push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => $collapsed_to_para || undef, g1 => $highlight_gene }), $highlight_gene ? 'View paralogs of current genes' : 'View paralogs of current gene';
   }
-
+  
   push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
   push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
   push @view_links, sprintf $li_tmpl, $unhighlight, 'Switch off highlighting' if $highlight_gene;
 # /EG
 
   {
-    my @rank_options = ( q{<option value="/">-- Select a rank--</option>} );
+    my @rank_options = ( q{<option value="#">-- Select a rank--</option>} );
     my $selected_rank = $hub->param('gtr') || '';
     foreach my $rank (qw(species genus family order class phylum kingdom)) {
       my $collapsed_to_rank = $self->collapsed_nodes($tree, $node, "rank_$rank", $highlight_genome_db_id, $highlight_gene);
@@ -297,36 +316,6 @@ sub content {
   }, join '', @view_links);
   
   return $html;
-}
-
-sub content_align {
-    my $self = shift;
-    my $cdb  = shift || 'compara';
-    my $hub  = $self->hub;
-
-  # Get the ProteinTree object
-    my ($member, $tree, $node) = $self->get_details($cdb);
-
-    return $tree . $self->genomic_alignment_links($cdb) unless defined $member;
-
-  # Determine the format
-    my %formats = EnsEMBL::Web::Constants::ALIGNMENT_FORMATS;
-    my $mode    = $hub->param('text_format');
-    $mode       = 'fasta' unless $formats{$mode};
-
-    my $formatted; # Variable to hold the formatted alignment string
-    my $fh  = new IO::Scalar(\$formatted);
-    my $aio = new Bio::AlignIO( -format => $mode, -fh => $fh );
-## EG : append species short name for clarity
-    $aio->write_aln( $tree->get_SimpleAlign(-APPEND_SP_SHORT_NAME => 1) );
-## EG
-
-    return $hub->param('_format') eq 'Text' ? $formatted : sprintf(q{
-    <p>Multiple sequence alignment in "<i>%s</i>" format:</p>
-    <p>The sequence alignment format can be configured using the
-    'configure page' link in the left panel.<p>
-    <pre>%s</pre>
-}, $formats{$mode} || $mode, $formatted);
 }
 
 sub get_highlight_map{
