@@ -34,6 +34,7 @@ sub init {
     trans_associated
     transcript
     prediction
+    lrg
     dna_align_cdna
     dna_align_est
     dna_align_rna
