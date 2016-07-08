@@ -29,217 +29,6 @@ use Data::Dumper;
 use strict;
 use previous qw(get_homology_matches get_desc_mapping);
 
-sub store_TransformedTranscripts {
-  my $self = shift;
-## EG  
-  my $offset = shift;  
-##
-
-  $offset ||= $self->__data->{'slices'}{'transcripts'}->[1]->start -1;
-
-  foreach my $trans_obj ( @{$self->get_all_transcripts} ) {
-    my $transcript = $trans_obj->Obj;
-  my ($raw_coding_start,$coding_start);
-  if (defined( $transcript->coding_region_start )) {    
-    $raw_coding_start = $transcript->coding_region_start;
-    $raw_coding_start -= $offset;
-    $coding_start = $raw_coding_start + $self->munge_gaps( 'transcripts', $raw_coding_start );
-  }
-  else {
-    $coding_start  = undef;
-    }
-
-  my ($raw_coding_end,$coding_end);
-  if (defined( $transcript->coding_region_end )) {
-    $raw_coding_end = $transcript->coding_region_end;
-    $raw_coding_end -= $offset;
-    $coding_end = $raw_coding_end + $self->munge_gaps( 'transcripts', $raw_coding_end );
-  }
-  else {
-    $coding_end = undef;
-  }
-    my $raw_start = $transcript->start;
-    my $raw_end   = $transcript->end  ;
-    my @exons = ();
-    foreach my $exon (@{$transcript->get_all_Exons()}) {
-      my $es = $exon->start - $offset; 
-      my $ee = $exon->end   - $offset;
-      my $O =  $self->munge_gaps( 'transcripts', $es );
-
-      push @exons, [ $es + $O, $ee + $O, $exon ];
-    }
-    $coding_start ||= 1;
-    $coding_end   ||= 1;
-    $trans_obj->__data->{'transformed'}{'exons'}        = \@exons;
-    $trans_obj->__data->{'transformed'}{'coding_start'} = $coding_start;
-    $trans_obj->__data->{'transformed'}{'coding_end'}   = $coding_end;
-    $trans_obj->__data->{'transformed'}{'start'}        = $raw_start;
-    $trans_obj->__data->{'transformed'}{'end'}          = $raw_end;
-  }
-}
-
-sub store_TransformedDomains {
-    my $self = shift;
-    my $key  = shift;
-## EG    
-    my $offset = shift;
-##
-  my %domains;
-  my $focus_transcript = $self->hub->type eq 'Transcript' ? $self->param('t') : undef;
-
-  $offset ||= $self->__data->{'slices'}{'transcripts'}->[1]->start -1;
-  foreach my $trans_obj ( @{$self->get_all_transcripts} ) {
-    next if $focus_transcript && $trans_obj->stable_id ne $focus_transcript;
-    my %seen;
-    my $transcript = $trans_obj->Obj; 
-    next unless $transcript->translation; 
-    foreach my $pf ( @{$transcript->translation->get_all_ProteinFeatures( lc($key) )} ) { 
-## rach entry is an arry containing the actual pfam hit, and mapped start and end co-ordinates
-      if (exists $seen{$pf->display_id}{$pf->start}){
-        next;
-      } else {
-        $seen{$pf->display_id}->{$pf->start} =1;
-        my @A = ($pf);  
-        foreach( $transcript->pep2genomic( $pf->start, $pf->end ) ) {
-          my $O = $self->munge_gaps( 'transcripts', $_->start - $offset, $_->end - $offset) - $offset; 
-          push @A, $_->start + $O, $_->end + $O;
-        } 
-        push @{$trans_obj->__data->{'transformed'}{lc($key).'_hits'}}, \@A;
-      }
-    }
-  }
-}
-
-sub get_Slice {
-  my ($self, $context, $ori) = @_;
-## EG
-  # HORRIBLE HACK: if we've got a variation zoom slice, serve it instead of the original slice
-  my $slice;
-  if ($self->{_variation_zoom_slice}) {
-    $slice   = $self->{_variation_zoom_slice};
-    $context = 'FULL';
-  } else {
-    $slice   = $self->Obj->feature_Slice;
-    $context = $slice->length * $1 / 100 if $context =~ /(\d+)%/;
-  }
-##  
-  $slice    = $slice->invert if $ori && $slice->strand != $ori;
-  
-  return $slice->expand($context, $context);
-}
-
-## EG - remove status from gene type
-sub gene_type {
-  my $self = shift;
-  my $db = $self->get_db;
-  my $type = '';
-  if( $db eq 'core' ){
-    #$type = ucfirst(lc($self->Obj->status))." ".$self->Obj->biotype;
-    $type = $self->Obj->biotype;
-    $type =~ s/_/ /;
-    $type ||= $self->db_type;
-  } elsif ($db =~ /vega/) {
-    #my $biotype = ($self->Obj->biotype eq 'tec') ? uc($self->Obj->biotype) : ucfirst(lc($self->Obj->biotype));
-    #$type = ucfirst(lc($self->Obj->status))." $biotype";
-    my $type = ($self->Obj->biotype eq 'tec') ? uc($self->Obj->biotype) : ucfirst(lc($self->Obj->biotype));
-    $type =~ s/_/ /g;
-    $type =~ s/unknown //i;
-    return $type;
-  } else {
-    $type = $self->logic_name;
-    if ($type =~/^(proj|assembly_patch)/ ){
-      #$type = ucfirst(lc($self->Obj->status))." ".$self->Obj->biotype;
-      $type = ucfirst($self->Obj->biotype);
-    }
-    $type =~ s/_/ /g;
-    $type =~ s/^ccds/CCDS/;
-  }
-  $type ||= $db;
-  if( $type !~ /[A-Z]/ ){ $type = ucfirst($type) } #All lc, so format
-  return $type;
-}
-
-sub filtered_family_data {
-  my ($self, $family) = @_;                                                                                              1;
-  my $hub       = $self->hub;
-  my $family_id = $family->stable_id;
-  
-  my $members = []; 
-  my $temp_file = EnsEMBL::Web::TmpFile::Text->new(prefix => 'genefamily', filename => "$family_id.json"); 
-   
-  if ($temp_file->exists) {
-    $members = eval{from_json($temp_file->content)} || [];
-  } 
-
-  if(!@$members) {
-    my $member_objs = $family->get_all_Members;
-
-    # API too slow, use raw SQL to get name and desc for all genes   
-    my $gene_info = $self->database('compara')->dbc->db_handle->selectall_hashref(
-      'SELECT g.gene_member_id, g.display_label, g.description FROM family f 
-       JOIN family_member fm USING (family_id) 
-       JOIN seq_member s USING (seq_member_id) 
-       JOIN gene_member g USING (gene_member_id) 
-       WHERE f.stable_id = ?',
-      'gene_member_id',
-      undef,
-      $family_id
-    );
-
-    foreach my $member (@$member_objs) {
-      my $gene = $gene_info->{$member->gene_member_id};
-      push (@$members, {
-        name        => $gene->{display_label},
-        id          => $member->stable_id,
-        taxon_id    => $member->taxon_id,
-        description => $gene->{description},
-        species     => $member->genome_db->name
-      });  
-    }
-
-    if($temp_file->exists){
-        $temp_file->delete;
-        $temp_file->content('');
-    }
-
-    $temp_file->print($hub->jsonify($members));
-    
-  }  
-  
-  my $total_member_count  = scalar @$members;
-     
-  my $species;   
-  $species->{$_->{species}} = 1 for (@$members);
-  my $total_species_count = scalar keys %$species;
- 
-  # apply filter from session
- 
-  my @filter_species;
-  if (my $filter = $hub->session->get_data(type => 'genefamilyfilter', code => $hub->data_species . '_' . $family_id )) {
-    @filter_species = split /,/, uncompress( $filter->{filter} );
-  }
-    
-  if (@filter_species) {
-    $members = [grep {my $sp = $_->{species}; grep {$sp eq $_} @filter_species} @$members];
-    $species = {};
-    $species->{$_->{species}} = 1 for (@$members);
-  } 
-  
-  # return results
-  
-  my $data = {
-    members             => $members,
-    species             => $species,
-    member_count        => scalar @$members,
-    species_count       => scalar keys %$species,
-    total_member_count  => $total_member_count,
-    total_species_count => $total_species_count,
-    is_filtered         => @filter_species ? 1 : 0,
-  };
-  
-  return $data;
-}
-
 sub get_go_list {
   my $self = shift ;
   
@@ -356,6 +145,218 @@ sub get_go_list {
   return \%go_hash;
 }
 
+sub get_Slice {
+  my ($self, $context, $ori) = @_;
+## EG
+  # HORRIBLE HACK: if we've got a variation zoom slice, serve it instead of the original slice
+  my $slice;
+  if ($self->{_variation_zoom_slice}) {
+    $slice   = $self->{_variation_zoom_slice};
+    $context = 'FULL';
+  } else {
+    $slice   = $self->Obj->feature_Slice;
+    $context = $slice->length * $1 / 100 if $context =~ /(\d+)%/;
+  }
+##  
+  $slice    = $slice->invert if $ori && $slice->strand != $ori;
+  
+  return $slice->expand($context, $context);
+}
+
+## EG - remove status from gene type
+sub gene_type {
+  my $self = shift;
+  my $db = $self->get_db;
+  my $type = '';
+  if( $db eq 'core' ){
+    #$type = ucfirst(lc($self->Obj->status))." ".$self->Obj->biotype;
+    $type = $self->Obj->biotype;
+    $type =~ s/_/ /;
+    $type ||= $self->db_type;
+  } elsif ($db =~ /vega/) {
+    #my $biotype = ($self->Obj->biotype eq 'tec') ? uc($self->Obj->biotype) : ucfirst(lc($self->Obj->biotype));
+    #$type = ucfirst(lc($self->Obj->status))." $biotype";
+    my $type = ($self->Obj->biotype eq 'tec') ? uc($self->Obj->biotype) : ucfirst(lc($self->Obj->biotype));
+    $type =~ s/_/ /g;
+    $type =~ s/unknown //i;
+    return $type;
+  } else {
+    $type = $self->logic_name;
+    if ($type =~/^(proj|assembly_patch)/ ){
+      #$type = ucfirst(lc($self->Obj->status))." ".$self->Obj->biotype;
+      $type = ucfirst($self->Obj->biotype);
+    }
+    $type =~ s/_/ /g;
+    $type =~ s/^ccds/CCDS/;
+  }
+  $type ||= $db;
+  if( $type !~ /[A-Z]/ ){ $type = ucfirst($type) } #All lc, so format
+  return $type;
+}
+
+sub store_TransformedTranscripts {
+  my $self = shift;
+## EG  
+  my $offset = shift;  
+##
+
+  $offset ||= $self->__data->{'slices'}{'transcripts'}->[1]->start -1;
+
+  foreach my $trans_obj ( @{$self->get_all_transcripts} ) {
+    next if $focus_transcript && $trans_obj->stable_id ne $focus_transcript;
+    my $transcript = $trans_obj->Obj;
+  my ($raw_coding_start,$coding_start);
+  if (defined( $transcript->coding_region_start )) {    
+    $raw_coding_start = $transcript->coding_region_start;
+    $raw_coding_start -= $offset;
+    $coding_start = $raw_coding_start + $self->munge_gaps( 'transcripts', $raw_coding_start );
+  }
+  else {
+    $coding_start  = undef;
+    }
+
+  my ($raw_coding_end,$coding_end);
+  if (defined( $transcript->coding_region_end )) {
+    $raw_coding_end = $transcript->coding_region_end;
+    $raw_coding_end -= $offset;
+    $coding_end = $raw_coding_end + $self->munge_gaps( 'transcripts', $raw_coding_end );
+  }
+  else {
+    $coding_end = undef;
+  }
+    my $raw_start = $transcript->start;
+    my $raw_end   = $transcript->end  ;
+    my @exons = ();
+    foreach my $exon (@{$transcript->get_all_Exons()}) {
+      my $es = $exon->start - $offset; 
+      my $ee = $exon->end   - $offset;
+      my $O =  $self->munge_gaps( 'transcripts', $es );
+
+      push @exons, [ $es + $O, $ee + $O, $exon ];
+    }
+    $coding_start ||= 1;
+    $coding_end   ||= 1;
+    $trans_obj->__data->{'transformed'}{'exons'}        = \@exons;
+    $trans_obj->__data->{'transformed'}{'coding_start'} = $coding_start;
+    $trans_obj->__data->{'transformed'}{'coding_end'}   = $coding_end;
+    $trans_obj->__data->{'transformed'}{'start'}        = $raw_start;
+    $trans_obj->__data->{'transformed'}{'end'}          = $raw_end;
+  }
+}
+
+sub store_TransformedDomains {
+    my $self = shift;
+    my $key  = shift;
+## EG    
+    my $offset = shift;
+##
+  my %domains;
+  my $focus_transcript = $self->hub->type eq 'Transcript' ? $self->param('t') : undef;
+
+  $offset ||= $self->__data->{'slices'}{'transcripts'}->[1]->start -1;
+  foreach my $trans_obj ( @{$self->get_all_transcripts} ) {
+    next if $focus_transcript && $trans_obj->stable_id ne $focus_transcript;
+    my %seen;
+    my $transcript = $trans_obj->Obj; 
+    next unless $transcript->translation; 
+    foreach my $pf ( @{$transcript->translation->get_all_ProteinFeatures( lc($key) )} ) { 
+## rach entry is an arry containing the actual pfam hit, and mapped start and end co-ordinates
+      if (exists $seen{$pf->display_id}{$pf->start}){
+        next;
+      } else {
+        $seen{$pf->display_id}->{$pf->start} =1;
+        my @A = ($pf);  
+        foreach( $transcript->pep2genomic( $pf->start, $pf->end ) ) {
+          my $O = $self->munge_gaps( 'transcripts', $_->start - $offset, $_->end - $offset) - $offset; 
+          push @A, $_->start + $O, $_->end + $O;
+        } 
+        push @{$trans_obj->__data->{'transformed'}{lc($key).'_hits'}}, \@A;
+      }
+    }
+  }
+}
+
+sub filtered_family_data {
+  my ($self, $family) = @_;                                                                                              1;
+  my $hub       = $self->hub;
+  my $family_id = $family->stable_id;
+  
+  my $members = []; 
+  my $temp_file = EnsEMBL::Web::TmpFile::Text->new(prefix => 'genefamily', filename => "$family_id.json"); 
+   
+  if ($temp_file->exists) {
+    $members = eval{from_json($temp_file->content)} || [];
+  } 
+
+  if(!@$members) {
+    my $member_objs = $family->get_all_Members;
+
+    # API too slow, use raw SQL to get name and desc for all genes   
+    my $gene_info = $self->database('compara')->dbc->db_handle->selectall_hashref(
+      'SELECT g.gene_member_id, g.display_label, g.description FROM family f 
+       JOIN family_member fm USING (family_id) 
+       JOIN seq_member s USING (seq_member_id) 
+       JOIN gene_member g USING (gene_member_id) 
+       WHERE f.stable_id = ?',
+      'gene_member_id',
+      undef,
+      $family_id
+    );
+
+    foreach my $member (@$member_objs) {
+      my $gene = $gene_info->{$member->gene_member_id};
+      push (@$members, {
+        name        => $gene->{display_label},
+        id          => $member->stable_id,
+        taxon_id    => $member->taxon_id,
+        description => $gene->{description},
+        species     => $member->genome_db->name
+      });  
+    }
+
+    if($temp_file->exists){
+        $temp_file->delete;
+        $temp_file->content('');
+    }
+
+    $temp_file->print($hub->jsonify($members));
+    
+  }  
+  
+  my $total_member_count  = scalar @$members;
+     
+  my $species;   
+  $species->{$_->{species}} = 1 for (@$members);
+  my $total_species_count = scalar keys %$species;
+ 
+  # apply filter from session
+ 
+  my @filter_species;
+  if (my $filter = $hub->session->get_data(type => 'genefamilyfilter', code => $hub->data_species . '_' . $family_id )) {
+    @filter_species = split /,/, uncompress( $filter->{filter} );
+  }
+    
+  if (@filter_species) {
+    $members = [grep {my $sp = $_->{species}; grep {$sp eq $_} @filter_species} @$members];
+    $species = {};
+    $species->{$_->{species}} = 1 for (@$members);
+  } 
+  
+  # return results
+  
+  my $data = {
+    members             => $members,
+    species             => $species,
+    member_count        => scalar @$members,
+    species_count       => scalar keys %$species,
+    total_member_count  => $total_member_count,
+    total_species_count => $total_species_count,
+    is_filtered         => @filter_species ? 1 : 0,
+  };
+  
+  return $data;
+}
+
 ## EG suppress the default Ensembl display label
 sub get_homology_matches {
   my $self = shift;
@@ -365,7 +366,6 @@ sub get_homology_matches {
   }
   return $matches;
 }
-
 
 ## EG add eg-specific mappings
 sub get_desc_mapping {
