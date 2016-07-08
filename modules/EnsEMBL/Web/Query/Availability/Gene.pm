@@ -5,30 +5,21 @@ use warnings;
 
 use previous qw(_counts get);
 
-## EG - add homoeologs
-sub _counts {
-  my $self = shift;
-  my ($args, $member, $panmember) = @_;
-  my $out = $self->PREV::_counts(@_);
-
-  $out->{'homoeologs'} = $member->number_of_homoeologues if $member;   
-  
-  return $out;
-}
-
-## EG - add homoeologs
+## EG - add homoeologues
 sub get {
   my $self = shift;
   my ($args) = @_;
 
-  my $out       = $self->PREV::get(@_)->[0];
+  my $get       = $self->PREV::get(@_);
   my $member    = $self->compara_member($args);
-  my $panmember = $self->pancompara_member($args);
-  my $counts    = $self->_counts($args,$member,$panmember); # how to stop _counts being executed twice? once here, and once in PREV::get
 
-  $out->{has_homoeologs} = $counts->{homoeologs};
+  if ($member) {
+    my $num_homoeologues = $member->number_of_homoeologues;
+    $get->[0]->{counts}->{homoeologs} = $num_homoeologues;
+    $get->[0]->{has_homoeologs}       = $num_homoeologues;
+  }
 
-  return [$out];
+  return $get;
 }
 
 1;
