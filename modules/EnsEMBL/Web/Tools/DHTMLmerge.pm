@@ -63,7 +63,7 @@ sub merge_all {
 
   try {
     foreach my $type (qw(js css ie7css image)) {
-      push @{$configs->{$type}}, map { EnsEMBL::Web::Tools::DHTMLmerge::FileGroup->new($species_defs, $type, $_) } get_filegroups($species_defs, $type);
+      push @{$configs->{$type}}, grep { !$_->empty } map { EnsEMBL::Web::Tools::DHTMLmerge::FileGroup->new($species_defs, $type, $_) } get_filegroups($species_defs, $type);
     }
     for (@{$configs->{'image'}}) {
       delete $_->{'files'};
