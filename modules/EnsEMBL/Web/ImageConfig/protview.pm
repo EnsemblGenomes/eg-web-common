@@ -22,7 +22,7 @@ use strict;
 
 
 sub init {
-  my ($self) = @_;
+  my $self = shift;
 
   $self->set_parameters({ sortable_tracks => 'drag' });
 
@@ -33,6 +33,7 @@ sub init {
     feature
     protein_feature
     variation
+    somatic
     external_data
     user_data
     other
@@ -56,7 +57,6 @@ sub init {
     [ 'variation_legend' ],
     { glyphset => 'P_variation_legend' }
   );
-  
 }
 
 1;
