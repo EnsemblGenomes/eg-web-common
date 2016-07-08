@@ -27,73 +27,7 @@ use Compress::Zlib;
 use Data::Dumper;
 
 use strict;
-use previous qw(
-  counts 
-  availability 
-  get_homology_matches 
-  get_desc_mapping
-);
-
-## EG suppress the default Ensembl display label
-sub get_homology_matches {
-  my $self = shift;
-  my $matches = $self->PREV::get_homology_matches(@_);
-  foreach my $sp (values %$matches) {
-    $_->{display_id} =~ s/^Novel Ensembl prediction$// for (values %$sp);
-  }
-  return $matches;
-}
-
-
-## EG add eg-specific mappings
-sub get_desc_mapping {
-  my $self = shift;
-  my %mapping = $self->PREV::get_desc_mapping(@_);
-  return (
-    %mapping,
-    gene_split          => 'gene split',
-    homoeolog_one2one   => '1-to-1',
-    homoeolog_one2many  => '1-to-many',
-    homoeolog_many2many => 'many-to-many',   
-  )
-}
-
-sub availability {
-  my $self = shift;
-  $self->PREV::availability(@_);
- 
-  my $obj = $self->Obj;
-    
-  if ($obj->isa('Bio::EnsEMBL::Gene')) {
-    my $member     = $self->database('compara') ? $self->database('compara')->get_GeneMemberAdaptor->fetch_by_stable_id($obj->stable_id) : undef;
-    my $pan_member = $self->database('compara_pan_ensembl') ? $self->database('compara_pan_ensembl')->get_GeneMemberAdaptor->fetch_by_stable_id($obj->stable_id) : undef;
-    my $counts     = $self->counts($member, $pan_member);
-    
-    $self->{_availability}->{has_homoeologs} = $counts->{homoeologs};
-    
-    $self->{_availability}->{has_gene_supporting_evidence} = $counts->{gene_supporting_evidence};
-  }
-
-  return $self->{_availability};
-}
-
-sub _counts {
-  my ($self, $member, $pan_member) = @_;
-  my $obj = $self->Obj;
-
-  return {} unless $obj->isa('Bio::EnsEMBL::Gene');
-  
-  my $counts = $self->{'_counts'};
- 
-  if (!$counts) {    
-    if ($member) {
-      $counts->{'homoeologs'} = $member->number_of_homoeologues;
-    }
-    $counts->{'gene_supporting_evidence'} = $self->count_gene_supporting_evidence;
-  }
-    
-  return $counts || {};
-}
+use previous qw(get_homology_matches get_desc_mapping);
 
 sub store_TransformedTranscripts {
   my $self = shift;
@@ -420,6 +354,30 @@ sub get_go_list {
   }
 
   return \%go_hash;
+}
+
+## EG suppress the default Ensembl display label
+sub get_homology_matches {
+  my $self = shift;
+  my $matches = $self->PREV::get_homology_matches(@_);
+  foreach my $sp (values %$matches) {
+    $_->{display_id} =~ s/^Novel Ensembl prediction$// for (values %$sp);
+  }
+  return $matches;
+}
+
+
+## EG add eg-specific mappings
+sub get_desc_mapping {
+  my $self = shift;
+  my %mapping = $self->PREV::get_desc_mapping(@_);
+  return (
+    %mapping,
+    gene_split          => 'gene split',
+    homoeolog_one2one   => '1-to-1',
+    homoeolog_one2many  => '1-to-many',
+    homoeolog_many2many => 'many-to-many',   
+  )
 }
 
 1;
