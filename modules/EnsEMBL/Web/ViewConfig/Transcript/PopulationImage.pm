@@ -16,8 +16,6 @@ limitations under the License.
 
 =cut
 
-# $Id: PopulationImage.pm,v 1.3 2013-11-29 08:53:21 nl2 Exp $
-
 package EnsEMBL::Web::ViewConfig::Transcript::PopulationImage;
 
 use strict;
@@ -42,11 +40,11 @@ sub form {
   $self->add_fieldset('Selected samples');
 
   my @strains = (@{$variations->{'DEFAULT_STRAINS'}}, @{$variations->{'DISPLAY_STRAINS'}});
-
   my %seen;
 
   foreach (sort @strains) {
     if (!exists $seen{$_}) {
+## EG - avoid slow method 'add_form_element'
       my $element = {
     	  type  => 'CheckBox',
     	  label => $_,
@@ -56,8 +54,9 @@ sub form {
       };
 
       $element->{'selected'} = $self->get($element->{'name'}) eq $element->{'value'} ? 1 : 0 ;
-      $self->get_form->add_element(%$element); ## TODO- modify it for the newer version of Form once all child classes are modified
-      $self->{'labels'}{$element->{'name'}}       ||= $element->{'label'};
+      $self->get_form->add_element(%$element); 
+      $self->{'labels'}{$element->{'name'}} ||= $element->{'label'};
+##
       $seen{$_} = 1;
     }
   }
@@ -113,8 +112,8 @@ sub form {
     label  => 'Type of consequences to display',
     name   => 'consequence_format',
     values => [
-      { value => 'label',   name => 'Sequence Ontology terms' },
-      { value => 'display', name => 'Old Ensembl terms'       },
+      { value => 'label',   caption => 'Sequence Ontology terms' },
+      { value => 'display', caption => 'Old Ensembl terms'       },
     ]
   });  
   
@@ -127,15 +126,15 @@ sub form {
     name   => 'context',
     label  => 'Intron Context',
     values => [
-      { value => '20',   name => '20bp'         },
-      { value => '50',   name => '50bp'         },
-      { value => '100',  name => '100bp'        },
-      { value => '200',  name => '200bp'        },
-      { value => '500',  name => '500bp'        },
-      { value => '1000', name => '1000bp'       },
-      { value => '2000', name => '2000bp'       },
-      { value => '5000', name => '5000bp'       },
-      { value => 'FULL', name => 'Full Introns' }
+      { value => '20',   caption => '20bp'         },
+      { value => '50',   caption => '50bp'         },
+      { value => '100',  caption => '100bp'        },
+      { value => '200',  caption => '200bp'        },
+      { value => '500',  caption => '500bp'        },
+      { value => '1000', caption => '1000bp'       },
+      { value => '2000', caption => '2000bp'       },
+      { value => '5000', caption => '5000bp'       },
+      { value => 'FULL', caption => 'Full Introns' }
     ]
   });
 
