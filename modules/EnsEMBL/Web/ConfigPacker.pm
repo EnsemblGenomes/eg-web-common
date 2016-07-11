@@ -87,6 +87,7 @@ sub _summarise_generic {
     foreach my $r( @$t_aref) {
       push @{ $hash->{$r->[3]+0}{$r->[0]}}, $r->[1];
     }
+    
     $self->db_details($db_name)->{'meta_info'} = $hash;
   }
 }
@@ -94,7 +95,7 @@ sub _summarise_generic {
 ## EG : need to exclude HOMOEOLOGUES as well as PARALOGUES otherwise too many method link species sets that prevents web site from starting
 sub _summarise_compara_db {
   my ($self, $code, $db_name) = @_;
-
+  
   my $dbh = $self->db_connect($db_name);
   return unless $dbh;
   
@@ -117,11 +118,10 @@ sub _summarise_compara_db {
       group by mls.method_link_species_set_id, mls.method_link_id
       having count = 1
   ');
-##
-
+  
   my (%intra_species, %intra_species_constraints);
   $intra_species{$_->[0]}{$_->[1]} = 1 for @$intra_species_aref;
- 
+  
   # look at all the multiple alignments
   ## We've done the DB hash...So lets get on with the multiple alignment hash;
   my $res_aref = $dbh->selectall_arrayref('
@@ -155,7 +155,7 @@ sub _summarise_compara_db {
     }
     
     $vega = 0 if $species eq 'Ailuropoda_melanoleuca';
- 
+    
     if ($intra_species{$species_set_id}) {
       $intra_species_constraints{$species}{$_} = 1 for keys %{$intra_species{$species_set_id}};
     }
@@ -232,7 +232,7 @@ sub _summarise_compara_db {
       having count = 1
   });
 ##
-
+  
   push @$res_aref, $_ for @$res_aref_2;
   
   foreach my $row (@$res_aref) {
@@ -320,6 +320,7 @@ sub _munge_meta {
   my %keys = qw(
     species.taxonomy_id           TAXONOMY_ID
     species.url                   SPECIES_URL
+    species.stable_id_prefix      SPECIES_PREFIX
     species.display_name          SPECIES_COMMON_NAME
     species.common_name           SPECIES_USUAL_NAME
     species.production_name       SPECIES_PRODUCTION_NAME
@@ -337,6 +338,8 @@ sub _munge_meta {
     provider.logo                 PROVIDER_LOGO
     species.strain                SPECIES_STRAIN
     species.sql_name              SYSTEM_NAME
+    genome.assembly_type          GENOME_ASSEMBLY_TYPE
+    gencode.version               GENCODE_VERSION
     species.biomart_dataset       BIOMART_DATASET
     species.wikipedia_url         WIKIPEDIA_URL
     ploidy                        PLOIDY
