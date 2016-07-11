@@ -29,7 +29,7 @@ sub build_imageconfig_menus {
   if ($menu_type eq 'matrix_subtrack') {
     my $display = $node->get('display');
     
-    if (
+    if ($node->get_node($data->{'option_key'}) &&
       $node->get_node($data->{'option_key'})->get('display') eq 'on' &&                           # The cell option is turned on AND
       $display ne 'off' &&                                                                        # The track is not turned off AND
       !($display eq 'default' && $node->get_node($data->{'column_key'})->get('display') eq 'off') # The track renderer is not default while the column renderer is off
@@ -80,7 +80,7 @@ sub build_imageconfig_menus {
        $display     = $valid{'normal'} ? 'normal' : $states[2] unless $valid{$display};
     my $controls    = $data->{'controls'};
     my $subset      = $data->{'subset'};
-    my $name = encode_entities($data->{'name'});
+    my $name        = encode_entities($data->{'name'});
 ## EG    
     if (exists $data->{'web'}->{'name'}) {
       $name        =   encode_entities($data->{'web'}->{'name'});
@@ -114,7 +114,7 @@ sub build_imageconfig_menus {
       
       $self->{'total_tracks'}{$menu_class}++;
     }
-    
+
     my $desc      = '';
     my $desc_url  = $data->{'desc_url'} ? $self->hub->url('Ajax', {'type' => 'fetch_html', 'url' => $data->{'desc_url'}}) : '';
 
@@ -124,14 +124,14 @@ sub build_imageconfig_menus {
       $desc .= "<h1>Trackhub description: $data->{'description'}</h1>" if $data->{'description'} && $desc_url;
       $desc .= qq(<div class="_dyna_load"><a class="hidden" href="$desc_url">No description found for this composite track.</a>Loading&#133;</div>) if $desc_url;
     } else {
-      $desc .= $desc_url ? qq(<div class="_dyna_load"><a class="hidden" href="$desc_url">$data->{'description'}</a>Loading&#133;</div>) : $data->{'description'};
+      $desc .= $desc_url ? sprintf(q(<div class="_dyna_load"><a class="hidden" href="%s">%s</a>Loading&#133;</div>), $desc_url, encode_entities($data->{'description'})) : $data->{'description'};
     }
-    
+
     if ($desc) {
       $desc = qq{<div class="desc">$desc</div>};
       $help = qq{<div class="sprite info_icon menu_help _ht" title="Click for more information"></div>};
     } else {
-      $help = qq{<div class="empty"></div>};
+      $help = qq{<div class="empty info_icon sprite"></div>};
     }
     
     push @classes, 'on'             if $display ne 'off';
