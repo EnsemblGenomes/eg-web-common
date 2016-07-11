@@ -32,8 +32,6 @@ sub content {
   my $treefam_link = $hub->get_ExtURL('TREEFAMSEQ', $stable_id);
   my $ens_tran     = $object->Obj->canonical_transcript; # Link to protein sequence for cannonical or longest translation
   my $ens_prot;
-  my $g            = $hub->param('g');
-  my $species_display_name = $hub->species_defs->species_display_label($species);
   
   $self->SUPER::content;
   
@@ -45,10 +43,12 @@ sub content {
   }
   
   $self->add_entry({
-    type     => 'Species',
-    label    => $species_display_name,
-    link     => $species_path,
-    position => 1
+    type        => 'Species',
+## EG
+    label_html  => $hub->species_defs->species_display_label($species),
+##
+    link        => $species_path,
+    position    => 1
   });
   
   if ($phy_link) {
@@ -56,7 +56,7 @@ sub content {
       type     => 'PhylomeDB',
       label    => 'Gene in PhylomeDB',
       link     => $phy_link,
-      extra    => { external => 1 },
+      external => 1,
       position => 3
     });
   }
@@ -66,7 +66,7 @@ sub content {
       type     => 'Genomicus Synteny',
       label    => 'Gene in Genomicus',
       link     => $dyo_link,
-      extra    => { external => 1 }, 
+      external => 1, 
       position => 4
     });
   }
@@ -76,7 +76,7 @@ sub content {
       type     => 'TreeFam',
       label    => 'Gene in TreeFam',
       link     => $treefam_link,
-      extra    => { external => 1 },
+      external => 1,
       position => 5
     });
   }
@@ -89,9 +89,7 @@ sub content {
       link     => $hub->url({
         type   => 'Transcript',
         action => 'Sequence_Protein',
-        t      => $ens_tran->stable_id ,
-        g      => $g,
-        __clear => '1'  #gets rid of the url variation data in order to avoid a bug
+        t      => $ens_tran->stable_id 
       })
     });
   }
