@@ -1,6 +1,7 @@
 =head1 LICENSE
 
-Copyright [2009-2014] EMBL-European Bioinformatics Institute
+Copyright [1999-2015] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+Copyright [2016] EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,8 +36,8 @@ my $VIRTUAL_COLUMNS = {
   'specieslist'       => [qw(favourites list)],
   'urls'              => [qw(format cloned_from)],
   'invitation'        => [qw(invitation_code email)],
-  'upload'            => [qw(filename filesize name code md5 format species assembly share_id analyses browser_switches style display nearest timestamp cloned_from colour)],
-  'favourite_tracks'  => [qw(tracks)],
+  'upload'            => [qw(file filename filesize name description code md5 format species assembly assemblies share_id analyses browser_switches renderers style display nearest site timestamp cloned_from no_attach)],
+  'favourite_tracks'  => [qw(tracks)]
 ## EG  
   'genefamilyfilter'  => [qw(filter)]
 ##  
