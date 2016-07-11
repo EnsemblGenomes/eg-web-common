@@ -322,7 +322,6 @@ sub _munge_meta {
     species.url                   SPECIES_URL
     species.stable_id_prefix      SPECIES_PREFIX
     species.display_name          SPECIES_COMMON_NAME
-    species.common_name           SPECIES_USUAL_NAME
     species.production_name       SPECIES_PRODUCTION_NAME
     species.scientific_name       SPECIES_SCIENTIFIC_NAME
     assembly.accession            ASSEMBLY_ACCESSION
