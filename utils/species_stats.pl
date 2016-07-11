@@ -41,14 +41,10 @@ use Getopt::Long;
 use JSON;
 use List::MoreUtils qw /first_index any/;
 use HTML::Entities qw(encode_entities);
-use lib "$LibDirs::SERVERROOT/ensemblgenomes-api/modules";
 use lib "$LibDirs::SERVERROOT/eg-web-common/modules";
 
-use EnsEMBL::Web::DBSQL::MetaDataAdaptor;
-
-
 use vars qw( $SERVERROOT $PRE $PLUGIN_ROOT $SCRIPT_ROOT $DEBUG $FUDGE $NOINTERPRO $NOSUMMARY $help $info @user_spp $allgenetypes $coordsys $list $pan_comp_species $ena $nogenebuild
-  $species_page $skip_existing);
+  $skip_existing);
 
 BEGIN{
   &GetOptions( 
@@ -66,7 +62,6 @@ BEGIN{
                'pan_c_sp' => \$pan_comp_species,
                'ena' => \$ena,
                'nogenebuild' => \$nogenebuild,
-               'all_species_page' => \$species_page,
                'skipexisting',   \$skip_existing,
   );
 
@@ -145,17 +140,6 @@ if (@user_spp) {
 @valid_spp || pod2usage("$0: Need a species" );
 
 # all species resources page generation 
-
-if ($species_page 
-  && !$help && !$info && !$list && !@user_spp && !$allgenetypes && !$NOINTERPRO
-  && !$NOSUMMARY && !$PRE && !$coordsys && !$pan_comp_species && !$ena && !$nogenebuild) {
-
-  render_all_species_page(\@valid_spp);
-  exit;
-}
-elsif ($species_page) {
-  render_all_species_page(\@valid_spp);
-}
 
 ##---------------------------- CREATE STATS ---------------------------------
 my $dbconn = EnsEMBL::Web::DBSQL::DBConnection->new(undef, $SD);
@@ -1019,297 +1003,6 @@ sub regions_table {
   return qq{<div class="summary_panel">$html</div>};
 }
 
-sub render_all_species_page {
-  my ($valid_species) = @_;
-
-  my $sitename = $SD->SITE_NAME;
-  my $species_resources = get_resources($valid_species);
-
-  # taxon order:
-  my $species_info = {};
-
-  foreach (@$valid_species) {
-      $species_info->{$_} = {
-        key        => $_,
-        name       => $SD->get_config($_, 'SPECIES_BIO_NAME'),
-        common     => $SD->get_config($_, 'SPECIES_COMMON_NAME'),
-        scientific => $SD->get_config($_, 'SPECIES_SCIENTIFIC_NAME'),
-        group      => $SD->get_config($_, 'SPECIES_GROUP'),
-        assembly   => $SD->get_config($_, 'ASSEMBLY_NAME')
-        };
-  }
-
-  my $labels       = $SD->TAXON_LABEL; ## sort out labels
-  my (@group_order, %label_check);
-
-  foreach my $taxon (@{$SD->TAXON_ORDER || []}) {
-      my $label = $labels->{$taxon} || $taxon;
-      push @group_order, $label unless $label_check{$label}++;
-  }
-
-  ## Sort species into desired groups
-  my %phylo_tree;
-  foreach (keys %$species_info) {
-      my $group = $species_info->{$_}->{'group'} ? $labels->{$species_info->{$_}->{'group'}} || $species_info->{$_}->{'group'} : 'no_group';
-      push @{$phylo_tree{$group}}, $_;
-  }
-  
-  ## Output in taxonomic groups, ordered by common name
-  my @taxon_species;
-  my $taxon_gr;
-  my @groups;
-
-  foreach my $group_name (@group_order) {
-    my $optgroup     = 0;
-    my $species_list = $phylo_tree{$group_name};
-    my @sorted_by_common;
-    my $gr_name;
-
-    if ($species_list && ref $species_list eq 'ARRAY' && scalar @$species_list) {
-      @sorted_by_common = sort { $a cmp $b } @$species_list;
-      if ($group_name eq 'no_group') {
-        if (scalar @group_order) {
-          $gr_name = "Other species";
-        }
-      } else {
-        $gr_name = encode_entities($group_name);
-      }
-      push @groups, $gr_name if (!scalar(@groups)) || grep {$_ ne $gr_name } @groups ;
-    }
-    unshift @sorted_by_common, $gr_name if ($gr_name);
-    push @taxon_species, @sorted_by_common;
-  }
-  # taxon order eof
-
-  my %species;
-  my $group = '';
-
-  foreach my $species (@taxon_species) { # (keys %$species_info) {
-    $group =  $species if exists $phylo_tree{$species};
-    next if exists $phylo_tree{$species};
-
-    my $common = $SD->get_config($species, "SPECIES_COMMON_NAME");
-
-    my $info = {
-      'dir'     => $species,
-      'status'  => 'live',
-      'provider' => $SD->get_config($species, "PROVIDER_NAME") || '',
-      'provider_url' => $SD->get_config($species, "PROVIDER_URL") || '',
-      'strain' => $SD->get_config($species, "SPECIES_STRAIN") || '',
-      'group' => $group,
-      'taxid' => $SD->get_config($species, "TAXONOMY_ID") || '',
-      'usual_name' => $SD->get_config($species, "SPECIES_USUAL_NAME") || '',
-    };
-    $species{$common} = $info;
-  }
-  
-  my $link_style = 'font-size:1.1em;font-weight:bold;text-decoration:none;';
-
-  my $html = qq(
-    <div class="column-wrapper"><div class="box-left" style="width:auto"><h2>$sitename Species</h2></div>
-  );
-
-  $html .= qq(<div class="box-left tinted-box round-box unbordered" style="width:70%"><fieldset><legend>Data Codes</legend>);
-
-#  my @species = sort keys %species;
-  $html .= qq(<p><font color="red">V</font> - has a variation database, <font color="red">P</font> - is in pan-taxonomic compara,
-     <font color="red">G</font> - has whole genome DNA alignments, <font color="red">A</font> - has other alignments</p>);
-  $html .= qq(</fieldset></div>
-
-</div>
-<div class="box-left tinted-box round-box unbordered">
- <p><a href="/compara_analyses.html" class="nodeco"><img src="/i/24/info.png" alt="" class="homepage-link">About genomic alignments</a></p>
-</div>);
-
-  my %groups = map {$species{$_}->{group} => 1} keys %species;
-
-  foreach my $gr (@groups) {  # (sort keys %groups) {
-    my @species = sort grep { $species{$_}->{'group'} eq $gr } keys %species;
-
-    my $total = scalar(@species);
-    my $break = int($total / 3);
-    $break++ if $total % 3;
-    my $colspan = $break * 2;
-
-    $html .= qq{<table style="width:100%">
-      <tr>
-        <td colspan="$colspan" style="width:50%;padding-top:1em">
-          <h3>$gr</h3>
-        </td>
-    };
-
-    ## Reset total to number of cells required for a complete table
-    $total = $break * 3;
-    my $cell_count = 0;
-
-    for (my $i=0; $i < $total; $i++) {
-      my $col = int($i % 3);
-
-      if ($col == 0 && $i < ($total - 1)) {
-        $html .= qq(</tr>\n<tr>);
-      }
-      my $row = int($i/3);
-      my $j = $row + $break * $col;
-
-      my $common = $species[$j];
-      next unless $common;
-      my $info = $species{$common};
-
-      my $dir = $info->{'dir'};
-
-      my $index = first_index { $_->{species} eq lc($dir) } @$species_resources;
-
-      (my $name = $dir) =~ s/_/ /;
-      my $link_text = $common =~ /\./ ? $name : $common;
-
-      $html .= qq(<td style="width:5%;text-align:right;padding-bottom:1em">);
-      if ($dir) {
-        $html .= qq(<img class="species-img" style="width:40px;height:40px" src="/i/species/48/$dir.png" alt="$name">);
-      }
-      else {
-        $html .= '&nbsp;';
-      }
-      $html .= qq(</td><td style="width:28%;padding:2px;padding-bottom:1em">);
-
-      my $usual_name = $info->{'usual_name'} if $info->{'usual_name'} and lc($info->{'usual_name'}) ne lc($common);
-
-      if ($dir) {
-        if ($info->{'status'} eq 'pre') {
-          $html .= qq(<a href="http://pre.ensembl.org/$dir/" style="$link_style" rel="external">$link_text</a> (preview - assembly only));
-          $html .= qq(<nobr>);
-          $html .= qq( ($info->{'usual_name'})) if $usual_name;
-          $html .= $info->{'strain'} ? " <small>$info->{'strain'}</small>" : '';
-          $html .= qq(</nobr>);
-        }
-        else {
-          $html .= qq(<a href="/$dir/Info/Index/"  style="$link_style">$link_text</a>);
-          $html .= qq(<nobr>);
-          $html .= qq( ($info->{'usual_name'})) if $usual_name;
-          $html .= $info->{'strain'} ? " <small>$info->{'strain'}</small>" : '';
-          $html .= qq(</nobr>);
-          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has a variation database">V</span>)
-            if (exists $$species_resources[$index]->{has_variations} && $$species_resources[$index]->{has_variations} == 1);
-
-          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Is in pan-taxonomic compara">P</span>)
-              if (exists $$species_resources[$index]->{has_pan_compara} && $$species_resources[$index]->{has_pan_compara} ==1);
-
-          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has whole genome DNA alignments">G</span>) 
-            if (exists $$species_resources[$index]->{has_dna_compara} && $$species_resources[$index]->{has_dna_compara} ==1);
-
-          $html .= qq(&nbsp;<span style="color:red; cursor:default;" title="Has other alignments">A</span>) 
-              if (exists $$species_resources[$index]->{has_other_alignments} && $$species_resources[$index]->{has_other_alignments}==1);
-        }
-
-        unless ($common =~ /\./) {
-          my $provider = $info->{'provider'};
-          my $url  = $info->{'provider_url'};
-
-          if ($provider) {
-            $html .= "<br>Data Source: ";
-            if (ref $provider eq 'ARRAY') {
-              my @urls = ref $url eq 'ARRAY' ? @$url : ($url);
-              my $phtml;
-
-              foreach my $pr (@$provider) {
-                my $u = shift @urls;
-                if ($u) {
-                  $u = "http://$u" unless ($u =~ /http/);
-                  $phtml .= qq{<a href="$u" title="Provider: $pr">$pr</a> &nbsp;};
-                } else {
-                  $phtml .= qq{$pr &nbsp;};
-                }
-              }
-
-              $html .= qq{$phtml};              
-            } else {
-              if ($url) {
-                $url = "http://$url" unless ($url =~ /http/);
-                $html .= qq{<a href="$url" title="Provider: $provider">$provider</a> };                
-              } else {
-                $html .= qq{$provider };                
-              }
-            }
-          } else {
-#              $html .= qq{<br /><i>$name</i>};
-          }
-        }
-#        if($info->{'taxid'}){
-#          (my $uniprot_url = $SD->ENSEMBL_EXTERNAL_URLS->{'UNIPROT_TAXONOMY'}) =~ s/###ID###/$info->{taxid}/;
-#          $html .= sprintf(' | <a href="%s" title="Taxonomy ID: %s">%s</a>',$uniprot_url, $info->{'taxid'}, $info->{'taxid'});
-#        }
-      }
-      else {
-        $html .= '&nbsp;';
-      }
-      $html .= '</td>';
-      $cell_count++;
-    }
-
-    # add empty cells to the row if needed: 
-    if($cell_count < 3) {
-      for (my $i = $cell_count; $i < 3; $i++) {
-        $html .= qq(<td>&nbsp;</td><td>&nbsp;</td>);
-      }
-    }
-
-    $html .= qq(
-      </tr>
-      </table>
-    );
-  }
-
-  # write into html file
-  my $dir = $SERVERROOT.'/eg-web-'.$SD->GENOMIC_UNIT.'/htdocs/info/data/';
-
-  &check_dir($dir);
-  my $resources = $dir."resources.html";
-
-  open RESOURCES, ">$resources" or die "ERROR: Can't open file to write resources $!";;
-  print RESOURCES $html;
-  close RESOURCES;
-  print "All the species resources file generated $resources\n";
-}
-
-sub get_resources {
-  my $valid_species = shift;
-
-  my $sitename = $SD->SITE_NAME;
-  $sitename =~ s/\s//g;
-
-  my $eg_info = $SD->get_config('MULTI', 'databases')->{DATABASE_METADATA};
-  my $dbc = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($eg_info);
-  unless ($dbc) {
-    warn "Can't get configuration for ensemble_info_% database from MULTI.ini. Exiting";
-    exit;
-  }
-  my $gdba = $dbc->genome_info_adaptor;
-
-  if (!$gdba) {
-      die "ERROR: $@ \n"; 
-  }
-#  use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
-#  my $dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(
-#    -USER=>'anonymous',
-#    -PORT=>4157,
-#    -HOST=>'mysql.ebi.ac.uk',
-#    -DBNAME=>'ensemblgenomes_info_22'
-#  );
-#  
-#  my $gdba = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC=>$dbc);
-
-  my $data;  
-  for my $genome (@{$gdba->fetch_all_by_division($sitename)}) {
-    push @$data, { 
-      species => $genome->species,
-      has_pan_compara => $genome->has_pan_compara,
-      has_other_alignments => $genome->has_other_alignments,
-      has_dna_compara => $genome->has_genome_alignments,
-      has_variations=>$genome->has_variations};
-  }
-  return $data unless $@;
-}
-
-
 __END__
 
 =head1 NAME
@@ -1347,10 +1040,6 @@ B<--plugin_root>
 
 B<--coordsys>
   Print a table of Coordinate Systems (chromosomes, contigs, ...)
-
-B<--all_species_page>
-  Generates all the species resources file and puts it in
-  eg-web-group/htdocs/info/data/resources.html
 
 =head1 DESCRIPTION
 
