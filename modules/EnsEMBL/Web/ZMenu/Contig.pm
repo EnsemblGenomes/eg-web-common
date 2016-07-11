@@ -16,14 +16,11 @@ limitations under the License.
 
 =cut
 
-# $Id: Contig.pm,v 1.6 2013-09-24 12:24:46 jh15 Exp $
-
 package EnsEMBL::Web::ZMenu::Contig;
 
 use strict;
 
 use base qw(EnsEMBL::Web::ZMenu);
-use Data::Dumper;
 
 sub content {
   my $self            = shift;
@@ -48,8 +45,9 @@ sub content {
   }
  
   $self->caption($slice_name);
+  
   $self->add_entry({
-    label => "Center on $slice_type $slice_name",
+    label => "Centre on $slice_type $slice_name",
     link  => $hub->url({ 
       type   => 'Location', 
       action => $action, 
@@ -58,13 +56,13 @@ sub content {
   }) unless $no_center_on_contig;
   
   $self->add_entry({
-    label => "Export $slice_type sequence/features",
+    label      => "Export $slice_type sequence/features",
     link_class => 'modal_link',
-    link  => $hub->url({ 
-      type   => 'Export',
-      action => 'Configure', 
+    link       => $hub->url({ 
+      type     => 'Export',
+      action   => 'Configure',
       function => 'Location',
-      r      => sprintf '%s:%s-%s', map $top_level_slice->$_, qw(seq_region_name start end)
+      r        => sprintf '%s:%s-%s', map $top_level_slice->$_, qw(seq_region_name start end)
     })
   });
 
@@ -87,50 +85,47 @@ sub content {
  # in EG we want these links for contigs as well   
 
     if (my $attrs = $new_slice->get_all_Attributes('external_db')) {
-	foreach my $attr (@$attrs) {
-#	    warn "A: $attrs \n";
-#	    warn Dumper $attrs;
+    	foreach my $attr (@$attrs) {
 
-	    my $ext_db = $attr->value;
+  	    my $ext_db = $attr->value;
 
-	    if( my $link = $hub->get_ExtURL($ext_db, $new_slice_name)) {
-		$self->add_entry({
-		    type  => $ext_db,
-		    label => $new_slice_name,
-		    link  => $link, 
-		extra => { external => 1 }
-		});
-		
-		(my $short_name = $new_slice_name) =~ s/\.[\d\.]+$//;
-		
-		$self->add_entry({
-		    type  => "$ext_db (latest version)",
-		    label => $short_name,
-		    link  => $hub->get_ExtURL($ext_db, $short_name),
-		    extra => { external => 1 }
-		});
-	    }
-	}
-	next;
+  	    if( my $link = $hub->get_ExtURL($ext_db, $new_slice_name)) {
+      		$self->add_entry({
+      		  type     => $ext_db,
+      		  label    => $new_slice_name,
+      		  link     => $link, 
+      		  external => 1
+      		});
+      		
+      		(my $short_name = $new_slice_name) =~ s/\.[\d\.]+$//;
+      		
+      		$self->add_entry({
+      		  type     => "$ext_db (latest version)",
+      		  label    => $short_name,
+      		  link     => $hub->get_ExtURL($ext_db, $short_name),
+      		  external => 1
+      		});
+    	  }
+    	}
+    	next;
     }
 
 
     if (0 && $cs->name eq 'contig') {
-#      (my $short_name = $new_slice_name) =~ s/\.\d+$//;
       (my $short_name = $new_slice_name) =~ s/\.[\d\.]+$//;
       
       $self->add_entry({
-        type  => 'ENA',
-        label => $new_slice_name,
-        link  => $hub->get_ExtURL('EMBL', $new_slice_name),
-        extra => { external => 1 }
+        type     => 'ENA',
+        label    => $new_slice_name,
+        link     => $hub->get_ExtURL('EMBL', $new_slice_name),
+        external => 1
       });
       
       $self->add_entry({
-        type  => 'ENA (latest version)',
-        label => $short_name,
-        link  => $hub->get_ExtURL('EMBL', $short_name),
-        extra => { external => 1 }
+        type     => 'ENA (latest version)',
+        label    => $short_name,
+        link     => $hub->get_ExtURL('EMBL', $short_name),
+        external => 1
       });
       next;
     }
@@ -138,7 +133,7 @@ sub content {
     next if $cs->name eq $slice_type;  # don't show the slice coord system twice    
 
     $self->add_entry({
-      label => "Center on $new_slice_type $new_slice_name",
+      label => "Centre on $new_slice_type $new_slice_name",
       link  => $hub->url({
         type   => 'Location', 
         action => $action, 
@@ -150,14 +145,14 @@ sub content {
     # since it doesn't we have to explicitly calculate the locations of all regions on top level
     $top_level_slice = $new_slice->project('toplevel')->[0]->to_Slice;
 
-
     $self->add_entry({
-      label => "Export $new_slice_type sequence/features",
+      label      => "Export $new_slice_type sequence/features",
       link_class => 'modal_link',
-      link  => $hub->url({
-        type   => 'Export',
-        action => "Location/$action",
-        r      => sprintf '%s:%s-%s', map $top_level_slice->$_, qw(seq_region_name start end)
+      link       => $hub->url({
+        type     => 'Export',
+        action   => $action,
+        function => 'Location',
+        r        => sprintf '%s:%s-%s', map $top_level_slice->$_, qw(seq_region_name start end)
       })
     });
  # in EG we want these links for contigs as well   
@@ -165,19 +160,19 @@ sub content {
 
     if ($cs->name eq 'clone') {
       (my $short_name = $new_slice_name) =~ s/\.\d+$//;
-      
+    
       $self->add_entry({
-        type  => 'EMBL',
-        label => $new_slice_name,
-        link  => $hub->get_ExtURL('EMBL', $new_slice_name),
-        extra => { external => 1 }
+        type     => 'EMBL',
+        label    => $slice_name,
+        link     => $hub->get_ExtURL('EMBL', $slice_name),
+        external => 1
       });
       
       $self->add_entry({
-        type  => 'EMBL (latest version)',
-        label => $short_name,
-        link  => $hub->get_ExtURL('EMBL', $short_name),
-        extra => { external => 1 }
+        type     => 'EMBL (latest version)',
+        label    => $short_name,
+        link     => $hub->get_ExtURL('EMBL', $short_name),
+        external => 1
       });
     }
   }
