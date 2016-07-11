@@ -1,6 +1,7 @@
 =head1 LICENSE
 
-Copyright [2009-2014] EMBL-European Bioinformatics Institute
+Copyright [1999-2015] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+Copyright [2016] EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,22 +26,25 @@ sub content {
   my $hub         = $self->hub;
   my $db          = $hub->param('db') || 'core';
   my $pfa         = $hub->database(lc $db)->get_ProteinFeatureAdaptor;
-  my @prot_feats  = @{ $pfa->fetch_all_by_translation_id($hub->param('translation_id')) };
   my $pf          = $pfa->fetch_by_dbID($hub->param('pf_id'));
+  my @prot_feats  = @{ $pfa->fetch_all_by_translation_id($hub->param('translation_id')) } if($hub->param('translation_id'));
 
   my $hit_db      = $pf->analysis->db;
   my $hit_name    = $pf->display_id;
   my $interpro_ac = $pf->interpro_ac;
   my $start       = $pf->start;
-  
+  my $end         = $pf->end;
   # get the very begining/start of the protein track (see ENSWEB-2286)
-  foreach (@prot_feats) {
-    if ($_->{hseqname} eq $hit_name) {
-      next if($_->{start} > $start);
-      $start = $_->{start};
+  if(@prot_feats) {
+    foreach (@prot_feats) {
+      if ($_->{hseqname} eq $hit_name) {
+        $start = $_->{start} if($_->{start} < $start);
+        $end   = $_->{end} if($_->{end} > $end);
+      }
     }
-  } 
-  
+  }
+
+## EG visualising MS peptide domains
   (my $hit_db_spaces = $hit_db) =~ s/_/ /g;
   
   my $ms_domain = 0;
@@ -78,7 +82,7 @@ sub content {
       external => 1,
     });
   }
-  
+##  
   if ($interpro_ac) {
     $self->add_entry({
       type  => 'View InterPro',
@@ -87,18 +91,20 @@ sub content {
       external => 1,
     });
   }
-  
+
+## EG 
   if (!$ms_domain) {
   $self->add_entry({
     type  => 'Description',
     label => $pf->idesc
   });
   }
+##
   
   $self->add_entry({
     type  => 'Position',
-    label => $start . '-' . $pf->end . ' aa'
-  });
+    label => $start . '-' . $end . ' aa'
+  })if($hub->param('translation_id'));
 }
 
 1;
