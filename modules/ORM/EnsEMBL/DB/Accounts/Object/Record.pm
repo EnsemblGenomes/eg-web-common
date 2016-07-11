@@ -37,9 +37,9 @@ my $VIRTUAL_COLUMNS = {
   'urls'              => [qw(format cloned_from)],
   'invitation'        => [qw(invitation_code email)],
   'upload'            => [qw(file filename filesize name description code md5 format species assembly assemblies share_id analyses browser_switches renderers style display nearest site timestamp cloned_from no_attach)],
-  'favourite_tracks'  => [qw(tracks)]
+  'favourite_tracks'  => [qw(tracks)],
 ## EG  
-  'genefamilyfilter'  => [qw(filter)]
+  'genefamilyfilter'  => [qw(filter)],
 ##  
 };
 
