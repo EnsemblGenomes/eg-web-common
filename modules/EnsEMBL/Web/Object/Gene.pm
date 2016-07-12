@@ -199,39 +199,39 @@ sub store_TransformedTranscripts {
 ## EG  
   my $offset = shift;  
 ##
-
+  my $focus_transcript = $self->hub->type eq 'Transcript' ? $self->param('t') : undef;
+  
   $offset ||= $self->__data->{'slices'}{'transcripts'}->[1]->start -1;
 
   foreach my $trans_obj ( @{$self->get_all_transcripts} ) {
     next if $focus_transcript && $trans_obj->stable_id ne $focus_transcript;
     my $transcript = $trans_obj->Obj;
-  my ($raw_coding_start,$coding_start);
-  if (defined( $transcript->coding_region_start )) {    
-    $raw_coding_start = $transcript->coding_region_start;
-    $raw_coding_start -= $offset;
-    $coding_start = $raw_coding_start + $self->munge_gaps( 'transcripts', $raw_coding_start );
-  }
-  else {
-    $coding_start  = undef;
+    my ($raw_coding_start,$coding_start);
+    if (defined( $transcript->coding_region_start )) {    
+      $raw_coding_start = $transcript->coding_region_start;
+      $raw_coding_start -= $offset;
+      $coding_start = $raw_coding_start + $self->munge_gaps( 'transcripts', $raw_coding_start );
     }
+    else {
+      $coding_start  = undef;
+      }
 
-  my ($raw_coding_end,$coding_end);
-  if (defined( $transcript->coding_region_end )) {
-    $raw_coding_end = $transcript->coding_region_end;
-    $raw_coding_end -= $offset;
-    $coding_end = $raw_coding_end + $self->munge_gaps( 'transcripts', $raw_coding_end );
-  }
-  else {
-    $coding_end = undef;
-  }
+    my ($raw_coding_end,$coding_end);
+    if (defined( $transcript->coding_region_end )) {
+      $raw_coding_end = $transcript->coding_region_end;
+      $raw_coding_end -= $offset;
+      $coding_end = $raw_coding_end   + $self->munge_gaps( 'transcripts', $raw_coding_end );
+    }
+    else {
+      $coding_end = undef;
+    }
     my $raw_start = $transcript->start;
     my $raw_end   = $transcript->end  ;
     my @exons = ();
     foreach my $exon (@{$transcript->get_all_Exons()}) {
       my $es = $exon->start - $offset; 
       my $ee = $exon->end   - $offset;
-      my $O =  $self->munge_gaps( 'transcripts', $es );
-
+      my $O = $self->munge_gaps( 'transcripts', $es );
       push @exons, [ $es + $O, $ee + $O, $exon ];
     }
     $coding_start ||= 1;
