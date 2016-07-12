@@ -176,7 +176,7 @@ sub content {
   });
   
   # Keep track of collapsed nodes
-  my $collapsed_nodes = $hub->param('collapse');
+  #my $collapsed_nodes = $hub->param('collapse'); # already defined above
   my ($collapsed_to_gene, $collapsed_to_para);
   
   if (!$is_genetree) {
