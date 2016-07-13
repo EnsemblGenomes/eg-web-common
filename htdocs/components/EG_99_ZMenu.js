@@ -246,7 +246,7 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
     }
     
     url  = this.baseURL.replace(/.+\?/, '?').replace(/%s/, this.chr + ':' + start + '-' + end);
-    menu = [ '<a href="' + this.speciesPath + '/Location/' + view + url + '">Jump to location ' + view.toLowerCase() + '</a>' ];
+    menu = [ '<a href="' + this.speciesPath + '/Location/' + view + url + '">Jump to region ' + view.toLowerCase() + '</a>' ];
 //// EG - ENSEMBL-3311 disable confusing link
     if (!window.location.pathname.match('/Chromosome')) {
       menu.push('<a href="' + this.speciesPath + '/Location/Chromosome' + url + '">Chromosome summary</a>');
@@ -277,7 +277,7 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
     if (this.align === true) {
       return this.baseURL.replace(/%s/, Ensembl.coreParams.r + ';align_start=' + start + ';align_end=' + end);
     } else {
-      return this.baseURL.replace(/%s/, this.chr + ':' + start + '-' + end);
+      return this.baseURL.replace(/%s/, (this.chr || Ensembl.location.name) + ':' + start + '-' + end);
     }
   }
     
