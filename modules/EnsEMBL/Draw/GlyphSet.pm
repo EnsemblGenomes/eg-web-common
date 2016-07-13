@@ -28,7 +28,7 @@ sub init_label {
   
   return $self->label(undef) if defined $self->{'config'}->{'_no_label'};
   
-  my $text = $self->my_config('caption');
+  my $text = $self->my_config('caption'); 
 
 ## EG  
   if($SiteDefs::ENSEMBL_SITETYPE =~ /bacteria/i){
@@ -54,7 +54,7 @@ sub init_label {
   my $track     = $self->type;
   my $node      = $config->get_node($track);
   my $component = $config->get_parameter('component');
-  my $hover     = $component && !$hub->param('export') && $node->get('menu') ne 'no';
+  my $hover     = ($text =~m/Legend/)? 0 : $component && !$hub->param('export') && $node->get('menu') ne 'no';
   my $class     = random_string(8);
   ## Store this where the glyphset can find it later...
   $self->{'hover_label_class'} = $class;
@@ -81,7 +81,8 @@ sub init_label {
     $config->{'hover_labels'}->{$class} = {
       header    => $name,
       desc      => $desc,
-      class     => "$class $track",
+      class     => "$class $track _track_$track",
+      highlight => $track,
       component => lc($component . ($config->multi_species && $config->species ne $hub->species ? '_' . $config->species : '')),
       renderers => \@r,
       fav       => [ $fav, "$url;$track=favourite_" ],
@@ -127,9 +128,7 @@ sub init_label {
 ### Circular
 sub bump_row {
   my ($self, $start, $end, $truncate_if_outside, $key) = @_;
-  
-  $key ||= '_bump';
-
+  $key         ||= '_bump';
   ($end, $start) = ($start, $end) if $end < $start;
   $start         = 1 if $start < 1;
   my $row_length = $self->{$key}{'length'};
@@ -158,10 +157,12 @@ sub bump_row {
       $self->{$key}{'array'}[$row] = $element;
       return $row;
     }
+    
     if (($self->{$key}{'array'}[$row] & $element) == 0) { # We already have a row, but the element fits so include it
       $self->{$key}{'array'}[$row] |= $element;
       return $row;
     }
+    
     $row++; # Can't fit in on this row go to the next row..
   }
   
