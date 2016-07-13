@@ -23,7 +23,7 @@ use previous qw(init);
 
 sub init {
   my $self = shift;
-  my $self->PREV::init(@_);
+  $self->PREV::init(@_);
   
   # set spritelib for the EG division - TODO: make this configurable
   my $site = $SiteDefs::ENSEMBL_SITETYPE =~ s/Ensembl //r; #/
