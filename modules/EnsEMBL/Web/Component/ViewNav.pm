@@ -20,13 +20,6 @@ package EnsEMBL::Web::Component::ViewNav;
 
 use strict;
 
-use base qw(EnsEMBL::Web::Component);
-
-sub _init {
-  my $self = shift;
-  $self->ajaxable(0);
-}
-
 sub content {
   my $self        = shift;
   my $hub         = $self->hub;
