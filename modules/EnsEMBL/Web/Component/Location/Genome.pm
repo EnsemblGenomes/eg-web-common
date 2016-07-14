@@ -42,7 +42,7 @@ sub _configure_Gene_table {
   
   my $config = $self->PREV::_configure_Gene_table(@_);
 
-  $config->{table_style} =  {data_table_config => {iDisplayLength => 25}}} if $self->hub->param('ftype') eq 'Domain';
+  $config->{table_style} =  {data_table_config => {iDisplayLength => 25}} if $self->hub->param('ftype') eq 'Domain';
 
   return $config;
 }
