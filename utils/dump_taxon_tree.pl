@@ -34,6 +34,7 @@
 use strict;
 use Data::Dumper;
 use FindBin qw($Bin);
+use File::Path  qw(make_path);
 use JSON;
 use Storable qw(lock_nstore);
 use Getopt::Long;
@@ -186,8 +187,11 @@ if ($dump_binary) {
   
   my $etree = EnsEMBL::Web::TaxonTree->new;
   $etree->append_child(node_to_ensembl($etree, $root));
+
+  my $data_dir = "$plugin_dir/data";
+  make_path($data_dir) unless -d $data_dir;
   
-  my $filename = "$plugin_dir/data/taxon_tree.packed";
+  my $filename = "$data_dir/taxon_tree.packed";
   lock_nstore($etree, $filename) or die("failed to write $filename ($@)");
   print "  wrote $filename\n";
 }
