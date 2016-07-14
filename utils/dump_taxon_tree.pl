@@ -261,7 +261,7 @@ sub node_to_dynatree {
 }
 
 #------------------------------------------------------------------------------
-# Dump Ensembl tree object for Bacteria gene families
+# Dump Ensembl tree object for gene families
 
 sub node_to_ensembl {
   my ($etree, $node) = @_;
