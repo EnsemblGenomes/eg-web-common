@@ -76,7 +76,7 @@ sub merge_all {
   };
 }
 
-sub get_files_from_dir {
+sub XXXget_files_from_dir { # disabled for now...
   ## Recursively gets all the files from all the directories (from inside all the HTDOCS dirs) with the given name
   ## @param SpeciesDefs object
   ## @param Type of files (css or js)
