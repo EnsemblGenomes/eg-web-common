@@ -116,7 +116,7 @@ sub get_cacheable_form_node {
       'is_html'       => 1,
 ## EG - Bacteria has no examples      
       'caption'       => $SiteDefs::ENSEMBL_SITETYPE =~ /bacteria/i 
-                           ? sprintf('<span class="small"><b>Formats:&nbsp;</b>%s</span>',join(', ', map { $_->{'caption'} } @$input_formats)
+                           ? sprintf('<span class="small"><b>Formats:&nbsp;</b>%s</span>',join(', ', map { $_->{'caption'} } @$input_formats))
                            : sprintf('<span class="small"><b>Examples:&nbsp;</b>%s</span>',
                                join(', ', map { sprintf('<a href="#" class="_example_input" rel="%s">%s</a>', $_->{'value'}, $_->{'caption'}) } @$input_formats)
                              )
