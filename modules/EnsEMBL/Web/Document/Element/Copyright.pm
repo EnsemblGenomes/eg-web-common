@@ -31,7 +31,7 @@ sub content {
   <div class="column-two left">
 		  <p>
       %s release %d - %s
-		  &copy; <span class="print_hide"><a href="http://www.ebi.ac.uk/" style="white-space:nowrap">EBI</a></span>
+		  &copy; <span class="print_hide"><a href="http://www.ebi.ac.uk/" style="white-space:nowrap">EMBL-EBI</a></span>
       <span class="screen_hide_inline">EMBL-EBI</span>
       </p>
   </div>),     $sd->SITE_NAME, $sd->SITE_RELEASE_VERSION, $sd->SITE_RELEASE_DATE
