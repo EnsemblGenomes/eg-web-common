@@ -1,6 +1,7 @@
 =head1 LICENSE
 
-Copyright [2009-2014] EMBL-European Bioinformatics Institute
+Copyright [1999-2015] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+Copyright [2016] EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,14 +17,11 @@ limitations under the License.
 
 =cut
 
-# $Id: HomologAlignment.pm,v 1.9 2013-07-01 15:27:05 jk10 Exp $
-
 package EnsEMBL::Web::Component::Gene::HomologAlignment;
 
 use strict;
 
 use Bio::AlignIO;
-use base qw(EnsEMBL::Web::Component::Gene);
 
 sub content {
   my $self         = shift;
@@ -43,7 +41,9 @@ sub content {
   my $unit           = $is_ncrna ? 'nt' : 'aa';
   my $identity_title = '% identity'.(!$is_ncrna ? " ($seq)" : '');
 
+## EG - remove for E86, when this PR is merged https://github.com/Ensembl/ensembl-webcode/pull/474
   my $homologies = $self->get_homologies($cdb);
+##
  
   # Remove the homologies with hidden species
   foreach my $homology (@{$homologies}) {
@@ -123,29 +123,8 @@ sub content {
         ],
         $data
       );
-
-## EG: add alignment details table      
-      my $match_line = $sa->match_line;
-      my $identical = $match_line =~ tr/*/*/;
-      my $similar   = $match_line =~ tr/:/:/;
-      $similar += $identical;
-      my $gaps = 0;
-      map { $gaps += $_->seq =~ tr/-/-/ } $sa->each_seq;
-      my $alntable = $self->new_table([
-        { title => 'Alignment details',       width => '15%' },
-        { title => '',       width => '05%', align=>'right'},
-        { title => '',       width => '05%', align=>'right'},
-        { title => '',       width => '10%', align=>'right'},
-        { title => '',       width => '05%', align=>'right'},
-        { title => '',       width => '60%', align=>'right'},
-
-        ],
-        [
-          ['Alignment length', $sa->length,'','gaps', $gaps,''],
-          ['identical residues', $identical,'','similar residues', $similar,''],
-        ]);
-      $html .= $ss->render . $alntable->render;
-## /EG
+      
+      $html .= $ss->render;
 
       my $alignio = Bio::AlignIO->newFh(
         -fh     => IO::String->new(my $var),
@@ -173,31 +152,7 @@ sub content {
   }
   
   return $html;
-}  
-
-sub get_homologies {
-  my $self         = shift;
-  my $hub          = $self->hub;
-  my $cdb          = shift || $hub->param('cdb') || 'compara';
-  my $object       = $self->object || $hub->core_object('gene');
-  my $gene_id      = $object->stable_id;
-
-  my $database     = $hub->database($cdb);
-  my $qm           = $database->get_GeneMemberAdaptor->fetch_by_stable_id($gene_id);
-  my $homologies;
-  my $action        = $hub->param('data_action') || $hub->action;
-
-  my $homology_method_link = 'ENSEMBL_PARALOGUES';
-  if ($action eq 'Compara_Ortholog') { $homology_method_link='ENSEMBL_ORTHOLOGUES'; }
-  elsif ($action eq 'Compara_Homoeolog') { $homology_method_link='ENSEMBL_HOMOEOLOGUES'; }
-
-  eval {
-    $homologies = $database->get_HomologyAdaptor->fetch_all_by_Member($qm, -METHOD_LINK_TYPE => $homology_method_link);
-  };
-  warn $@ if $@;
-
-  return $homologies;
-}
+}        
 
 1;
 
