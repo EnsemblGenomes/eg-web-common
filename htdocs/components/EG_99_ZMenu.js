@@ -33,8 +33,18 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
         var site = domain.length > 3 ? domain[1] : domain[0];
         title = 'Ensembl' + site.substr(0, 1).toUpperCase() + site.substr(1, site.length);
       }
+       
+      var caption = 'Go to ' + title;
+      var link = this.href.replace(/ZMenu\//, '');
       
-      this.populate(false, '<tr><td colspan="2"><a href="' + this.href.replace(/ZMenu\//, '') + '">Go to ' + title + '</a></td></tr>');
+      if (link.match(/ComparaTree/)) {
+        link = link.replace(/ComparaTree/, 'Compara_Tree');
+      }
+
+      this.buildMenu(
+        [ '<a href="' + link + '">View in ' + title + '</a>' ],
+        'External data'
+      );
     } else {
       this.base.apply(this, arguments);
     }
