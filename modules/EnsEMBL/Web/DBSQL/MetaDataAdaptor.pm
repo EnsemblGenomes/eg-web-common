@@ -73,7 +73,7 @@ sub genome {
 sub all_genomes_by_division {
   my ($self, $division) = @_;
   return [] unless $self->genome_info_adaptor;
-  $division ||= ( $self->{hub}->species_defs->SITE_NAME =~ s/\s+//gr ); #/
+  $division ||= ( $self->{hub}->species_defs->ENSEMBL_SITETYPE =~ s/\s+//gr ); #/
   return $self->genome_info_adaptor->fetch_all_by_division($division);
 }
 
