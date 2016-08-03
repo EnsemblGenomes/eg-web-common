@@ -80,16 +80,16 @@ sub content {
   ## Link to Wikipedia
   $html .= $self->_wikipedia_link; 
 
-  $html .= '
+ $html .= '
     </div>
   </div>
   <div class="column-two">
-    <div class="column-padding" style="margin-left:16px">';
-
+    <div class="column-padding" class="annotation-stats">';
+    
   ## ASSEMBLY STATS 
   my $file = '/ssi/species/stats_' . $self->hub->species . '.html';
   $html .= '<h2>Statistics</h2>';
-  $html .= EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, $file);
+  $html .= $self->species_stats;
 
   $html .= '
     </div>
