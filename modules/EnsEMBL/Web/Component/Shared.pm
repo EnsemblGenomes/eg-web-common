@@ -19,6 +19,7 @@ limitations under the License.
 package EnsEMBL::Web::Component::Shared;
 
 use strict;
+use previous qw(species_stats);
 
 sub _sort_similarity_links {
   my $self             = shift;
@@ -578,5 +579,159 @@ sub get_gene_display_link {
   return $url ? ($url, $primary_id) : ()
 }
 ##
+
+sub species_stats {
+  my $self = shift;
+  my $sd = $self->hub->species_defs;
+  my $html;
+  my $db_adaptor = $self->hub->database('core');
+  my $meta_container = $db_adaptor->get_MetaContainer();
+  my $genome_container = $db_adaptor->get_GenomeContainer();
+
+  #deal with databases that don't have species_stats
+  return $html if $genome_container->is_empty;
+
+  $html = '<h3>Summary</h3>';
+
+  my $cols = [
+    { key => 'name', title => '', width => '30%', align => 'left' },
+    { key => 'stat', title => '', width => '70%', align => 'left' },
+  ];
+  my $options = {'header' => 'no', 'rows' => ['bg3', 'bg1']};
+
+  ## SUMMARY STATS
+  my $summary = $self->new_table($cols, [], $options);
+
+  my( $a_id ) = ( @{$meta_container->list_value_by_key('assembly.name')},
+                    @{$meta_container->list_value_by_key('assembly.default')});
+  if ($a_id) {
+    # look for long name and accession num
+    if (my ($long) = @{$meta_container->list_value_by_key('assembly.long_name')}) {
+      $a_id .= " ($long)";
+    }
+    if (my ($acc) = @{$meta_container->list_value_by_key('assembly.accession')}) {
+      $acc = sprintf('INSDC Assembly <a href="http://www.ebi.ac.uk/ena/data/view/%s">%s</a>', $acc, $acc);
+      $a_id .= ", $acc";
+    }
+  }
+  $summary->add_row({
+      'name' => '<b>Assembly</b>',
+      'stat' => $a_id.', '.$sd->ASSEMBLY_DATE
+  });
+  $summary->add_row({
+      'name' => '<b>Database version</b>',
+      'stat' => $sd->ENSEMBL_VERSION.'.'.$sd->SPECIES_RELEASE_VERSION
+  });
+  $summary->add_row({
+      'name' => '<b>Base Pairs</b>',
+      'stat' => $self->thousandify($genome_container->get_total_length()),
+  });
+  my $header = $self->glossary_helptip('Golden Path Length', 'Golden path length');
+  $summary->add_row({
+      'name' => "<b>$header</b>",
+      'stat' => $self->thousandify($genome_container->get_ref_length())
+  });
+  $summary->add_row({
+      'name' => '<b>Genebuild by</b>',
+      'stat' => $sd->GENEBUILD_BY
+  });
+  my @A         = @{$meta_container->list_value_by_key('genebuild.method')};
+  my $method  = ucfirst($A[0]) || '';
+  $method     =~ s/_/ /g;
+  $summary->add_row({
+      'name' => '<b>Genebuild method</b>',
+      'stat' => $method
+  });
+## EG - ENSEMBL-4575 hide some stats and show provider link(s)
+
+  # $summary->add_row({
+  #     'name' => '<b>Genebuild started</b>',
+  #     'stat' => $sd->GENEBUILD_START
+  # });
+  # $summary->add_row({
+  #     'name' => '<b>Genebuild released</b>',
+  #     'stat' => $sd->GENEBUILD_RELEASE
+  # });
+  # $summary->add_row({
+  #     'name' => '<b>Genebuild last updated/patched</b>',
+  #     'stat' => $sd->GENEBUILD_LATEST
+  # });
+  # my $gencode = $sd->GENCODE_VERSION;
+  # if ($gencode) {
+  #   $summary->add_row({
+  #     'name' => '<b>Gencode version</b>',
+  #     'stat' => $gencode,
+  #   });
+  # }
+
+  
+  # data source
+
+  if (my $names = $sd->PROVIDER_NAME) {
+    
+    my $urls = $sd->PROVIDER_URL;
+
+    $names = [$names] if ref $names ne 'ARRAY';
+    $urls  = [$urls]  if ref $urls  ne 'ARRAY';
+
+    my @providers;
+    foreach my $name (@$names){
+      my $url = shift @$urls;
+      push @providers, $url ? qq{<a href="$url">$name</a>} : $name;
+    } 
+
+    $summary->add_row({
+      'name' => '<b>Data source</b>',
+      'stat' => join '<br />', @providers,
+    });
+  }
+##
+
+  $html .= $summary->render;
+
+  ## GENE COUNTS
+  my $has_alt = $genome_container->get_alt_coding_count();
+  if($has_alt) {
+    $html .= $self->_add_gene_counts($genome_container,$sd,$cols,$options,' (Primary assembly)','');
+    $html .= $self->_add_gene_counts($genome_container,$sd,$cols,$options,' (Alternative sequence)','a');
+  } else {
+    $html .= $self->_add_gene_counts($genome_container,$sd,$cols,$options,'','');
+  }
+  
+  ## OTHER STATS
+  my $rows = [];
+  ## Prediction transcripts
+  my $analysis_adaptor = $db_adaptor->get_AnalysisAdaptor();
+  my $attribute_adaptor = $db_adaptor->get_AttributeAdaptor();
+  my @analyses = @{ $analysis_adaptor->
+                      fetch_all_by_feature_class('PredictionTranscript') };
+  foreach my $analysis (@analyses) {
+    my $logic_name = $analysis->logic_name;
+    my $stat = $genome_container->fetch_by_statistic(
+                                      'PredictionTranscript',$logic_name); 
+    push @$rows, {
+      'name' => "<b>".$stat->name."</b>",
+      'stat' => $self->thousandify($stat->value),
+    } if $stat and $stat->name;
+  }
+  ## Variants
+  if ($self->hub->database('variation')) {
+    my @other_stats = qw(SNPCount StructuralVariation);
+    foreach my $name (@other_stats) {
+      my $stat = $genome_container->fetch_by_statistic($name);
+      push @$rows, {
+        'name' => '<b>'.$stat->name.'</b>',
+        'stat' => $self->thousandify($stat->value)
+      } if $stat and $stat->name;
+    }
+  }
+  if (scalar(@$rows)) {
+    $html .= '<h3>Other</h3>';
+    my $other = $self->new_table($cols, $rows, $options);
+    $html .= $other->render;
+  }
+
+  return $html;
+}
 
 1;
