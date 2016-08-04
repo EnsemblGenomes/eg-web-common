@@ -44,12 +44,7 @@ sub modify_tree {
   my $self  = shift;
 
   $self->delete_node('WhatsNew');
-
-
-  $self->create_node('PanComparaSpecies', 'Pan Compara Species',
-    [qw(pan_species EnsEMBL::Web::Component::Info::PanComparaSpecies)],
-    { availability => 1, title => 'Pan Compara Species' }
-  );
+  
   $self->get_node('Annotation')->data->{'title'} = 'Details';
 }
 
