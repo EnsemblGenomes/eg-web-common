@@ -22,6 +22,8 @@ use strict;
 use warnings;
 use List::Util qw(min max);
 
+use previous qw(order_species_by_clade);
+
 ## EG
 # intra_species_alignments() is a replacement for the lookup stored in MULTI.packed
 # E.g. $species_defs->multi_hash->{'DATABASE_COMPARA'}->{'INTRA_SPECIES_ALIGNMENTS'}\
@@ -171,5 +173,18 @@ sub intra_species_alignments {
   
   return $self->{_intra_species_alignments}->{$cache_key};
 }
+
+## EG - ENSEMBL-4640 temp fix to remove undef values from the species tree node lists.
+##      The undefs occur because non-compara species are mistakenly processed in the 
+##      original version of this function
+sub order_species_by_clade {
+  my $self = shift;
+  my $sets = $self->PREV::order_species_by_clade(@_);
+  foreach my $set (@$sets) {
+    $set->[1] = [grep {$_} @{$set->[1]}]; 
+  }
+  return $sets;
+}
+##
 
 1;
