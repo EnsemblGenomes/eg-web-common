@@ -37,9 +37,8 @@ sub _get_NCBIBLAST_source_file {
   
   my $dataset = $self->get_config($species, 'SPECIES_DATASET');
 
-  if ($species ne $dataset) { # add collection prefix
-    $path   .= '/' . ucfirst $dataset;
-    $species = lcfirst $species if $unit eq 'bacteria';
+  if ($species ne $dataset) { # add collection
+    $path .= '/' . $dataset . '_collection';
   }
 
   $path .= '/' . lc $species; # add species folder
