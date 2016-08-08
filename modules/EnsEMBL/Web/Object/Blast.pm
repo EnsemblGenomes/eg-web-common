@@ -105,5 +105,29 @@ sub get_edit_jobs_data {
   return $jobs_data;
 }
 
+sub get_target_object {
+  ## Gets the target genomic object according to the target Id of the blast result's hit
+  ## @param Blast result hit
+  ## @param DB Source type
+  ## @return PredictionTranscript/Transcript/Translation object
+  my ($self, $hit, $source)  = @_;
+  my $target_id     = $hit->{'tid'};
+  my $species       = $hit->{'species'};
+  my $feature_type  = $source =~ /abinitio/i ? 'PredictionTranscript' : $source =~ /cdna|ncrna/i ? 'Transcript' : 'Translation';
+  my $adaptor       = $self->hub->get_adaptor("get_${feature_type}Adaptor", 'core', $species);
+
+## EG - temporary fix to strip extra version number off the stable_id
+##      these were added by mistake in the pipeline and havent yet been fixed in the BLAST indices        
+  my $obj = $adaptor->fetch_by_stable_id($target_id);
+
+  if (!$obj) {
+    $hit->{'tid'} =~ s/\.[0-9]+$//;
+    $obj = $adaptor->fetch_by_stable_id($hit->{'tid'});
+  }
+
+  return $obj;
+##
+}
+
 
 1;
