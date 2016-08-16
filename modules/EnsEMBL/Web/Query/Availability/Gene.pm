@@ -11,7 +11,7 @@ sub get {
   my ($args) = @_;
 
   my $get       = $self->PREV::get(@_);
-  my $member    = $self->compara_member($args);
+  my $member    = $self->compara_member($args) if $get->[0]->{'database:compara'};
 
   if ($member) {
     my $num_homoeologues = $member->number_of_homoeologues;
