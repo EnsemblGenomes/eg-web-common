@@ -67,6 +67,7 @@ sub update_conf {
   $SiteDefs::ENSEMBL_VEP_ENABLED    = 0;
   $SiteDefs::ENSEMBL_MART_ENABLED   = 0;
   $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
+  $SiteDefs::ENSEMBL_HMMER_ENABLED  = 0;
 
   #----------------------------------------------------------------------------
   # EXTERNAL

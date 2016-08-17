@@ -27,6 +27,7 @@ sub links {
   my $sd    = $self->species_defs;
   my @links;
 
+  push @links, 'hmmer',         '<a class="constant" href="/hmmer">HMMER</a>' if $sd->ENSEMBL_HMMER_ENABLED;
   push @links, 'blast', sprintf '<a class="constant" href="%s">BLAST</a>', $hub->url({'species' => $hub->species || 'Multi', 'type' => 'Tools', 'action' => 'Blast', 'function' => ''}) if $sd->ENSEMBL_BLAST_ENABLED;
   push @links, 'biomart',       '<a class="constant" href="/biomart/martview">BioMart</a>';
   push @links, 'tools',         '<a class="constant" href="/tools.html">Tools</a>';
