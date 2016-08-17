@@ -1,0 +1,194 @@
+<html>
+<head>
+<title>HMMER Search</title>
+<meta name="index" content="DELETE" />
+</head>
+<body>
+
+<style>
+  #masthead,
+  #wide-footer {
+    display: none;
+  }
+
+  #hmmer-search {
+    width: 510px;
+    margin: auto;
+  }
+
+  #hmmer-search div {
+    margin: 5px 0;
+  }
+
+  #hmmer-search textarea {
+    width: 500px; height: 150px;
+  }
+
+  #buttons input {
+    margin-right: 10px;
+  }
+
+  #error {
+    display: none;
+    background: #FFF0AC none repeat scroll 0% 0%;
+    color: #796300;
+    border: 1px solid #FFE260;
+    padding: 10px;
+    margin: 10px 0;
+    text-align: left;
+  }
+
+  .invaild {
+    border: 2px solid #900;
+  }
+</style>
+
+<div class="panel js_panel">
+  <input type="hidden" class="panel_type" value="Content" />
+  <div class="content">
+    <div id="hmmer-search" class="centered">
+
+  <div style="padding: 0.5rem; border: solid 1px lightgray; background-color: #eee;">
+    The HMMER web service will be
+    <span style="font-weight: bold;">unavailable from August 26th to 30th</span> due to maintenance.
+    The service will be suspended at 12:00 <abbr title="British Summer Time">BST</abbr> on August 26th.
+    The service is expected to resume by 14:00 on August 30th.
+  </div>
+
+      <h1>phmmer</h1>
+      <h2>protein sequence vs protein sequence database</h2>
+      
+      <div id="error"></div>
+
+      <form method="post" id="hmmer-form" action="http://www.ebi.ac.uk/Tools/hmmer/search/phmmer" enctype="multipart/form-data" class="search">
+        
+        <input type="hidden" value="evalue" name="threshold" id="evalue" />
+        <input type="hidden" value="0.01" name="incE" id="incE" />
+        <input type="hidden" value="0.03" name="incdomE" id="incdomE" />
+        <input type="hidden" value="1" name="E" id="E" />
+        <input type="hidden" value="1" name="domE" id="domE" />
+        <input type="hidden" value="bit" name="threshold" id="hidden" />
+        <input type="hidden" value="4" name="cols" id="cols"/>
+        <input type="hidden" value="100" name="rows" id="rows"/>
+        <input type="hidden" value="" name="tax_included" id="tax_included"/>
+        <input type="hidden" value="" name="tax_excluded" id="tax_excluded"/>
+        <input type="hidden" value="" name="taxfilter_data" id="taxfilter_data"/>
+        <input type="hidden" value="search" name="taxFilterType" id="taxFilterType"/>
+        <input type="hidden" value="" name="email" id="email"/>
+        <input type="hidden" value="" name="acc" id="acc"/>
+        <input type="hidden" value="1" name="isajax" id="isajax" />
+        <input type="hidden" value="ensembl" name="seqdb" id="ensembl" />
+        
+        <div>
+          <label for="seq" id="seqlabel" class="clearfix">
+            Paste in your sequence or use the <a href="#" id="example">example</a>
+            <a class="constant help-header _ht" title="Click the example link to add a sequence to the search box.  The form requires a single sequence protein in FASTA format, with or without a header line."><span class="sprite help_icon"></span></a>
+          </label>
+        </div>
+
+        <textarea name="seq" id="seq" class="ftextarea" title="Sequence"></textarea>
+        
+        <div id="buttons">
+          <input type="submit" value="Submit" class="fbutton" id="subbutton"/>
+          <a id="clear" href="#">Clear</a>
+        </div>
+
+      </form>
+  </div>
+</div>
+
+<div style="display:none" id="example-seq"><pre>&gt;2abl_A mol:protein length:163  ABL TYROSINE KINASE
+MGPSENDPNLFVALYDFVASGDNTLSITKGEKLRVLGYNHNGEWCEAQTKNGQGWVPSNYITPVNSLEKHSWYHGPVSRNAAEYLLSSGINGSFLVRESESSPGQRSISLRYEGRVYHYRINTASDGKLYVSSESRFNTLAELVHHHSTVADGLITTLHYPAP</pre></div>
+
+<script>
+window.onload = function() {
+  $(function() {
+    
+    $( "#hmmer-form" ).submit(function(event) {
+      clearError();clearError()
+
+      var valid = validate($("#seq"));
+      if (!valid[0]) {
+        error(valid[1]);
+        event.preventDefault();
+      }
+    });
+
+    $('#clear').click(function(event){ 
+      setSeq('');
+      clearError();
+      event.preventDefault();
+    });
+
+    $('#example').click(function(event){ 
+      setSeq($('#example-seq').text())
+      event.preventDefault();
+    });
+
+    function error(msg) {
+      $("#seq").addClass('invaild');
+      $("#error").text(msg).show(); 
+    }
+
+    function clearError() {
+      $("#seq").removeClass('invaild');
+      $("#error").hide(); 
+    }
+
+    function setSeq(seq) {
+      $("#seq").val(seq).text(seq).change(); 
+    }
+
+    function validate(obj) {
+      if (obj.val().length === 0) {
+        return [false, "Please specify a search sequence."];
+      }
+      var seq = stripHeader(obj.val());
+       query_length = seq.length;
+      // sequence has illegal characters
+      if (seq.match(/[^abcdefghijklmnopqrstuvwxyz\*]/i)) {
+        return [false, "The sequence seems to contain illegal characters."];
+      }
+      // sequence composition no good
+      var frag = seq.substring(0,50);
+      var fLength = frag.length;
+      var n = 0;
+      if (fLength > 30) {
+        for (var i = 0;i < fLength ;i++) {
+          var l = frag.substr(i,1);
+          if (l.match(/[acgtu]/i)) {
+            n++;
+          }
+        }
+      }
+      if ((n / fLength) > 0.95 ) {
+        return [false, "The input sequence doesn't appear to be a protein sequence."];
+      }
+      //sequence is too long?
+      if (seq.length > 10000) {
+        return [false, "The sequence is too long. Please use sequences with less than 10,000 residues. This may be a bona fide sequence such as Titin, but we current can not search long sequences due to memory constraints."];
+      }
+      //sequence length too short
+      if (seq.length < 10) {
+        return [false, "The sequence is too short. Please use sequences with 10 or more residues."];
+      }
+
+      return [true];
+    }
+
+    function stripHeader(string) {
+      var lines = $.map(string.split('\n'), function(n,i) {
+        if (n.match(/^[^>]/)) {
+          return n;
+        }
+      });
+      return lines.join('').replace(/[\s\r]+/g,'');
+    }
+
+  });
+}
+</script>
+
+</body>
+</html>
+

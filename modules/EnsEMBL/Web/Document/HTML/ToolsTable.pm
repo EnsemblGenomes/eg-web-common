@@ -64,6 +64,19 @@ sub render {
     });
   }
 
+  ## HMMER
+  if ($sd->ENSEMBL_HMMER_ENABLED) {
+    my $link = '/hmmer';
+    $table->add_row({
+      'name'  => sprintf('<b><a class="nodeco" href="%s">HMMER</a></b>', $link),
+      'desc'  => 'Quickly search our genomes for your protein sequence.',
+      'limit' => '',
+      'tool'  => sprintf('<a href="%s" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $link, $img_url),
+      'code'  => '',
+      'docs'  => ''
+    });
+  }
+
   ## BLAST
   if ($sd->ENSEMBL_BLAST_ENABLED) {
     my $link = $hub->url({'species' => $sp, qw(type Tools action Blast)});
