@@ -712,6 +712,7 @@ sub dumpGene {
         my $gene_sql = 
           "SELECT g.gene_id, t.transcript_id, tr.translation_id,
              g.stable_id AS gsid, t.stable_id AS tsid, tr.stable_id AS trsid,
+             g.version AS gversion, t.version AS gversion, tr.version AS trversion,
              g.description, ed.db_display_name, x.dbprimary_acc,x.display_label AS xdlgene, 
              ad.display_label, ad.description, ad.web_data, g.source, g.status, g.biotype,
              sr.name AS seq_region_name, g.seq_region_start, g.seq_region_end
@@ -735,15 +736,17 @@ sub dumpGene {
         foreach my $row (@$gene_info) {
       
           my (
-            $gene_id,                            $transcript_id,
-            $translation_id,                     $gene_stable_id,
-            $transcript_stable_id,               $translation_stable_id,
+            $gene_id,        $transcript_id,        $translation_id,
+            $gene_stable_id, $transcript_stable_id, $translation_stable_id,
+            $gene_version,   $transcript_version,   $translation_version,
+
             $gene_description,                   $extdb_db_display_name,
             $xref_primary_acc,                   $xref_display_label,
             $analysis_description_display_label, $analysis_description, $web_data,
             $gene_source,                        $gene_status,
             $gene_biotype,                       $seq_region_name,
             $seq_region_start,                   $seq_region_end
+
           ) = @$row;
           
           if ($web_data) {
@@ -762,11 +765,11 @@ sub dumpGene {
             %old = (
               'gene_id'                => $gene_id,
               'haplotype'              => $haplotypes->{$gene_id} ? 'haplotype' : 'reference',
-              'gene_stable_id'         => $gene_stable_id,
+              'gene_stable_id'         => { $gene_stable_id => $gene_version || -1},
               'description'            => $gene_description,
               'taxon_id'               => $taxon_id,
-              'translation_stable_ids' => { $translation_stable_id ? ( $translation_stable_id => 1 ) : () },
-              'transcript_stable_ids'  => { $transcript_stable_id ? ( $transcript_stable_id => 1 ) : () },
+              'translation_stable_ids' => { $translation_stable_id ? ( $translation_stable_id => $translation_version || -1 ) : () },
+              'transcript_stable_ids'  => { $transcript_stable_id ? ( $transcript_stable_id => $transcript_version || -1 ) : () },
               'transcript_ids'         => { $transcript_id ? ( $transcript_id => 1 ) : () },
               'exons'                  => {},
               'external_identifiers'   => {},
@@ -854,7 +857,7 @@ sub geneLineXML {
     return;
   }
 
-  my $gene_id              = $xml_data->{'gene_stable_id'};
+  my ($gene_id, $gene_version) = each %{$xml_data->{'gene_stable_id'}};
   my $genomic_unit         = $xml_data->{'genomic_unit'};
   my $location             = $xml_data->{'location'};
   my $transcripts          = $xml_data->{'transcript_stable_ids'} or die "transcripts not set";
@@ -960,6 +963,21 @@ sub geneLineXML {
 <field name="gene_synonym">} . clean($_) . qq{</field> }
   } keys %$unique_synonyms;
 
+  my $versions_xml = ''; 
+  $versions_xml .= qq(\n<field name="gene_version">$gene_id.$gene_version</field>) if $gene_version;
+
+  while (my ($id, $version) = each %$transcripts) {
+    $id = clean($id);
+    $versions_xml .= qq(\n<field name="transcript">$id</field>);
+    $versions_xml .= qq(\n<field name="transcript_version">$id.$version</field>) if $version > 0;
+  }
+  
+  while (my ($id, $version) = each %$peptides) {
+    $id = clean($id);
+    $versions_xml .= qq(\n<field name="peptide">$id</field>);
+    $versions_xml .= qq(\n<field name="peptide_version">$id.$version</field>) if $version > 0;
+  }
+
   my $additional_fields .= qq{
 <additional_fields>
 <field name="species">$species</field>
@@ -970,14 +988,11 @@ sub geneLineXML {
 <field name="transcript_count">$transcript_count</field>
 <field name="gene_name">$gene_name</field>
 <field name="seq_region_name">$seq_region_name</field>
-<field name="haplotype">$haplotype</field>}
+<field name="haplotype">$haplotype</field>$versions_xml}
     . ($dataset ne $species ? qq{
 <field name="collection">$dataset</field>} : '')
     . ($genomic_unit ? qq{
 <field name="genomic_unit">$genomic_unit</field>} : '') 
-    . ( join "", ( map { qq{
-<field name="transcript">$_</field>}
-      } map {clean($_)} keys %$transcripts ) )
     . qq{  
 <field name="exon_count">$exon_count</field> }
     . ( join "", ( map { qq{
@@ -988,9 +1003,6 @@ sub geneLineXML {
     . ( join "", ( map { qq{
 <field name="domain">$_</field>}
       } map {clean($_)} keys %$domains ) )
-    . ( join "", ( map { qq{
-<field name="peptide">$_</field>}
-      } map {clean($_)} keys %$peptides ) )
     . ( join "", ( map { qq{
 <field name="genetree">$_</field>}
       } map {clean($_)} @$genetrees ) )
