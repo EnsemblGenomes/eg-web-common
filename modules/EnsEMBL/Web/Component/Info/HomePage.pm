@@ -498,7 +498,7 @@ sub _compara_text {
     $html .= '<p><strong>What can I find?</strong>  Homologues, gene trees, and whole genome alignments across multiple species.</p>';
   }
   $html .= qq(<p><a href="http://ensemblgenomes.org/info/data/whole_genome_alignment" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about comparative analyses</a></p>);
-  $html .= qq(<p><a href="/prot_tree_stats.html" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />Protein trees</a></p>);
+  $html .= qq(<p><a href="/prot_tree_stats.html" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />Phylogenetic overview of gene families</a></p>);
 
   if ($species_defs->ENSEMBL_FTP_URL) {
     my $ftp_url = sprintf '%s/release-%s/emf/ensembl-compara/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version;
