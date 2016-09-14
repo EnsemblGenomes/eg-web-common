@@ -25,7 +25,6 @@ no warnings "uninitialized";
 use Carp;
 
 use Bio::EnsEMBL::Registry;
-use EnsEMBL::Web::RegObj;
 use EnsEMBL::Web::Hub;
 my $reg = "Bio::EnsEMBL::Registry";
 
