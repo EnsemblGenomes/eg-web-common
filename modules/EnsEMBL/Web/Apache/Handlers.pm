@@ -41,8 +41,8 @@ use Bio::EnsEMBL::Registry;
 
 use EnsEMBL::Web::Cache;
 use EnsEMBL::Web::Cookie;
-use EnsEMBL::Web::Registry;
-use EnsEMBL::Web::RegObj;
+#use EnsEMBL::Web::Registry;
+#use EnsEMBL::Web::RegObj;
 use EnsEMBL::Web::SpeciesDefs;
 
 use EnsEMBL::Web::Apache::SSI;
@@ -87,9 +87,9 @@ sub childInitHandler {
   srand(time ^ $temp_seed);
   
   # Create the Registry
-  $ENSEMBL_WEB_REGISTRY = EnsEMBL::Web::Registry->new;
-  $ENSEMBL_WEB_REGISTRY->timer->set_process_child_count(0);
-  $ENSEMBL_WEB_REGISTRY->timer->set_process_start_time(time);
+  #$ENSEMBL_WEB_REGISTRY = EnsEMBL::Web::Registry->new;
+  #$ENSEMBL_WEB_REGISTRY->timer->set_process_child_count(0);
+  #$ENSEMBL_WEB_REGISTRY->timer->set_process_start_time(time);
   
   warn sprintf "Child initialised: %7d %04d-%02d-%02d %02d:%02d:%02d\n", $$, $X[5]+1900, $X[4]+1, $X[3], $X[2], $X[1], $X[0] if $SiteDefs::ENSEMBL_DEBUG_FLAGS & $SiteDefs::ENSEMBL_DEBUG_HANDLER_ERRORS;
 }
@@ -237,9 +237,9 @@ sub postReadRequestHandler {
   $ENV{'CACHE_TAGS'} = {};
   
   # Manipulate the Registry
-  $ENSEMBL_WEB_REGISTRY->timer->new_child;
-  $ENSEMBL_WEB_REGISTRY->timer->clear_times;
-  $ENSEMBL_WEB_REGISTRY->timer_push('Handling script', undef, 'Apache');
+  #$ENSEMBL_WEB_REGISTRY->timer->new_child;
+  #$ENSEMBL_WEB_REGISTRY->timer->clear_times;
+  #$ENSEMBL_WEB_REGISTRY->timer_push('Handling script', undef, 'Apache');
   
   ## Ajax cookie
   my $cookies = EnsEMBL::Web::Cookie->fetch($r);
@@ -251,7 +251,7 @@ sub postReadRequestHandler {
   $r->subprocess_env->{'ENSEMBL_IMAGE_WIDTH'}   = $width || $SiteDefs::ENSEMBL_IMAGE_WIDTH || 800;
   $r->subprocess_env->{'ENSEMBL_DYNAMIC_WIDTH'} = $cookies->{'DYNAMIC_WIDTH'} && $cookies->{'DYNAMIC_WIDTH'}->value ? 1 : $width ? 0 : 1;
 
-  $ENSEMBL_WEB_REGISTRY->timer_push('Post read request handler completed', undef, 'Apache');
+  #$ENSEMBL_WEB_REGISTRY->timer_push('Post read request handler completed', undef, 'Apache');
   
   # Ensembl DEBUG cookie
   $r->headers_out->add('X-MACHINE' => $SiteDefs::ENSEMBL_SERVER) if $cookies->{'ENSEMBL_DEBUG'};
@@ -292,7 +292,7 @@ sub redirect_species_page {
 sub handler {
   my $r = shift; # Get the connection handler
   
-  $ENSEMBL_WEB_REGISTRY->timer->set_name('REQUEST ' . $r->uri);
+  #$ENSEMBL_WEB_REGISTRY->timer->set_name('REQUEST ' . $r->uri);
   
   my $u                   = $r->parsed_uri;
   my $file                = $u->path;
@@ -380,7 +380,7 @@ sub handler {
     $r->headers_out->add('Location' => $r->uri);
     $r->child_terminate;
       
-    $ENSEMBL_WEB_REGISTRY->timer_push('Handler "REDIRECT"', undef, 'Apache');
+    #$ENSEMBL_WEB_REGISTRY->timer_push('Handler "REDIRECT"', undef, 'Apache');
     
     return HTTP_MOVED_PERMANENTLY;
   }
@@ -476,7 +476,7 @@ sub handler {
     $r->headers_out->add('Location' => $r->uri);
     $r->child_terminate;
 
-    $ENSEMBL_WEB_REGISTRY->timer_push('Handler "REDIRECT"', undef, 'Apache');
+    #$ENSEMBL_WEB_REGISTRY->timer_push('Handler "REDIRECT"', undef, 'Apache');
 
     return HTTP_MOVED_PERMANENTLY;
   }
@@ -547,7 +547,7 @@ sub handler {
   if ($species && $species_name) { # species script
     $return = EnsEMBL::Web::Apache::SpeciesHandler::handler_species($r, $cookies, $species_name, \@path_segments, $querystring, $file, $species_name eq $species);
     
-    $ENSEMBL_WEB_REGISTRY->timer_push('Handler for species scripts finished', undef, 'Apache');
+    #$ENSEMBL_WEB_REGISTRY->timer_push('Handler for species scripts finished', undef, 'Apache');
     
     shift @path_segments;
     shift @path_segments;
@@ -575,7 +575,7 @@ sub handler {
     $r->uri($species_uri);
     $r->headers_out->add('Location' => $r->uri);
     $r->child_terminate;
-    $ENSEMBL_WEB_REGISTRY->timer_push('Handler "REDIRECT"', undef, 'Apache');
+    #$ENSEMBL_WEB_REGISTRY->timer_push('Handler "REDIRECT"', undef, 'Apache');
     
     return HTTP_MOVED_PERMANENTLY;  
   }
@@ -594,13 +594,13 @@ sub handler {
     $r->filename($1 . ($r->filename =~ /\/$/ ? '' : '/') . 'index.html');
     $r->headers_out->add('Location' => $r->uri);
     $r->child_terminate;
-    $ENSEMBL_WEB_REGISTRY->timer_push('Handler "REDIRECT"', undef, 'Apache');
+    #$ENSEMBL_WEB_REGISTRY->timer_push('Handler "REDIRECT"', undef, 'Apache');
     
     return HTTP_MOVED_TEMPORARILY;
   } elsif ($filename) {
     $r->filename($filename);
     $r->content_type('text/html');
-    $ENSEMBL_WEB_REGISTRY->timer_push('Handler "OK"', undef, 'Apache');
+    #$ENSEMBL_WEB_REGISTRY->timer_push('Handler "OK"', undef, 'Apache');
     
     EnsEMBL::Web::Apache::SSI::handler($r, $cookies);
     
@@ -608,7 +608,7 @@ sub handler {
   }
   
   # Give up
-  $ENSEMBL_WEB_REGISTRY->timer_push('Handler "DECLINED"', undef, 'Apache');
+  #$ENSEMBL_WEB_REGISTRY->timer_push('Handler "DECLINED"', undef, 'Apache');
   
   return NOT_FOUND;
 }
@@ -624,10 +624,10 @@ sub logHandler {
   my $r = shift;
   my $T = time;
   
-  $r->subprocess_env->{'ENSEMBL_CHILD_COUNT'}  = $ENSEMBL_WEB_REGISTRY->timer->get_process_child_count;
+  #$r->subprocess_env->{'ENSEMBL_CHILD_COUNT'}  = $ENSEMBL_WEB_REGISTRY->timer->get_process_child_count;
   $r->subprocess_env->{'ENSEMBL_SCRIPT_START'} = sprintf '%0.6f', $T;
-  $r->subprocess_env->{'ENSEMBL_SCRIPT_END'}   = sprintf '%0.6f', $ENSEMBL_WEB_REGISTRY->timer->get_script_start_time;
-  $r->subprocess_env->{'ENSEMBL_SCRIPT_TIME'}  = sprintf '%0.6f', $T - $ENSEMBL_WEB_REGISTRY->timer->get_script_start_time;
+  #$r->subprocess_env->{'ENSEMBL_SCRIPT_END'}   = sprintf '%0.6f', $ENSEMBL_WEB_REGISTRY->timer->get_script_start_time;
+  #$r->subprocess_env->{'ENSEMBL_SCRIPT_TIME'}  = sprintf '%0.6f', $T - $ENSEMBL_WEB_REGISTRY->timer->get_script_start_time;
   
   return DECLINED;
 }
@@ -640,8 +640,8 @@ sub cleanupHandler {
   return if $r->subprocess_env->{'ENSEMBL_ENDTIME'};
   
   my $end_time   = time;
-  my $start_time = $ENSEMBL_WEB_REGISTRY->timer->get_script_start_time;
-  my $length     = $end_time - $start_time;
+  #my $start_time = $ENSEMBL_WEB_REGISTRY->timer->get_script_start_time;
+  my $length     = 0;#$end_time - $start_time;
   
   if ($length >= $SiteDefs::ENSEMBL_LONGPROCESS_MINTIME) {
     my $u      = $r->parsed_uri;
@@ -658,8 +658,8 @@ sub cleanupHandler {
     $r->subprocess_env->{'ENSEMBL_ENDTIME'} = $end_time;
     
     if ($SiteDefs::ENSEMBL_DEBUG_FLAGS & $SiteDefs::ENSEMBL_DEBUG_HANDLER_ERRORS) {
-      my @X = localtime($start_time);
-      
+      #my @X = localtime($start_time);
+      my @X = localtime();
       warn sprintf(
         "LONG PROCESS: %12s DT:  %04d-%02d-%02d %02d:%02d:%02d Time: %10s Size: %10s\nLONG PROCESS: %12s REQ: %s\nLONG PROCESS: %12s IP:  %s  UA: %s\n", 
         $$, $X[5]+1900, $X[4]+1, $X[3], $X[2], $X[1], $X[0], $length, $size, 
@@ -675,7 +675,7 @@ sub cleanupHandler {
   if (-e $die_file) {
     my @temp = stat $die_file;
     my $file_mod_time = $temp[9];
-    if ($file_mod_time >= $ENSEMBL_WEB_REGISTRY->timer->get_process_start_time) {
+    #if ($file_mod_time >= $ENSEMBL_WEB_REGISTRY->timer->get_process_start_time) {
       warn sprintf "KILLING CHILD %10s\n", $$;
       
       if ($Apache2::SizeLimit::IS_WIN32 || $Apache2::SizeLimit::WIN32) {
@@ -683,7 +683,7 @@ sub cleanupHandler {
       } else {
         $r->child_terminate;
       }
-    }
+    #}
     
     return DECLINED;
   }
@@ -692,9 +692,9 @@ sub cleanupHandler {
 sub cleanupHandler_script {
   my $r = shift;
   
-  $ENSEMBL_WEB_REGISTRY->timer_push('Cleaned up', undef, 'Cleanup');
+  #$ENSEMBL_WEB_REGISTRY->timer_push('Cleaned up', undef, 'Cleanup');
   
-  warn $ENSEMBL_WEB_REGISTRY->timer->render if $SiteDefs::ENSEMBL_DEBUG_FLAGS & $SiteDefs::ENSEMBL_DEBUG_PERL_PROFILER;
+  #warn $ENSEMBL_WEB_REGISTRY->timer->render if $SiteDefs::ENSEMBL_DEBUG_FLAGS & $SiteDefs::ENSEMBL_DEBUG_PERL_PROFILER;
   
   push_script_line($r, 'ENDSCR', sprintf '%10.3f', time - $r->subprocess_env->{'LOG_TIME'}) if $SiteDefs::ENSEMBL_DEBUG_FLAGS & $SiteDefs::ENSEMBL_DEBUG_HANDLER_ERRORS;
 }
@@ -711,10 +711,10 @@ sub childExitHandler {
       ($size) = Apache2::SizeLimit->_check_size;
     }
     
-    warn sprintf "Child %9d: - reaped at      %30s;  Time: %11.6f;  Req:  %4d;  Size: %8dK\n",
-      $$, '' . gmtime, time-$ENSEMBL_WEB_REGISTRY->timer->get_process_start_time,
-      $ENSEMBL_WEB_REGISTRY->timer->get_process_child_count,
-      $size
+    #warn sprintf "Child %9d: - reaped at      %30s;  Time: %11.6f;  Req:  %4d;  Size: %8dK\n",
+     # $$, '' . gmtime, time-$ENSEMBL_WEB_REGISTRY->timer->get_process_start_time,
+     # $ENSEMBL_WEB_REGISTRY->timer->get_process_child_count,
+     # $size
   }
 }
 
