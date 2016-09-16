@@ -28,7 +28,8 @@ use Compress::Zlib;
 
 
 sub ajax_species_autocomplete {
-  my ($self, $hub) = @_;
+  my $self          = shift;
+  my $hub           = $self->hub;
   my $species_defs  = $hub->species_defs;
   my $term          = $hub->param('term'); # will return everything if no term specified
   my $result_format = $hub->param('result_format') || 'simple'; # simple/chosen
@@ -101,9 +102,10 @@ sub ajax_species_autocomplete {
 
 
 sub ajax_gene_family_dynatree_js {
-  my ($self, $hub) = @_;
+  my $self           = shift;
+  my $hub            = $self->hub;
   my $gene_family_id = $hub->param('gene_family_id');
-  my $r              = $hub->apache_handle;
+  my $r              = $hub->r;
   my $tree;
 
   my $species_defs  = $hub->species_defs;
@@ -127,7 +129,7 @@ sub ajax_gene_family_dynatree_js {
   
   # fetch selected species from session
   my @selected_species;
-  if (my $data = $hub->session->get_data(type => 'genefamilyfilter', code => $hub->data_species . '_' . $gene_family_id )) {
+  if (my $data = $hub->session->get_record_data({type => 'genefamilyfilter', code => $hub->data_species . '_' . $gene_family_id })) {
     @selected_species = split /,/, uncompress( $data->{filter} );
   }
   
