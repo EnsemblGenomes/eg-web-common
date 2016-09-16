@@ -43,6 +43,7 @@ sub get_DBAdaptor {
 
   # try to retrieve the DBAdaptor from the Registry
   my $dba = $reg->get_DBAdaptor($species, $database);
+  $self->clean($dba);
   # warn "$species - $database - $dba";
 
 ## EG MULTI
