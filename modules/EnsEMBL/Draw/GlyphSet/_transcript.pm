@@ -41,10 +41,7 @@ sub _get_all_genes {
   my $species = $self->species;
   my $load_transcripts = ($self->{'display'} =~ /transcript/);
   my $key = join('::',$self->species,$slice->name,$analysis,$alias,$load_transcripts);
-  my $out = $hub->req_cache_get($key);
-  return $out if defined $out;
-  $out = $slice->get_all_Genes($analysis,$alias,$load_transcripts);
-  $hub->req_cache_set($key,$out);
+  my $out = $slice->get_all_Genes($analysis,$alias,$load_transcripts);
   return $out;
 }
 
