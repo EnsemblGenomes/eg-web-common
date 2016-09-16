@@ -25,7 +25,6 @@ no warnings "uninitialized";
 use Carp;
 
 use Bio::EnsEMBL::Registry;
-use EnsEMBL::Web::Hub;
 my $reg = "Bio::EnsEMBL::Registry";
 
 
@@ -47,16 +46,16 @@ sub get_DBAdaptor {
   # warn "$species - $database - $dba";
 
 ## EG MULTI
-  my $hub = EnsEMBL::Web::Hub->new;
-  
+
   if (! $dba ) {
-    my $sg = $hub->species_defs->get_config($species, "SPECIES_DATASET");
+    my $sg = $self->{species_defs}->get_config($species, "SPECIES_DATASET");
     $dba = $reg->get_DBAdaptor($sg, $database) if $sg;
     if ($dba) {
       $dba->{_is_multispecies} = 1;
-      $dba->{_species_id} = $hub->species_defs->get_config($species, "SPECIES_META_ID");
+      $dba->{_species_id} = $self->{species_defs}->get_config($species, "SPECIES_META_ID");
     }
   }
+
 ##
 
   # Funcgen Database Files Overwrite
