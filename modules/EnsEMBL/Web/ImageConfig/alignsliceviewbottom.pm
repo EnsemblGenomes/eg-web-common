@@ -20,11 +20,11 @@ limitations under the License.
 package EnsEMBL::Web::ImageConfig::alignsliceviewbottom;
 
 use strict;
-use previous qw(init);
+use previous qw(init_cacheable);
 
-sub init {
+sub init_cacheable {
   my $self = shift;
-  $self->PREV::init(@_);
+  $self->PREV::init_cacheable(@_);
   
   # set spritelib for the EG division - TODO: make this configurable
   my $site = $SiteDefs::ENSEMBL_SITETYPE =~ s/Ensembl //r; #/

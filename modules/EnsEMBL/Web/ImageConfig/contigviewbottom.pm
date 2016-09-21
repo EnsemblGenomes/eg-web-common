@@ -23,9 +23,9 @@ package EnsEMBL::Web::ImageConfig::contigviewbottom;
 use strict;
 use warnings;
 
-use previous qw(init initialize);
+use previous qw(init_cacheable initialize);
 
-sub init {
+sub init_cacheable {
   my $self = shift;
   
   $self->create_menus(qw(
@@ -85,7 +85,7 @@ sub init {
     information
   ));
 
-  $self->PREV::init(@_);
+  $self->PREV::init_cacheable(@_);
 
   $self->load_configured_bam;
   $self->load_configured_bed;

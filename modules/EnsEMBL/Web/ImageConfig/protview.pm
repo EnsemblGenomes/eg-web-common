@@ -21,41 +21,37 @@ package EnsEMBL::Web::ImageConfig::protview;
 use strict;
 
 
-sub init {
+sub init_cacheable {
+  ## @override
   my $self = shift;
+
+  $self->SUPER::init_cacheable(@_);
 
   $self->set_parameters({ sortable_tracks => 'drag' });
 
 ## EG @ switched 'feature' to 'protein_feature' to be consistent with contigviewbottom
   $self->create_menus(qw(
     domain
-    ms_domain
     feature
     protein_feature
     variation
     somatic
     external_data
-    user_data
     other
     information
   ));
-## EG
-  
+##
+
   $self->load_tracks;
-  
+
   $self->modify_configs(
     [ 'variation', 'somatic' ],
     { menu => 'no' }
   );
-  
+
   $self->modify_configs(
     [ 'variation_feature_variation', 'somatic_mutation_COSMIC' ],
     { menu => 'yes', glyphset => 'P_variation', display => 'normal', strand => 'r', colourset => 'protein_feature', depth => 1e5 }
-  );
-  
-  $self->modify_configs(
-    [ 'variation_legend' ],
-    { glyphset => 'P_variation_legend' }
   );
 }
 
