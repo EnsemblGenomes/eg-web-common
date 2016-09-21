@@ -67,5 +67,24 @@ Ensembl.Panel.SpeciesList = Ensembl.Panel.SpeciesList.extend({
         }
 
 
+    },
+
+    renderDropdown: function() {
+      var template = this.urlTemplate;
+      var dropdown = this.elLk.dropdown.children(':not(:first-child)').remove().end();
+// EG - we don't have/want the allSpecies list in sites will lots of species
+      if (this.allSpecies) {
+//        
+        $.each(this.allSpecies, function(i, species) {
+          if (!species.external) {
+            var groupClass  = species.group.replace(/\W/g, '_');
+            var optgroup    = dropdown.find('optgroup.' + groupClass);
+            if (!optgroup.length) {
+              optgroup = $('<optgroup class="' + groupClass + '" label="' + species.group + '"></optgroup>').appendTo(dropdown);
+            }
+            optgroup.append('<option value="' + Ensembl.populateTemplate(template, {species: species}) + '">' + species.common + ' (' + species.name + ')</option>');
+          }
+        });
+      }
     }
 });

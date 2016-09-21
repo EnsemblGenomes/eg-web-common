@@ -20,9 +20,9 @@ package EnsEMBL::Web::Document::HTML::HomeSearchMulti;
 
 use strict;
 
-use EnsEMBL::Web::Form;
-use EnsEMBL::Web::Hub;
+use base qw(EnsEMBL::Web::Document::HTML);
 
+use EnsEMBL::Web::Form;
 
 sub render {
   my $self = shift;
@@ -32,9 +32,8 @@ sub render {
 }
 
 sub gene_search {
-  my $self = shift;
-    
-  my $hub          = EnsEMBL::Web::Hub->new;
+  my $self         = shift;
+  my $hub          = $self->hub;
   my $species_defs = $hub->species_defs;
   my $search_url   = $species_defs->ENSEMBL_WEB_ROOT . "Multi/psychic";
   my $q            = $hub->param('q');
@@ -82,9 +81,8 @@ sub gene_search {
 }
 
 sub genome_search {
-  
-  my $hub          = EnsEMBL::Web::Hub->new;
-  my $species_defs = $hub->species_defs;
+  my $self         = shift;
+  my $species_defs = $self->hub->species_defs;
   my $sample_data  = $species_defs->get_config('MULTI', 'GENERIC_DATA') || {};
 
   return qq{
