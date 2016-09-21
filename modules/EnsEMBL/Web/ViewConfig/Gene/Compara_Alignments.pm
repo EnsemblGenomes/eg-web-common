@@ -19,12 +19,12 @@ limitations under the License.
 package EnsEMBL::Web::ViewConfig::Gene::Compara_Alignments;
 
 use strict;
-use previous qw(init);
+use previous qw(init_cacheable);
 
 ## EG - reduce flanking from 600 to 60
-sub init {
+sub init_cacheable {
   my $self = shift;
-  $self->PREV::init(@_);
+  $self->PREV::init_cacheable(@_);
 
   $self->set_defaults({
     flank5_display => 60,
