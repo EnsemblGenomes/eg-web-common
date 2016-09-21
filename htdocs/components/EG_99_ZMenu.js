@@ -51,36 +51,6 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
   },
 
   populateRegion: function () {
-    var variationGene = !!window.location.pathname.match(/\/Variation_(Gene|Transcript)\/Image/);
-    
-    if (!variationGene || !this.coords.r) {
-      return this._populateRegion();
-    }
-
-    var min   = this.start;
-    var max   = this.end;
-    var scale = (max - min + 1) / (this.areaCoords.r - this.areaCoords.l);
-    var start = Math.floor(min + (this.coords.s - this.areaCoords.l) * scale);
-    var end   = Math.floor(min + (this.coords.s + this.coords.r - this.areaCoords.l) * scale);
-    
-    if (start > end) {
-      var tmp = start;
-      start = end;
-      end   = tmp;
-    }
-
-    start = Math.max(start, min);
-    end   = Math.min(end,   max);
-
-    this.buildMenu(
-      [ '<a class="location_change" href="' + this.baseURL.replace(/%s/, this.chr + ':' + start + '-' + end) + '">Jump to region (' + (end - start) + ' bp)</a>' ],
-      'Region: ' + this.chr + ':' + start + '-' + end
-    );
-  },
-
-  // _populateRegion is a copy of Ensembl's populateRegion func, with some EG modifications
-  _populateRegion: function () {
-    console.log("_populate region");
     var panel        = this;
     var min          = this.start;
     var max          = this.end;
@@ -264,32 +234,6 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
 ////   
     this.buildMenu(menu, caption);
   },
-
-  variationZoomURL: function (scale, min, max) {
-    var w = Ensembl.location.length * scale;
-    
-    if (w < 1) {
-      return '';
-    }
-
-    var start = Math.round(this.location - (w - 1) / 2);
-    var end   = Math.round(this.location + (w - 1) / 2); // No constraints on end - can't know how long the chromosome is, and perl will deal with overflow
-        min   = min || 0;
-        max   = max || 0;
-    
-    if (start < 1) {
-      start = this.start;
-    }
-    
-    start = Math.min(Math.max(start, min), max);
-    end   = Math.min(Math.max(end,   min), max);
-    
-    if (this.align === true) {
-      return this.baseURL.replace(/%s/, Ensembl.coreParams.r + ';align_start=' + start + ';align_end=' + end);
-    } else {
-      return this.baseURL.replace(/%s/, (this.chr || Ensembl.location.name) + ':' + start + '-' + end);
-    }
-  }
     
   
 }, { template: Ensembl.Panel.ZMenu.template });

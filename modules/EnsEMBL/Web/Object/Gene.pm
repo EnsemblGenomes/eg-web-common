@@ -145,24 +145,6 @@ sub get_go_list {
   return \%go_hash;
 }
 
-sub get_Slice {
-  my ($self, $context, $ori) = @_;
-## EG
-  # HORRIBLE HACK: if we've got a variation zoom slice, serve it instead of the original slice
-  my $slice;
-  if ($self->{_variation_zoom_slice}) {
-    $slice   = $self->{_variation_zoom_slice};
-    $context = 'FULL';
-  } else {
-    $slice   = $self->Obj->feature_Slice;
-    $context = $slice->length * $1 / 100 if $context =~ /(\d+)%/;
-  }
-##  
-  $slice    = $slice->invert if $ori && $slice->strand != $ori;
-  
-  return $slice->expand($context, $context);
-}
-
 ## EG - remove status from gene type
 sub gene_type {
   my $self = shift;
@@ -192,88 +174,6 @@ sub gene_type {
   $type ||= $db;
   if( $type !~ /[A-Z]/ ){ $type = ucfirst($type) } #All lc, so format
   return $type;
-}
-
-sub store_TransformedTranscripts {
-  my $self = shift;
-## EG  
-  my $offset = shift;  
-##
-  my $focus_transcript = $self->hub->type eq 'Transcript' ? $self->param('t') : undef;
-  
-  $offset ||= $self->__data->{'slices'}{'transcripts'}->[1]->start -1;
-
-  foreach my $trans_obj ( @{$self->get_all_transcripts} ) {
-    next if $focus_transcript && $trans_obj->stable_id ne $focus_transcript;
-    my $transcript = $trans_obj->Obj;
-    my ($raw_coding_start,$coding_start);
-    if (defined( $transcript->coding_region_start )) {    
-      $raw_coding_start = $transcript->coding_region_start;
-      $raw_coding_start -= $offset;
-      $coding_start = $raw_coding_start + $self->munge_gaps( 'transcripts', $raw_coding_start );
-    }
-    else {
-      $coding_start  = undef;
-      }
-
-    my ($raw_coding_end,$coding_end);
-    if (defined( $transcript->coding_region_end )) {
-      $raw_coding_end = $transcript->coding_region_end;
-      $raw_coding_end -= $offset;
-      $coding_end = $raw_coding_end   + $self->munge_gaps( 'transcripts', $raw_coding_end );
-    }
-    else {
-      $coding_end = undef;
-    }
-    my $raw_start = $transcript->start;
-    my $raw_end   = $transcript->end  ;
-    my @exons = ();
-    foreach my $exon (@{$transcript->get_all_Exons()}) {
-      my $es = $exon->start - $offset; 
-      my $ee = $exon->end   - $offset;
-      my $O = $self->munge_gaps( 'transcripts', $es );
-      push @exons, [ $es + $O, $ee + $O, $exon ];
-    }
-    $coding_start ||= 1;
-    $coding_end   ||= 1;
-    $trans_obj->__data->{'transformed'}{'exons'}        = \@exons;
-    $trans_obj->__data->{'transformed'}{'coding_start'} = $coding_start;
-    $trans_obj->__data->{'transformed'}{'coding_end'}   = $coding_end;
-    $trans_obj->__data->{'transformed'}{'start'}        = $raw_start;
-    $trans_obj->__data->{'transformed'}{'end'}          = $raw_end;
-  }
-}
-
-sub store_TransformedDomains {
-    my $self = shift;
-    my $key  = shift;
-## EG    
-    my $offset = shift;
-##
-  my %domains;
-  my $focus_transcript = $self->hub->type eq 'Transcript' ? $self->param('t') : undef;
-
-  $offset ||= $self->__data->{'slices'}{'transcripts'}->[1]->start -1;
-  foreach my $trans_obj ( @{$self->get_all_transcripts} ) {
-    next if $focus_transcript && $trans_obj->stable_id ne $focus_transcript;
-    my %seen;
-    my $transcript = $trans_obj->Obj; 
-    next unless $transcript->translation; 
-    foreach my $pf ( @{$transcript->translation->get_all_ProteinFeatures( lc($key) )} ) { 
-## rach entry is an arry containing the actual pfam hit, and mapped start and end co-ordinates
-      if (exists $seen{$pf->display_id}{$pf->start}){
-        next;
-      } else {
-        $seen{$pf->display_id}->{$pf->start} =1;
-        my @A = ($pf);  
-        foreach( $transcript->pep2genomic( $pf->start, $pf->end ) ) {
-          my $O = $self->munge_gaps( 'transcripts', $_->start - $offset, $_->end - $offset) - $offset; 
-          push @A, $_->start + $O, $_->end + $O;
-        } 
-        push @{$trans_obj->__data->{'transformed'}{lc($key).'_hits'}}, \@A;
-      }
-    }
-  }
 }
 
 sub filtered_family_data {
