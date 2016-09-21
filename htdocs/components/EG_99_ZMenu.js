@@ -233,7 +233,7 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
     }
 ////   
     this.buildMenu(menu, caption);
-  },
+  }
     
   
 }, { template: Ensembl.Panel.ZMenu.template });
