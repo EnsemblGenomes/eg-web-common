@@ -72,12 +72,14 @@ Ensembl.Panel.SpeciesList = Ensembl.Panel.SpeciesList.extend({
     renderDropdown: function() {
       var template = this.urlTemplate;
       var dropdown = this.elLk.dropdown.children(':not(:first-child)').remove().end();
-// EG - we don't have/want the allSpecies list in sites will lots of species
+// EG - temp fix for homepage
       if (this.allSpecies) {
 //        
         $.each(this.allSpecies, function(i, species) {
           if (!species.external) {
-            var groupClass  = species.group.replace(/\W/g, '_');
+// EG - temp fix for homepage            
+            var groupClass  = species.group ? species.group.replace(/\W/g, '_') : 'unclassified';
+//            
             var optgroup    = dropdown.find('optgroup.' + groupClass);
             if (!optgroup.length) {
               optgroup = $('<optgroup class="' + groupClass + '" label="' + species.group + '"></optgroup>').appendTo(dropdown);
