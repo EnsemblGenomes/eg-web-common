@@ -712,7 +712,7 @@ sub dumpGene {
         my $gene_sql = 
           "SELECT g.gene_id, t.transcript_id, tr.translation_id,
              g.stable_id AS gsid, t.stable_id AS tsid, tr.stable_id AS trsid,
-             g.version AS gversion, t.version AS gversion, tr.version AS trversion,
+             g.version AS gversion, t.version AS tversion, tr.version AS trversion,
              g.description, ed.db_display_name, x.dbprimary_acc,x.display_label AS xdlgene, 
              ad.display_label, ad.description, ad.web_data, g.source, g.status, g.biotype,
              sr.name AS seq_region_name, g.seq_region_start, g.seq_region_end
@@ -964,7 +964,7 @@ sub geneLineXML {
   } keys %$unique_synonyms;
 
   my $versions_xml = ''; 
-  $versions_xml .= qq(\n<field name="gene_version">$gene_id.$gene_version</field>) if $gene_version;
+  $versions_xml .= qq(\n<field name="gene_version">$gene_id.$gene_version</field>) if $gene_version > 0;
 
   while (my ($id, $version) = each %$transcripts) {
     $id = clean($id);
