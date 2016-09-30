@@ -73,11 +73,7 @@ sub content {
   my $hidden_genes_counter = 0;
   my $link                 = $hub->type eq 'GeneTree' ? '' : sprintf ' <a href="%s">%s</a>', $hub->url({ species => 'Multi', type => 'GeneTree', action => 'Image', gt => $tree_stable_id, __clear => 1 }), $tree_stable_id;
   my (%hidden_genome_db_ids, $highlight_species, $highlight_genome_db_id);
-
-
-  #EG: warning message is added to the top of the page to let the user know if an old GeneTree stable_ids is mapped to new GeneTree stable_ids
-  my $html = $tree->history_warn ? $self->_warning('Warning', $tree->history_warn) : '';
-  # EG summary table moved to new component
+  my $html = '';
 
 #  my $html                 = sprintf '<h3>GeneTree%s</h3>%s', $link, $self->new_twocol(
 #    ['Number of genes',             scalar(@$leaves)                                                  ],

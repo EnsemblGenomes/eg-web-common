@@ -89,7 +89,7 @@ sub content {
       $highlight_tags_table = $type_selector . $self->highlight_tags_table(\@highlight_map);     
     }
     
-    my $html = $tree->history_warn ? $self->_warning('Warning', $tree->history_warn) : '';
+    my $html = '';
     
     $html .= sprintf '<h3>GeneTree%s</h3>', $link;
 
