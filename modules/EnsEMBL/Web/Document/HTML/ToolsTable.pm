@@ -165,7 +165,7 @@ sub render {
     $table->add_row({
       'name' => '<b><a href="/biomart/martview">BioMart</a></b>',
       'desc' => "Use this data-mining tool to export custom datasets from $sitename.",
-      'from' => qq(<a href="/biomart/martview">$sitename Biomart</a>),
+      'from' => qq(<a href="/biomart/martview">$sitename BioMart</a>),
       'docs' => sprintf('<a href="/info/data/biomart/index.html" class="popup"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
     });
   }

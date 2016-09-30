@@ -95,7 +95,7 @@ sub biomart_link {
     $term
   );
 
-  my $link = qq{<a rel="notexternal" href="$url">Search Biomart</a>};
+  my $link = qq{<a rel="notexternal" href="$url">Search BioMart</a>};
 
   return $link;
 }
