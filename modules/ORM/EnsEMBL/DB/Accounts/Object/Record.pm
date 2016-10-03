@@ -25,58 +25,46 @@ package ORM::EnsEMBL::DB::Accounts::Object::Record;
 use strict;
 use warnings;
 
-use ORM::EnsEMBL::Utils::Helper qw(random_string);
+use ORM::EnsEMBL::Utils::Helper qw(random_string load_package);
 
 use parent qw(ORM::EnsEMBL::DB::Accounts::Object);
 
+use constant TABLE_NAME => 'all_record';
+
 my $VIRTUAL_COLUMNS = {
-  'annotation'        => [qw(annotation stable_id title ftype species)],
   'history'           => [qw(object value url name species param)],
   'bookmark'          => [qw(name description url object click)],
   'specieslist'       => [qw(favourites list)],
   'urls'              => [qw(format cloned_from)],
   'invitation'        => [qw(invitation_code email)],
-  'upload'            => [qw(file filename filesize name description code md5 format species assembly assemblies share_id analyses browser_switches renderers style display nearest site timestamp cloned_from no_attach)],
+  'upload'            => [qw(file filename filesize name description md5 format species assembly assemblies share_id analyses browser_switches renderers style display nearest site timestamp cloned_from no_attach)],
   'favourite_tracks'  => [qw(tracks)],
 ## EG  
   'genefamilyfilter'  => [qw(filter)],
 ##  
 };
 
-## Define schema
-__PACKAGE__->meta->setup(
-  table           => 'record',
-  columns         => [
-    record_id       => {'type' => 'serial',  'primary_key'  => 1,                 'not_null' => 1                       },
-    record_type     => {'type' => 'enum',    'values'       => [qw(user group)],  'not_null' => 1, 'default' => 'user'  },
-    record_type_id  => {'type' => 'integer', 'length'       => 11,                'not_null' => 1                       },
-    type            => {'type' => 'varchar', 'length'       => 255                                                      },
-    data            => {'type' => 'datamap', 'trusted'      => 1                                                        }
-  ],
+__PACKAGE__->_meta_setup;
 
-  trackable       => 1,
+sub _meta_setup {
+  ## Initialises database schema
+  my $class = shift;
+  my $meta  = $class->meta;
 
-  virtual_columns => [ map {$_ => {'column' => 'data'}} keys %{{ map { map {$_ => 1} @$_ } values %$VIRTUAL_COLUMNS }} ],
-  
-  relationships   => [ # TODO - add 'record_type' in the query_args
-    user                  => {
-      'type'                => 'many to one',
-      'class'               => 'ORM::EnsEMBL::DB::Accounts::Object::User',
-      'column_map'          => {'record_type_id' => 'user_id'},
-    },
-    group                 => {
-      'type'                => 'many to one',
-      'class'               => 'ORM::EnsEMBL::DB::Accounts::Object::Group',
-      'column_map'          => {'record_type_id' => 'webgroup_id'},
-    }
-  ]
-);
+  # Setup meta object using the setup method from session record table (MI on objects does not work with Rose objects)
+  load_package('ORM::EnsEMBL::DB::Session::Object::Record')->can('_meta_setup')->($class);
+
+  $meta->column('record_type')->values(['user', 'group']);
+  $meta->column('record_type')->constraint_values(['user', 'group']);
+  $meta->virtual_columns(map {$_ => {'column' => 'data'}} keys %{{ map { map {$_ => 1} @$_ } values %$VIRTUAL_COLUMNS }}),
+  $meta->trackable(1);
+}
 
 sub get_invitation_code {
   ## For invitation record only for record_type group
   ## Gets a url code for invitation type group record
   ## @return Code string
-  return sprintf('%s-%s', $_->invitation_code, $_->record_id) for @_;
+  return sprintf('%s-%s', $_[0]->invitation_code, $_[0]->record_id);
 }
 
 sub reset_invitation_code_and_save {
