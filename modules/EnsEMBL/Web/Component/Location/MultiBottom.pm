@@ -54,7 +54,7 @@ sub content {
   my $methods         = { ATAC => 1, BLASTZ_NET => $self->param('opt_pairwise_blastz'), LASTZ_NET => $self->param('opt_pairwise_blastz'), TRANSLATED_BLAT_NET => $self->param('opt_pairwise_tblat'), LASTZ_PATCH => $self->param('opt_pairwise_lpatch'), LASTZ_RAW => $self->param('opt_pairwise_raw') };
 ##  
   my $join_alignments = grep $_ ne 'off', values %$methods;
-  my $join_genes      = $hub->param('opt_join_genes_bottom') eq 'on';
+  my $join_genes      = $self->param('opt_join_genes_bottom') eq 'on';
 
   my $compara_db      = $join_genes ? EnsEMBL::Web::DBSQL::DBConnection->new($primary_species)->_get_compara_database : undef;
   my $i               = 1;

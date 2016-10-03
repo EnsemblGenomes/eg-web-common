@@ -40,11 +40,10 @@ sub content {
   my @str_array = $self->feature_summary($avail);
   
   my $summary_table = $self->new_twocol(    
-    $self->variation_source,
+    $self->most_severe_consequence($variation_features),
     $self->alleles($feature_slice),
     $self->location,
     $feature_slice ? $self->co_located($feature_slice) : (),
-    $self->most_severe_consequence($variation_features),
     $self->evidence_status,
     $self->clinical_significance,
     $self->hgvs,
@@ -54,6 +53,7 @@ sub content {
     $self->inter_homoeologues,
 ##    
     $self->sets,
+    $self->variation_source,
     @str_array ? ['About this variant', sprintf('This variant %s.', $self->join_with_and(@str_array))] : (),
     ($hub->species eq 'Homo_sapiens' && $hub->snpedia_status) ? $var_id && $self->snpedia($var_id) : ()
   );
@@ -93,43 +93,45 @@ sub variation_source {
   if ($version =~ /^(20\d{2})(\d{2})/) {
     $version = "$2/$1";
   }
-  warn $object;
-  warn $object->source_description;
+  
   ## parse description for links
   (my $description = $object->source_description) =~ s/(\w+) \[(http:\/\/[\w\.\/]+)\]/<a href="$2" class="constant">$1<\/a>/; 
-  
+  my $source_prefix = 'View in';
+
   # Source link
   if ($source =~ /dbSNP/) {
     $sname       = 'DBSNP';
-    $source_link = $hub->get_ExtURL_link("[View in dbSNP]", $sname, $name);
+    $source_link = $hub->get_ExtURL_link("$source_prefix dbSNP", $sname, $name);
+  } elsif ($source =~ /ClinVar/i) {
+    $sname = ($name =~ /^rs/) ?  'CLINVAR_DBSNP' : 'CLINVAR';
+    $source_link = $hub->get_ExtURL_link("About $source", $sname, $name);
   } elsif ($source =~ /SGRP/) {
-    $source_link = $hub->get_ExtURL_link("[About $source]", 'SGRP_PROJECT');
+    $source_link = $hub->get_ExtURL_link("About $source", 'SGRP_PROJECT');
   } elsif ($source =~ /COSMIC/) {
-    $sname       = 'COSMIC';
     my $cname = ($name =~ /^COSM(\d+)/) ? $1 : $name;
-    $source_link = $hub->get_ExtURL_link("[View in $source]", "${sname}_ID", $cname);
+    $source_link = $hub->get_ExtURL_link("$source_prefix $source", $source, $cname);
   } elsif ($source =~ /HGMD/) {
     $version =~ /(\d{4})(\d+)/;
     $version = "$1.$2";
     my $pf          = ($hub->get_adaptor('get_PhenotypeFeatureAdaptor', 'variation')->fetch_all_by_Variation($object->Obj))->[0];
     my $asso_gene   = $pf->associated_gene;
-       $source_link = $hub->get_ExtURL_link("[View in $source]", 'HGMD', { ID => $asso_gene, ACC => $name });
+       $source_link = $hub->get_ExtURL_link("$source_prefix $source", 'HGMD', { ID => $asso_gene, ACC => $name });
   } elsif ($source =~ /ESP/) {
     if ($name =~ /^TMP_ESP_(\d+)_(\d+)/) {
-      $source_link = $hub->get_ExtURL_link("[View in $source]", $source, { CHR => $1 , START => $2, END => $2});
+      $source_link = $hub->get_ExtURL_link("$source_prefix $source", $source, { CHR => $1 , START => $2, END => $2});
     }
     else {
-      $source_link = $hub->get_ExtURL_link("[View in $source]", "${source}_HOME");
+      $source_link = $hub->get_ExtURL_link("$source_prefix $source", "${source}_HOME");
     }
   } elsif ($source =~ /LSDB/) {
     $version = ($version) ? " ($version)" : '';
-    $source_link = $hub->get_ExtURL_link("[View in $source]", $source, $name);
+    $source_link = $hub->get_ExtURL_link("$source_prefix $source", $source, $name);
   }  elsif ($source =~ /PhenCode/) {
      $sname       = 'PHENCODE';
-     $source_link = $hub->get_ExtURL_link("[View in PhenCode]", $sname, $name);
+     $source_link = $hub->get_ExtURL_link("$source_prefix PhenCode", $sname, $name);
   } else {
 ## EG
-    #$source_link = $url ? qq{<a href="$url" class="constant">[View in $source]</a>} : "$source $version";
+    #$source_link = $url ? qq{<a href="$url" class="constant">$source_prefix $source</a>} : "$source $version";
     if ($url) {
       $description = qq(<a href="$url">$description</a>);
     }

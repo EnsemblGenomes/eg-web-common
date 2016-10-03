@@ -1,6 +1,7 @@
 =head1 LICENSE
 
-Copyright [2009-2014] EMBL-European Bioinformatics Institute
+Copyright [1999-2015] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+Copyright [2016] EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -50,7 +51,7 @@ sub content {
   
   my @domain_keys = grep { $analyses->{$_}{'web'}{'type'} eq 'domain' } keys %$analyses;
   my @ms_domain_keys = grep { $analyses->{$_}{'web'}{'type'} eq 'ms_domain' } keys %$analyses;
-  my @other_keys     = grep { $analyses->{$_}{'web'}{'type'} !~ /domain/ } keys %$analyses;
+  my @other_keys     = grep { $analyses->{$_}{'web'}{'type'} ne 'domain' } keys %$analyses;
   my @domains     = map  { @{$translation->get_all_ProteinFeatures($_)} } @domain_keys;
   my @ms_domains     = map  { @{$translation->get_all_ProteinFeatures($_)} } @ms_domain_keys;
   my @others      = map  { @{$translation->get_all_ProteinFeatures($_)} } @other_keys;
@@ -63,12 +64,12 @@ sub content {
     my $table = $self->new_table([], [], { data_table => 1 });
     
     $table->add_columns(
-      { key => 'type',     title => 'Domain type', width => '15%', sort => 'string'                        },
-      { key => 'start',    title => 'Start',       width => '10%', sort => 'numeric', hidden_key => '_loc' },
-      { key => 'end',      title => 'End',         width => '10%', sort => 'numeric'                       },
-      { key => 'desc',     title => 'Description', width => '15%', sort => 'string'                        },
-      { key => 'acc',      title => 'Accession',   width => '10%', sort => 'html'                          },
-      { key => 'interpro', title => 'InterPro',    width => '40%', sort => 'html'                          }
+      { key => 'type',     title => 'Domain source', width => '15%', sort => 'string', help => 'Original project that identified the domain' },
+      { key => 'start',    title => 'Start',       width => '10%',   sort => 'numeric', hidden_key => '_loc' },
+      { key => 'end',      title => 'End',         width => '10%',   sort => 'numeric'                       },
+      { key => 'desc',     title => 'Description', width => '15%',   sort => 'string'                        },
+      { key => 'acc',      title => 'Accession',   width => '10%',   sort => 'html'                          },
+      { key => 'interpro', title => 'InterPro',    width => '40%',   sort => 'html'                          }
     );
     
     foreach my $domain (
@@ -76,7 +77,7 @@ sub content {
         $a->idesc cmp $b->idesc || 
         $a->start <=> $b->start || 
         $a->end   <=> $b->end   || 
-        $a->analysis->display_label cmp $b->analysis->display_label
+        $a->analysis->db cmp $b->analysis->db 
       } @domains
     ) {
       my $db            = $domain->analysis->db;
@@ -160,7 +161,7 @@ sub content {
     
     foreach my $domain (
       sort { $a->[0] cmp $b->[0] || $a->[1]->start <=> $b->[1]->start || $a->[1]->end <=> $b->[1]->end }
-      map {[ $_->analysis->display_label || $_->analysis->logic_name || 'unknown', $_ ]}
+      map {[ $_->analysis->db || $_->analysis->logic_name || 'unknown', $_ ]}
       @others
     ) {
       (my $domain_type = $domain->[0]) =~ s/_/ /g;

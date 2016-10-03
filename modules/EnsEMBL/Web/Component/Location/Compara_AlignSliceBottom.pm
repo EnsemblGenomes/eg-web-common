@@ -28,8 +28,8 @@ sub content {
   my $species_defs = $hub->species_defs;
   my $object       = $self->object || $self->hub->core_object('location');
   my $threshold    = 1000100 * ($species_defs->ENSEMBL_GENOME_SIZE || 1);
-  my $align_params = $hub->param('align');
-  my %options      = ( scores => $hub->param('opt_conservation_scores'), constrained => $hub->param('opt_constrained_elements') );
+  my $align_params = $self->param('align');
+  my %options      = ( scores => $self->param('opt_conservation_scores'), constrained => $self->param('opt_constrained_elements') );
   my ($align)      = split '--', $align_params;
   
   return $self->_warning('Region too large', '<p>The region selected is too large to display in this view - use the navigation above to zoom in...</p>') if $object->length > $threshold;
@@ -62,8 +62,8 @@ sub content {
   
   my ($caption_height,$caption_img_offset) = (0,-24);
   foreach (@$slices) {
-    my $species      = $_->{'name'} eq 'Ancestral_sequences' ? 'Multi' : $_->{'name'}; # Cheating: set species to Multi to stop errors due to invalid species.
-    my $image_config = $hub->get_imageconfig('alignsliceviewbottom', "alignsliceviewbottom_$i", $species);
+    my $species      = $_->{'name'} eq 'Ancestral_sequences' ? 'Multi' : $species_defs->production_name_mapping($_->{'name'}); # Cheating: set species to Multi to stop errors due to invalid species.
+    my $image_config = $hub->get_imageconfig({'type' => 'alignsliceviewbottom', 'cache_code' => "alignsliceviewbottom_$i", 'species' => $species});
     
     $image_config->set_parameters({
       container_width => $_->{'slice'}->length,
@@ -73,7 +73,7 @@ sub content {
       more_slices     => $i != @$slices,
     });
     
-    my ($species_name, $slice_name) = split ':', $_->{'name'};
+    my ($species_name, $slice_name) = split ':', $species_defs->production_name_mapping($_->{'name'});
     
 ## EG use abbreviated species name  
     my $panel_caption = $species_defs->abbreviated_species_label($species_name) || 'Ancestral sequences';
@@ -81,16 +81,16 @@ sub content {
     $panel_caption   .= " $slice_name" if $slice_name;
 
     my $asb = $image_config->get_node('alignscalebar');
-    $asb->set('caption', $panel_caption);
-    $asb->set('caption_position', 'bottom');
-    $asb->set('caption_img',"f:24\@$caption_img_offset:".$_->{'name'});
-    $asb->set('caption_height',$caption_height);
+    $asb->set_data('caption', $panel_caption);
+    $asb->set_data('caption_position', 'bottom');
+    $asb->set_data('caption_img',"f:24\@$caption_img_offset:".$_->{'name'});
+    $asb->set_data('caption_height',$caption_height);
     $caption_img_offset = -20;
     $caption_height = 28;
 
     foreach (grep $options{$_}, keys %options) {
       my $node = $image_config->get_node("alignment_compara_$align_details->{'id'}_$_");
-      $node->set('display', $options{$_}) if $node;
+      $node->set_data('display', $options{$_}) if $node;
     }
     
     push @images, $_->{'slice'}, $image_config;
@@ -98,10 +98,9 @@ sub content {
   }
   
   my $image = $self->new_image(\@images);
-  my $align = $hub->param('align');
   $image->{'export_params'} = ['align', $align];
-  foreach ($hub->param) {
-    push @{$image->{'export_params'}}, [$_, $hub->param($_)] if $_ =~ /^species_$align/;
+  foreach ($self->param) {
+    push @{$image->{'export_params'}}, [$_, $self->param($_)] if $_ =~ /^species_$align/;
   }
 
   return if $self->_export_image($image);
@@ -113,11 +112,14 @@ sub content {
   
   $html .= $image->render;
 
-  my $alert_box = $self->check_for_align_problems({
+  my ($alert_box, $error) = $self->check_for_align_problems({
                                 'align'   => $align, 
                                 'species' => $primary_species, 
-                                'cdb'     => $hub->param('cdb') || 'compara',
+                                'cdb'     => $self->param('cdb') || 'compara',
                                 });
+
+  return $alert_box if $error;
+
   $html .=  $alert_box;
   
   return $html;

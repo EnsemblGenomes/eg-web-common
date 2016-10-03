@@ -41,12 +41,12 @@ sub content {
 
   my $self         = shift;
   my $hub          = $self->hub;
-  my $cdb          = shift || $hub->param('cdb') || 'compara';
-  my $node_id      = $hub->param('node') || die 'No tree node specified in parameters';
-  my $seq          = $hub->param('seq');
-  my $text_format  = $hub->param('text_format');
-  my $gene         = $hub->param('g') || '';
-  my $genetree     = $hub->param('gt') || '';
+  my $cdb          = shift || $self->param('cdb') || 'compara';
+  my $node_id      = $self->param('node') || die 'No tree node specified in parameters';
+  my $seq          = $self->param('seq');
+  my $text_format  = $self->param('text_format');
+  my $gene         = $self->param('g') || '';
+  my $genetree     = $self->param('gt') || '';
   my $database     = $hub->database($cdb);
   my $node         = $database->get_GeneTreeNodeAdaptor->fetch_node_by_node_id($node_id);
   my $num_seq      = $node->num_leaves;
@@ -54,13 +54,13 @@ sub content {
   my $result       = 0;
   my $html;
   
-  if(defined($hub->param('precomputed'))) {
+  if(defined($self->param('precomputed'))) {
     my $output = $self->getSequence($node, 'clustalw');
     $html .= "$output";
     $result = 1;
-  } elsif(defined($hub->param('jobid'))) {
+  } elsif(defined($self->param('jobid'))) {
     # Request has a job ID, so we need to check the job status to determine what to display
-    my $job_id = $hub->param('jobid');
+    my $job_id = $self->param('jobid');
     my $status = $self->restStatus($url, $job_id);
     if($status =~ m/^FINISHED/i) {
       my $output = $self->restResult($url, $job_id, 'aln-clustal');
@@ -77,18 +77,18 @@ sub content {
     } else {
       $html .= "<p>An error occured getting the status of job $job_id.</p>";
     }
-  } elsif(defined($hub->param('submit'))) {
+  } elsif(defined($self->param('submit'))) {
     # User has submitted form, so submit the request to REST service
     my $seq = $self->getSequence($node, 'fasta');
     my %params = (
       'email' => 'eg-webteam@ebi.ac.uk',
       'stype' => 'protein',
       'sequence' => $seq,
-      'mbed' => $hub->param('mbed'),
-      'mbediteration' => $hub->param('mbediteration'),
-      'iterations' => $hub->param('iterations'),
-      'gtiterations' => $hub->param('gtiterations'),
-      'hmmiterations' => $hub->param('hmmiterations')
+      'mbed' => $self->param('mbed'),
+      'mbediteration' => $self->param('mbediteration'),
+      'iterations' => $self->param('iterations'),
+      'gtiterations' => $self->param('gtiterations'),
+      'hmmiterations' => $self->param('hmmiterations')
     );
     my $job_id = $self->restRequest("$url/run/", %params);
 	$html .= $self->pendingText($job_id, $node_id);
@@ -177,7 +177,7 @@ sub pendingText {
   my $target_url = $hub->url ({
     action   => 'Compara_Tree/Tree_Alignment',
     type     => 'GeneTree',
-    cdb      => $hub->param('cdb'),
+    cdb      => $self->param('cdb'),
     node     => uri_escape($node_id),
     jobid    => uri_escape($job_id)
   });
