@@ -76,33 +76,5 @@ sub merge_all {
   };
 }
 
-sub XXXget_files_from_dir { # disabled for now...
-  ## Recursively gets all the files from all the directories (from inside all the HTDOCS dirs) with the given name
-  ## @param SpeciesDefs object
-  ## @param Type of files (css or js)
-  ## @param Dir name to be checked in all HTDOCS dir
-  ## @return Arrayref of absolute file names
-  my ($species_defs, $type, $dir) = @_;
-
-  my @files;
-
-  my @types = ($type);
-  @types = qw(gif png jpg jpeg) if $type eq 'image';
-  @types = qw(css) if $type eq 'ie7css';
-## Skip image dir for bacteria
-  foreach my $htdocs_dir (grep { !m/biomart/ && -d "$_/$dir" && !(m/bacteria/ && $type eq 'image')} reverse @{$species_defs->ENSEMBL_HTDOCS_DIRS || []}) {
-##
-    foreach my $file (@{list_dir_contents("$htdocs_dir/$dir",{recursive=>1})}) {
-      my $path = "$htdocs_dir/$dir/$file";
-      next if $path =~ m!/minified/!;
-      push @files,$path if grep { $file =~ /\.$_$/ } @types;
-    }
-  }
-
-  warn "  Found ".(scalar @files)." files type=$type in $dir\n" if $DEBUG;
-
-  return \@files;
-}
-
 
 1;

@@ -38,7 +38,7 @@ sub get_go_list {
   my $dbname_to_match = shift || join '|', @$ontologies;
   my $ancestor=shift;
   my $gene = $self->gene;
-  my $goadaptor = $self->hub->get_databases('go')->{'go'};
+  my $goadaptor = $self->hub->database('go');
 
   my @goxrefs = @{$gene->get_all_DBLinks};
   my @my_transcripts= @{$self->Obj->get_all_Transcripts};
