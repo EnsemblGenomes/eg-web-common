@@ -25,13 +25,13 @@ use Bio::EnsEMBL::Compara::DBSQL::XrefAssociationAdaptor;
 
 sub content {
   my $self        = shift;
-  my $cdb         = shift || $self->hub->param('cdb') || 'compara';
+  my $cdb         = shift || $self->param('cdb') || 'compara';
   my $hub         = $self->hub;
   my $object      = $self->object || $self->hub->core_object('gene');
   my $is_genetree = $object && $object->isa('EnsEMBL::Web::Object::GeneTree') ? 1 : 0;
   my ($gene, $member, $tree, $node, $test_tree);
 
-  my $type   = $hub->param('data_type') || $hub->type;
+  my $type   = $self->param('data_type') || $hub->type;
   my $vc = $self->view_config($type);
 
 ## EG  
@@ -46,34 +46,33 @@ sub content {
     ($member, $tree, $node, $test_tree) = $self->get_details($cdb);
   }
 
-  return $tree . $self->genomic_alignment_links($cdb) if $hub->param('g') && !$is_genetree && !defined $member;
+  return $tree . $self->genomic_alignment_links($cdb) if $self->param('g') && !$is_genetree && !defined $member;
 
   my $leaves               = $tree->get_all_leaves;
   my $tree_stable_id       = $tree->tree->stable_id;
-  my $highlight_gene       = $hub->param('g1');
-  my $highlight_ancestor   = $hub->param('anc');
+  my $highlight_gene       = $self->param('g1');
+  my $highlight_ancestor   = $self->param('anc');
 
 ## EG 
-  my $collapsed_nodes = $hub->param('collapse');
+  my $collapsed_nodes = $self->param('collapse');
   # buggy parameter: "collapse=;" was taken to mean "collapse=none;"
   $hub->input->delete('collapse') unless $collapsed_nodes;
 ##
 
 # EG add ht param
-  my $unhighlight          = $highlight_gene ? $hub->url({ g1 => undef, collapse => $collapsed_nodes, ht => $hub->param('ht') }) : '';
+  my $unhighlight          = $highlight_gene ? $hub->url({ g1 => undef, collapse => $collapsed_nodes, ht => $self->param('ht') }) : '';
   my $image_width          = $self->image_width       || 800;
-  my $colouring            = $hub->param('colouring') || 'background';
-  my $collapsability       = $is_genetree ? '' : ($vc->get('collapsability') || $hub->param('collapsability'));
-  my $clusterset_id        = $vc->get('clusterset_id') || $hub->param('clusterset_id');
-  my $show_exons           = $hub->param('exons') eq 'on' ? 1 : 0;
+  my $colouring            = $self->param('colouring') || 'background';
+  my $collapsability       = $is_genetree ? '' : ($vc->get('collapsability') || $self->param('collapsability'));
+  my $clusterset_id        = $vc->get('clusterset_id') || $self->param('clusterset_id');
+  my $show_exons           = $self->param('exons') eq 'on' ? 1 : 0;
   my $image_config         = $hub->get_imageconfig('genetreeview');
-  my @hidden_clades        = grep { $_ =~ /^group_/ && $hub->param($_) eq 'hide'     } $hub->param;
-  my @collapsed_clades     = grep { $_ =~ /^group_/ && $hub->param($_) eq 'collapse' } $hub->param;
+  my @hidden_clades        = grep { $_ =~ /^group_/ && $self->param($_) eq 'hide'     } $self->param;
+  my @collapsed_clades     = grep { $_ =~ /^group_/ && $self->param($_) eq 'collapse' } $self->param;
   my @highlights           = $gene && $member ? ($gene->stable_id, $member->genome_db->dbID) : (undef, undef);
   my $hidden_genes_counter = 0;
   my $link                 = $hub->type eq 'GeneTree' ? '' : sprintf ' <a href="%s">%s</a>', $hub->url({ species => 'Multi', type => 'GeneTree', action => 'Image', gt => $tree_stable_id, __clear => 1 }), $tree_stable_id;
   my (%hidden_genome_db_ids, $highlight_species, $highlight_genome_db_id);
-  my $html = '';
 
 #  my $html                 = sprintf '<h3>GeneTree%s</h3>%s', $link, $self->new_twocol(
 #    ['Number of genes',             scalar(@$leaves)                                                  ],
@@ -82,14 +81,31 @@ sub content {
 #    ['Number of ambiguous',         $self->get_num_nodes_with_tag($tree, 'node_type', 'dubious')      ],
 #    ['Number of gene split events', $self->get_num_nodes_with_tag($tree, 'node_type', 'gene_split')   ]
 #  )->render;
+  my $parent      = $tree->tree->{'_supertree'};
+  if (defined $parent) {
+
+    if ($vc->get('super_tree') eq 'on' || $self->param('super_tree') eq 'on') {
+      my $super_url = $self->ajax_url('sub_supertree',{ cdb => $cdb, update_panel => undef });
+      $html .= qq(<div class="ajax"><input type="hidden" class="ajax_load" value="$super_url" /></div>);
+    } else {
+      $html .= $self->_info(
+        sprintf(
+          'This tree is part of a super-tree of %d trees (%d genes in total)',
+          scalar @{$parent->root->get_all_leaves},
+          $parent->{'_total_num_leaves'},
+        ),
+        'The super-tree is currently not displayed. Use the "configure page" link in the left panel to change the options'
+      );
+    }
+  }
   if ($hub->type eq 'Gene') {
-    if ($tree->tree->clusterset_id ne $clusterset_id) {
+    if ($tree->tree->clusterset_id ne $clusterset_id && !$self->is_strain) {
       $html .= $self->_info('Phylogenetic model selection',
         sprintf(
           'The phylogenetic model <I>%s</I> is not available for this tree. Showing the default (consensus) tree instead.', $clusterset_id
           )
       );
-    } elsif ($clusterset_id ne 'default') {
+    } elsif ($tree->tree->ref_root_id) {
 
       my $text = sprintf(
           'The tree displayed here has been built with the phylogenetic model <I>%s</I>. It has then been merged with trees built with other models to give the final tree and homologies. Data shown here may be inconsistent with the rest of the comparative analyses, especially homologies.', $clusterset_id
@@ -100,13 +116,14 @@ sub content {
       $html .= $self->_info('Phylogenetic model selection', $text);
     }
   }
+
   if ($highlight_gene) {
     my $highlight_gene_display_label;
     
-    foreach my $this_leaf (@$leaves) {
+    foreach my $this_leaf (@$leaves) {    
       if ($highlight_gene && $this_leaf->gene_member->stable_id eq $highlight_gene) {
         $highlight_gene_display_label = $this_leaf->gene_member->display_label || $highlight_gene;
-        $highlight_species            = $this_leaf->gene_member->genome_db->name;
+        $highlight_species            = $hub->species_defs->production_name_mapping($this_leaf->gene_member->genome_db->name);
         $highlight_genome_db_id       = $this_leaf->gene_member->genome_db_id;
         last;
       }
@@ -116,9 +133,9 @@ sub content {
       $html .= $self->_info('Highlighted genes',
         sprintf(
           '<p>In addition to all <I>%s</I> genes, the %s gene (<I>%s</I>) and its paralogues have been highlighted. <a href="%s">Click here to switch off highlighting</a>.</p>', 
-          $member->genome_db->name, 
+          $hub->species_defs->get_config($hub->species_defs->production_name_mapping($member->genome_db->name), 'SPECIES_COMMON_NAME'),
           $highlight_gene_display_label,
-          $highlight_species, 
+          $hub->species_defs->get_config($highlight_species, 'SPECIES_COMMON_NAME'),
           $unhighlight
         )
       );
@@ -132,9 +149,9 @@ sub content {
   # Ideally, this should be stored in $hub->species_defs->multi_hash->{'DATABASE_COMPARA'}
   # or any other centralized place, to avoid recomputing it many times
   my %genome_db_ids_by_clade = map {$_ => []} @{ $self->hub->species_defs->TAXON_ORDER };
-  foreach my $species_name (keys %{$self->hub->get_species_info}) {
+  foreach my $species_name (keys %{$self->hub->get_species_info}) {  
     foreach my $clade (@{ $self->hub->species_defs->get_config($species_name, 'SPECIES_GROUP_HIERARCHY') }) {
-      push @{$genome_db_ids_by_clade{$clade}}, $hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'GENOME_DB'}{lc $species_name};
+      push @{$genome_db_ids_by_clade{$clade}}, $hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'GENOME_DB'}{lc ($hub->species_defs->get_config($species_name, 'SPECIES_PRODUCTION_NAME'))};
     }
   }
   $genome_db_ids_by_clade{LOWCOVERAGE} = $self->hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'SPECIES_SET'}{'LOWCOVERAGE'};
@@ -172,7 +189,7 @@ sub content {
   });
   
   # Keep track of collapsed nodes
-  #my $collapsed_nodes = $hub->param('collapse'); # already defined above
+  #my $collapsed_nodes = $self->param('collapse'); # already defined above
   my ($collapsed_to_gene, $collapsed_to_para);
   
   if (!$is_genetree) {
@@ -210,15 +227,15 @@ sub content {
     # get the largest clades first, so that they can be overwritten later
     # (see ensembl-webcode/modules/EnsEMBL/Draw/GlyphSet/genetree.pm)
     foreach my $clade_name (reverse @{ $self->hub->species_defs->TAXON_ORDER }) {
-      next unless $hub->param("group_${clade_name}_${mode}colour");
+      next unless $self->param("group_${clade_name}_${mode}colour");
       my $genome_db_ids = $genome_db_ids_by_clade{$clade_name};
-      my $colour        = $hub->param("group_${clade_name}_${mode}colour");
+      my $colour        = $self->param("group_${clade_name}_${mode}colour");
       my $nodes         = $self->find_nodes_by_genome_db_ids($tree, $genome_db_ids, $mode eq 'fg' ? 'all' : undef);
       
       push @$coloured_nodes, { clade => $clade_name,  colour => $colour, mode => $mode, node_ids => [ keys %$nodes ] } if %$nodes;
     }
   }
-
+ 
   push @highlights, $collapsed_nodes        || undef;
   push @highlights, $coloured_nodes         || undef;
   push @highlights, $highlight_genome_db_id || undef;
@@ -227,7 +244,7 @@ sub content {
   push @highlights, $show_exons;
 
     # EG
-    my @highlight_tags             = split(',',$hub->param('ht') || "");
+    my @highlight_tags             = split(',',$self->param('ht') || "");
     my $highlight_map = $self->get_highlight_map($cdb,$tree->tree);
     #my @compara_highlights; # not to be confused with COMPARA_HIGHLIGHTS list
     foreach my $ot_map (@$highlight_map){
@@ -250,7 +267,7 @@ sub content {
 
 
   $image->image_type        = 'genetree';
-  $image->image_name        = ($hub->param('image_width')) . "-$image_id";
+  $image->image_name        = ($self->param('image_width')) . "-$image_id";
   $image->imagemap          = 'yes';
   $image->{'panel_number'}  = 'tree';
 
@@ -265,14 +282,16 @@ sub content {
   }
 
   ## Parameters to pass into export form
+## EG
   $image->{'export_params'} = [['gene_name', $gene_name],['align', 'tree'],['cdb', $cdb]];
+##
   my @extra_params = qw(g1 anc collapse);
   foreach (@extra_params) {
-    push @{$image->{'export_params'}}, [$_, $hub->param($_)];
+    push @{$image->{'export_params'}}, [$_, $self->param($_)];
   }
-  foreach ($hub->param) {
+  foreach ($self->param) {
     if (/^group/) {
-      push @{$image->{'export_params'}}, [$_, $hub->param($_)];
+      push @{$image->{'export_params'}}, [$_, $self->param($_)];
     }
   }
   $image->{'data_export'}   = 'GeneTree';
@@ -280,26 +299,26 @@ sub content {
 
   $image->set_button('drag', 'title' => 'Drag to select region');
 # EG include the ht param
-  my $default_view_url = $hub->url({ ht => $hub->param('ht'), collapse => $collapsed_to_gene, g1 => $highlight_gene });
+  my $default_view_url = $hub->url({ ht => $self->param('ht'), collapse => $collapsed_to_gene, g1 => $highlight_gene });
 
   if ($gene) {
     push @view_links, sprintf '<li><a href="%s">%s</a> (Default) </li>', $default_view_url, $highlight_gene ? 'View current genes only' : 'View current gene only';
-    push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => $collapsed_to_para || undef, g1 => $highlight_gene }), $highlight_gene ? 'View paralogs of current genes' : 'View paralogs of current gene';
+    push @view_links, sprintf $li_tmpl, $hub->url({ ht => $self->param('ht'), collapse => $collapsed_to_para || undef, g1 => $highlight_gene }), $highlight_gene ? 'View paralogs of current genes' : 'View paralogs of current gene';
   }
   
-  push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
-  push @view_links, sprintf $li_tmpl, $hub->url({ ht => $hub->param('ht'), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
+  push @view_links, sprintf $li_tmpl, $hub->url({ ht => $self->param('ht'), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
+  push @view_links, sprintf $li_tmpl, $hub->url({ ht => $self->param('ht'), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
   push @view_links, sprintf $li_tmpl, $unhighlight, 'Switch off highlighting' if $highlight_gene;
 # /EG
 
   {
     my @rank_options = ( q{<option value="#">-- Select a rank--</option>} );
-    my $selected_rank = $hub->param('gtr') || '';
+    my $selected_rank = $self->param('gtr') || '';
     foreach my $rank (qw(species genus family order class phylum kingdom)) {
       my $collapsed_to_rank = $self->collapsed_nodes($tree, $node, "rank_$rank", $highlight_genome_db_id, $highlight_gene);
       push @rank_options, sprintf qq{<option value="%s" %s>%s</option>\n}, $hub->url({ collapse => $collapsed_to_rank, g1 => $highlight_gene, gtr => $rank }), $rank eq $selected_rank ? 'selected' : '', ucfirst $rank;
     }
-    push @view_links, sprintf qq{<li>Collapse all the nodes at the taxonomic rank <select onchange="Ensembl.redirect(this.value)">%s</select></li>}, join("\n", @rank_options);
+    push @view_links, sprintf qq{<li>Collapse all the nodes at the taxonomic rank <select onchange="Ensembl.redirect(this.value)">%s</select></li>}, join("\n", @rank_options) if(!$self->is_strain);
   }
 
   $html .= $image->render;

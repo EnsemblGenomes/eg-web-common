@@ -69,20 +69,20 @@ sub content {
     ($member, $tree, $node, $test_tree) = $self->get_details($cdb);
   }
 
-  return $tree . $self->genomic_alignment_links($cdb) if $hub->param('g') && !$is_genetree && !defined $member;
+  return $tree . $self->genomic_alignment_links($cdb) if $self->param('g') && !$is_genetree && !defined $member;
 
   my $leaves               = $tree->get_all_leaves;
   my $tree_stable_id       = $tree->tree->stable_id;
-  my $highlight_gene       = $hub->param('g1');
-  my $highlight_ancestor   = $hub->param('anc');
-  my $unhighlight          = $highlight_gene ? $hub->url({ g1 => undef, collapse => $hub->param('collapse') }) : '';
+  my $highlight_gene       = $self->param('g1');
+  my $highlight_ancestor   = $self->param('anc');
+  my $unhighlight          = $highlight_gene ? $hub->url({ g1 => undef, collapse => $self->param('collapse') }) : '';
   my $image_width          = $self->image_width       || 800;
-  my $colouring            = $hub->param('colouring') || 'background';
-  my $collapsability       = $is_genetree ? '' : $hub->param('collapsability');
-  my $show_exons           = $hub->param('exons') eq 'on' ? 1 : 0;
+  my $colouring            = $self->param('colouring') || 'background';
+  my $collapsability       = $is_genetree ? '' : $self->param('collapsability');
+  my $show_exons           = $self->param('exons') eq 'on' ? 1 : 0;
   my $image_config         = $hub->get_imageconfig('genetreeview');
-  my @hidden_clades        = grep { $_ =~ /^group_/ && $hub->param($_) eq 'hide'     } $hub->param;
-  my @collapsed_clades     = grep { $_ =~ /^group_/ && $hub->param($_) eq 'collapse' } $hub->param;
+  my @hidden_clades        = grep { $_ =~ /^group_/ && $self->param($_) eq 'hide'     } $self->param;
+  my @collapsed_clades     = grep { $_ =~ /^group_/ && $self->param($_) eq 'collapse' } $self->param;
   my @highlights           = $gene && $member ? ($gene->stable_id, $member->genome_db->dbID) : (undef, undef);
   my $hidden_genes_counter = 0;
   my $link                 = $hub->type eq 'GeneTree' ? '' : sprintf ' <a href="%s">%s</a>', $hub->url({ species => 'Multi', type => 'GeneTree', action => undef, gt => $tree_stable_id, __clear => 1 }), $tree_stable_id;

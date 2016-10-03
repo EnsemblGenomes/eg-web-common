@@ -38,21 +38,21 @@ sub content {
   ($member, $tree, $node) = $self->get_details($cdb);
     }
 
-    return $tree . $self->genomic_alignment_links($cdb) if $hub->param('g') && !$is_genetree && !defined $member;
+    return $tree . $self->genomic_alignment_links($cdb) if $self->param('g') && !$is_genetree && !defined $member;
 
     my $leaves               = $tree->get_all_leaves;
     my $tree_stable_id       = $tree->tree->stable_id;
-    my $highlight_gene       = $hub->param('g1');
-    my $highlight_ancestor   = $hub->param('anc');
-    my $unhighlight          = $highlight_gene ? $hub->url({ g1 => undef, collapse => $hub->param('collapse') || undef }) : '';
+    my $highlight_gene       = $self->param('g1');
+    my $highlight_ancestor   = $self->param('anc');
+    my $unhighlight          = $highlight_gene ? $hub->url({ g1 => undef, collapse => $self->param('collapse') || undef }) : '';
     my $image_width          = $self->image_width       || 800;
-    my $colouring            = $hub->param('colouring') || 'background';
-    my $collapsability       = $is_genetree ? '' : $hub->param('collapsability');
-    my $show_exons           = $hub->param('exons') || 0;
+    my $colouring            = $self->param('colouring') || 'background';
+    my $collapsability       = $is_genetree ? '' : $self->param('collapsability');
+    my $show_exons           = $self->param('exons') || 0;
     $show_exons = $show_exons eq 'on' ? 1 : 0;
     my $image_config         = $hub->get_imageconfig('genetreeview');
-    my @hidden_clades        = grep { $_ =~ /^group_/ && $hub->param($_) eq 'hide'     } $hub->param;
-    my @collapsed_clades     = grep { $_ =~ /^group_/ && $hub->param($_) eq 'collapse' } $hub->param;
+    my @hidden_clades        = grep { $_ =~ /^group_/ && $self->param($_) eq 'hide'     } $self->param;
+    my @collapsed_clades     = grep { $_ =~ /^group_/ && $self->param($_) eq 'collapse' } $self->param;
     my @highlights           = $gene && $member ? ($gene->stable_id, $member->genome_db->dbID) : (undef, undef);
     my $hidden_genes_counter = 0;
     my $type                 = $cdb =~ /^compara_pan/ ? 'GeneTree/Image/pan_compara' : 'GeneTree/Image';
@@ -64,7 +64,7 @@ sub content {
 #EG: warning message is added to the top of the page to let the user know if an old GeneTree stable_ids is mapped to new GeneTree stable_ids
 # EG highlight tree nodes by annotation
     my $hide                 = $hub->get_cookie_value('toggle_ht_table') eq 'closed';
-    my @ontology_terms       = split /,/, $hub->param('ht') || [];
+    my @ontology_terms       = split /,/, $self->param('ht') || [];
     my @highlight_map        = @{$self->get_highlight_map($cdb, $tree->tree) || []};
     my $highlight_tags_row   = undef;
     my $highlight_tags_table = '';
@@ -73,8 +73,8 @@ sub content {
       my $type_selector = $self->highlight_types_selector(\@highlight_map);
 
       
-      my $update_url = $hub->url({type=>'Component/Gene',action=>'Web',function=>'ComparaTree', g1 => $hub->param('g1') || undef, collapse => $hub->param('collapse') || undef });
-      my $selected = $hub->param('ht') || undef;
+      my $update_url = $hub->url({type=>'Component/Gene',action=>'Web',function=>'ComparaTree', g1 => $self->param('g1') || undef, collapse => $self->param('collapse') || undef });
+      my $selected = $self->param('ht') || undef;
       
       my $button = sprintf(
           '<a rel="ht_table" class="button toggle no_img _slide_toggle set_cookie %s" href="#" title="Click to toggle the annotations table">
@@ -117,13 +117,13 @@ sub highlight_tags_table {
   my $hub = $self->hub;
   my $hide = $hub->get_cookie_value('toggle_ht_table') eq 'closed';
   my @rows;
-  my $selected = $hub->param('ht') || undef;
+  my $selected = $self->param('ht') || undef;
   for my $tag (@$highlight_map){
     my $xref = $tag->{'xref'};
     my $count = scalar @{$tag->{'members'}};
     my $db_name = $tag->{'db_name'};
     my $desc = $tag->{'desc'};
-    my $update_url = $hub->url({type=>'Component/Gene',action=>'Web',function=>'ComparaTree', ht => $xref, g1 => $hub->param('g1') || undef });
+    my $update_url = $hub->url({type=>'Component/Gene',action=>'Web',function=>'ComparaTree', ht => $xref, g1 => $self->param('g1') || undef });
     my $text   = $count ? $count > 1 ? "$count members" : "$count member" : "$count members";
     my $checked =  $selected && $selected eq $xref ? 'checked="checked"' : '';
     push(@rows, {
@@ -161,8 +161,8 @@ sub highlight_types_selector {
   my ($self,$highlight_map) = @_;
   my $hub = $self->hub;
   my $hide = $hub->get_cookie_value('toggle_ht_table') eq 'closed';
-  my $selected_id = $hub->param('ht') || undef;
-  my $selected_db_name = $hub->param('db_name') || undef;
+  my $selected_id = $self->param('ht') || undef;
+  my $selected_db_name = $self->param('db_name') || undef;
   my %types = (); 
   map { push( @{ $types{ $_->{'db_name'} } }, $_ ) } @$highlight_map;
   my @options = ();

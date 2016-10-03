@@ -37,8 +37,8 @@ sub content {
   my $self             = shift;
   my $hub              = $self->hub;
   my $species_defs     = $hub->species_defs;
-  my $gene_family_id   = $hub->param('gene_family_id');
-  my $format           = $hub->param('_format');  
+  my $gene_family_id   = $self->param('gene_family_id');
+  my $format           = $self->param('_format');  
   my $object           = $self->object;
   my $gene_stable_id   = $object->stable_id;
   my $compara_db       = $object->database('compara');

@@ -26,7 +26,7 @@ use base qw(EnsEMBL::Web::Component::TaxonSelector);
 sub _init {
   my $self = shift;
   my $hub = $self->hub;
-  my $gene_family_id = $hub->param('gene_family_id');
+  my $gene_family_id = $self->param('gene_family_id');
   
   $self->SUPER::_init;
   

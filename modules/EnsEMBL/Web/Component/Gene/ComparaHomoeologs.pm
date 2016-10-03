@@ -35,7 +35,7 @@ sub content {
   my $hub          = $self->hub;
   my $object       = $self->object;
   my $species_defs = $hub->species_defs;
-  my $cdb          = shift || $hub->param('cdb') || 'compara';
+  my $cdb          = shift || $self->param('cdb') || 'compara';
   my $availability = $object->availability;
     
   my @homoeologues = (
@@ -49,7 +49,7 @@ sub content {
     foreach (keys %$homology_type) {
       (my $species = $_) =~ tr/ /_/;
       $homoeologue_list{$species} = {%{$homoeologue_list{$species}||{}}, %{$homology_type->{$_}}};
-      $skipped{$species}        += keys %{$homology_type->{$_}} if $hub->param('species_' . lc $species) eq 'off';
+      $skipped{$species}        += keys %{$homology_type->{$_}} if $self->param('species_' . lc $species) eq 'off';
     }
   }
   

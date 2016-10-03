@@ -33,7 +33,7 @@ sub content {
   
   my $hub         = $self->hub;
   my $function    = $hub->function;  
-  my $adaptor     = $hub->get_databases('go')->{'go'}->get_OntologyTermAdaptor;
+  my $adaptor     = $hub->get_adaptor('get_OntologyTermAdaptor', 'go');
   my %clusters    = $hub->species_defs->multiX('ONTOLOGIES');
   my $terms_found = 0;
   my $label       = 'Ontology';
@@ -151,14 +151,14 @@ sub process_data {
         $param_type => $gene,
         __clear     => 1,
       });
-      
+
       $desc = qq{Propagated from $common_name <a href="$url">$gene</a> by orthology};
     }
     
     if($hash->{'term'}) {
       $row->{'go'}               = $go_link;
       $row->{'description'}      = $hash->{'term'};
-      $row->{'evidence'}         = join ', ', map $self->helptip($_, $description_hash->{$_} // 'No description available'), @$go_evidence;  
+      $row->{'evidence'}         = join ', ', map $self->helptip($_, $description_hash->{$_} // 'No description available'), @$go_evidence;
       $row->{'desc'}             = join ', ', grep $_, ($desc, $hash->{'source'});
       $row->{'transcript_id'}    = %all_trans ? join("<br>", map { qq{<a href="$all_trans{$_}">$_</a>} } keys %all_trans) : '<a href="'.$hub->url({type => 'Transcript', action => 'Summary',t => $_,}).'">'.$hash->{transcript_id}.'</a>';
       $row->{'extra_link'}       = $mart_link || $loc_link ? qq{<ul class="compact">$mart_link$loc_link</ul>} : "";

@@ -36,13 +36,13 @@ sub _init {
 sub content {
   my $self         = shift;
   my $hub          = $self->hub;
-  my $cdb          = shift || $hub->param('cdb') || 'compara';
+  my $cdb          = shift || $self->param('cdb') || 'compara';
   my $species      = $hub->species;
   my $species_defs = $hub->species_defs;
   my $gene_id      = $self->object->stable_id;
-  my $second_gene  = $hub->param('g1');
-  my $cds          = $hub->param('seq') eq 'cds';
-  my $format       = $hub->param('_format');
+  my $second_gene  = $self->param('g1');
+  my $cds          = $self->param('seq') eq 'cds';
+  my $format       = $self->param('_format');
   my $database     = $hub->database($cdb);
   my $qm           = $database->get_GeneMemberAdaptor->fetch_by_stable_id($gene_id);
   my ($homologies, $html, %skipped);
@@ -82,7 +82,7 @@ sub content {
         my $species_name = $species_defs->get_config($member_species, 'SPECIES_SCIENTIFIC_NAME') || $species_defs->species_label($member_species);
         $species_name =~ s/\s/_/g;
         
-        if (!$second_gene && $member_species ne $species && $hub->param('species_' . lc $member_species) eq 'off') {
+        if (!$second_gene && $member_species ne $species && $self->param('species_' . lc $member_species) eq 'off') {
           $flag = 0;
           $skipped{$species_defs->species_label($member_species)}++;
           next;

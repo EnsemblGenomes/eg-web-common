@@ -35,7 +35,7 @@ sub content {
   my $self           = shift;
   my $hub            = $self->hub;
   my $species_defs   = $hub->species_defs;
-  my $gene_family_id = $hub->param('gene_family_id');
+  my $gene_family_id = $self->param('gene_family_id');
   my $object         = $self->object;
   my $gene_stable_id = $object->stable_id;
   my $compara_db     = $object->database('compara');
@@ -52,7 +52,7 @@ sub content {
  
   unless ($gene_family_id) {
     $gene_family_id = $families->[0]->stable_id;
-    $hub->param('gene_family_id', $gene_family_id);
+    $self->param('gene_family_id', $gene_family_id);
   }
  
   my ($family) = grep {$_->stable_id eq $gene_family_id} @$families;
@@ -63,7 +63,7 @@ sub content {
     # family selector
     
     my $hidden_params = join('', map { 
-      sprintf '<input type="hidden" name="%s" value="%s">', $_, $hub->param($_) 
+      sprintf '<input type="hidden" name="%s" value="%s">', $_, $self->param($_) 
     } (qw(g r t)) );
     
     my $options = join('', map { 
