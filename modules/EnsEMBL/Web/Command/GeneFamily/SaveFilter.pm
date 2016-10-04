@@ -19,10 +19,6 @@ limitations under the License.
 package EnsEMBL::Web::Command::GeneFamily::SaveFilter;
 
 use strict;
-
-use EnsEMBL::Web::Root;
-use EnsEMBL::Web::Data::Session;
-
 use Compress::Zlib;
 
 use base qw(EnsEMBL::Web::Command);
@@ -42,7 +38,7 @@ sub process {
     filter => compress( join(',', @species) ),
   };
 
-  $session->add_data(%$data);
+  $session->set_record_data($data);
 
   $self->hub->redirect($redirect);  
 }

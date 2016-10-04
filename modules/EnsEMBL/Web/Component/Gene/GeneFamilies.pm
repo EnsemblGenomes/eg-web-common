@@ -21,7 +21,7 @@ package EnsEMBL::Web::Component::Gene::GeneFamilies;
 ### Displays gene families for this gene
 
 use strict;
-use base qw(EnsEMBL::Web::Component::Transcript);
+use base qw(EnsEMBL::Web::Component::Gene);
 use EnsEMBL::Web::TmpFile::Text;
 use URI::Escape;
 
@@ -119,7 +119,7 @@ sub content {
   # filter buttons
 
   $html .= '<p>';
-  $html .= sprintf '<a class="fbutton modal_link" href="%s">Filter gene family</a> ', $hub->url('Component', { action => 'Web', function => 'GeneFamilySelector/ajax' }, undef, 1);
+  $html .= sprintf '<a class="fbutton modal_link" href="%s">Filter gene family</a> ', $hub->url('Component', { action => 'Gene_families', function => 'ajax/selector' }, undef, 1);
   if ($data->{is_filtered}) {
     $html .= sprintf (
       '<a class="fbutton" href="%s">Clear filter</a> ',
@@ -192,17 +192,6 @@ sub content {
   ### EG End
    
   return $html . $table->render;
-}
-
-sub ajax_url {
-  my $self     = shift;
-  my $function = shift;
-  my $params   = shift || {};
-  my (undef, $plugin, undef, undef, $module) = split '::', ref $self;
-  
-  $module .= "/$function" if $function && $self->can("content_$function");
-  
-  return $self->hub->url('Component', { action => $plugin, function => $module, %$params }, undef, !$params->{'__clear'});
 }
 
 1;
