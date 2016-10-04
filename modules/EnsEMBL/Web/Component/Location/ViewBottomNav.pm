@@ -21,45 +21,33 @@ package EnsEMBL::Web::Component::Location::ViewBottomNav;
 use strict;
 use JSON;
 
-## EG - add start boundary (Ensembl assumes start == 1 but we need to vary this for variation view)
-sub content {
-  my ($self,$min,$max) = @_;
+## disabled while we work out what to do with circular region displays
 
-  my $length = -1;
-  my $object = $self->hub->core_object('Location');
-  $length = $object->seq_region_length if $object;
+# sub ramp {
+#   my ($self, $min, $max, $start, $end) = @_;
+#   my $hub    = $self->hub;
+#   my $object = $hub->core_object('Location');
+#   my $scale  = $hub->species_defs->ENSEMBL_GENOME_SIZE || 1;
   
-  my $ramp = $self->ramp($min || 1e3, $max || 1e6, 1, $length);
-  return $self->navbar($ramp);
-}
+#   $start = int $start;
+#   $end   = int $end;
+#   $max  *= $scale; 
+#   $min  *= $scale;
 
+#   if ($start and $end) {
+#     my $length = $end - $start + 1;
+#     $max = $length if $max > $length;
+#   }
 
-sub ramp {
-  my ($self, $min, $max, $start, $end) = @_;
-  my $hub    = $self->hub;
-  my $object = $hub->core_object('Location');
-  my $scale  = $hub->species_defs->ENSEMBL_GENOME_SIZE || 1;
-  
-  $start = int $start;
-  $end   = int $end;
-  $max  *= $scale; 
-  $min  *= $scale;
+#   my $json = $self->jsonify({
+#     min        => $min,
+#     max        => $max,
+#     start      => $start,
+#     end        => $end,
+#     isCircular => 0, $object->slice->is_circular ? JSON::true : JSON::false,
+#   });
 
-  if ($start and $end) {
-    my $length = $end - $start + 1;
-    $max = $length if $max > $length;
-  }
-
-  my $json = $self->jsonify({
-    min        => $min,
-    max        => $max,
-    start      => $start,
-    end        => $end,
-    isCircular => $object->slice->is_circular ? JSON::true : JSON::false,
-  });
-
-  return $json;
-}
-##
+#   return $json;
+# }
 
 1;

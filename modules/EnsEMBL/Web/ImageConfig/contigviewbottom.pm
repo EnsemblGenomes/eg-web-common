@@ -23,7 +23,7 @@ package EnsEMBL::Web::ImageConfig::contigviewbottom;
 use strict;
 use warnings;
 
-use previous qw(init_cacheable initialize);
+use previous qw(init_cacheable);
 
 sub init_cacheable {
   my $self = shift;
@@ -95,26 +95,6 @@ sub init_cacheable {
 
   my $ml = $self->get_node('fg_methylation_legend');
   $ml->remove if $ml;
-}
-
-sub initialize {
-  ## @plugin
-  ## Adds blast track to the config
-  my $self = shift;
-  $self->PREV::initialize(@_);
-
-  ## replace "BLAST/BLAST" with "BLAST"
-
-  if (my $node = $self->get_node('blast')) {
-    $node->set('caption', 'BLAST hits');
-    $node->set('name', 'BLAST hits');
-    $node->set('description', 'Track displaying BLAST hits for the selected job');
-  }
-
-  if (my $node = $self->get_node('blast_legend')) {
-    $node->set('caption', 'BLAST Legend');
-    $node->set('name', 'BLAST Legend');
-  }
 }
 
 1;
