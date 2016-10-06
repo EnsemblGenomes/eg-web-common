@@ -353,7 +353,7 @@ sub get_highlight_map{
   };
   return [] unless $adaptor;
   my $dbe = $hub->get_adaptor('get_DBEntryAdaptor');
-  my $goadaptor = $hub->get_databases('go')->{'go'};
+  my $goadaptor = $hub->database('go');
   my $goa = $goadaptor->get_OntologyTermAdaptor;
   for my $db_name (@compara_highlights){
     for my $xref (@{$adaptor->get_associated_xrefs_for_tree($tree,$db_name)}) {
