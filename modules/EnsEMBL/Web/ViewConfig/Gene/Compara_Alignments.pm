@@ -26,7 +26,7 @@ sub init_cacheable {
   my $self = shift;
   $self->PREV::init_cacheable(@_);
 
-  $self->set_defaults({
+  $self->set_default_options({
     flank5_display => 60,
     flank3_display => 60,
   });
