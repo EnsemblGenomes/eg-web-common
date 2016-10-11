@@ -65,12 +65,13 @@ sub content_ajax {
   my $self = shift;
   my $hub = $self->hub;
   my @default_species = $hub->param('s');
-  
+  $_ = lc for @default_species;  # in-place lowercase entire content.
+
   my %params = (
     dataUrl => $self->{data_url},
     isBlast => $self->{is_blast},
   );
-  
+
   $params{defaultKeys}    = [@default_species]       if @default_species;
   $params{entryNode}      = $self->{entry_node}      if $self->{entry_node};
   $params{selectionLimit} = $self->{selection_limit} if $self->{selection_limit};
