@@ -172,4 +172,21 @@ sub intra_species_alignments {
   return $self->{_intra_species_alignments}->{$cache_key};
 }
 
+## EG - get species list from compara db (ENSEMBL-4604, ENSEMBL-4584)
+sub compara_species {
+  my $self       = shift;
+  my $function   = $self->function;
+  
+  if ($self->action eq 'ComparaOrthologs') {
+    # running in modal context, need to get function from referer
+    $function = $self->referer->{ENSEMBL_FUNCTION};
+  }
+
+  my $compara_db = $function eq 'pan_compara' ? 'compara_pan_ensembl' : 'compara';
+  my $genome_dbs = $self->database($compara_db)->get_GenomeDBAdaptor->fetch_all;
+  
+  return map {$_->name} @$genome_dbs;
+}
+##
+
 1;
