@@ -23,13 +23,12 @@ use strict;
 
 use base qw(EnsEMBL::Web::ViewConfig);
 
-sub init {
+sub init_cacheable {
   my $self = shift;
 ## EG  
-  $self->set_defaults({ map { 'species_' . lc($_) => 'yes' } $self->_get_compara_species() });
+  $self->set_default_options({ map { 'species_' . lc($_) => 'yes' } $self->_get_compara_species() });
 ##  
-  $self->code  = 'Gene::HomologAlignment';
-  $self->title = 'Homologs';
+  $self->title('Homologs');
 }
 
 sub form {
