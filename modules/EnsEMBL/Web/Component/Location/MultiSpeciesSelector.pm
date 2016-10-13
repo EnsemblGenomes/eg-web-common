@@ -36,6 +36,10 @@ sub _init {
   $self->{'rel'}             = 'modal_select_species_or_regions';
 }
 
+sub content {
+  return "";
+}
+
 sub content_ajax {
   my $self            = shift;
   my $hub             = $self->hub;
