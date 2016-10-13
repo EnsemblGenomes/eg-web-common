@@ -412,6 +412,7 @@ sub transcript_table {
  
     foreach (map { $_->[2] } sort { $a->[0] cmp $b->[0] || $a->[1] cmp $b->[1] } map { [ $_->external_name, $_->stable_id, $_ ] } @$transcripts) {
       my $transcript_length = $_->length;
+      my $version           = $_->version ? ".".$_->version : "";
       my $tsi               = $_->stable_id;
       my $protein           = '';
       my $translation_id    = '';
