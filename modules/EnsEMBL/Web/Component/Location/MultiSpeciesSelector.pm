@@ -20,6 +20,26 @@ package EnsEMBL::Web::Component::Location::MultiSpeciesSelector;
 
 use strict;
 
+our @ISA = qw(EnsEMBL::Web::Component::MultiSelector); # Important! Redefine parent class.
+use base qw(EnsEMBL::Web::Component::MultiSelector); # Important! Actually load(/use) parent module.
+
+sub _init {
+  my $self = shift;
+  
+  $self->SUPER::_init;
+
+  $self->{'link_text'}       = 'Select species or regions';
+  $self->{'included_header'} = 'Selected species';
+  $self->{'excluded_header'} = 'Unselected species';
+  $self->{'panel_type'}      = 'MultiSpeciesSelector';
+  $self->{'url_param'}       = 's';
+  $self->{'rel'}             = 'modal_select_species_or_regions';
+}
+
+sub content {
+  return "";
+}
+
 sub content_ajax {
   my $self            = shift;
   my $hub             = $self->hub;
