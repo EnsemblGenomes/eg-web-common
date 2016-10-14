@@ -25,7 +25,6 @@ use previous qw(
   add_external_browsers
 );
 
-# ENSEMBL-4620 polyploid view currently disabled 
 sub modify_tree {
   my $self  = shift;
   my $species_defs = $self->hub->species_defs;
