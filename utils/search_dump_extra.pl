@@ -23,7 +23,7 @@ use HTML::Entities;
 use FindBin qw($Bin);
 use lib $Bin;
 use LibDirs;
-use EnsEMBL::Web::Hub; 
+use EnsEMBL::Web::DBHub; 
 use EnsEMBL::Web::DBSQL::MetaDataAdaptor;
 
 my $dir  = '.';
@@ -35,7 +35,7 @@ GetOptions(
 );
 
 my @indices      = $index_list ? map {ucfirst} split(/,/, $index_list) : qw(Genome Seqregion);
-my $hub          = EnsEMBL::Web::Hub->new;
+my $hub          = EnsEMBL::Web::DBHub->new;
 my $species_defs = $hub->species_defs;
 my @species      = $species_defs->valid_species;
 (my $division    = $species_defs->ENSEMBL_SITETYPE) =~ s/ //;
