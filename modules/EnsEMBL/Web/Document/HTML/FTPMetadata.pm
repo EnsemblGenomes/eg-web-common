@@ -23,13 +23,11 @@ package EnsEMBL::Web::Document::HTML::FTPMetadata;
 use strict;
 use warnings;
 
-use EnsEMBL::Web::Hub;
-
 use base qw(EnsEMBL::Web::Document::HTML);
 
 sub render {
   my $self = shift;
-  my $hub          = new EnsEMBL::Web::Hub;
+  my $hub          = $self->hub;
   my $species_defs = $hub->species_defs;
   my $prefix       = 'ftp://ftp.ensemblgenomes.org/pub/release-' . $species_defs->SITE_RELEASE_VERSION;
   my $site         = $species_defs->ENSEMBL_SITETYPE;

@@ -22,6 +22,15 @@ use strict;
 use warnings;
 use List::Util qw(min max);
 
+use previous qw(new);
+
+## EG - set correct factory type for polyploid view
+sub new {
+  my $self = shift->PREV::new(@_);
+  $self->{'factorytype'} = 'MultipleLocation' if $self->{'type'} eq 'Location' && $self->{'action'} eq 'MultiPolyploid';
+  return $self;
+}
+
 ## EG
 # intra_species_alignments() is a replacement for the lookup stored in MULTI.packed
 # E.g. $species_defs->multi_hash->{'DATABASE_COMPARA'}->{'INTRA_SPECIES_ALIGNMENTS'}\

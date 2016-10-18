@@ -23,7 +23,6 @@ package EnsEMBL::Web::Document::HTML::FTPtable;
 use strict;
 use warnings;
 
-use EnsEMBL::Web::Hub;
 use EnsEMBL::Web::Document::Table;
 
 use base qw(EnsEMBL::Web::Document::HTML);
@@ -31,7 +30,7 @@ use base qw(EnsEMBL::Web::Document::HTML);
 sub render {
   my $self = shift;
 
-  my $hub             = new EnsEMBL::Web::Hub;
+  my $hub             = $self->hub;
   my $species_defs    = $hub->species_defs;
 
   my $rel = $species_defs->SITE_RELEASE_VERSION;
@@ -105,8 +104,7 @@ sub render {
       tsv        => qq{<a rel="external"  title="$title{'tsv'}" href="$ftp_base_path_stub/tsv/$sp_dir/">TSV</a>},
       vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/vep/">VEP</a>},
     };
-    my $db_hash = $hub->databases_species($spp, 'variation');
-    if ($db_hash->{variation}) {
+    if ($hub->database('variation', $spp)) {
       $data->{'gvf'} = qq{<a rel="external" title="$title{'gvf'}" href="$ftp_base_path_stub/gvf/$sp_dir">GVF</a>};
       $data->{'vcf'} = qq{<a rel="external" title="$title{'vcf'}" href="$ftp_base_path_stub/vcf/$sp_dir">VCF</a>};
     }
