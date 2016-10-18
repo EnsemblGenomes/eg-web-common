@@ -21,6 +21,17 @@ use lib $Bin;
 use LibDirs;
 use LoadPlugins;
 
+# Note: if the Inline code has already been compiled, running this script will
+# ** NOT ** run the compilation process again (and hence not updating the binary)
+# If update is desired, the previous build directory should be removed manually
+# first before running this script to build the inline C code.
+
+# Currently the build directories for inline C code in different modules are
+# configured to different locations. It is difficult to know programmatically
+# where these directories are. It is best to configure these build directories
+# to follow certain pattern or to a centralised location. This way, we can remove
+# these directories in this script before compiling the inline C code again.
+
 my $webroot = $LibDirs::WEBROOT;
 my @dirs = ($webroot, @{$SiteDefs::ENSEMBL_PLUGINS || []});
 my @patterns = ("use Inline", "require Inline");
