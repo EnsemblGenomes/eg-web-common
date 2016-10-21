@@ -30,6 +30,8 @@ sub _init {
   $self->ajaxable(1);
 }
 
+our %button_set = ('download' => 1, 'view' => 0);
+
 sub content {
   my $self         = shift;
   my $hub          = $self->hub;
@@ -55,22 +57,17 @@ sub content {
   
   return '<p>No homoeologues have been identified for this gene</p>' unless keys %homoeologue_list;
   
-  my %homoeologue_map = qw(SEED BRH PIP RHS);
-  my $alignview      = 0;
+  my $alignview = 0;
  
   my ($html, $columns, @rows);
- 
-  my $column_name = $self->html_format ? 'Compare' : 'Description';
   
-  my $columns = [
-    { key => 'Species',    align => 'left', width => '10%', sort => 'html'                                                },
-    { key => 'Type',       align => 'left', width => '5%',  sort => 'string'                                              },
-    { key => 'dN/dS',      align => 'left', width => '5%',  sort => 'numeric'                                             },
-    { key => 'identifier', align => 'left', width => '15%', sort => 'html', title => $self->html_format ? 'Ensembl identifier &amp; gene name' : 'Ensembl identifier'},    
-    { key => $column_name, align => 'left', width => '10%', sort => 'none'                                                },
-    { key => 'Location',   align => 'left', width => '20%', sort => 'position_html'                                       },
-    { key => 'Target %id', align => 'left', width => '5%',  sort => 'numeric'                                             },
-    { key => 'Query %id',  align => 'left', width => '5%',  sort => 'numeric'                                             },
+  $columns = [
+    { key => 'Species',    align => 'left', width => '15%', sort => 'html'                                                },
+    { key => 'Type',       align => 'left', width => '15%', sort => 'html'                                            },   
+    { key => 'identifier', align => 'left', width => '40%', sort => 'none', title => 'Homoeologue'},      
+    { key => 'dN/dS',      align => 'left', width => '10%',  sort => 'html'                                             },
+    { key => 'Target %id', align => 'left', width => '10%',  sort => 'position_html', label => 'Target %id', help => "Percentage of the homoeologous sequence matching the source sequence" },
+    { key => 'Query %id',  align => 'left', width => '10%',  sort => 'position_html', label => 'Query %id',  help => "Percentage of the source sequence matching the sequence of the homoeologoue" },
   ];
   
   push @$columns, { key => 'Gene name(Xref)',  align => 'left', width => '15%', sort => 'html', title => 'Gene name(Xref)'} if(!$self->html_format);
@@ -84,17 +81,15 @@ sub content {
       my $homoeologue = $homoeologue_list{$species}{$stable_id};
       my ($target, $query);
       
-      # (Column 2) Add in homoeologue description
-      my $homoeologue_desc = $homoeologue_map{$homoeologue->{'homology_desc'}} || $homoeologue->{'homology_desc'};
+      # Add in homoeologue description
+      my $homoeologue_desc = $homoeologue->{'homology_desc'};
       
-      # (Column 3) Add in the dN/dS ratio
+      # Add in the dN/dS ratio
       my $homoeologue_dnds_ratio = $homoeologue->{'homology_dnds_ratio'} || 'n/a';
-         
-      # (Column 4) Sort out 
-      # (1) the link to the other species
-      # (2) information about %ids
-      # (3) links to multi-contigview and align view
+      my $dnds_class  = ($homoeologue_dnds_ratio ne "n/a" && $homoeologue_dnds_ratio >= 1) ? "box-highlight" : "";
+
       (my $spp = $homoeologue->{'spp'}) =~ tr/ /_/;
+      $spp = $species_defs->production_name_mapping($spp);
       my $link_url = $hub->url({
         species => $spp,
         action  => 'Summary',
@@ -102,52 +97,52 @@ sub content {
         __clear => 1
       });
 
-      # Check the target species are on the same portal - otherwise the multispecies link does not make sense
-      my $target_links = ($link_url =~ /^\// 
-        && $cdb eq 'compara'
-        && $availability->{'has_pairwise_alignments'}
-      ) ? sprintf(
-        '<ul class="compact"><li class="first"><a href="%s" class="notext">Region Comparison</a></li>',
+      my $seq_region = [split /:/, $homoeologue->{'location'}]->[0];
+      my $region_link = sprintf('<a href="%s">Compare Regions</a> ('.$homoeologue->{'location'}.')',
         $hub->url({
           type   => 'Location',
           action => 'Multi',
           g1     => $stable_id,
-          s1     => $spp,
-          r      => undef,
+          s1     => "$spp--$seq_region",
+          r      => $hub->create_padded_region()->{'r'} || $self->param('r'),
           config => 'opt_join_genes_bottom=on',
-        })
-      ) : '';
-      
-      if ($homoeologue_desc ne 'DWGA') {
-        ($target, $query) = ($homoeologue->{'target_perc_id'}, $homoeologue->{'query_perc_id'});
-       
-        my $align_url = $hub->url({
-            action   => 'Compara_Homoeolog',
-            function => 'Alignment' . ($cdb =~ /pan/ ? '_pan_compara' : ''),
-            g1       => $stable_id,
-          });
-        
-        unless ($object->Obj->biotype =~ /RNA/) {
-          $target_links .= sprintf '<li><a href="%s" class="notext">Alignment (protein)</a></li>', $align_url;
-        }
-        $align_url    .= ';seq=cDNA';
-        $target_links .= sprintf '<li><a href="%s" class="notext">Alignment (cDNA)</a></li>', $align_url;
-        
-        $alignview = 1;
-      }
-      
-      $target_links .= sprintf(
-        '<li><a href="%s" class="notext">Gene Tree (image)</a></li></ul>',
-        $hub->url({
-          type   => 'Gene',
-          action => 'Compara_Tree' . ($cdb =~ /pan/ ? '/pan_compara' : ''),
-          g1     => $stable_id,
-          anc    => $homoeologue->{'gene_tree_node_id'},
-          r      => undef
         })
       );
       
-      # (Column 5) External ref and description
+      my ($alignment_link, $target_class, $query_class);
+      if ($homoeologue_desc ne 'DWGA') {
+        ($target, $query) = ($homoeologue->{'target_perc_id'}, $homoeologue->{'query_perc_id'});
+         $target_class    = ($target && $target <= 10) ? "bold red" : "";
+         $query_class     = ($query && $query <= 10) ? "bold red" : "";
+       
+        my $page_url = $hub->url({
+          type    => 'Gene',
+          action  => $hub->action,
+          g       => $self->param('g'), 
+        });
+          
+        my $zmenu_url = $hub->url({
+          type    => 'ZMenu',
+          action  => 'ComparaOrthologs',
+          g1      => $stable_id,
+          dbID    => $homoeologue->{'dbID'},
+          cdb     => $cdb,
+        });
+
+        $alignment_link = sprintf '<a href="%s" class="_zmenu">View Sequence Alignments</a><a class="hidden _zmenu_link" href="%s"></a>', $page_url ,$zmenu_url;          
+        
+        $alignview = 1;
+      }       
+
+      my $tree_url = $hub->url({
+        type   => 'Gene',
+        action => 'Compara_Tree' . ($cdb =~ /pan/ ? '/pan_compara' : ''),
+        g1     => $stable_id,
+        anc    => $homoeologue->{'gene_tree_node_id'},
+        r      => undef
+      });
+      
+      # External ref and description
       my $description = encode_entities($homoeologue->{'description'});
          $description = 'No description' if $description eq 'NULL';
          
@@ -156,19 +151,15 @@ sub content {
         $description   .= sprintf '[Source: %s; acc: %s]', $edb, $hub->get_ExtURL_link($acc, $edb, $acc) if $acc;
       }
       
-      my @external = (qq{<span class="small">$description</span>});
-      
-      if ($homoeologue->{'display_id'}) {
-        if ($homoeologue->{'display_id'} eq 'Novel Ensembl prediction' && $description eq 'No description') {
-          @external = ('<span class="small">-</span>');
-        } else {
-          unshift @external, $homoeologue->{'display_id'};
-        }
+      my $id_info;
+      if (!$homoeologue->{'display_id'} || $homoeologue->{'display_id'} eq 'Novel Ensembl prediction') {
+        $id_info = qq{<p class="space-below"><a href="$link_url">$stable_id</a></p>};
+      } else {
+        $id_info = qq{<p class="space-below">$homoeologue->{'display_id'}&nbsp;&nbsp;<a href="$link_url">($stable_id)</a></p>};
       }
+      $id_info .= qq{<p class="space-below">$region_link</p><p class="space-below">$alignment_link</p>};
 
-      my $id_info = qq{<p class="space-below"><a href="$link_url">$stable_id</a></p>} . join '<br />', @external;
-
-      ## (Column 6) Location - split into elements to reduce horizonal space
+      ##Location - split into elements to reduce horizonal space
       my $location_link = $hub->url({
         species => $spp,
         type    => 'Location',
@@ -177,16 +168,14 @@ sub content {
         g       => $stable_id,
         __clear => 1
       });
-      
+
       my $table_details = {
-        'Species'    => join('<br />(', split /\s*\(/, $species_defs->species_label($species)),
-        'Type'       => ucfirst $homoeologue_desc,
-        'dN/dS'      => $homoeologue_dnds_ratio,
+        'Species'    => join('<br />(', split /\s*\(/, $species_defs->species_label($species_defs->production_name_mapping($species))),
+        'Type'       => $self->html_format ? $self->glossary_helptip(ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues").qq{<p class="top-margin"><a href="$tree_url">View Gene Tree</a></p>} : $self->glossary_helptip(ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues") ,
+        'dN/dS'      => qq{<span class="$dnds_class">$homoeologue_dnds_ratio</span>},
         'identifier' => $self->html_format ? $id_info : $stable_id,
-        'Location'   => qq{<a href="$location_link">$homoeologue->{'location'}</a>},
-        $column_name => $self->html_format ? qq{<span class="small">$target_links</span>} : $description,
-        'Target %id' => $target,
-        'Query %id'  => $query
+        'Target %id' => qq{<span class="$target_class">}.sprintf('%.2f&nbsp;%%', $target).qq{</span>},
+        'Query %id'  => qq{<span class="$query_class">}.sprintf('%.2f&nbsp;%%', $query).qq{</span>},
       };      
       $table_details->{'Gene name(Xref)'}=$homoeologue->{'display_id'} if(!$self->html_format);
       
@@ -196,25 +185,8 @@ sub content {
   
   my $table = $self->new_table($columns, \@rows, { data_table => 1, sorting => [ 'Species asc', 'Type asc' ], id => 'homoeologues' });
   
-  if ($alignview and keys %homoeologue_list) {
-    $html .= '<p>';
-    $html .= sprintf(
-      '<a href="%s">View protein alignments of all homoeologues</a>', 
-      $hub->url({ action => 'Compara_Homoeolog', function => 'Alignment' . ($cdb =~ /pan/ ? '_pan_compara' : ''), })   
-    );
-    $html .= sprintf(
-      ' &nbsp;|&nbsp; <a href="%s">View genomic alignments of all homoeologues</a>', 
-      $hub->url({'type' => 'Location', 'action' => 'MultiPolyploid'})
-    );
-    $html .= sprintf(
-      ' &nbsp;|&nbsp; <a href="%s" target="_blank">Download all protein sequences</a>', 
-      $hub->url({ action => 'Compara_Homoeolog', function => 'PepSequence', _format => 'Text' }) 
-    ) if $cdb !~ /pan/;
-    $html .= sprintf(
-      ' &nbsp;|&nbsp; <a href="%s" target="_blank">Download all DNA sequences</a>', 
-      $hub->url({ action => 'Compara_Homoeolog', function => 'PepSequence', _format => 'Text', seq => 'cds' }) 
-    ) if $cdb !~ /pan/;
-    $html .= '</p>';
+  if ($alignview && keys %homoeologue_list) {
+    $button_set{'view'} = 1;
   }
   
   $html .= $table->render;
@@ -224,14 +196,15 @@ sub content {
     $count += $_ for values %skipped;
     
     $html .= '<br />' . $self->_info(
-      'homoeologues hidden by configuration',
+      'Homoeologues hidden by configuration',
       sprintf(
         '<p>%d homoeologues not shown in the table above from the following species. Use the "<strong>Configure this page</strong>" on the left to show them.<ul><li>%s</li></ul></p>',
         $count,
-        join "</li>\n<li>", map "$_ ($skipped{$_})", sort keys %skipped
+        join "</li>\n<li>", sort map {$species_defs->species_label($species_defs->production_name_mapping($_))." ($skipped{$_})"} keys %skipped
       )
     );
-  }  
+  }   
+
   return $html;
 }
 
