@@ -73,7 +73,7 @@ sub content {
       my $type_selector = $self->highlight_types_selector(\@highlight_map);
 
       
-      my $update_url = $hub->url({type=>'Component/Gene',action=>'Web',function=>'ComparaTree', g1 => $self->param('g1') || undef, collapse => $self->param('collapse') || undef });
+      my $update_url = $hub->url({type => 'Component/Gene', action => 'Compara_Tree', function => 'image', g1 => $self->param('g1') || undef, collapse => $self->param('collapse') || undef });
       my $selected = $self->param('ht') || undef;
       
       my $button = sprintf(
@@ -123,7 +123,7 @@ sub highlight_tags_table {
     my $count = scalar @{$tag->{'members'}};
     my $db_name = $tag->{'db_name'};
     my $desc = $tag->{'desc'};
-    my $update_url = $hub->url({type=>'Component/Gene',action=>'Web',function=>'ComparaTree', ht => $xref, g1 => $self->param('g1') || undef });
+    my $update_url = $hub->url({type => 'Component/Gene', action => 'Compara_Tree', function => 'image', ht => $xref, g1 => $self->param('g1') || undef });
     my $text   = $count ? $count > 1 ? "$count members" : "$count member" : "$count members";
     my $checked =  $selected && $selected eq $xref ? 'checked="checked"' : '';
     push(@rows, {
