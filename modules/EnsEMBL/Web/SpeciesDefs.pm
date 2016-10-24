@@ -172,10 +172,11 @@ sub production_name_mapping {
 ### @param production_name - species production name
 ### Return string = the corresponding species.url name which is the name web uses for URL and other code
   my ($self, $production_name) = @_;
-  
-  foreach ($self->valid_species) {
-    return $self->get_config($_, 'SPECIES_URL') if($self->get_config($_, 'SPECIES_PRODUCTION_NAME') eq lc($production_name));
-  }
+
+## EG - in EG we still use production name. Don't need to map them into url name.  
+  # foreach ($self->valid_species) {
+  #   return $self->get_config($_, 'SPECIES_URL') if($self->get_config($_, 'SPECIES_PRODUCTION_NAME') eq lc($production_name));
+  # }
 ## EG - species may be from another divison or from external site (e.g. Ensembl) 
 ##      in that case production name is the best we can do        
   return $production_name;
