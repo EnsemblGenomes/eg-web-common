@@ -123,7 +123,7 @@ sub content {
           
         my $zmenu_url = $hub->url({
           type    => 'ZMenu',
-          action  => 'ComparaOrthologs',
+          action  => 'ComparaHomoeologs',
           g1      => $stable_id,
           dbID    => $homoeologue->{'dbID'},
           cdb     => $cdb,
