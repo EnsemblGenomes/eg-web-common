@@ -39,7 +39,7 @@ sub content {
   my $species_defs = $hub->species_defs;
   my $cdb          = shift || $self->param('cdb') || 'compara';
   my $availability = $object->availability;
-    
+
   my @homoeologues = (
     $object->get_homology_matches('ENSEMBL_HOMOEOLOGUES', 'homoeolog', undef, $cdb), 
   );
@@ -206,6 +206,61 @@ sub content {
   }   
 
   return $html;
+}
+
+sub export_options { return {'action' => 'Homoeologs'}; }
+
+sub get_export_data {
+## Get data for export
+  my ($self, $flag) = @_;
+  my $hub          = $self->hub;
+  my $object       = $self->object || $hub->core_object('gene');
+
+  if ($flag eq 'sequence') {
+    return $object->get_homologue_alignments('compara', 'ENSEMBL_HOMOEOLOGUES');
+  }
+  else {
+    my $cdb = $flag || $self->param('cdb') || 'compara';
+    my ($homologies) = $object->get_homologies('ENSEMBL_HOMOEOLOGUES', 'homoeolog', undef, $cdb);
+    return $homologies;
+  }
+}
+
+sub buttons {
+  my $self    = shift;
+  my $hub     = $self->hub;
+  my @buttons;
+
+  if ($button_set{'download'}) {
+
+    my $gene    =  $self->object->Obj;
+
+    my $dxr  = $gene->can('display_xref') ? $gene->display_xref : undef;
+    my $name = $dxr ? $dxr->display_id : $gene->stable_id;
+
+    my $params  = {
+                  'type'        => 'DataExport',
+                  'action'      => 'Homoeologs',
+                  'data_type'   => 'Gene',
+                  'component'   => 'ComparaHomoeologs',
+                  'data_action' => $hub->action,
+                  'gene_name'   => $name,
+                };
+
+    ## Add any species settings
+    foreach (grep { /^species_/ } $self->param) {
+      $params->{$_} = $self->param($_);
+    }
+
+    push @buttons, {
+                    'url'     => $hub->url($params),
+                    'caption' => 'Download homoeologues',
+                    'class'   => 'export',
+                    'modal'   => 1
+                    };
+  }
+
+  return @buttons;
 }
 
 1;
