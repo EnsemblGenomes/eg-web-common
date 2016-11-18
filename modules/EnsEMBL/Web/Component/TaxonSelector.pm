@@ -65,7 +65,6 @@ sub content_ajax {
   my $self = shift;
   my $hub = $self->hub;
   my @default_species = $hub->param('s');
-  $_ = lc for @default_species;  # in-place lowercase entire content.
 
   my %params = (
     dataUrl => $self->{data_url},

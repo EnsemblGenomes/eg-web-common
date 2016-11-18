@@ -251,7 +251,7 @@ sub node_to_dynatree {
   if (@{$node->dba}) {
     foreach my $dba (@{$node->dba}) {
       push @output, {  
-        key   => $dba->species,
+        key   => ucfirst($dba->species),
         title => $name
       };
     }
