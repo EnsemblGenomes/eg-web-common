@@ -127,6 +127,9 @@ sub content_ajax {
   }
 ##
 
+## ENSEMBL-4770 force to use 'Multi' as action in place of 'MultiSpeciesSelector'
+  $self->{'url'} = $self->hub->url({ function => undef, action => 'Multi', align => $hub->param('align') }, 1);
+##
   $self->SUPER::content_ajax;
 }
 
