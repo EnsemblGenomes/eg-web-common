@@ -300,15 +300,15 @@ sub content {
 
   $image->set_button('drag', 'title' => 'Drag to select region');
 # EG include the ht param
-  my $default_view_url = $hub->url({ ht => $self->param('ht'), collapse => $collapsed_to_gene, g1 => $highlight_gene });
+  my $default_view_url = $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_gene, g1 => $highlight_gene });
 
   if ($gene) {
     push @view_links, sprintf '<li><a href="%s">%s</a> (Default) </li>', $default_view_url, $highlight_gene ? 'View current genes only' : 'View current gene only';
-    push @view_links, sprintf $li_tmpl, $hub->url({ ht => $self->param('ht'), collapse => $collapsed_to_para || undef, g1 => $highlight_gene }), $highlight_gene ? 'View paralogs of current genes' : 'View paralogs of current gene';
+    push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_para || undef, g1 => $highlight_gene }), $highlight_gene ? 'View paralogs of current genes' : 'View paralogs of current gene';
   }
   
-  push @view_links, sprintf $li_tmpl, $hub->url({ ht => $self->param('ht'), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
-  push @view_links, sprintf $li_tmpl, $hub->url({ ht => $self->param('ht'), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
+  push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
+  push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
   push @view_links, sprintf $li_tmpl, $unhighlight, 'Switch off highlighting' if $highlight_gene;
 # /EG
 
