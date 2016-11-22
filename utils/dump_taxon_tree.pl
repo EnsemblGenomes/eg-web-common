@@ -52,6 +52,7 @@ use Bio::EnsEMBL::DBSQL::TaxonomyNodeAdaptor;
 
 my ($plugin_dir, $dump_binary);
 my ($host, $port, $user, $pass) = qw(localhost 3306 ensro);
+my ($thost, $tport, $tuser, $tpass); # for ncbi_taxonomy
 my $root_name = 'cellular organisms';
 
 GetOptions(
@@ -59,6 +60,10 @@ GetOptions(
   "port=s"       => \$port,
   "user=s"       => \$user,
   "pass=s"       => \$pass,
+  "thost=s"      => \$thost,
+  "tport=s"      => \$tport,
+  "tuser=s"      => \$tuser,
+  "tpass=s"      => \$tpass,    
   "plugin-dir=s" => \$plugin_dir,
   "dump-binary"  => \$dump_binary,
   "root=s"       => \$root_name,
@@ -74,6 +79,10 @@ if ($dump_binary) {
 }
 
 my @db_args = ( -host => $host, -port => $port, -user => $user, -pass => $pass );
+my @ncbi_taxonomy_db_args = (@db_args);
+if ( defined $thost && defined $tport ) {
+    @ncbi_taxonomy_db_args = ( -host => $thost, -port => $tport, -user => $tuser || 'ensro', -pass => $tpass );
+}
 
 # try to get species from args or from a pipe
 my @species_args = @ARGV;
@@ -128,7 +137,7 @@ my @dbas  = grep { $species{$_->species} } @{ Bio::EnsEMBL::Registry->get_all_DB
 print "fetching leaf nodes...\n";
 
 my $dba = Bio::EnsEMBL::DBSQL::DBAdaptor->new(
-  @db_args,
+  @ncbi_taxonomy_db_args,
   -dbname => 'ncbi_taxonomy',
   -driver => 'mysql',
   -group  => 'taxonomy',
