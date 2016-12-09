@@ -32,6 +32,7 @@ sub init_cacheable {
 ## EG @ switched 'feature' to 'protein_feature' to be consistent with contigviewbottom
   $self->create_menus(qw(
     domain
+    ms_domain
     feature
     protein_feature
     variation
