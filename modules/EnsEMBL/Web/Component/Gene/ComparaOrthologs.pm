@@ -24,9 +24,8 @@ sub is_archaea {
   my ($self,$species) = @_;
   unless(exists($self->{'_archaea'})){
     # munge archaea in pan-compara
-    my $dbc = $self->hub->database('compara_pan_ensembl');
-    my $archaea = {};
-    my $results = $dbc->db_handle->selectall_arrayref(qq{select g.name from ncbi_taxa_node a join ncbi_taxa_name an using (taxon_id) join ncbi_taxa_node c on (c.left_index>a.left_index and c.right_index<a.right_index) join genome_db g on (g.taxon_id=c.taxon_id) where an.name='Archaea' and an.name_class='scientific name';});
+    my $adaptor = $self->hub->database('compara_pan_ensembl');
+    my $results = $adaptor->dbc->db_handle->selectall_arrayref(qq{select g.name from ncbi_taxa_node a join ncbi_taxa_name an using (taxon_id) join ncbi_taxa_node c on (c.left_index>a.left_index and c.right_index<a.right_index) join genome_db g on (g.taxon_id=c.taxon_id) where an.name='Archaea' and an.name_class='scientific name';});
     $self->{'_archaea'}->{$_->[0]} = 1 for @$results;
   }
   return exists($self->{'_archaea'}->{$species});
