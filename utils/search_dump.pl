@@ -872,7 +872,7 @@ sub geneLineXML {
   my $description          = $xml_data->{'description'};
   my $gene_name            = clean($xml_data->{'gene_name'});
   my $seq_region_name      = $xml_data->{'seq_region_name'};
-  my $$seq_region_synonyms = $xml_data->{'seq_region_synonyms'};
+  my $seq_region_synonyms  = $xml_data->{'seq_region_synonyms'};
   my $type                 = $xml_data->{'source'} . ' ' . $xml_data->{'biotype'} or die "problem setting type";
   my $haplotype            = $xml_data->{'haplotype'};
   my $taxon_id             = $xml_data->{'taxon_id'};
