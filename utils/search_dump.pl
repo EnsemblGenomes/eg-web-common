@@ -702,12 +702,13 @@ sub dumpGene {
  	      p geneLineXML( $species, $dataset, $gene_data, $counter );
       };
       
-  
       #my $sr_count = 0;
       
       foreach my $seq_region_id ( keys %{ $species_to_seq_region->{$species} } ) {
         #print ++$sr_count . " ";
         #$|++;
+
+        my $seq_region_synonyms = $dbh->selectall_arrayref('SELECT synonym FROM seq_region_synonym WHERE seq_region_id = ?', undef, $seq_region_id);
               
         my $gene_sql = 
           "SELECT g.gene_id, t.transcript_id, tr.translation_id,
@@ -775,6 +776,7 @@ sub dumpGene {
               'external_identifiers'   => {},
               'gene_name'              => $xref_display_label ? $xref_display_label : $gene_stable_id,
               'seq_region_name'        => $seq_region_name,
+              'seq_region_synonyms'    => $seq_region_synonyms,
               'ana_desc_label'         => $analysis_description_display_label,
               'ad'                     => $analysis_description,
               'source'                 => ucfirst($gene_source),
@@ -870,6 +872,7 @@ sub geneLineXML {
   my $description          = $xml_data->{'description'};
   my $gene_name            = clean($xml_data->{'gene_name'});
   my $seq_region_name      = $xml_data->{'seq_region_name'};
+  my $$seq_region_synonyms = $xml_data->{'seq_region_synonyms'};
   my $type                 = $xml_data->{'source'} . ' ' . $xml_data->{'biotype'} or die "problem setting type";
   my $haplotype            = $xml_data->{'haplotype'};
   my $taxon_id             = $xml_data->{'taxon_id'};
@@ -1015,6 +1018,9 @@ sub geneLineXML {
     . ( join "", ( map { qq{
 <field name="gene_synonym">$_</field>}
       } map {clean($_)} keys %$unique_synonyms ) )  
+    . ( join "", ( map { qq{
+<field name="seq_region_synonym">$_</field>}
+      } map {clean($_)} @$seq_region_synonyms ) )  
     . qq{
 <field name="database">$database</field>      
 </additional_fields>};
