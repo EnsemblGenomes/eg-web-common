@@ -1,0 +1,322 @@
+{  
+  "key":"All Plants",
+  "display_name":"All plants",
+  "is_internal_node":"true",
+  "child_nodes":[
+      {
+          "display_name" : "Dicots",
+          "key" : "Dicots",
+          "is_internal_node":"true",
+          "is_submenu":"true",
+          "child_nodes" : [
+              {
+                  "display_name" : "Brassicaceae",
+                  "key" : "Brassicaceae",
+                  "is_internal_node":"true",
+                  "child_nodes" : [
+                      {
+                          "scientific_name" : "Arabidopsis lyrata subsp. lyrata",
+                          "key" : "Arabidopsis_lyrata",
+                          "is_leaf":"true"
+                      },
+                      {
+                          "scientific_name" : "Arabidopsis thaliana",
+                          "key" : "Arabidopsis_thaliana",
+                          "is_leaf":"true"
+                      },
+                      {
+                          "scientific_name" : "Brassica napus",
+                          "key" : "Brassica_napus",
+                          "is_leaf":"true"
+                      },
+                      {
+                          "scientific_name" : "Brassica oleracea var. oleracea",
+                          "key" : "Brassica_oleracea",
+                          "is_leaf":"true"
+                      },
+                      {
+                          "scientific_name" : "Brassica rapa subsp. pekinensis",
+                          "key" : "Brassica_rapa",
+                          "is_leaf":"true"
+                      }
+                  ]
+              },
+              {
+                  "display_name" : "Fabaceae",
+                  "key" : "Fabaceae",
+                  "is_internal_node":"true",
+                  "child_nodes" : [
+                      {
+                          "scientific_name" : "Glycine max",
+                          "key" : "Glycine_max",
+                          "is_leaf":"true"
+                      },
+                      {
+                          "scientific_name" : "Medicago truncatula",
+                          "key" : "Medicago_truncatula",
+                          "is_leaf":"true"
+                      },
+                      {
+                          "scientific_name" : "Trifolium pratense",
+                          "key" : "Trifolium_pratense",
+                          "is_leaf":"true"
+                      }
+                  ]
+              },
+              {
+                  "display_name" : "Solanaceae",
+                  "key" : "Solanaceae",
+                  "is_internal_node":"true",
+                  "child_nodes" : [
+                      {
+                          "scientific_name" : "Solanum lycopersicum",
+                          "key" : "Solanum_lycopersicum",
+                          "is_leaf":"true"
+                      },
+                      {
+                          "scientific_name" : "Solanum tuberosum",
+                          "key" : "Solanum_tuberosum",
+                          "is_leaf":"true"
+                      }
+                  ]
+              },
+              {
+                  "display_name" : "Other dicots",
+                  "key" : "Other_dicots",
+                  "is_internal_node":"true",
+                  "child_nodes" : [
+                      {
+                          "scientific_name" : "Beta vulgaris subsp. vulgaris",
+                          "key" : "Beta_vulgaris",
+                          "is_leaf":"true"
+                      },
+                      {
+                          "scientific_name" : "Populus trichocarpa",
+                          "key" : "Populus_trichocarpa",
+                          "is_leaf":"true"
+                      },
+                      {
+                          "scientific_name" : "Prunus persica",
+                          "key" : "Prunus_persica",
+                          "is_leaf":"true"
+                      },
+
+                      {
+                          "scientific_name" : "Theobroma cacao",
+                          "key" : "Theobroma_cacao",
+                          "is_leaf":"true"
+                      },
+                      {
+                          "scientific_name" : "Vitis vinifera",
+                          "key" : "Vitis_vinifera",
+                          "is_leaf":"true"
+                      }
+                  ]
+              }
+          ]
+      },
+      {
+          "display_name" : "Monocots",
+          "key" : "Monocots",
+          "is_internal_node":"true",
+          "is_submenu":"true",
+          "child_nodes" : [
+              {
+                  "display_name" : "Grasses",
+                  "key" : "Grasses",
+                  "is_internal_node":"true",
+                  "is_submenu":"true",
+                  "child_nodes" : [
+                      {
+                          "display_name" : "Rices",
+                          "key" : "Rices",
+                          "is_internal_node":"true",
+                          "child_nodes" : [
+                              {
+                                  "scientific_name" : "Oryza barthii",
+                                  "key" : "Oryza_barthii",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Oryza brachyantha",
+                                  "key" : "Oryza_brachyantha",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Oryza glaberrima",
+                                  "key" : "Oryza_glaberrima",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Oryza glumipatula",
+                                  "key" : "Oryza_glumaepatula",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Oryza longistaminata",
+                                  "key" : "Oryza_longistaminata",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Oryza meridionalis",
+                                  "key" : "Oryza_meridionalis",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Oryza nivara",
+                                  "key" : "Oryza_nivara",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Oryza punctata",
+                                  "key" : "Oryza_punctata",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Oryza rufipogon",
+                                  "key" : "Oryza_rufipogon",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Oryza sativa Indica Group",
+                                  "key" : "Oryza_indica",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Oryza sativa Japonica Group",
+                                  "key" : "Oryza_sativa",
+                                  "is_leaf":"true"
+                              }
+                          ]
+                      },
+                      {
+                          "display_name" : "Triticeae",
+                          "key" : "Triticeae",
+                          "is_internal_node":"true",
+                          "child_nodes" : [
+                              {
+                                  "scientific_name" : "Aegilops tauschii",
+                                  "key" : "Aegilops_tauschii",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Hordeum vulgare subsp. vulgare",
+                                  "key" : "Hordeum_vulgare",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Triticum aestivum",
+                                  "key" : "Triticum_aestivum",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Triticum urartu",
+                                  "key" : "Triticum_urartu",
+                                  "is_leaf":"true"
+                              }
+                          ]
+                      },
+                      {
+                          "display_name" : "Warm season grasses (C4)",
+                          "key" : "Warm season grasses (C4)",
+                          "is_internal_node":"true",
+                          "child_nodes" : [
+                              {
+                                  "scientific_name" : "Setaria italica",
+                                  "key" : "Setaria_italica",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Sorghum bicolor",
+                                  "key" : "Sorghum_bicolor",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Zea mays",
+                                  "key" : "Zea_mays",
+                                  "is_leaf":"true"
+                              }
+                          ]
+                      },
+                      {
+                          "display_name" : "Other grasses",
+                          "key" : "Other_grasses",
+                          "is_internal_node":"true",
+                          "child_nodes" : [
+                              {
+                                  "scientific_name" : "Brachypodium distachyon",
+                                  "key" : "Brachypodium_distachyon",
+                                  "is_leaf":"true"
+                              },
+                              {
+                                  "scientific_name" : "Leersia perrieri",
+                                  "key" : "Leersia_perrieri",
+                                  "is_leaf":"true"
+                              }
+                          ]
+                      }
+                  ]
+              },
+              {
+                  "display_name" : "Other monocots",
+                  "key" : "Other_monocots",
+                  "is_internal_node":"true",
+                  "child_nodes" : [
+                      {
+                          "scientific_name" : "Musa acuminata subsp. malaccensis",
+                          "key" : "Musa_acuminata",
+                          "is_leaf":"true"
+                      }
+                  ]
+              }
+          ]
+      },
+      {
+          "display_name" : "Other",
+          "key" : "Other",
+          "is_internal_node":"true",
+          "child_nodes" : [
+              {
+                  "scientific_name" : "Cyanidioschyzon merolae strain 10D",
+                  "key" : "Cyanidioschyzon_merolae",
+                  "is_leaf":"true"
+              },
+              {
+                  "scientific_name" : "Galdieria sulphuraria",
+                  "key" : "Galdieria_sulphuraria",
+                  "is_leaf":"true"
+              },
+              {
+                  "scientific_name" : "Chondrus crispus",
+                  "key" : "Chondrus_crispus",
+                  "is_leaf":"true"
+              },
+              {
+                  "scientific_name" : "Ostreococcus lucimarinus CCE9901",
+                  "key" : "Ostreococcus_lucimarinus",
+                  "is_leaf":"true"
+              },
+              {
+                  "scientific_name" : "Chlamydomonas reinhardtii",
+                  "key" : "Chlamydomonas_reinhardtii",
+                  "is_leaf":"true"
+              },
+              {
+                  "scientific_name" : "Physcomitrella patens",
+                  "key" : "Physcomitrella_patens",
+                  "is_leaf":"true"
+              },
+              {
+                  "scientific_name" : "Amborella trichopoda",
+                  "key" : "Amborella_trichopoda",
+                  "is_leaf":"true"
+              },
+              {
+                  "scientific_name" : "Selaginella moellendorffii",
+                  "key" : "Selaginella_moellendorffii",
+                  "is_leaf":"true"
+              }
+          ]
+      }
+  ]
+}
