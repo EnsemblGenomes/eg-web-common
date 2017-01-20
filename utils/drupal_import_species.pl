@@ -59,6 +59,7 @@ my $url         = "$host/export/ensembl-species/$division";
 my $aboutdir    = "$plugin_root/htdocs/ssi/species";
 my $imgdir64    = "$plugin_root/htdocs/i/species/64";
 my $imgdir48    = "$plugin_root/htdocs/i/species/48";
+my $imgdir32    = "$plugin_root/htdocs/i/species/32";
 my $imgdir16    = "$plugin_root/htdocs/i/species/16";
 my $img_dir_large = "$plugin_root/htdocs/i/species/large";
 my $default_img = "$plugin_root/htdocs/i/default_species_large.png";
@@ -66,7 +67,7 @@ my $image_path  = "$plugin_root/htdocs/img";
 
 $default_img = undef unless -e $default_img;
 
-make_dir($aboutdir, $imgdir64, $imgdir48, $imgdir16, $img_dir_large, $image_path);
+make_dir($aboutdir, $imgdir64, $imgdir48, $imgdir32, $imgdir16, $img_dir_large, $image_path);
 
 printf STDERR ("Fetching %s ...\n", $url) unless $quiet;
 my $xmldoc = get($url) or die "Fetch $url failed: $!\n";
@@ -168,6 +169,7 @@ foreach my $species (keys %{$xml->{'node'}}) {
   save_largeimage($image,"$img_dir_large/$Species.png");
   save_thumbnail($image, "$imgdir64/$Species.png", 64);
   save_thumbnail($image, "$imgdir48/$Species.png", 48);
+  save_thumbnail($image, "$imgdir32/$Species.png", 32);
   save_thumbnail($image, "$imgdir16/$Species.png", 16);
 
   unlink $tmpimg;
