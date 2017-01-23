@@ -141,6 +141,7 @@ sub content {
   my $hub          = $self->hub;
   my $species_defs = $hub->species_defs;
   my $species      = $hub->species;
+  my $taxid        = $species_defs->TAXONOMY_ID;
   my $img_url      = $self->img_url;
 
   my $html = '';
@@ -167,6 +168,7 @@ sub content {
   if ($about_text) {
     $html .= '<div class="round-box tinted-box unbordered">'; 
     $html .= $about_text;
+    $html .= sprintf q{<p>Taxonomy ID %s</p>}, $hub->get_ExtURL_link("$taxid", 'UNIPROT_TAXONOMY', $taxid) if $taxid;
     $html .= qq(<p><a href="/$species/Info/Annotation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More information and statistics</a></p>);
     $html .= '</div>';
   }
