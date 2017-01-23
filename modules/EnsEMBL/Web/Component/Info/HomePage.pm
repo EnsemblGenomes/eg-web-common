@@ -143,31 +143,34 @@ sub content {
   my $species      = $hub->species;
   my $img_url      = $self->img_url;
 
-  my $html = '
-    <div class="column-wrapper">  
-      <div class="box-left">';
-
-  $html .= EnsEMBL::Web::Document::HTML::HomeSearch->new($hub)->render;
-
-  $html .= '</div>'; #box-left
-  $html .= '<div class="box-right">';
-  
+  my $html = '';
   if ($hub->species_defs->multidb->{'DATABASE_PRODUCTION'}{'NAME'} and my $whatsnew_text = $self->_whatsnew_text) {
+    $html .= '<div class="column-wrapper">';
     $html .= '<div class="round-box info-box unbordered">' . $whatsnew_text . '</div>';
+    $html .= '</div>';
   } elsif (my $ack_text = $self->_other_text('acknowledgement', $species)) {
+    $html .= '<div class="column-wrapper">';
     $html .= '<div class="plain-box round-box unbordered">' . $ack_text . '</div>';
+    $html .= '</div>';
   }
 
-  $html .= '</div>'; # box-right
-  $html .= '</div>'; # column-wrapper
-  
+
+  $html .= '<div class="box-left">';
+  $html .= '<div class="round-box tinted-box unbordered">'; 
+  $html .= EnsEMBL::Web::Document::HTML::HomeSearch->new($hub)->render;
+  $html .= '</div>';
+  $html .= '</div>'; #box-left
+
+  $html .= '<div class="box-right">';
   my $about_text = $self->_other_text('about', $species);
   if ($about_text) {
-    $html .= '<div class="column-wrapper"><div class="round-box tinted-box unbordered">'; 
+    $html .= '<div class="round-box tinted-box unbordered">'; 
     $html .= $about_text;
     $html .= qq(<p><a href="/$species/Info/Annotation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More information and statistics</a></p>);
-    $html .= '</div></div>';
+    $html .= '</div>';
   }
+  $html .= '</div>'; # box-right
+  
 
   my (@sections);
   
