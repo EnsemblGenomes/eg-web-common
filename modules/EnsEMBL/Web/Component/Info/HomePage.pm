@@ -142,43 +142,10 @@ sub content {
   my $species_defs = $hub->species_defs;
   my $species      = $hub->species;
   my $img_url      = $self->img_url;
-  my $common_name  = $species_defs->SPECIES_COMMON_NAME;
-  my $display_name = $species_defs->SPECIES_SCIENTIFIC_NAME;
-  my $taxid        = $species_defs->TAXONOMY_ID;
-  my $sound        = $species_defs->SAMPLE_DATA->{'ENSEMBL_SOUND'};
-  my $provider_link;
-
-  if ($species_defs->PROVIDER_NAME && ref $species_defs->PROVIDER_NAME eq 'ARRAY') {
-    my @providers;
-    push @providers, map { $hub->make_link_tag(text => $species_defs->PROVIDER_NAME->[$_], url => $species_defs->PROVIDER_URL->[$_]) } 0 .. scalar @{$species_defs->PROVIDER_NAME} - 1;
-
-    if (@providers) {
-      $provider_link = join ', ', @providers;
-      $provider_link .= ' | ';
-    }
-  }
-  elsif ($species_defs->PROVIDER_NAME) {
-    $provider_link = $hub->make_link_tag(text => $species_defs->PROVIDER_NAME, url => $species_defs->PROVIDER_URL) . " | ";
-  }
 
   my $html = '
     <div class="column-wrapper">  
-      <div class="box-left">
-        <div class="species-badge">';
-
-  $html .= qq(<a class="species_lightbox _ht" href="${img_url}species/large/$species.png" title="Click to enlarge"><img src="${img_url}species/64/$species.png" alt="" title="$sound" /></a>) unless $self->is_bacteria;
-
-  if ($common_name =~ /\./) {
-    $html .= qq(<h1>$display_name</h1>);
-  } else {
-    $html .= qq(<h1>$common_name</h1><p>$display_name</p>);
-  }
-
-  $html .= '<p class="taxon-id">';
-  $html .= 'Data Source ' . $provider_link if $provider_link;
-  $html .= sprintf q{Taxonomy ID %s}, $hub->get_ExtURL_link("$taxid", 'UNIPROT_TAXONOMY', $taxid) if $taxid;
-  $html .= '</p>';
-  $html .= '</div>'; #species-badge
+      <div class="box-left">';
 
   $html .= EnsEMBL::Web::Document::HTML::HomeSearch->new($hub)->render;
 
