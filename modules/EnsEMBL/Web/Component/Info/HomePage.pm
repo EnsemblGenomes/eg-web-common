@@ -156,7 +156,8 @@ sub content {
 
 
   $html .= '<div class="box-left">';
-  $html .= '<div class="round-box tinted-box unbordered">'; 
+  $html .= '<div class="round-box tinted-box unbordered">';
+  $html .= '<h2>Search</h2>';
   $html .= EnsEMBL::Web::Document::HTML::HomeSearch->new($hub)->render;
   $html .= '</div>';
   $html .= '</div>'; #box-left
