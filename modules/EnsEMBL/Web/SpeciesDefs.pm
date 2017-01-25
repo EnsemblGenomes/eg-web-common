@@ -144,6 +144,92 @@ sub _parse {
   $CONF->{'_storage'} = $tree; # Store the tree
 }
 
+## EG to overwrite behaviour on ensembl-webcode in which the sections in default ones are deep-copied into species defs regardless
+## whether there is update in the species ini file.
+## For EG, we want only copy-on-write. The sections specified in default will only be deep-copied into species defs when there is
+## update for the same section in the species ini file. Otherwise, use hashref to point to the one in default.
+## This is based on Ensembl implementation at https://github.com/Ensembl/ensembl-webcode/blob/release/87/modules/EnsEMBL/Web/SpeciesDefs.pm#L469-L531
+sub _read_in_ini_file {
+  my ($self, $filename, $defaults) = @_;
+  my $inifile = undef;
+  my $tree    = {};
+
+  my %cow_from_defaults = ( # copy-on-write from defautls for these sections.
+                            'ENSEMBL_EXTERNAL_URLS' => 1,
+                            'ENSEMBL_SPECIES_SITE'  => 1,
+                            'SPECIES_DISPLAY_NAME'  => 1 );
+  
+  foreach my $confdir (@SiteDefs::ENSEMBL_CONF_DIRS) {
+    if (-e "$confdir/ini-files/$filename.ini") {
+      if (-r "$confdir/ini-files/$filename.ini") {
+        $inifile = "$confdir/ini-files/$filename.ini";
+      } else {
+        warn "$confdir/ini-files/$filename.ini is not readable\n" ;
+        next;
+      }
+      
+      open FH, $inifile or die "Problem with $inifile: $!";
+      
+      my $current_section = undef;
+      my $defaults_used   = 0;
+      my $line_number     = 0;
+
+      while (<FH>) {
+        s/\s+[;].*$//; # These two lines remove any comment strings
+        s/^[#;].*$//;  # from the ini file - basically ; or #..
+        
+        if (/^\[\s*(\w+)\s*\]/) { # New section - i.e. [ ... ]
+          $current_section = $1;
+
+          if ( defined $defaults->{$current_section} && exists $cow_from_defaults{$current_section} ) {
+            $tree->{$current_section} = $defaults->{$current_section};
+            $defaults_used = 1;  
+          }
+          else {
+            $tree->{$current_section} ||= {}; # create new element if required
+            $defaults_used = 0;  
+            if (defined $defaults->{$current_section}) {
+              my %hash = %{$defaults->{$current_section}};
+              $tree->{$current_section}{$_} = $defaults->{$current_section}{$_} for keys %hash;
+            }
+          }
+        } elsif (/([\w*]\S*)\s*=\s*(.*)/ && defined $current_section) { # Config entry
+          my ($key, $value) = ($1, $2); # Add a config entry under the current 'top level'
+          $value =~ s/\s*$//;
+          
+          # [ - ] signifies an array
+          if ($value =~ /^\[\s*(.*?)\s*\]$/) {
+            my @array = split /\s+/, $1;
+            $value = \@array;
+          }
+
+          if ( $defaults_used && defined $defaults->{$current_section} ) {
+            my %hash = %{$defaults->{$current_section}};
+            $tree->{$current_section}{$_} = $defaults->{$current_section}{$_} for keys %hash;             
+            $defaults_used = 0;
+          }
+          
+          $tree->{$current_section}{$key} = $value;
+        } elsif (/([.\w]+)\s*=\s*(.*)/) { # precedes a [ ] section
+          print STDERR "\t  [WARN] NO SECTION $filename.ini($line_number) -> $1 = $2;\n";
+        }
+        
+        $line_number++;
+      }
+      
+      close FH;
+    }
+
+    # Check for existence of VCF JSON configuration file
+    my $json_path = "$confdir/json/${filename}_vcf.json";
+    if (-e $json_path) {
+      $tree->{'ENSEMBL_VCF_COLLECTIONS'} = {'CONFIG' => $json_path, 'ENABLED' => 1} if $json_path;
+    }
+  }
+  
+  return $inifile ? $tree : undef;
+}
+
 ## EG MULTI
 sub _merge_species_tree {
   my ($self, $a, $b, $species_lookup) = @_;
