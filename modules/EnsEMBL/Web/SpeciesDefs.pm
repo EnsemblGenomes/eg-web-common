@@ -120,7 +120,7 @@ sub _parse {
     $self->process_ini_files($species, $config_packer, $defaults);
     $self->_merge_db_tree($tree, $db_tree, $species);
   }
-  
+
   $self->_info_log('Parser', 'Post processing ini files');
   
   # Loop over each tree and make further manipulations
@@ -144,6 +144,23 @@ sub _parse {
   $CONF->{'_storage'} = $tree; # Store the tree
 }
 
+our %cow_from_defaults = ( # copy-on-write from defautls for these sections.
+                          'ENSEMBL_EXTERNAL_URLS' => 1,
+                          'ENSEMBL_SPECIES_SITE'  => 1,
+                          'SPECIES_DISPLAY_NAME'  => 1 );
+
+sub _merge_db_tree {
+  my ($self, $tree, $db_tree, $key) = @_;
+  return unless defined $db_tree;
+  Hash::Merge::set_behavior('RIGHT_PRECEDENT');
+  my $t = merge($tree->{$key}, $db_tree->{$key});
+  foreach my $k ( %cow_from_defaults ) {
+      $t->{$k} = $tree->{$key}->{$k} if defined $tree->{$key}->{$k};
+  }
+
+  $tree->{$key} = $t;
+}
+
 ## EG to overwrite behaviour on ensembl-webcode in which the sections in default ones are deep-copied into species defs regardless
 ## whether there is update in the species ini file.
 ## For EG, we want only copy-on-write. The sections specified in default will only be deep-copied into species defs when there is
@@ -154,11 +171,6 @@ sub _read_in_ini_file {
   my $inifile = undef;
   my $tree    = {};
 
-  my %cow_from_defaults = ( # copy-on-write from defautls for these sections.
-                            'ENSEMBL_EXTERNAL_URLS' => 1,
-                            'ENSEMBL_SPECIES_SITE'  => 1,
-                            'SPECIES_DISPLAY_NAME'  => 1 );
-  
   foreach my $confdir (@SiteDefs::ENSEMBL_CONF_DIRS) {
     if (-e "$confdir/ini-files/$filename.ini") {
       if (-r "$confdir/ini-files/$filename.ini") {
@@ -167,7 +179,7 @@ sub _read_in_ini_file {
         warn "$confdir/ini-files/$filename.ini is not readable\n" ;
         next;
       }
-      
+
       open FH, $inifile or die "Problem with $inifile: $!";
       
       my $current_section = undef;
@@ -207,8 +219,8 @@ sub _read_in_ini_file {
             my %hash = %{$defaults->{$current_section}};
             $tree->{$current_section}{$_} = $defaults->{$current_section}{$_} for keys %hash;             
             $defaults_used = 0;
-          }
-          
+          } 
+
           $tree->{$current_section}{$key} = $value;
         } elsif (/([.\w]+)\s*=\s*(.*)/) { # precedes a [ ] section
           print STDERR "\t  [WARN] NO SECTION $filename.ini($line_number) -> $1 = $2;\n";
@@ -226,7 +238,7 @@ sub _read_in_ini_file {
       $tree->{'ENSEMBL_VCF_COLLECTIONS'} = {'CONFIG' => $json_path, 'ENABLED' => 1} if $json_path;
     }
   }
-  
+
   return $inifile ? $tree : undef;
 }
 
@@ -237,7 +249,7 @@ sub _merge_species_tree {
   foreach my $key (keys %$b) {
 ## EG - don't bloat the configs with references to all the other speices in this dataset    
       next if $species_lookup->{$key}; 
-##      
+##
       $a->{$key} = $b->{$key} unless exists $a->{$key};
   }
 }
