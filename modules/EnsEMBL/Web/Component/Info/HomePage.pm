@@ -547,7 +547,8 @@ sub _variation_text {
 
     $html .= '</div>';
     $html .= '<h2>Variation</h2><p><strong>What can I find?</strong> Short sequence variants';
-    if ($species_defs->databases->{'DATABASE_VARIATION'}{'STRUCTURAL_VARIANT_COUNT'}) {
+    if ($species_defs->databases->{'DATABASE_VARIATION'} &&
+        $species_defs->databases->{'DATABASE_VARIATION'}{'STRUCTURAL_VARIANT_COUNT'}) {
       $html .= ' and longer structural variants';
     }
     if ($sample_data->{'PHENOTYPE_PARAM'}) {
