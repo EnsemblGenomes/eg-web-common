@@ -459,19 +459,19 @@ sub transcript_table {
         }
         if ($trans_attribs->{$tsi}{'TSL'}) {
           my $tsl = uc($trans_attribs->{$tsi}{'TSL'} =~ s/^tsl([^\s]+).*$/$1/gr);#/
-          push @flags, $self->helptip("TSL:$tsl", $self->get_glossary_entry("TSL:$tsl").$self->get_glossary_entry('TSL'));
+	  push @flags, helptip("TSL:$tsl", get_glossary_entry($hub, "TSL:$tsl").get_glossary_entry($hub, 'TSL'));
         }
       }
 
       if ($trans_gencode->{$tsi}) {
         if ($trans_gencode->{$tsi}{'gencode_basic'}) {
-          push @flags, $self->helptip('GENCODE basic', $gencode_desc);
+	  push @flags, helptip('GENCODE basic', $gencode_desc);
         }
       }
       if ($trans_attribs->{$tsi}{'appris'}) {
         my ($code, $key) = @{$trans_attribs->{$tsi}{'appris'}};
         my $short_code = $code ? ' '.uc($code) : '';
-          push @flags, $self->helptip("APPRIS$short_code", $self->get_glossary_entry("APPRIS: $key").$self->get_glossary_entry('APPRIS'));
+	  push @flags, helptip("APPRIS$short_code", get_glossary_entry($hub, "APPRIS: $key").get_glossary_entry($hub, 'APPRIS'));
       }
 
       (my $biotype_text = $_->biotype) =~ s/_/ /g;
@@ -627,7 +627,7 @@ sub species_stats {
       'name' => '<b>Base Pairs</b>',
       'stat' => $self->thousandify($genome_container->get_total_length()),
   });
-  my $header = $self->glossary_helptip('Golden Path Length', 'Golden path length');
+  my $header = glossary_helptip($self->hub, 'Golden Path Length', 'Golden path length');
   $summary->add_row({
       'name' => "<b>$header</b>",
       'stat' => $self->thousandify($genome_container->get_ref_length())
