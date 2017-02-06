@@ -97,10 +97,7 @@ sub get_edit_jobs_data {
   my $sd        = $self->hub->species_defs;
   my $jobs_data = $self->PREV::get_edit_jobs_data(@_);
 
-  $_->{'species'} = {
-    key   => lc($_->{'species'}), 
-    title => $sd->species_label($_->{'species'})
-  } for @$jobs_data;
+  $_->{'species'} = ucfirst($_->{'species'}) for @$jobs_data;
 
   return $jobs_data;
 }
