@@ -40,12 +40,13 @@ sub content {
 
 ## EG
   my $columns     = [   
-    { key => 'go',               title => 'Accession',         sort => 'none', width => '10%',  align => 'left'   },
-    { key => 'description',      title => 'Term',              sort => 'none', width => '25%', align => 'left'   },
-    { key => 'evidence',         title => 'Evidence',          sort => 'none', width => '3%',  align => 'left' },
-    { key => 'desc',             title => 'Annotation Source', sort => 'none', width => '20%', align => 'left' },    
-    { key => 'transcript_id',    title => 'Transcript IDs',     sort => 'none', width => '15%', align => 'left' },
-    { key => 'extra_link',       title => '',                  sort => 'none', width => '10%', align => 'left' },
+    { key => 'go',              title => 'Accession',         sort => 'none', width => '10%', align => 'left'   },
+    { key => 'term',            title => 'Term',              sort => 'none', width => '20%', align => 'left'   },
+    { key => 'evidence',        title => 'Evidence',          sort => 'none', width => '3%',  align => 'left'   },
+    { key => 'source',          title => 'Annotation source', sort => 'none', width => '15%', align => 'left'   },    
+    { key => 'mapped',          title => 'Mapped using',      sort => 'html', width => '15%', align => 'left', 'hidden' => 1 },    
+    { key => 'transcript_id',   title => 'Transcript IDs',    sort => 'none', width => '10%', align => 'left' },
+    { key => 'extra_link',      title => '',                  sort => 'none', width => '10%', align => 'left' },
   ];
 ##
 
@@ -110,57 +111,32 @@ sub process_data {
 ## EG  
   my @bgs = qw(bg1 bg2);
   my @row_styles;
-##
 
   my $chromosomes = $hub->species_defs->ENSEMBL_CHROMOSOMES;
+##
 
   foreach my $go (sort keys %$data) {
     my $hash        = $data->{$go} || {};
     my $go_link     = $hub->get_ExtURL_link($go, $extdb, $go);
     my $mart_link   = $self->biomart_link($go) ? "<li>".$self->biomart_link($go)."</li>": "";
-
+## EG
     my $loc_link    = '<li><a rel="notexternal" href="' . $hub->url({type  => 'Location', action => 'Genome', ftype => 'Gene', id  => $go, gotype => $extdb}) . ( $chromosomes && scalar @$chromosomes && $hub->species_defs->MAX_CHR_LENGTH ? '">View on karyotype</a></li>' : '">View associated genes</a></li>' );
-
+##
     my $goslim      = $hash->{'goslim'} || {};
     my $row         = {};
     my $go_evidence = [ split /\s*,\s*/, $hash->{'evidence'} || '' ];
    (my $trans       = $hash->{transcript_id}) =~ s/^,/ /; # GO terms with multiple transcripts
     my %all_trans   = map{$_ => $hub->url({type => 'Transcript', action => 'Summary',t => $_,})} split(/,/,$trans) if($hash->{transcript_id} =~ /,/);
     
-    my ($desc);
+    my $mapped;
 
-    if ($hash->{'info'}) {
-      my ($gene, $type, $common_name);
-      
-      # create URL
-      if ($hash->{'info'} =~ /from ([a-z]+[ _][a-z]+) (gene|translation) (\S+)/i) {
-        $gene        = $3;
-        $type        = $2;
-        $common_name = ucfirst $1;
-      } else {
-        warn 'regex parse failure in EnsEMBL::Web::Component::Transcript::go()'; # parse error
-      }
-      
-      (my $species   = $common_name) =~ s/ /_/g;     
-      
-      my $param_type = $type eq 'translation' ? 'p' : substr $type, 0, 1;
-      my $url        = $hub->url({
-        species     => $species,
-        type        => 'Gene',
-        action      => $type eq 'translation' ? 'Ontologies/'.$hub->function : 'Summary',
-        $param_type => $gene,
-        __clear     => 1,
-      });
-
-      $desc = qq{Propagated from $common_name <a href="$url">$gene</a> by orthology};
-    }
-    
     if($hash->{'term'}) {
       $row->{'go'}               = $go_link;
-      $row->{'description'}      = $hash->{'term'};
-      $row->{'evidence'}         = join ', ', map $self->helptip($_, $description_hash->{$_} // 'No description available'), @$go_evidence;
-      $row->{'desc'}             = join ', ', grep $_, ($desc, $hash->{'source'});
-      $row->{'transcript_id'}    = %all_trans ? join("<br>", map { qq{<a href="$all_trans{$_}">$_</a>} } keys %all_trans) : '<a href="'.$hub->url({type => 'Transcript', action => 'Summary',t => $_,}).'">'.$hash->{transcript_id}.'</a>';
+      $row->{'term'}             = $hash->{'term'};
+      $row->{'evidence'}         = join ', ', map helptip($_, $description_hash->{$_} // 'No description available'), @$go_evidence;
+      $row->{'mapped'}           = $hash->{'mapped'} || '';
+      $row->{'source'}           = $hash->{'source'} || '';
+      $row->{'transcript_id'}    = %all_trans ? join("<br>", map { qq{<a href="$all_trans{$_}">$_</a>} } keys %all_trans) : '<a href="'.$hub->url({type => 'Transcript', action => 'Summary',t => $hash->{transcript_id},}).'">'.$hash->{transcript_id}.'</a>';
       $row->{'extra_link'}       = $mart_link || $loc_link ? qq{<ul class="compact">$mart_link$loc_link</ul>} : "";
       
       $table->add_row($row);
@@ -177,9 +153,10 @@ sub process_data {
 ##      
     }
   }
-  
-  $table->{'options'}{'rows'} = \@row_styles;
 
+## EG  
+  $table->{'options'}{'rows'} = \@row_styles;
+##
   return $table;  
 }
 
