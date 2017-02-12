@@ -10,6 +10,7 @@ use File::Spec;
 use Getopt::Long qw(GetOptions);
 use Data::Dumper;
 
+
 BEGIN {
 
   my @dirname   = File::Spec->splitdir(dirname(Cwd::realpath(__FILE__)));
@@ -61,17 +62,89 @@ my $dbh = DBI->connect(sprintf('DBI:mysql:database=%s;host=%s;port=%s', $db->{'d
   or die('Could not connect to the database');
 
 # Create table if it doesn't exist
- get_total_blast_jobs($dbh);
+ get_overall_count($dbh);
+ get_individual_count($dbh);
+ get_popular_species($dbh);
 
 ####################################################################################
 
-sub get_total_blast_jobs {
+sub get_overall_count {
   my ($dbh) = @_;
 
 
-  my $sth = $dbh->prepare("select count(*) from ticket where ticket_type_name = 'Blast'");
-  $sth->execute;
-  my $rows = $sth->fetchrow_array;
+  my $ticket_count = $dbh->prepare("select count(*) from ticket where ticket_type_name = 'Blast'");
+  $ticket_count->execute;
 
-  printf "Total number of Blast jobs on this server are: %s\n", $rows;
+  my $jobs_count = $dbh->prepare("select count(*) from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket_type_name = 'Blast'");
+  $jobs_count->execute;
+
+  printf "\n\nTotal number of Blast tickets on this server are: %s\n", $ticket_count->fetchrow_array;
+  printf "Total number of Blast jobs on this server are: %s\n\n\n", $jobs_count->fetchrow_array;
+}
+
+
+sub get_individual_count {
+
+ my ($dbh) = @_;
+
+  my $sth_tickets = $dbh->prepare("select ticket.site_type, count(*) as count from ticket where ticket.ticket_type_name = 'Blast' group by ticket.site_type order by site_type");
+  $sth_tickets->execute;
+  my $tickets_count = $sth_tickets->fetchall_hashref('site_type');
+
+
+  my $sth_jobs = $dbh->prepare("select ticket.site_type, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' 
+	group by ticket.site_type order by count");
+  $sth_jobs->execute;
+  my $jobs_count = $sth_jobs->fetchall_hashref('site_type');
+
+
+printf("%-20s %-20s %-20s\n", "Site type", "Tickets", "Jobs");
+print "------------------------------------------------\n";
+
+ foreach my $each_site (keys %{$tickets_count})
+{
+printf("%-20s %-20s %-20s\n", $tickets_count->{$each_site}->{'site_type'},  $tickets_count->{$each_site}->{'count'}, $jobs_count->{$each_site}->{'count'});
+}
+
+}
+
+
+
+sub get_popular_species {
+
+ my ($dbh) = @_;
+
+print "\n\n\n------------------------------------------------\n";
+print "Popular species in each site type\n";
+print "------------------------------------------------\n";
+my $sth_site_type = $dbh->prepare("select distinct site_type from ticket");
+  $sth_site_type->execute;
+
+
+  my $site_types = $sth_site_type->fetchall_arrayref({});
+
+#warn Data::Dumper::Dumper($site_types);
+
+foreach my $site_type(@$site_types){
+
+printf "\n\nSite type: %s\n", $site_type->{'site_type'}; 
+print "------------------------------\n";
+
+  my $sth_jobs = $dbh->prepare("select job.species, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type=? group by job.species order by count");
+ 
+$sth_jobs->bind_param(1, $site_type->{'site_type'});
+
+  $sth_jobs->execute;
+  my $jobs_count = $sth_jobs->fetchall_arrayref({});
+
+#warn Data::Dumper::Dumper($jobs_count);
+my $count = 1;
+foreach my $species_count(reverse @$jobs_count){
+ 	
+	printf("%-40s %-40s\n", $species_count->{'species'}, $species_count->{'count'});
+        $count > 5 ? last : $count++;
+
+}
+}
+
 }
