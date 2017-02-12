@@ -1,6 +1,5 @@
 #!/usr/local/bin/perl
 
-
 use strict;
 use warnings;
 
@@ -10,45 +9,44 @@ use File::Spec;
 use Getopt::Long qw(GetOptions);
 use Data::Dumper;
 
-
 BEGIN {
 
-  my @dirname   = File::Spec->splitdir(dirname(Cwd::realpath(__FILE__)));
-  my $code_path = File::Spec->catdir(splice @dirname, 0, -2);
+    my @dirname = File::Spec->splitdir( dirname( Cwd::realpath(__FILE__) ) );
+    my $code_path = File::Spec->catdir( splice @dirname, 0, -2 );
 
-  # Load SiteDefs
-  unshift @INC, File::Spec->catdir($code_path, qw(ensembl-webcode conf));
-  eval {
-    require SiteDefs;
-  };
-  if ($@) {
-    print "ERROR: Can't use SiteDefs - $@\n";
-    exit 1;
-  }
+    # Load SiteDefs
+    unshift @INC, File::Spec->catdir( $code_path, qw(ensembl-webcode conf) );
+    eval { require SiteDefs; };
+    if ($@) {
+        print "ERROR: Can't use SiteDefs - $@\n";
+        exit 1;
+    }
 
-
-  # Include all code dirs
-  unshift @INC, reverse @{SiteDefs::ENSEMBL_LIB_DIRS};
-  $ENV{'PERL5LIB'} = join ':', $ENV{'PERL5LIB'} || (), @INC;
+    # Include all code dirs
+    unshift @INC, reverse @{SiteDefs::ENSEMBL_LIB_DIRS};
+    $ENV{'PERL5LIB'} = join ':', $ENV{'PERL5LIB'} || (), @INC;
 }
 
 use EnsEMBL::Web::SpeciesDefs;
 
-my $sd  = EnsEMBL::Web::SpeciesDefs->new();
+my $sd = EnsEMBL::Web::SpeciesDefs->new();
 
-my $db  = {
-  'database'  =>  $sd->multidb->{'DATABASE_WEB_TOOLS'}{'NAME'},
-  'host'      =>  $sd->multidb->{'DATABASE_WEB_TOOLS'}{'HOST'},
-  'port'      =>  $sd->multidb->{'DATABASE_WEB_TOOLS'}{'PORT'},
-  'username'  =>  $sd->multidb->{'DATABASE_WEB_TOOLS'}{'USER'} || $sd->DATABASE_WRITE_USER,
-  'password'  =>  $sd->multidb->{'DATABASE_WEB_TOOLS'}{'PASS'} || $sd->DATABASE_WRITE_PASS,
+my $db = {
+    'database' => $sd->multidb->{'DATABASE_WEB_TOOLS'}{'NAME'},
+    'host'     => $sd->multidb->{'DATABASE_WEB_TOOLS'}{'HOST'},
+    'port'     => $sd->multidb->{'DATABASE_WEB_TOOLS'}{'PORT'},
+    'username' => $sd->multidb->{'DATABASE_WEB_TOOLS'}{'USER'}
+      || $sd->DATABASE_WRITE_USER,
+    'password' => $sd->multidb->{'DATABASE_WEB_TOOLS'}{'PASS'}
+      || $sd->DATABASE_WRITE_PASS,
 };
 
-
-my $input = 'y';
-while ($input !~ m/^(y|n)$/i) {
-  print sprintf "\nThis will run queries on the following DB. Continue? %s\@%s:%s\nConfirm (y/n):", $db->{'database'}, $db->{'host'}, $db->{'port'};
-  $input = <STDIN>;
+my $input = '';
+while ( $input !~ m/^(y|n)$/i ) {
+    print sprintf
+"\nThis will run queries on the following DB. Continue? %s\@%s:%s\nConfirm (y/n):",
+      $db->{'database'}, $db->{'host'}, $db->{'port'};
+    $input = <STDIN>;
 }
 
 close STDIN;
@@ -57,94 +55,110 @@ chomp $input;
 
 die "Script aborted.\n" if $input =~ /n/i;
 
+my $dbh = DBI->connect(
+    sprintf(
+        'DBI:mysql:database=%s;host=%s;port=%s',
+        $db->{'database'}, $db->{'host'}, $db->{'port'}
+    ),
+    $db->{'username'},
+    $db->{'password'} || ''
+) or die('Could not connect to the database');
 
-my $dbh = DBI->connect(sprintf('DBI:mysql:database=%s;host=%s;port=%s', $db->{'database'}, $db->{'host'}, $db->{'port'}), $db->{'username'}, $db->{'password'} || '')
-  or die('Could not connect to the database');
-
-# Create table if it doesn't exist
- get_overall_count($dbh);
- get_individual_count($dbh);
- get_popular_species($dbh);
+get_overall_count($dbh);
+get_individual_count($dbh);
+get_popular_species($dbh);
+get_ticket_vs_job_frequencies($dbh);
 
 ####################################################################################
 
 sub get_overall_count {
-  my ($dbh) = @_;
+    my ($dbh) = @_;
 
+    my $ticket_count = $dbh->prepare(
+        "select count(*) from ticket where ticket_type_name = 'Blast'");
+    $ticket_count->execute;
 
-  my $ticket_count = $dbh->prepare("select count(*) from ticket where ticket_type_name = 'Blast'");
-  $ticket_count->execute;
+    my $jobs_count = $dbh->prepare(
+	"select count(*) from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket_type_name = 'Blast'"
+    );
+    $jobs_count->execute;
 
-  my $jobs_count = $dbh->prepare("select count(*) from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket_type_name = 'Blast'");
-  $jobs_count->execute;
-
-  printf "\n\nTotal number of Blast tickets on this server are: %s\n", $ticket_count->fetchrow_array;
-  printf "Total number of Blast jobs on this server are: %s\n\n\n", $jobs_count->fetchrow_array;
+    printf "\n\nTotal number of Blast tickets on this server are: %s\n",
+      $ticket_count->fetchrow_array;
+    printf "Total number of Blast jobs on this server are: %s\n\n\n",
+      $jobs_count->fetchrow_array;
 }
-
 
 sub get_individual_count {
 
- my ($dbh) = @_;
+    my ($dbh) = @_;
 
-  my $sth_tickets = $dbh->prepare("select ticket.site_type, count(*) as count from ticket where ticket.ticket_type_name = 'Blast' group by ticket.site_type order by site_type");
-  $sth_tickets->execute;
-  my $tickets_count = $sth_tickets->fetchall_hashref('site_type');
+    my $sth_tickets = $dbh->prepare(
+	"select ticket.site_type, count(*) as count from ticket where ticket.ticket_type_name = 'Blast' group by ticket.site_type order by site_type"
+    );
+    $sth_tickets->execute;
+    my $tickets_count = $sth_tickets->fetchall_hashref('site_type');
 
+    my $sth_jobs = $dbh->prepare(
+	"select ticket.site_type, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' 
+	group by ticket.site_type order by count"
+    );
+    $sth_jobs->execute;
+    my $jobs_count = $sth_jobs->fetchall_hashref('site_type');
 
-  my $sth_jobs = $dbh->prepare("select ticket.site_type, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' 
-	group by ticket.site_type order by count");
-  $sth_jobs->execute;
-  my $jobs_count = $sth_jobs->fetchall_hashref('site_type');
+    printf( "%-20s %-20s %-20s\n", "Site type", "Tickets", "Jobs" );
+    print "------------------------------------------------\n";
 
+    foreach my $each_site ( keys %{$tickets_count} ) {
+        printf(
+            "%-20s %-20s %-20s\n",
+            $tickets_count->{$each_site}->{'site_type'},
+            $tickets_count->{$each_site}->{'count'},
+            $jobs_count->{$each_site}->{'count'}
+        );
+    }
 
-printf("%-20s %-20s %-20s\n", "Site type", "Tickets", "Jobs");
-print "------------------------------------------------\n";
-
- foreach my $each_site (keys %{$tickets_count})
-{
-printf("%-20s %-20s %-20s\n", $tickets_count->{$each_site}->{'site_type'},  $tickets_count->{$each_site}->{'count'}, $jobs_count->{$each_site}->{'count'});
 }
-
-}
-
-
 
 sub get_popular_species {
 
- my ($dbh) = @_;
+    my ($dbh) = @_;
 
-print "\n\n\n------------------------------------------------\n";
-print "Popular species in each site type\n";
-print "------------------------------------------------\n";
-my $sth_site_type = $dbh->prepare("select distinct site_type from ticket");
-  $sth_site_type->execute;
+    print "\n\n\n------------------------------------------------\n";
+    print "Popular species in each site type\n";
+    print "------------------------------------------------\n";
+    my $sth_site_type = $dbh->prepare("select distinct site_type from ticket");
+    $sth_site_type->execute;
 
+    my $site_types = $sth_site_type->fetchall_arrayref( {} );
 
-  my $site_types = $sth_site_type->fetchall_arrayref({});
+    #warn Data::Dumper::Dumper($site_types);
 
-#warn Data::Dumper::Dumper($site_types);
+    foreach my $site_type (@$site_types) {
 
-foreach my $site_type(@$site_types){
+        printf "\n\nSite type: %s\n", $site_type->{'site_type'};
+        print "------------------------------\n";
 
-printf "\n\nSite type: %s\n", $site_type->{'site_type'}; 
-print "------------------------------\n";
+        my $sth_jobs = $dbh->prepare(
+		"select job.species, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type=		    ? group by job.species order by count"
+        );
 
-  my $sth_jobs = $dbh->prepare("select job.species, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type=? group by job.species order by count");
- 
-$sth_jobs->bind_param(1, $site_type->{'site_type'});
+        $sth_jobs->bind_param( 1, $site_type->{'site_type'} );
 
-  $sth_jobs->execute;
-  my $jobs_count = $sth_jobs->fetchall_arrayref({});
+        $sth_jobs->execute;
+        my $jobs_count = $sth_jobs->fetchall_arrayref( {} );
 
-#warn Data::Dumper::Dumper($jobs_count);
-my $count = 1;
-foreach my $species_count(reverse @$jobs_count){
- 	
-	printf("%-40s %-40s\n", $species_count->{'species'}, $species_count->{'count'});
-        $count > 5 ? last : $count++;
+        #warn Data::Dumper::Dumper($jobs_count);
+        my $count = 1;
+        foreach my $species_count ( reverse @$jobs_count ) {
+
+            printf( "%-40s %-40s\n",
+                $species_count->{'species'},
+                $species_count->{'count'} );
+            $count > 5 ? last : $count++;
+
+        }
+    }
 
 }
-}
 
-}
