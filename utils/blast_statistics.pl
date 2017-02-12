@@ -140,7 +140,7 @@ sub get_popular_species {
         print "------------------------------\n";
 
         my $sth_jobs = $dbh->prepare(
-		"select job.species, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type=		    ? group by job.species order by count"
+	"select job.species, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type=		       ? group by job.species order by count"
         );
 
         $sth_jobs->bind_param( 1, $site_type->{'site_type'} );
@@ -158,6 +158,72 @@ sub get_popular_species {
             $count > 5 ? last : $count++;
 
         }
+    }
+
+}
+
+sub get_ticket_vs_job_frequencies {
+
+    my ($dbh) = @_;
+
+    print "\n\n\n------------------------------------------------\n";
+    print "Jobs per ticket in each site type\n";
+    print "------------------------------------------------\n";
+    printf(
+        "%-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s\n",
+        "One", "Two",   "Three", "Four", "Five",
+        "Six", "Seven", "Eight", "Nine", ">= Ten"
+    );
+    my $sth_site_type = $dbh->prepare("select distinct site_type from ticket");
+    $sth_site_type->execute;
+
+    my $site_types = $sth_site_type->fetchall_arrayref( {} );
+
+    #warn Data::Dumper::Dumper($site_types);
+
+    foreach my $site_type (@$site_types) {
+
+        # printf "\n\nSite type: %s\n", $site_type->{'site_type'};
+        printf "\n%s\n", $site_type->{'site_type'};
+
+        print "------------------\n";
+
+        my $sth_tickets_jobs = $dbh->prepare(
+	"select ticket.ticket_id, count(*) as jobs_count from ticket inner join job on ticket.ticket_id = job.ticket_id where 
+	 ticket.ticket_type_name = 'Blast' and ticket.site_type=? group by ticket.ticket_id order by jobs_count"
+        );
+
+        $sth_tickets_jobs->bind_param( 1, $site_type->{'site_type'} );
+
+        $sth_tickets_jobs->execute;
+        my $tickets_jobs_count = $sth_tickets_jobs->fetchall_arrayref( {} );
+
+        #warn Data::Dumper::Dumper($tickets_jobs_count);
+
+        my @ticket_job_stat;
+
+        for ( my $frequency = 1 ; $frequency <= 10 ; $frequency++ ) {
+            my $count = 0;
+
+            foreach my $ticket (@$tickets_jobs_count) {
+
+                if ( $frequency == $ticket->{'jobs_count'} ) {
+
+                    $ticket_job_stat[$frequency] = ++$count;
+
+                }
+
+            }
+
+        }
+
+        for ( my $frequency = 1 ; $frequency <= 10 ; $frequency++ ) {
+            printf( "%-8s ",
+                $ticket_job_stat[$frequency] ? $ticket_job_stat[$frequency] : 0 );
+        }
+        print "\n";
+
+        #warn Data::Dumper::Dumper(@ticket_job_stat);
     }
 
 }
