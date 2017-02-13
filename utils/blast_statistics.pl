@@ -75,11 +75,11 @@ sub get_overall_count {
     my ($dbh) = @_;
 
     my $ticket_count = $dbh->prepare(
-        "select count(*) from ticket where ticket_type_name = 'Blast'");
+        "select count(*) from ticket where ticket_type_name = 'Blast' and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)");
     $ticket_count->execute;
 
     my $jobs_count = $dbh->prepare(
-	"select count(*) from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket_type_name = 'Blast'"
+	"select count(*) from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket_type_name = 'Blast' and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)"
     );
     $jobs_count->execute;
 
@@ -94,13 +94,13 @@ sub get_individual_count {
     my ($dbh) = @_;
 
     my $sth_tickets = $dbh->prepare(
-	"select ticket.site_type, count(*) as count from ticket where ticket.ticket_type_name = 'Blast' group by ticket.site_type order by site_type"
+	"select ticket.site_type, count(*) as count from ticket where ticket.ticket_type_name = 'Blast'  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) group by ticket.site_type order by site_type"
     );
     $sth_tickets->execute;
     my $tickets_count = $sth_tickets->fetchall_hashref('site_type');
 
     my $sth_jobs = $dbh->prepare(
-	"select ticket.site_type, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' 
+	"select ticket.site_type, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)  
 	group by ticket.site_type order by count"
     );
     $sth_jobs->execute;
@@ -140,7 +140,7 @@ sub get_popular_species {
         print "------------------------------\n";
 
         my $sth_jobs = $dbh->prepare(
-	"select job.species, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type=		       ? group by job.species order by count"
+	"select job.species, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type=		       ?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) group by job.species order by count"
         );
 
         $sth_jobs->bind_param( 1, $site_type->{'site_type'} );
@@ -196,7 +196,7 @@ sub get_ticket_vs_job_frequencies {
 
         my $sth_tickets_jobs = $dbh->prepare(
 	"select ticket.ticket_id, count(*) as jobs_count from ticket inner join job on ticket.ticket_id = job.ticket_id where 
-	 ticket.ticket_type_name = 'Blast' and ticket.site_type=? group by ticket.ticket_id order by jobs_count"
+	 ticket.ticket_type_name = 'Blast' and ticket.site_type=?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) group by ticket.ticket_id order by jobs_count"
         );
 
         $sth_tickets_jobs->bind_param( 1, $site_type->{'site_type'} );
