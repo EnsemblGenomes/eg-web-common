@@ -176,9 +176,9 @@ sub get_ticket_vs_job_frequencies {
  #   );
 
     printf(
-        "%-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s\n",
+        "%-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s\n",
         "1", "2",   "3", "4", "5",
-        "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25"
+        "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"
     );
     my $sth_site_type = $dbh->prepare("select distinct site_type from ticket");
     $sth_site_type->execute;
@@ -208,7 +208,7 @@ sub get_ticket_vs_job_frequencies {
 
         my @ticket_job_stat;
 
-        for ( my $frequency = 1 ; $frequency <= 25 ; $frequency++ ) {
+        for ( my $frequency = 1 ; $frequency <= 30 ; $frequency++ ) {
             my $count = 0;
 
             foreach my $ticket (@$tickets_jobs_count) {
@@ -223,7 +223,7 @@ sub get_ticket_vs_job_frequencies {
 
         }
 
-        for ( my $frequency = 1 ; $frequency <= 25 ; $frequency++ ) {
+        for ( my $frequency = 1 ; $frequency <= 30 ; $frequency++ ) {
             printf( "%-8s ",
                 $ticket_job_stat[$frequency] ? $ticket_job_stat[$frequency] : 0 );
         }
