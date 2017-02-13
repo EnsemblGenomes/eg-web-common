@@ -169,10 +169,16 @@ sub get_ticket_vs_job_frequencies {
     print "\n\n\n------------------------------------------------\n";
     print "Jobs per ticket in each site type\n";
     print "------------------------------------------------\n";
+#    printf(
+#        "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n",
+#        "One", "Two",   "Three", "Four", "Five",
+#        "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"
+ #   );
+
     printf(
-        "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n",
-        "One", "Two",   "Three", "Four", "Five",
-        "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"
+        "%-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s\n",
+        "1", "2",   "3", "4", "5",
+        "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25"
     );
     my $sth_site_type = $dbh->prepare("select distinct site_type from ticket");
     $sth_site_type->execute;
@@ -202,7 +208,7 @@ sub get_ticket_vs_job_frequencies {
 
         my @ticket_job_stat;
 
-        for ( my $frequency = 1 ; $frequency <= 20 ; $frequency++ ) {
+        for ( my $frequency = 1 ; $frequency <= 25 ; $frequency++ ) {
             my $count = 0;
 
             foreach my $ticket (@$tickets_jobs_count) {
@@ -217,8 +223,8 @@ sub get_ticket_vs_job_frequencies {
 
         }
 
-        for ( my $frequency = 1 ; $frequency <= 20 ; $frequency++ ) {
-            printf( "%-10s ",
+        for ( my $frequency = 1 ; $frequency <= 25 ; $frequency++ ) {
+            printf( "%-8s ",
                 $ticket_job_stat[$frequency] ? $ticket_job_stat[$frequency] : 0 );
         }
         print "\n";
