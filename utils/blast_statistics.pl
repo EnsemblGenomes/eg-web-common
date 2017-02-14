@@ -41,7 +41,7 @@ my $db = {
       || $sd->DATABASE_WRITE_PASS,
 };
 
-my $input = '';
+my $input = 'y';
 while ( $input !~ m/^(y|n)$/i ) {
     print sprintf
 "\nThis will run queries on the following DB. Continue? %s\@%s:%s\nConfirm (y/n):",
@@ -64,10 +64,11 @@ my $dbh = DBI->connect(
     $db->{'password'} || ''
 ) or die('Could not connect to the database');
 
-get_overall_count($dbh);
-get_individual_count($dbh);
-get_popular_species($dbh);
-get_ticket_vs_job_frequencies($dbh);
+#get_overall_count($dbh);
+#get_individual_count($dbh);
+#get_popular_species($dbh);
+#get_ticket_vs_job_frequencies($dbh);
+get_popular_species_combinations($dbh);
 
 ####################################################################################
 
@@ -234,3 +235,85 @@ sub get_ticket_vs_job_frequencies {
 
 }
 
+
+
+
+sub get_popular_species_combinations {
+
+    my ($dbh) = @_;
+
+    print "\n\n\n------------------------------------------------\n";
+    print "Popular species combinations in each site type\n";
+    print "------------------------------------------------\n";
+    my $sth_site_type = $dbh->prepare("select distinct site_type from ticket");
+    $sth_site_type->execute;
+
+    my $site_types = $sth_site_type->fetchall_arrayref( {} );
+
+    #warn Data::Dumper::Dumper($site_types);
+
+    foreach my $site_type (@$site_types) {
+
+        printf "\n\nSite type: %s\n", $site_type->{'site_type'};
+        print "------------------------------\n";
+
+        my $sth_tickets = $dbh->prepare(
+        "select ticket_id from ticket where ticket_type_name = 'Blast' and ticket.site_type=? and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) order by 	ticket_id"
+        );
+
+        $sth_tickets->bind_param( 1, $site_type->{'site_type'} );
+
+        $sth_tickets->execute;
+
+        my $tickets = $sth_tickets->fetchall_arrayref({}  );
+
+my %count;
+my %sorted;
+my $total = {};
+       # warn Data::Dumper::Dumper($tickets);
+        foreach my $ticket (  @$tickets ) {
+
+
+	 my $sth_jobs = $dbh->prepare(
+        "select species from job where ticket_id = ?"
+        );
+
+        $sth_jobs->bind_param( 1, $ticket->{'ticket_id'} );
+
+        $sth_jobs->execute;
+
+        my $jobs = $sth_jobs->fetchall_arrayref({} );
+
+	my @species_combination;
+	push @species_combination, $_->{'species'} foreach @$jobs;
+
+
+	$total->{join(' ', sort@species_combination)}->{'array'} =  [sort@species_combination];
+	$total->{join(' ', sort@species_combination)}->{'species'} = join(' ', sort@species_combination);
+	$total->{join(' ', sort@species_combination)}->{'count'}++;
+
+	
+
+	 warn Data::Dumper::Dumper($ticket);
+	print "---------------\n";
+	warn  Data::Dumper::Dumper(@species_combination);
+	warn  Data::Dumper::Dumper($total);
+	print "\n\n\n\n";
+
+	$count{join(' ', sort@species_combination)}++;
+
+        }
+
+
+
+#foreach my $key (sort { $count{$a} <=> $count{$b} } keys %count) {
+#    $sorted{$key} = $count{$key};
+#    printf "%-8s %s\n", $key, $count{$key};
+#}
+
+#warn Data::Dumper::Dumper(%count);
+#warn Data::Dumper::Dumper(%sorted);
+
+    }
+
+}
