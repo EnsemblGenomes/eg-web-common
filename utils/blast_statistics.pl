@@ -288,23 +288,34 @@ my $total = {};
 	push @species_combination, $_->{'species'} foreach @$jobs;
 
 
-	$total->{join(' ', sort@species_combination)}->{'array'} =  [sort@species_combination];
-	$total->{join(' ', sort@species_combination)}->{'species'} = join(' ', sort@species_combination);
+	$total->{join(' ', sort@species_combination)}->{'species_list'} =  [sort@species_combination];
+	$total->{join(' ', sort@species_combination)}->{'species_string'} = join(' ', sort@species_combination);
+	$total->{join(' ', sort@species_combination)}->{'no_of_species'} = @species_combination;
 	$total->{join(' ', sort@species_combination)}->{'count'}++;
+	
+#	$total->{join(' ', sort@species_combination)} = { 
+#					'species_list' =>  [sort@species_combination],
+#        				'species_string' => join(' ', sort@species_combination)
+#						};
+#	$total->{join(' ', sort@species_combination)}->{'count'}++;
 
 	
 
-	 warn Data::Dumper::Dumper($ticket);
-	print "---------------\n";
-	warn  Data::Dumper::Dumper(@species_combination);
-	warn  Data::Dumper::Dumper($total);
-	print "\n\n\n\n";
+#	 warn Data::Dumper::Dumper($ticket);
+#	print "---------------\n";
+#	warn  Data::Dumper::Dumper(@species_combination);
+#	warn  Data::Dumper::Dumper($total);
+#	print "\n\n\n\n";
 
 	$count{join(' ', sort@species_combination)}++;
 
         }
 
 
+my @positioned = sort { $total->{$a}{'count'} <=> $total->{$b}{'count'} }  keys %$total;
+
+#warn Data::Dumper::Dumper(@positioned);
+printf ("%-5s %s\n",$total->{$_}->{'count'}, $_) foreach reverse @positioned;
 
 #foreach my $key (sort { $count{$a} <=> $count{$b} } keys %count) {
 #    $sorted{$key} = $count{$key};
