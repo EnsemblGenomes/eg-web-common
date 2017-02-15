@@ -8,6 +8,8 @@ use File::Basename;
 use File::Spec;
 use Getopt::Long qw(GetOptions);
 use Data::Dumper;
+use List::MoreUtils qw(uniq);
+use Algorithm::Permute;
 
 BEGIN {
 
@@ -68,7 +70,9 @@ my $dbh = DBI->connect(
 #get_individual_count($dbh);
 #get_popular_species($dbh);
 #get_ticket_vs_job_frequencies($dbh);
-get_popular_species_combinations($dbh);
+#get_popular_species_combinations($dbh);
+get_all_possible_combinations(['A','B','C','D']);
+
 
 ####################################################################################
 
@@ -267,8 +271,6 @@ sub get_popular_species_combinations {
 
         my $tickets = $sth_tickets->fetchall_arrayref({}  );
 
-my %count;
-my %sorted;
 my $total = {};
        # warn Data::Dumper::Dumper($tickets);
         foreach my $ticket (  @$tickets ) {
@@ -307,7 +309,6 @@ my $total = {};
 #	warn  Data::Dumper::Dumper($total);
 #	print "\n\n\n\n";
 
-	$count{join(' ', sort@species_combination)}++;
 
         }
 
@@ -317,14 +318,33 @@ my @positioned = sort { $total->{$a}{'count'} <=> $total->{$b}{'count'} }  keys 
 #warn Data::Dumper::Dumper(@positioned);
 printf ("%-5s %s\n",$total->{$_}->{'count'}, $_) foreach reverse @positioned;
 
-#foreach my $key (sort { $count{$a} <=> $count{$b} } keys %count) {
-#    $sorted{$key} = $count{$key};
-#    printf "%-8s %s\n", $key, $count{$key};
-#}
 
-#warn Data::Dumper::Dumper(%count);
-#warn Data::Dumper::Dumper(%sorted);
 
     }
 
 }
+
+
+
+
+sub get_all_possible_combinations{
+  
+    my ($parent_array) = @_;
+
+    my @all_combinations; 
+
+    for(my $length =2 ; $length <= (scalar @$parent_array) -1; $length++){
+	warn $length;
+	my $p = new Algorithm::Permute($parent_array, $length);
+	while (my $combination = join(' ', sort $p->next)) {
+	   push @all_combinations, $combination;
+	   print "$combination\n";
+	}
+   }
+#warn "******************\n";
+#warn Data::Dumper::Dumper(@all_combinations);
+#warn "******************\n";
+#warn Data::Dumper::Dumper(uniq @all_combinations);
+}
+
+
