@@ -66,16 +66,16 @@ my $dbh = DBI->connect(
     $db->{'password'} || ''
 ) or die('Could not connect to the database');
 
-
-our %skip_species_type = ('PomBase' => 1,'WormBase ParaSite' => 1,'1000 Genomes' => 1);
+our %skip_species_type =
+  ( 'PomBase' => 1, 'WormBase ParaSite' => 1, '1000 Genomes' => 1 );
 
 #get_overall_count($dbh);
 #get_individual_count($dbh);
 #get_popular_species($dbh);
 #get_ticket_vs_job_frequencies($dbh);
 get_popular_species_combinations($dbh);
-#get_all_possible_combinations(['A','B','C','D']);
 
+#get_all_possible_combinations(['A','B','C','D']);
 
 ####################################################################################
 
@@ -83,11 +83,12 @@ sub get_overall_count {
     my ($dbh) = @_;
 
     my $ticket_count = $dbh->prepare(
-        "select count(*) from ticket where ticket_type_name = 'Blast' and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)");
+"select count(*) from ticket where ticket_type_name = 'Blast' and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)"
+    );
     $ticket_count->execute;
 
     my $jobs_count = $dbh->prepare(
-	"select count(*) from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket_type_name = 'Blast' and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)"
+"select count(*) from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket_type_name = 'Blast' and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)"
     );
     $jobs_count->execute;
 
@@ -102,13 +103,13 @@ sub get_individual_count {
     my ($dbh) = @_;
 
     my $sth_tickets = $dbh->prepare(
-	"select ticket.site_type, count(*) as count from ticket where ticket.ticket_type_name = 'Blast'  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) group by ticket.site_type order by site_type"
+"select ticket.site_type, count(*) as count from ticket where ticket.ticket_type_name = 'Blast'  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) group by ticket.site_type order by site_type"
     );
     $sth_tickets->execute;
     my $tickets_count = $sth_tickets->fetchall_hashref('site_type');
 
     my $sth_jobs = $dbh->prepare(
-	"select ticket.site_type, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)  
+"select ticket.site_type, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)  
 	group by ticket.site_type order by count"
     );
     $sth_jobs->execute;
@@ -144,13 +145,13 @@ sub get_popular_species {
 
     foreach my $site_type (@$site_types) {
 
-next if exists($skip_species_type{$site_type->{'site_type'}});
+        next if exists( $skip_species_type{ $site_type->{'site_type'} } );
 
         printf "\n\nSite type: %s\n", $site_type->{'site_type'};
         print "------------------------------\n";
 
         my $sth_jobs = $dbh->prepare(
-	"select job.species, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type=		       ?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) group by job.species order by count"
+"select job.species, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type=		       ?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) group by job.species order by count"
         );
 
         $sth_jobs->bind_param( 1, $site_type->{'site_type'} );
@@ -179,16 +180,18 @@ sub get_ticket_vs_job_frequencies {
     print "\n\n\n------------------------------------------------\n";
     print "Jobs per ticket in each site type\n";
     print "------------------------------------------------\n";
+
 #    printf(
 #        "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n",
 #        "One", "Two",   "Three", "Four", "Five",
 #        "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"
- #   );
+#   );
 
     printf(
-        "%-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s\n",
-        "1", "2",   "3", "4", "5",
-        "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"
+"%-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s\n",
+        "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9",  "10",
+        "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+        "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"
     );
     my $sth_site_type = $dbh->prepare("select distinct site_type from ticket");
     $sth_site_type->execute;
@@ -199,14 +202,15 @@ sub get_ticket_vs_job_frequencies {
 
     foreach my $site_type (@$site_types) {
 
-next if exists($skip_species_type{$site_type->{'site_type'}});
+        next if exists( $skip_species_type{ $site_type->{'site_type'} } );
+
         # printf "\n\nSite type: %s\n", $site_type->{'site_type'};
         printf "\n%s\n", $site_type->{'site_type'};
 
         print "------------------\n";
 
         my $sth_tickets_jobs = $dbh->prepare(
-	"select ticket.ticket_id, count(*) as jobs_count from ticket inner join job on ticket.ticket_id = job.ticket_id where 
+"select ticket.ticket_id, count(*) as jobs_count from ticket inner join job on ticket.ticket_id = job.ticket_id where 
 	 ticket.ticket_type_name = 'Blast' and ticket.site_type=?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) group by ticket.ticket_id order by jobs_count"
         );
 
@@ -236,7 +240,9 @@ next if exists($skip_species_type{$site_type->{'site_type'}});
 
         for ( my $frequency = 1 ; $frequency <= 30 ; $frequency++ ) {
             printf( "%-8s ",
-                $ticket_job_stat[$frequency] ? $ticket_job_stat[$frequency] : 0 );
+                  $ticket_job_stat[$frequency]
+                ? $ticket_job_stat[$frequency]
+                : 0 );
         }
         print "\n";
 
@@ -244,9 +250,6 @@ next if exists($skip_species_type{$site_type->{'site_type'}});
     }
 
 }
-
-
-
 
 sub get_popular_species_combinations {
 
@@ -263,141 +266,151 @@ sub get_popular_species_combinations {
     #warn Data::Dumper::Dumper($site_types);
 
     foreach my $site_type (@$site_types) {
-next if exists($skip_species_type{$site_type->{'site_type'}});
-#warn $skip_species_type{$site_type->{'site_type'}};
-#next if $site_type ne 'Ensembl Fungi';
+        next if exists( $skip_species_type{ $site_type->{'site_type'} } );
+
+        #warn $skip_species_type{$site_type->{'site_type'}};
+        #next if $site_type ne 'Ensembl Fungi';
 
         printf "\n\nSite type: %s\n", $site_type->{'site_type'};
         print "------------------------------\n";
 
         my $sth_tickets = $dbh->prepare(
-        "select ticket_id from ticket where ticket_type_name = 'Blast' and ticket.site_type=? and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) order by 	ticket_id"
+"select ticket_id from ticket where ticket_type_name = 'Blast' and ticket.site_type=? and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) order by 	ticket_id"
         );
 
         $sth_tickets->bind_param( 1, $site_type->{'site_type'} );
 
         $sth_tickets->execute;
 
-        my $tickets = $sth_tickets->fetchall_arrayref({}  );
+        my $tickets = $sth_tickets->fetchall_arrayref( {} );
 
-	my $direct_combinations = {};
-	my $subset_combinations = {};
-       # warn Data::Dumper::Dumper($tickets);
-        foreach my $ticket (  @$tickets ) {
+        my $direct_combinations = {};
+        my $subset_combinations = {};
 
+        # warn Data::Dumper::Dumper($tickets);
+        foreach my $ticket (@$tickets) {
 
-	 my $sth_jobs = $dbh->prepare(
-        "select species from job where ticket_id = ?"
-        );
+            my $sth_jobs =
+              $dbh->prepare( "select species from job where ticket_id = ?" );
 
-        $sth_jobs->bind_param( 1, $ticket->{'ticket_id'} );
+            $sth_jobs->bind_param( 1, $ticket->{'ticket_id'} );
 
-        $sth_jobs->execute;
+            $sth_jobs->execute;
 
-        my $jobs = $sth_jobs->fetchall_arrayref({} );
+            my $jobs = $sth_jobs->fetchall_arrayref( {} );
 
-	my @species_combination;
-	push @species_combination, $_->{'species'} foreach @$jobs;
+            my @species_combination;
+            push @species_combination, $_->{'species'} foreach @$jobs;
 
+            $direct_combinations = build_data_structure( $direct_combinations,
+                \@species_combination );
 
-	$direct_combinations = build_data_structure($direct_combinations, \@species_combination);
+            #warn "Species combinations\n";
+            #warn Data::Dumper::Dumper(@species_combination);
 
-
-#warn "Species combinations\n";	
-#warn Data::Dumper::Dumper(@species_combination);	
-
-if (scalar @species_combination> 2 && scalar @species_combination < 20 ){
-	$subset_combinations = get_all_possible_combinations($subset_combinations, \@species_combination);	
-}
+            if (   scalar @species_combination > 2
+                )
+            {
+                $subset_combinations =
+                  get_all_possible_combinations( $subset_combinations,
+                    \@species_combination );
+            }
 
         }
 
+        my @positioned = sort {
+            $direct_combinations->{$a}{'count'}
+              <=> $direct_combinations->{$b}{'count'}
+        } keys %$direct_combinations;
 
-	my @positioned = sort { $direct_combinations->{$a}{'count'} <=> $direct_combinations->{$b}{'count'} }  keys %$direct_combinations;
+        my @positioned_test = sort {
+            $subset_combinations->{$a}{'count'}
+              <=> $subset_combinations->{$b}{'count'}
+        } keys %$subset_combinations;
 
+        #	warn Data::Dumper::Dumper(@positioned);
+        printf( "%-5s %s\n", $direct_combinations->{$_}->{'count'}, $_ )
+          foreach reverse @positioned;
 
+        warn "******************\n";
 
-	my @positioned_test = sort { $subset_combinations->{$a}{'count'} <=> $subset_combinations->{$b}{'count'} }  keys %$subset_combinations;
+        #       warn Data::Dumper::Dumper(@positioned);
+        if ( defined %$subset_combinations ) {
 
-
-
-
-#	warn Data::Dumper::Dumper(@positioned);
-	printf ("%-5s %s\n",$direct_combinations->{$_}->{'count'}, $_) foreach reverse @positioned;
-
-warn "******************\n";
-#       warn Data::Dumper::Dumper(@positioned);
-if (defined %$subset_combinations){
-
-       printf ("%-5s %s\n",$subset_combinations->{$_}->{'count'}, $_) foreach reverse @positioned_test;
-}
+            printf( "%-5s %s\n", $subset_combinations->{$_}->{'count'}, $_ )
+              foreach reverse @positioned_test;
+        }
     }
 
 }
 
+sub build_data_structure {
 
+    my ( $data_structure, $species_combination ) = @_;
 
+    $data_structure->{ join( ' ', sort @$species_combination ) }
+      ->{'species_list'} = [ sort @$species_combination ];
+    $data_structure->{ join( ' ', sort @$species_combination ) }
+      ->{'species_string'} = join( ' ', sort @$species_combination );
+    $data_structure->{ join( ' ', sort @$species_combination ) }
+      ->{'no_of_species'} = @$species_combination;
+    $data_structure->{ join( ' ', sort @$species_combination ) }->{'count'}++;
 
-sub build_data_structure{
-
-   my ($data_structure, $species_combination) = @_;
-
-   $data_structure->{join(' ', sort @$species_combination)}->{'species_list'} =  [sort @$species_combination];
-   $data_structure->{join(' ', sort @$species_combination)}->{'species_string'} = join(' ', sort @$species_combination);
-   $data_structure->{join(' ', sort @$species_combination)}->{'no_of_species'} = @$species_combination;
-   $data_structure->{join(' ', sort @$species_combination)}->{'count'}++;
-  
-
-#       $data_structure->{join(' ', sort @$species_combination)} = { 
+#       $data_structure->{join(' ', sort @$species_combination)} = {
 #                                       'species_list' =>  [sorti @$species_combination],
 #                                       'species_string' => join(' ', sort @$species_combination)
 #                                               };
 #       $data_structure->{join(' ', sort @$species_combination)}->{'count'}++;
 
- 
-   return $data_structure;
+    return $data_structure;
 
 }
 
+sub get_all_possible_combinations {
 
-sub get_all_possible_combinations{
-  
-    my ($subset_combinations, $parent_species_combination) = @_;
+    my ( $subset_combinations, $parent_species_combination ) = @_;
 
-my $test = {};
+    my $test = {};
 
-    for(my $length =2 ; $length <= (scalar @$parent_species_combination) -1; $length++){
-#	warn $length;
-	my $p = new Algorithm::Permute($parent_species_combination, $length);
-	while (my @combination =  sort $p->next) {
-	
-	$test->{join(' ', sort @combination)} = 1;
+    for (
+        my $length = 2 ;
+        $length <= ( scalar @$parent_species_combination ) - 1 ;
+        $length++
+      )
+    {
+        #	warn $length;
+        my $p = new Algorithm::Permute( $parent_species_combination, $length );
+        while ( my @combination = sort $p->next ) {
 
+            $test->{ join( ' ', sort @combination ) } = 1;
 
-	}}
+        }
+    }
 
-#warn Data::Dumper::Dumper($test);
-my @test1 = keys %$test;
-#warn Data::Dumper::Dumper(@test1);
-#warn Data::Dumper::Dumper(@test1);
+    #warn Data::Dumper::Dumper($test);
+    my @test1 = keys %$test;
 
-foreach my $test_combination(@test1){
+    #warn Data::Dumper::Dumper(@test1);
+    #warn Data::Dumper::Dumper(@test1);
 
-my @test_combination_species = split / /, $test_combination;
+    foreach my $test_combination (@test1) {
 
-$subset_combinations = build_data_structure($subset_combinations, \@test_combination_species);
+        my @test_combination_species = split / /, $test_combination;
 
-#$subset_combinations = build_data_structure($subset_combinations, \@test1);
-#warn "******************\n";
-#warn "Possible combinations\n";
-#warn "******************\n"; 
-#warn Data::Dumper::Dumper(@$parent_species_combination);
-#warn Data::Dumper::Dumper($subset_combinations);
-#warn "\n\n\n";
-}
+        $subset_combinations = build_data_structure( $subset_combinations,
+            \@test_combination_species );
+
+    #$subset_combinations = build_data_structure($subset_combinations, \@test1);
+    #warn "******************\n";
+    #warn "Possible combinations\n";
+    #warn "******************\n";
+    #warn Data::Dumper::Dumper(@$parent_species_combination);
+    #warn Data::Dumper::Dumper($subset_combinations);
+    #warn "\n\n\n";
+    }
+
 #$subset_combinations = build_data_structure($subset_combinations, \@test_combination_species);
 
-return $subset_combinations;
+    return $subset_combinations;
 }
-
 
