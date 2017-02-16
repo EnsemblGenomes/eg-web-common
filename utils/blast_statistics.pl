@@ -66,12 +66,15 @@ my $dbh = DBI->connect(
     $db->{'password'} || ''
 ) or die('Could not connect to the database');
 
+
+our %skip_species_type = ('PomBase' => 1,'WormBase ParaSite' => 1,'1000 Genomes' => 1);
+
 #get_overall_count($dbh);
 #get_individual_count($dbh);
 #get_popular_species($dbh);
 #get_ticket_vs_job_frequencies($dbh);
-#get_popular_species_combinations($dbh);
-get_all_possible_combinations(['A','B','C','D']);
+get_popular_species_combinations($dbh);
+#get_all_possible_combinations(['A','B','C','D']);
 
 
 ####################################################################################
@@ -141,6 +144,8 @@ sub get_popular_species {
 
     foreach my $site_type (@$site_types) {
 
+next if exists($skip_species_type{$site_type->{'site_type'}});
+
         printf "\n\nSite type: %s\n", $site_type->{'site_type'};
         print "------------------------------\n";
 
@@ -194,6 +199,7 @@ sub get_ticket_vs_job_frequencies {
 
     foreach my $site_type (@$site_types) {
 
+next if exists($skip_species_type{$site_type->{'site_type'}});
         # printf "\n\nSite type: %s\n", $site_type->{'site_type'};
         printf "\n%s\n", $site_type->{'site_type'};
 
@@ -257,6 +263,9 @@ sub get_popular_species_combinations {
     #warn Data::Dumper::Dumper($site_types);
 
     foreach my $site_type (@$site_types) {
+next if exists($skip_species_type{$site_type->{'site_type'}});
+#warn $skip_species_type{$site_type->{'site_type'}};
+#next if $site_type ne 'Ensembl Fungi';
 
         printf "\n\nSite type: %s\n", $site_type->{'site_type'};
         print "------------------------------\n";
@@ -271,7 +280,8 @@ sub get_popular_species_combinations {
 
         my $tickets = $sth_tickets->fetchall_arrayref({}  );
 
-my $total = {};
+	my $direct_combinations = {};
+	my $subset_combinations = {};
        # warn Data::Dumper::Dumper($tickets);
         foreach my $ticket (  @$tickets ) {
 
@@ -290,36 +300,37 @@ my $total = {};
 	push @species_combination, $_->{'species'} foreach @$jobs;
 
 
-	$total->{join(' ', sort@species_combination)}->{'species_list'} =  [sort@species_combination];
-	$total->{join(' ', sort@species_combination)}->{'species_string'} = join(' ', sort@species_combination);
-	$total->{join(' ', sort@species_combination)}->{'no_of_species'} = @species_combination;
-	$total->{join(' ', sort@species_combination)}->{'count'}++;
-	
-#	$total->{join(' ', sort@species_combination)} = { 
-#					'species_list' =>  [sort@species_combination],
-#        				'species_string' => join(' ', sort@species_combination)
-#						};
-#	$total->{join(' ', sort@species_combination)}->{'count'}++;
+	$direct_combinations = build_data_structure($direct_combinations, \@species_combination);
 
-	
 
-#	 warn Data::Dumper::Dumper($ticket);
-#	print "---------------\n";
-#	warn  Data::Dumper::Dumper(@species_combination);
-#	warn  Data::Dumper::Dumper($total);
-#	print "\n\n\n\n";
+#warn "Species combinations\n";	
+#warn Data::Dumper::Dumper(@species_combination);	
 
+if (scalar @species_combination> 2 && scalar @species_combination < 20 ){
+	$subset_combinations = get_all_possible_combinations($subset_combinations, \@species_combination);	
+}
 
         }
 
 
-my @positioned = sort { $total->{$a}{'count'} <=> $total->{$b}{'count'} }  keys %$total;
-
-#warn Data::Dumper::Dumper(@positioned);
-printf ("%-5s %s\n",$total->{$_}->{'count'}, $_) foreach reverse @positioned;
+	my @positioned = sort { $direct_combinations->{$a}{'count'} <=> $direct_combinations->{$b}{'count'} }  keys %$direct_combinations;
 
 
 
+	my @positioned_test = sort { $subset_combinations->{$a}{'count'} <=> $subset_combinations->{$b}{'count'} }  keys %$subset_combinations;
+
+
+
+
+#	warn Data::Dumper::Dumper(@positioned);
+	printf ("%-5s %s\n",$direct_combinations->{$_}->{'count'}, $_) foreach reverse @positioned;
+
+warn "******************\n";
+#       warn Data::Dumper::Dumper(@positioned);
+if (defined %$subset_combinations){
+
+       printf ("%-5s %s\n",$subset_combinations->{$_}->{'count'}, $_) foreach reverse @positioned_test;
+}
     }
 
 }
@@ -327,24 +338,66 @@ printf ("%-5s %s\n",$total->{$_}->{'count'}, $_) foreach reverse @positioned;
 
 
 
+sub build_data_structure{
+
+   my ($data_structure, $species_combination) = @_;
+
+   $data_structure->{join(' ', sort @$species_combination)}->{'species_list'} =  [sort @$species_combination];
+   $data_structure->{join(' ', sort @$species_combination)}->{'species_string'} = join(' ', sort @$species_combination);
+   $data_structure->{join(' ', sort @$species_combination)}->{'no_of_species'} = @$species_combination;
+   $data_structure->{join(' ', sort @$species_combination)}->{'count'}++;
+  
+
+#       $data_structure->{join(' ', sort @$species_combination)} = { 
+#                                       'species_list' =>  [sorti @$species_combination],
+#                                       'species_string' => join(' ', sort @$species_combination)
+#                                               };
+#       $data_structure->{join(' ', sort @$species_combination)}->{'count'}++;
+
+ 
+   return $data_structure;
+
+}
+
+
 sub get_all_possible_combinations{
   
-    my ($parent_array) = @_;
+    my ($subset_combinations, $parent_species_combination) = @_;
 
-    my @all_combinations; 
+my $test = {};
 
-    for(my $length =2 ; $length <= (scalar @$parent_array) -1; $length++){
-	warn $length;
-	my $p = new Algorithm::Permute($parent_array, $length);
-	while (my $combination = join(' ', sort $p->next)) {
-	   push @all_combinations, $combination;
-	   print "$combination\n";
-	}
-   }
+    for(my $length =2 ; $length <= (scalar @$parent_species_combination) -1; $length++){
+#	warn $length;
+	my $p = new Algorithm::Permute($parent_species_combination, $length);
+	while (my @combination =  sort $p->next) {
+	
+	$test->{join(' ', sort @combination)} = 1;
+
+
+	}}
+
+#warn Data::Dumper::Dumper($test);
+my @test1 = keys %$test;
+#warn Data::Dumper::Dumper(@test1);
+#warn Data::Dumper::Dumper(@test1);
+
+foreach my $test_combination(@test1){
+
+my @test_combination_species = split / /, $test_combination;
+
+$subset_combinations = build_data_structure($subset_combinations, \@test_combination_species);
+
+#$subset_combinations = build_data_structure($subset_combinations, \@test1);
 #warn "******************\n";
-#warn Data::Dumper::Dumper(@all_combinations);
-#warn "******************\n";
-#warn Data::Dumper::Dumper(uniq @all_combinations);
+#warn "Possible combinations\n";
+#warn "******************\n"; 
+#warn Data::Dumper::Dumper(@$parent_species_combination);
+#warn Data::Dumper::Dumper($subset_combinations);
+#warn "\n\n\n";
+}
+#$subset_combinations = build_data_structure($subset_combinations, \@test_combination_species);
+
+return $subset_combinations;
 }
 
 
