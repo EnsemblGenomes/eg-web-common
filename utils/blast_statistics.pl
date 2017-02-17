@@ -29,6 +29,23 @@ BEGIN {
     $ENV{'PERL5LIB'} = join ':', $ENV{'PERL5LIB'} || (), @INC;
 }
 
+
+my (
+  $is_ensembl, $skip_recursive 
+);
+
+
+GetOptions(
+  "is_ensembl", \$is_ensembl,    
+  "skip_recursive", \$skip_recursive
+  );
+
+
+
+
+
+
+
 use EnsEMBL::Web::SpeciesDefs;
 
 my $sd = EnsEMBL::Web::SpeciesDefs->new();
@@ -308,37 +325,26 @@ sub get_popular_species_combinations {
             #warn "Species combinations\n";
             #warn Data::Dumper::Dumper(@species_combination);
 
-            if (   scalar @species_combination > 2
-                )
-            {
-                $subset_combinations =
-                  get_all_possible_combinations( $subset_combinations,
-                    \@species_combination );
+	    next if $skip_recursive;
+
+            if (   scalar @species_combination > 2 )  	{ 
+		$subset_combinations =  get_all_possible_combinations( $subset_combinations, \@species_combination );
             }
 
         }
 
-        my @positioned = sort {
-            $direct_combinations->{$a}{'count'}
-              <=> $direct_combinations->{$b}{'count'}
-        } keys %$direct_combinations;
 
-        my @positioned_test = sort {
-            $subset_combinations->{$a}{'count'}
-              <=> $subset_combinations->{$b}{'count'}
-        } keys %$subset_combinations;
+        my @positioned = sort { $direct_combinations->{$a}{'count'} <=> $direct_combinations->{$b}{'count'}} keys %$direct_combinations;
+        printf( "%-5s %s\n", $direct_combinations->{$_}->{'count'}, $_ )  foreach reverse @positioned;
 
         #	warn Data::Dumper::Dumper(@positioned);
-        printf( "%-5s %s\n", $direct_combinations->{$_}->{'count'}, $_ )
-          foreach reverse @positioned;
 
         warn "******************\n";
 
         #       warn Data::Dumper::Dumper(@positioned);
         if ( defined %$subset_combinations ) {
-
-            printf( "%-5s %s\n", $subset_combinations->{$_}->{'count'}, $_ )
-              foreach reverse @positioned_test;
+	   my @positioned_test = sort { $subset_combinations->{$a}{'count'} <=> $subset_combinations->{$b}{'count'} } keys %$subset_combinations;
+           printf( "%-5s %s\n", $subset_combinations->{$_}->{'count'}, $_ ) foreach reverse @positioned_test;
         }
     }
 
