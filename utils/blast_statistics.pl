@@ -301,6 +301,7 @@ sub get_popular_species_combinations {
 
         my $tickets = $sth_tickets->fetchall_arrayref( {} );
 
+	print "Retrieved all the tickets from DB. Analysing now \n";
         my $direct_combinations = {};
         my $subset_combinations = {};
 
@@ -319,7 +320,10 @@ sub get_popular_species_combinations {
             my @species_combination;
             push @species_combination, $_->{'species'} foreach @$jobs;
 
-            $direct_combinations = build_data_structure( $direct_combinations,
+
+	    print "Working on ticket number: $ticket->{'ticket_id'} \r";
+            
+	    $direct_combinations = build_data_structure( $direct_combinations,
                 \@species_combination );
 
             #warn "Species combinations\n";
