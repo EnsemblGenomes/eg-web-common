@@ -31,13 +31,13 @@ BEGIN {
 
 
 my (
-  $is_ensembl, $skip_recursive 
+  $is_ensembl, $skip_sub_combinations 
 );
 
 
 GetOptions(
   "is_ensembl", \$is_ensembl,    
-  "skip_recursive", \$skip_recursive
+  "skip_sub_combinations", \$skip_sub_combinations
   );
 
 
@@ -325,7 +325,7 @@ sub get_popular_species_combinations {
             #warn "Species combinations\n";
             #warn Data::Dumper::Dumper(@species_combination);
 
-	    next if $skip_recursive;
+	    next if $skip_sub_combinations;
 
             if (   scalar @species_combination > 2 )  	{ 
 		$subset_combinations =  get_all_possible_combinations( $subset_combinations, \@species_combination );
