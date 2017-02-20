@@ -60,7 +60,7 @@ my $db = {
       || $sd->DATABASE_WRITE_PASS,
 };
 
-my $input = '';
+my $input = 'y';
 while ( $input !~ m/^(y|n)$/i ) {
     print sprintf
 "\nThis will run queries on the following DB. Continue? %s\@%s:%s\nConfirm (y/n):",
@@ -86,10 +86,10 @@ my $dbh = DBI->connect(
 our %skip_species_type =
   ( 'PomBase' => 1, 'WormBase ParaSite' => 1, '1000 Genomes' => 1 );
 
-get_overall_count($dbh);
-get_individual_count($dbh);
-get_popular_species($dbh);
-get_ticket_vs_job_frequencies($dbh);
+#get_overall_count($dbh);
+#get_individual_count($dbh);
+#get_popular_species($dbh);
+#get_ticket_vs_job_frequencies($dbh);
 get_popular_species_combinations($dbh);
 
 #get_all_possible_combinations(['A','B','C','D']);
