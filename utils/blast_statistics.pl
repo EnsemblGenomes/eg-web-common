@@ -321,8 +321,7 @@ sub get_popular_species_combinations {
 #warn Data::Dumper::Dumper(keys $tickets_info->{$ticket}->{'species_list'});
 	  #  print "Working on ticket number: $ticket \r";
             
-	    $direct_combinations = build_data_structure( $direct_combinations,
-                [keys $tickets_info->{$ticket}->{'species_list'}]);
+	    $direct_combinations = build_data_structure( $direct_combinations, [keys $tickets_info->{$ticket}->{'species_list'}]) if scalar keys $tickets_info->{$ticket}->{'species_list'} > 1;
 
 
 	    next if $skip_sub_combinations;
