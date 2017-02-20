@@ -302,25 +302,27 @@ sub get_popular_species_combinations {
         # warn Data::Dumper::Dumper($tickets);
         foreach my $ticket (@$tickets) {
 
-	  if(!defined $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}){
-	    $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'} = [];
-	  }	
-	  push $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}, $ticket->{'species'};
+#	  if(!defined $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}){
+#	    $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'} = [];
+#	  }	
+	
+#	  push $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}, $ticket->{'species'};
+	  $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}->{$ticket->{'species'}} = 1;
           $tickets_info->{$ticket->{'ticket_id'}}->{'owner'} = $ticket->{'owner_id'};
 
 
         }
 
 
-	#warn Data::Dumper::Dumper(%$tickets_info);
+#warn Data::Dumper::Dumper(%$tickets_info);
 
 	foreach my $ticket (keys %$tickets_info){
 
-
+#warn Data::Dumper::Dumper(keys $tickets_info->{$ticket}->{'species_list'});
 	  #  print "Working on ticket number: $ticket \r";
             
 	    $direct_combinations = build_data_structure( $direct_combinations,
-                $tickets_info->{$ticket}->{'species_list'});
+                [keys $tickets_info->{$ticket}->{'species_list'}]);
 
 
 	    next if $skip_sub_combinations;
