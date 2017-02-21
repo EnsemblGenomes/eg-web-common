@@ -321,7 +321,7 @@ sub get_popular_species_combinations {
 #warn Data::Dumper::Dumper(keys $tickets_info->{$ticket}->{'species_list'});
 	  #  print "Working on ticket number: $ticket \r";
             
-	    $direct_combinations = build_data_structure( $direct_combinations, [keys $tickets_info->{$ticket}->{'species_list'}]) if scalar keys $tickets_info->{$ticket}->{'species_list'} > 1;
+	    $direct_combinations = build_data_structure( $direct_combinations, [keys $tickets_info->{$ticket}->{'species_list'}],  $tickets_info->{$ticket}->{'owner'}) if scalar keys $tickets_info->{$ticket}->{'species_list'} > 1;
 
 
 	    next if $skip_sub_combinations;
@@ -331,13 +331,16 @@ sub get_popular_species_combinations {
 #            }
 
         }
-
+	
 	warn "******************\n";
 	warn "Direct combinations\n";
 	warn "******************\n";
 
-        my @positioned = sort { $direct_combinations->{$a}{'count'} <=> $direct_combinations->{$b}{'count'}} keys %$direct_combinations;
-        printf( "%-5s %s\n", $direct_combinations->{$_}->{'count'}, $_ )  foreach reverse @positioned;
+        
+	printf( "%-9s %-9s %s\n", "Owners", "Tickets", "Combinations");
+
+	my @positioned = sort { $direct_combinations->{$a}{'count'} <=> $direct_combinations->{$b}{'count'}} keys %$direct_combinations;
+        printf( "%-9s %-9s %s\n", scalar keys $direct_combinations->{$_}->{'owners'}, $direct_combinations->{$_}->{'count'}, $_ )  foreach reverse @positioned;
 
         #	warn Data::Dumper::Dumper(@positioned);
         #       warn Data::Dumper::Dumper(@positioned);
@@ -355,7 +358,7 @@ sub get_popular_species_combinations {
 
 sub build_data_structure {
 
-    my ( $data_structure, $species_combination ) = @_;
+    my ( $data_structure, $species_combination, $owner ) = @_;
 
     $data_structure->{ join( ' ', sort @$species_combination ) }
       ->{'species_list'} = [ sort @$species_combination ];
@@ -363,6 +366,8 @@ sub build_data_structure {
       ->{'species_string'} = join( ' ', sort @$species_combination );
     $data_structure->{ join( ' ', sort @$species_combination ) }
       ->{'no_of_species'} = @$species_combination;
+    $data_structure->{ join( ' ', sort @$species_combination ) }
+      ->{'owners'}->{$owner} = 1;
     $data_structure->{ join( ' ', sort @$species_combination ) }->{'count'}++;
 
 #       $data_structure->{join(' ', sort @$species_combination)} = {
