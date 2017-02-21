@@ -83,7 +83,7 @@ our %skip_species_type =
   ( 'PomBase' => 1, 'WormBase ParaSite' => 1, '1000 Genomes' => 1 );
 
 #get_overall_count($dbh);
-#get_individual_count($dbh);
+get_individual_count($dbh);
 #get_popular_species($dbh);
 #get_ticket_vs_job_frequencies($dbh);
 get_popular_species_combinations($dbh);
@@ -314,7 +314,7 @@ sub get_popular_species_combinations {
         }
 
 
-#warn Data::Dumper::Dumper(%$tickets_info);
+#warn Data::Dumper::Dumper(scalar keys %$tickets_info);
 
 	foreach my $ticket (keys %$tickets_info){
 
@@ -336,11 +336,13 @@ sub get_popular_species_combinations {
 	warn "Direct combinations\n";
 	warn "******************\n";
 
+
+	printf ("Total number of tickets in %s are:%s\n", $site_type->{'site_type'}, scalar keys %$tickets_info);
         
-	printf( "%-9s %-9s %s\n", "Owners", "Tickets", "Combinations");
+	printf( "%-9s %-9s %-14s %s\n", "Owners", "Tickets", "Percentage", "Combinations");
 
 	my @positioned = sort { $direct_combinations->{$a}{'count'} <=> $direct_combinations->{$b}{'count'}} keys %$direct_combinations;
-        printf( "%-9s %-9s %s\n", scalar keys $direct_combinations->{$_}->{'owners'}, $direct_combinations->{$_}->{'count'}, $_ )  foreach reverse @positioned;
+        printf( "%-9s %-9s %.3f%-9s %s\n", scalar keys $direct_combinations->{$_}->{'owners'}, $direct_combinations->{$_}->{'count'}, (($direct_combinations->{$_}->{'count'}/scalar keys %$tickets_info)*100), '%' , $_ )  foreach reverse @positioned;
 
         #	warn Data::Dumper::Dumper(@positioned);
         #       warn Data::Dumper::Dumper(@positioned);
