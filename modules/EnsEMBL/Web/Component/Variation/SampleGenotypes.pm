@@ -1,7 +1,7 @@
 =head1 LICENSE
 
 Copyright [1999-2015] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
-Copyright [2016] EMBL-European Bioinformatics Institute
+Copyright [2016-2017] EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -105,28 +105,19 @@ sub content {
       $sample_label = $composed_name[$#composed_name];
     }
 
-
-## EG - ENSEMBL-3455
+## EG
     my $display_name     = $hub->species eq 'arabidopsis_thaliana'     ? $self->_get_tair_urls($data->{'Name'}) : $data->{'Name'};
     my $display_genotype = $hub->species eq 'saccharomyces_cerevisiae' ? substr($genotype, 0, index($genotype, '|')) : $genotype;
-    
+
     my $row = {
-      Sample      => "<small id=\"$data->{'Name'}\">$display_name</small>",
+      Sample  => sprintf("<small id=\"$display_name\">$sample_label (%s)</small>", substr($data->{'Gender'}, 0, 1)),
       Genotype    => "<small>$display_genotype</small>",
-      Description => "<small>$description</small>",
+      Population  => "<small>".join(", ", sort keys %{{map {$_->{Label} => undef} @{$data->{Population}}}})."</small>",
+      Father      => "<small>".($father eq '-' ? $father : "<a href=\"#$father\">$father</a>")."</small>",
+      Mother      => "<small>".($mother eq '-' ? $mother : "<a href=\"#$mother\">$mother</a>")."</small>",
+      Children    => '-'
     };
-
-    # my $row = {
-    #   Sample  => sprintf("<small id=\"$data->{'Name'}\">$sample_label (%s)</small>", substr($data->{'Gender'}, 0, 1)),
-    #   Genotype    => "<small>$genotype</small>",
-    #   Population  => "<small>".join(", ", sort keys %{{map {$_->{Label} => undef} @{$data->{Population}}}})."</small>",
-    #   Father      => "<small>".($father eq '-' ? $father : "<a href=\"#$father\">$father</a>")."</small>",
-    #   Mother      => "<small>".($mother eq '-' ? $mother : "<a href=\"#$mother\">$mother</a>")."</small>",
-    #   Children    => '-'
-    # };
-##     
-
-    
+##
     my @children = map { sprintf "<small><a href=\"#$_\">$_</a> (%s)</small>", substr($data->{'Children'}{$_}[0], 0, 1) } keys %{$data->{'Children'}};
     
     if (@children) {
@@ -165,14 +156,6 @@ sub content {
   }
   
   return $self->summary_tables(\%rows, \%priority_data, \%other_pop_data, \%other_sample_data, \%group_name, $columns);
-}
-
-sub get_table_headings {
-  return [
-    { key => 'Sample',      title => 'Sample<br />',                   sort => 'html' },
-    { key => 'Genotype',    title => 'Genotype<br />(forward strand)', sort => 'html' },
-    { key => 'Description', title => 'Description',                    sort => 'html' }
-  ];
 }
 
 sub _get_tair_url {
