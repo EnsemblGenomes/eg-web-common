@@ -42,6 +42,8 @@ sub update_conf {
 
   $SiteDefs::ENSEMBL_MIN_SPARE_SERVERS =  5;
   $SiteDefs::ENSEMBL_MAX_SPARE_SERVERS = 20;
+  $SiteDefs::ENSEMBL_HTTPD_CONFIG_FILE   = $SiteDefs::ENSEMBL_SERVERROOT.'/eg-web-common/conf/httpd.conf';
+
   $SiteDefs::APACHE_BIN    = '/usr/sbin/httpd';
   $SiteDefs::APACHE_DIR    = '/etc/httpd';
   $SiteDefs::ENSEMBL_MAX_PROCESS_SIZE = 850000; # Kill httpd over 850000KB
