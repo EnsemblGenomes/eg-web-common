@@ -262,11 +262,8 @@ sub get_popular_species_combinations {
         my $sth_tickets = $dbh->prepare(
 "select ticket.ticket_id, job.job_id, ticket.owner_id, job.species from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket_type_name = 'Blast' and ticket.site_type = ? and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) order by ticket.ticket_id "
         );
-
         $sth_tickets->bind_param( 1, $site_type->{'site_type'} );
-
         $sth_tickets->execute;
-
         my $tickets = $sth_tickets->fetchall_arrayref( {} );
 
         printf
@@ -287,12 +284,8 @@ sub get_popular_species_combinations {
 
         }
 
-        #warn Data::Dumper::Dumper(scalar keys %$tickets_info);
 
         foreach my $ticket ( keys %$tickets_info ) {
-
-    #warn Data::Dumper::Dumper(keys $tickets_info->{$ticket}->{'species_list'});
-    #  print "Working on ticket number: $ticket \r";
 
             $direct_combinations = build_data_structure(
                 $direct_combinations,
@@ -300,61 +293,36 @@ sub get_popular_species_combinations {
                 $tickets_info->{$ticket}->{'owner'}
             ) if (scalar keys $tickets_info->{$ticket}->{'species_list'} > 1 && scalar keys $tickets_info->{$ticket}->{'species_list'} <= 25);
 
+
             next if $skip_sub_combinations;
-
-#            if (   scalar @species_combination > 2 )  	{
-#		$subset_combinations =  get_all_possible_combinations( $subset_combinations, \@species_combination );
-#            }
+            
+#            $subset_combinations = get_all_possible_combinations(
+#                $subset_combinations,
+#                [ keys $tickets_info->{$ticket}->{'species_list'} ],
+#                $tickets_info->{$ticket}->{'owner'}
+#            ) if (scalar keys $tickets_info->{$ticket}->{'species_list'} > 2 && scalar keys $tickets_info->{$ticket}->{'species_list'} <= 25);
+            
 
         }
+                
+        print_species_combinations('Direct combinations', $direct_combinations, $site_type, $tickets_info) if keys %$direct_combinations;
+        
+        print_species_combinations('Subset combinations', $subset_combinations, $site_type, $tickets_info) if keys %$subset_combinations;
+        
+        print "\n\n";
 
-        warn "******************\n";
-        warn "Direct combinations\n";
-        warn "******************\n";
-
-        printf(
-            "Total number of tickets in %s are:%s\n",
-            $site_type->{'site_type'},
-            scalar keys %$tickets_info
-        );
-
-        printf( "%-9s %-9s %-14s %s\n",
-            "Owners", "Tickets", "Percentage", "Combinations" );
-
-        my @positioned = sort {
-            $direct_combinations->{$a}{'count'}
-              <=> $direct_combinations->{$b}{'count'}
-        } keys %$direct_combinations;
-        printf(
-            "%-9s %-9s %.3f%-9s %s\n",
-            scalar keys $direct_combinations->{$_}->{'owners'},
-            $direct_combinations->{$_}->{'count'},
-            (
-                (
-                    $direct_combinations->{$_}->{'count'} / scalar
-                      keys %$tickets_info
-                ) * 100
-            ),
-            '%', $_
-        ) foreach reverse @positioned;
-
-        #	warn Data::Dumper::Dumper(@positioned);
-        #       warn Data::Dumper::Dumper(@positioned);
-
-        if ( keys %$subset_combinations ) {
-            warn "******************\n";
-            warn "Subset combinations\n";
-            warn "******************\n";
-            my @positioned_test = sort {
-                $subset_combinations->{$a}{'count'}
-                  <=> $subset_combinations->{$b}{'count'}
-            } keys %$subset_combinations;
-            printf( "%-5s %s\n", $subset_combinations->{$_}->{'count'}, $_ )
-              foreach reverse @positioned_test;
-        }
     }
 
 }
+
+
+
+
+
+
+
+
+#################################################################################
 
 sub build_data_structure {
 
@@ -379,6 +347,59 @@ sub build_data_structure {
     return $data_structure;
 
 }
+
+
+
+
+sub print_species_combinations{
+    
+    my ( $combination_type, $combinations, $site_type, $tickets_info ) = @_;
+    
+        warn "******************\n";
+        warn "$combination_type\n";
+        warn "******************\n";
+
+        printf(
+            "Total number of tickets in %s are:%s\n",
+            $site_type->{'site_type'},
+            scalar keys %$tickets_info
+        );
+
+        printf( "%-9s %-9s %-14s %s\n",
+            "Owners", "Tickets", "Percentage", "Combinations" );
+
+        my @positioned = sort {
+            $combinations->{$a}{'count'}
+              <=> $combinations->{$b}{'count'}
+        } keys %$combinations;
+        printf(
+            "%-9s %-9s %.3f%-9s %s\n",
+            scalar keys $combinations->{$_}->{'owners'},
+            $combinations->{$_}->{'count'},
+            (
+                (
+                    $combinations->{$_}->{'count'} / scalar
+                      keys %$tickets_info
+                ) * 100
+            ),
+            '%', $_
+        ) foreach reverse @positioned;
+    
+    
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #sub get_all_possible_combinations {
 #
