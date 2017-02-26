@@ -86,7 +86,7 @@ our %skip_species_type =
   ( 'PomBase' => 1, 'WormBase ParaSite' => 1, '1000 Genomes' => 1 );
 
 get_overall_count($dbh);
-get_individual_count($dbh);
+get_individual_count($dbh) unless $is_ensembl;
 get_popular_species($dbh, $site_types);
 get_ticket_vs_job_frequencies($dbh, $site_types);
 get_popular_species_combinations($dbh, $site_types);
@@ -151,8 +151,6 @@ sub get_popular_species {
     print "Popular species in each site type\n";
     print "------------------------------------------------\n";
 
-    #warn Data::Dumper::Dumper($site_types);
-
     foreach my $site_type (@$site_types) {
 
         next if exists( $skip_species_type{ $site_type->{'site_type'} } );
@@ -200,14 +198,10 @@ sub get_ticket_vs_job_frequencies {
         "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"
     );
 
-
-    #warn Data::Dumper::Dumper($site_types);
-
     foreach my $site_type (@$site_types) {
 
         next if exists( $skip_species_type{ $site_type->{'site_type'} } );
 
-        # printf "\n\nSite type: %s\n", $site_type->{'site_type'};
         printf "\n%s\n", $site_type->{'site_type'};
 
         print "------------------\n";
@@ -221,8 +215,6 @@ sub get_ticket_vs_job_frequencies {
 
         $sth_tickets_jobs->execute;
         my $tickets_jobs_count = $sth_tickets_jobs->fetchall_arrayref( {} );
-
-        #warn Data::Dumper::Dumper($tickets_jobs_count);
 
         my @ticket_job_stat;
 
@@ -249,7 +241,6 @@ sub get_ticket_vs_job_frequencies {
         }
         print "\n";
 
-        #warn Data::Dumper::Dumper(@ticket_job_stat);
     }
 
 }
@@ -261,8 +252,6 @@ sub get_popular_species_combinations {
     print "\n\n\n------------------------------------------------\n";
     print "Popular species combinations in each site type\n";
     print "------------------------------------------------\n";
-
-    #warn Data::Dumper::Dumper($site_types);
 
     foreach my $site_type (@$site_types) {
         next if exists( $skip_species_type{ $site_type->{'site_type'} } );
@@ -357,7 +346,7 @@ sub get_popular_species_combinations {
         #	warn Data::Dumper::Dumper(@positioned);
         #       warn Data::Dumper::Dumper(@positioned);
 
-        if ( defined %$subset_combinations ) {
+        if ( keys %$subset_combinations ) {
             warn "******************\n";
             warn "Subset combinations\n";
             warn "******************\n";
