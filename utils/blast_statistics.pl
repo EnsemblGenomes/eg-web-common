@@ -29,18 +29,10 @@ BEGIN {
     $ENV{'PERL5LIB'} = join ':', $ENV{'PERL5LIB'} || (), @INC;
 }
 
+my ( $is_ensembl, $skip_sub_combinations );
 
-my (
-  $is_ensembl, $skip_sub_combinations 
-);
-
-
-GetOptions(
-  "is_ensembl", \$is_ensembl,    
-  "skip_sub_combinations", \$skip_sub_combinations
-  );
-
-
+GetOptions( "is_ensembl", \$is_ensembl,
+    "skip_sub_combinations", \$skip_sub_combinations );
 
 use EnsEMBL::Web::SpeciesDefs;
 
@@ -84,10 +76,10 @@ our %skip_species_type =
 
 #get_overall_count($dbh);
 get_individual_count($dbh);
+
 #get_popular_species($dbh);
 #get_ticket_vs_job_frequencies($dbh);
 get_popular_species_combinations($dbh);
-
 
 ####################################################################################
 
@@ -280,7 +272,6 @@ sub get_popular_species_combinations {
     foreach my $site_type (@$site_types) {
         next if exists( $skip_species_type{ $site_type->{'site_type'} } );
 
-
         printf "\n\nSite type: %s\n", $site_type->{'site_type'};
         print "------------------------------\n";
 
@@ -294,65 +285,93 @@ sub get_popular_species_combinations {
 
         my $tickets = $sth_tickets->fetchall_arrayref( {} );
 
-	printf "Retrieved all the tickets and jobs from DB for division %s. Analysing now \n", $site_type->{'site_type'};
-	
+        printf
+"Retrieved all the tickets and jobs from DB for division %s. Analysing now \n",
+          $site_type->{'site_type'};
+
         my $direct_combinations = {};
         my $subset_combinations = {};
-	my $tickets_info = {};
+        my $tickets_info        = {};
+
         # warn Data::Dumper::Dumper($tickets);
         foreach my $ticket (@$tickets) {
 
-#	  if(!defined $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}){
-#	    $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'} = [];
-#	  }	
-	
-#	  push $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}, $ticket->{'species'};
-	  $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}->{$ticket->{'species'}} = 1;
-          $tickets_info->{$ticket->{'ticket_id'}}->{'owner'} = $ticket->{'owner_id'};
+     #	  if(!defined $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}){
+     #	    $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'} = [];
+     #	  }
 
+#	  push $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}, $ticket->{'species'};
+            $tickets_info->{ $ticket->{'ticket_id'} }->{'species_list'}
+              ->{ $ticket->{'species'} } = 1;
+            $tickets_info->{ $ticket->{'ticket_id'} }->{'owner'} =
+              $ticket->{'owner_id'};
 
         }
 
+        #warn Data::Dumper::Dumper(scalar keys %$tickets_info);
 
-#warn Data::Dumper::Dumper(scalar keys %$tickets_info);
+        foreach my $ticket ( keys %$tickets_info ) {
 
-	foreach my $ticket (keys %$tickets_info){
+    #warn Data::Dumper::Dumper(keys $tickets_info->{$ticket}->{'species_list'});
+    #  print "Working on ticket number: $ticket \r";
 
-#warn Data::Dumper::Dumper(keys $tickets_info->{$ticket}->{'species_list'});
-	  #  print "Working on ticket number: $ticket \r";
-            
-	    $direct_combinations = build_data_structure( $direct_combinations, [keys $tickets_info->{$ticket}->{'species_list'}],  $tickets_info->{$ticket}->{'owner'}) if scalar keys $tickets_info->{$ticket}->{'species_list'} > 1;
+            $direct_combinations = build_data_structure(
+                $direct_combinations,
+                [ keys $tickets_info->{$ticket}->{'species_list'} ],
+                $tickets_info->{$ticket}->{'owner'}
+            ) if scalar keys $tickets_info->{$ticket}->{'species_list'} > 1;
 
+            next if $skip_sub_combinations;
 
-	    next if $skip_sub_combinations;
-
-#            if (   scalar @species_combination > 2 )  	{ 
+#            if (   scalar @species_combination > 2 )  	{
 #		$subset_combinations =  get_all_possible_combinations( $subset_combinations, \@species_combination );
 #            }
 
         }
-	
-	warn "******************\n";
-	warn "Direct combinations\n";
-	warn "******************\n";
 
+        warn "******************\n";
+        warn "Direct combinations\n";
+        warn "******************\n";
 
-	printf ("Total number of tickets in %s are:%s\n", $site_type->{'site_type'}, scalar keys %$tickets_info);
-        
-	printf( "%-9s %-9s %-14s %s\n", "Owners", "Tickets", "Percentage", "Combinations");
+        printf(
+            "Total number of tickets in %s are:%s\n",
+            $site_type->{'site_type'},
+            scalar keys %$tickets_info
+        );
 
-	my @positioned = sort { $direct_combinations->{$a}{'count'} <=> $direct_combinations->{$b}{'count'}} keys %$direct_combinations;
-        printf( "%-9s %-9s %.3f%-9s %s\n", scalar keys $direct_combinations->{$_}->{'owners'}, $direct_combinations->{$_}->{'count'}, (($direct_combinations->{$_}->{'count'}/scalar keys %$tickets_info)*100), '%' , $_ )  foreach reverse @positioned;
+        printf( "%-9s %-9s %-14s %s\n",
+            "Owners", "Tickets", "Percentage", "Combinations" );
+
+        my @positioned = sort {
+            $direct_combinations->{$a}{'count'}
+              <=> $direct_combinations->{$b}{'count'}
+        } keys %$direct_combinations;
+        printf(
+            "%-9s %-9s %.3f%-9s %s\n",
+            scalar keys $direct_combinations->{$_}->{'owners'},
+            $direct_combinations->{$_}->{'count'},
+            (
+                (
+                    $direct_combinations->{$_}->{'count'} / scalar
+                      keys %$tickets_info
+                ) * 100
+            ),
+            '%', $_
+        ) foreach reverse @positioned;
 
         #	warn Data::Dumper::Dumper(@positioned);
         #       warn Data::Dumper::Dumper(@positioned);
 
         if ( defined %$subset_combinations ) {
-	   warn "******************\n";
-           warn "Subset combinations\n";
-           warn "******************\n";
-	   my @positioned_test = sort { $subset_combinations->{$a}{'count'} <=> $subset_combinations->{$b}{'count'} } keys %$subset_combinations;
-           printf( "%-5s %s\n", $subset_combinations->{$_}->{'count'}, $_ ) foreach reverse @positioned_test;
+            warn "******************\n";
+            warn "Subset combinations\n";
+            warn "******************\n";
+            my @positioned_test = sort {
+                $subset_combinations->{$a}{'count'}
+                  <=> $subset_combinations->{$b}{'count'}
+            } keys %$subset_combinations;
+            printf( "%-5s %s\n", $subset_combinations->{$_}->{'count'}, $_ )
+              foreach reverse @positioned_test;
         }
     }
 
@@ -368,8 +387,8 @@ sub build_data_structure {
       ->{'species_string'} = join( ' ', sort @$species_combination );
     $data_structure->{ join( ' ', sort @$species_combination ) }
       ->{'no_of_species'} = @$species_combination;
-    $data_structure->{ join( ' ', sort @$species_combination ) }
-      ->{'owners'}->{$owner} = 1;
+    $data_structure->{ join( ' ', sort @$species_combination ) }->{'owners'}
+      ->{$owner} = 1;
     $data_structure->{ join( ' ', sort @$species_combination ) }->{'count'}++;
 
 #       $data_structure->{join(' ', sort @$species_combination)} = {
