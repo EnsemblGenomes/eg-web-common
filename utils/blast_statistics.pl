@@ -280,11 +280,6 @@ sub get_popular_species_combinations {
         # warn Data::Dumper::Dumper($tickets);
         foreach my $ticket (@$tickets) {
 
-     #	  if(!defined $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}){
-     #	    $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'} = [];
-     #	  }
-
-#	  push $tickets_info->{$ticket->{'ticket_id'}}->{'species_list'}, $ticket->{'species'};
             $tickets_info->{ $ticket->{'ticket_id'} }->{'species_list'}
               ->{ $ticket->{'species'} } = 1;
             $tickets_info->{ $ticket->{'ticket_id'} }->{'owner'} =
@@ -303,7 +298,7 @@ sub get_popular_species_combinations {
                 $direct_combinations,
                 [ keys $tickets_info->{$ticket}->{'species_list'} ],
                 $tickets_info->{$ticket}->{'owner'}
-            ) if scalar keys $tickets_info->{$ticket}->{'species_list'} > 1;
+            ) if (scalar keys $tickets_info->{$ticket}->{'species_list'} > 1 && scalar keys $tickets_info->{$ticket}->{'species_list'} <= 25);
 
             next if $skip_sub_combinations;
 
