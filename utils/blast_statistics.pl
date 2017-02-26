@@ -305,7 +305,7 @@ sub get_popular_species_combinations {
                 
         print_species_combinations('Direct combinations', $direct_combinations, $site_type, $tickets_info) if keys %$direct_combinations;
         
-        print_species_combinations('Subset combinations', $subset_combinations, $site_type, $tickets_info) if keys %$subset_combinations;
+        #print_species_combinations('Subset combinations', $subset_combinations, $site_type, $tickets_info) if keys %$subset_combinations;
         
         print "\n\n";
 
