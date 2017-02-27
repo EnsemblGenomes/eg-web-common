@@ -419,11 +419,11 @@ sub fetch_input {
     $compara_analysis_config->{'ensembl_release'}  = $mlss->get_value_for_tag('ensembl_release');
     $compara_analysis_config->{'download_url'}     = $mlss->url if $mlss->source eq 'ucsc';
     
-    $ref_dna_collection_config->{'name'}        = $self->sci_name($ref_species);
-    $ref_dna_collection_config->{'common_name'} = $self->common_name($ref_genome_db->name);
+    $ref_dna_collection_config->{'name'}        = $self->sci_name(ucfirst $ref_species);
+    $ref_dna_collection_config->{'common_name'} = $self->common_name(ucfirst $ref_genome_db->name);
     
-    $non_ref_dna_collection_config->{'name'}        = $self->sci_name($non_ref_genome_db->name);
-    $non_ref_dna_collection_config->{'common_name'} = $self->common_name($non_ref_genome_db->name);
+    $non_ref_dna_collection_config->{'name'}        = $self->sci_name(ucfirst $non_ref_genome_db->name);
+    $non_ref_dna_collection_config->{'common_name'} = $self->common_name(ucfirst $non_ref_genome_db->name);
     
     if ($mlss->method->type eq 'TRANSLATED_BLAT_NET') {
       foreach my $param (split ' ', $pairwise_params) {
