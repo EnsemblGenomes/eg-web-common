@@ -85,11 +85,11 @@ else {
 our %skip_species_type =
   ( 'PomBase' => 1, 'WormBase ParaSite' => 1, '1000 Genomes' => 1 );
 
-get_overall_count($dbh);
-get_individual_count($dbh) unless $is_ensembl;
+#get_overall_count($dbh);
+#get_individual_count($dbh) unless $is_ensembl;
 get_popular_species($dbh, $site_types);
-get_ticket_vs_job_frequencies($dbh, $site_types);
-get_popular_species_combinations($dbh, $site_types);
+#get_ticket_vs_job_frequencies($dbh, $site_types);
+#get_popular_species_combinations($dbh, $site_types);
 
 ####################################################################################
 
@@ -157,26 +157,32 @@ sub get_popular_species {
 
         printf "\n\nSite type: %s\n", $site_type->{'site_type'};
         print "------------------------------\n";
+        printf( "%-40s %-40s %-40s\n", "Species", "No. of tickets", "No. of users");
+        printf( "%-40s %-40s %-40s\n", "-------", "--------------", "------------");
 
-        my $sth_jobs = $dbh->prepare(
-            "select job.species, count(*) as count from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type=		       ?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) group by job.species order by count"
+        my $sth = $dbh->prepare(
+            "select * from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type= ?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)"
         );
+        $sth->bind_param( 1, $site_type->{'site_type'} );
+        $sth->execute;
+        my $job_records = $sth->fetchall_arrayref( {} );
 
-        $sth_jobs->bind_param( 1, $site_type->{'site_type'} );
+        my $species_info = {};
 
-        $sth_jobs->execute;
-        my $jobs_count = $sth_jobs->fetchall_arrayref( {} );
-
-        #warn Data::Dumper::Dumper($jobs_count);
-        my $count = 1;
-        foreach my $species_count ( reverse @$jobs_count ) {
-
-            printf( "%-40s %-40s\n",
-                $species_count->{'species'},
-                $species_count->{'count'} );
-            $count > 30 ? last : $count++;
-
+        foreach my $job (@$job_records) {
+            $species_info->{ $job->{'species'} }->{'tickets_list'}
+              ->{ $job->{'ticket_id'} } = 1;
+            $species_info->{ $job->{'species'} }->{'owners_list'}->{$job->{'owner_id'}} = 1;
         }
+
+        my @sort = sort {scalar keys  $species_info->{$a}{'tickets_list'} <=> scalar keys $species_info->{$b}{'tickets_list'} } keys %$species_info;
+        
+        my $count = 1;
+        foreach my $species(reverse @sort){
+        printf( "%-40s %-40s %-40s\n", $species, scalar keys $species_info->{$species}->{'tickets_list'}, scalar keys $species_info->{$species}->{'owners_list'});
+        $count > 30 ? last : $count++;
+        }
+
     }
 
 }
