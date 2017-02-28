@@ -88,7 +88,7 @@ our %skip_species_type =
 #get_overall_count($dbh);
 #get_individual_count($dbh) unless $is_ensembl;
 get_popular_species($dbh, $site_types);
-#get_ticket_vs_job_frequencies($dbh, $site_types);
+get_ticket_vs_job_frequencies($dbh, $site_types);
 #get_popular_species_combinations($dbh, $site_types);
 
 ####################################################################################
@@ -175,10 +175,10 @@ sub get_popular_species {
             $species_info->{ $job->{'species'} }->{'owners_list'}->{$job->{'owner_id'}} = 1;
         }
 
-        my @sort = sort {scalar keys  $species_info->{$a}{'tickets_list'} <=> scalar keys $species_info->{$b}{'tickets_list'} } keys %$species_info;
+        my @sort = sort {scalar keys  $species_info->{$b}{'tickets_list'} <=> scalar keys $species_info->{$a}{'tickets_list'} } keys %$species_info;
         
         my $count = 1;
-        foreach my $species(reverse @sort){
+        foreach my $species(@sort){
         printf( "%-40s %-40s %-40s\n", $species, scalar keys $species_info->{$species}->{'tickets_list'}, scalar keys $species_info->{$species}->{'owners_list'});
         $count > 30 ? last : $count++;
         }
@@ -191,9 +191,9 @@ sub get_ticket_vs_job_frequencies {
 
     my ($dbh, $site_types) = @_;
 
-    print "\n\n\n------------------------------------------------\n";
-    print "Jobs per ticket in each site type\n";
-    print "------------------------------------------------\n";
+    print "\n\n\n------------------------\n";
+    print "Tickets & number of Jobs\n";
+    print "------------------------\n";
 
     printf(
         "%-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s %-8s\n",
@@ -207,32 +207,32 @@ sub get_ticket_vs_job_frequencies {
         next if exists( $skip_species_type{ $site_type->{'site_type'} } );
 
         printf "\n%s\n", $site_type->{'site_type'};
+        print "----------------\n";
 
-        print "------------------\n";
-
-        my $sth_tickets_jobs = $dbh->prepare(
-"select ticket.ticket_id, count(*) as jobs_count from ticket inner join job on ticket.ticket_id = job.ticket_id where 
-	 ticket.ticket_type_name = 'Blast' and ticket.site_type=?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR) group by ticket.ticket_id order by jobs_count"
+        my $sth = $dbh->prepare(
+            "select * from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type= ?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)"
         );
+        $sth->bind_param( 1, $site_type->{'site_type'} );
+        $sth->execute;
+        my $job_records = $sth->fetchall_arrayref( {} );
 
-        $sth_tickets_jobs->bind_param( 1, $site_type->{'site_type'} );
+        my $tickets_info = {};
 
-        $sth_tickets_jobs->execute;
-        my $tickets_jobs_count = $sth_tickets_jobs->fetchall_arrayref( {} );
+        foreach my $job (@$job_records) {
+            $tickets_info->{ $job->{'ticket_id'} }->{'specie_list'}
+              ->{ $job->{'species'} } = 1;
+        }
+
+        #print Data::Dumper::Dumper($tickets_info);
 
         my @ticket_job_stat;
-
+        
         for ( my $frequency = 1 ; $frequency <= 30 ; $frequency++ ) {
             my $count = 0;
-
-            foreach my $ticket (@$tickets_jobs_count) {
-
-                if ( $frequency == $ticket->{'jobs_count'} ) {
-
+            foreach my $ticket (keys %$tickets_info) {
+                if ( $frequency == (scalar keys $tickets_info->{$ticket}->{'specie_list'})) {
                     $ticket_job_stat[$frequency] = ++$count;
-
                 }
-
             }
 
         }
@@ -244,10 +244,12 @@ sub get_ticket_vs_job_frequencies {
                 : 0 );
         }
         print "\n";
-
+        
     }
 
 }
+
+
 
 sub get_popular_species_combinations {
 
