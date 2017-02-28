@@ -8,8 +8,8 @@ use File::Basename;
 use File::Spec;
 use Getopt::Long qw(GetOptions);
 use Data::Dumper;
-use List::MoreUtils qw(uniq);
-use Algorithm::Permute;
+#use List::MoreUtils qw(uniq);
+#use Algorithm::Permute;
 
 BEGIN {
 
@@ -85,11 +85,11 @@ else {
 our %skip_species_type =
   ( 'PomBase' => 1, 'WormBase ParaSite' => 1, '1000 Genomes' => 1 );
 
-#get_overall_count($dbh);
-#get_individual_count($dbh) unless $is_ensembl;
+get_overall_count($dbh);
+get_individual_count($dbh) unless $is_ensembl;
 get_popular_species($dbh, $site_types);
 get_ticket_vs_job_frequencies($dbh, $site_types);
-#get_popular_species_combinations($dbh, $site_types);
+get_popular_species_combinations($dbh, $site_types);
 
 ####################################################################################
 
@@ -161,7 +161,7 @@ sub get_popular_species {
         printf( "%-40s %-40s %-40s\n", "-------", "--------------", "------------");
 
         my $sth = $dbh->prepare(
-            "select * from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type= ?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)"
+            "select job.species, ticket.ticket_id, ticket.owner_id from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type= ?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)"
         );
         $sth->bind_param( 1, $site_type->{'site_type'} );
         $sth->execute;
@@ -210,7 +210,7 @@ sub get_ticket_vs_job_frequencies {
         print "----------------\n";
 
         my $sth = $dbh->prepare(
-            "select * from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type= ?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)"
+            "select ticket.ticket_id, job.species from ticket inner join job on ticket.ticket_id = job.ticket_id where ticket.ticket_type_name = 'Blast' and ticket.site_type= ?  and ticket.created_at >= DATE_SUB(NOW(),INTERVAL 1 YEAR)"
         );
         $sth->bind_param( 1, $site_type->{'site_type'} );
         $sth->execute;
