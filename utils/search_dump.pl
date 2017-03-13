@@ -1020,7 +1020,7 @@ sub geneLineXML {
       } map {clean($_)} keys %$unique_synonyms ) )  
     . ( join "", ( map { qq{
 <field name="seq_region_synonym">$_</field>}
-      } map {clean($_)} @$seq_region_synonyms ) )  
+      } map {clean(@{$_})} @$seq_region_synonyms ) )  
     . qq{
 <field name="database">$database</field>      
 </additional_fields>};
