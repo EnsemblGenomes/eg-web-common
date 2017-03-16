@@ -24,13 +24,17 @@ use HTML::Entities qw(encode_entities);
 
 use base qw(EnsEMBL::Web::Component::Gene);
 
+use EnsEMBL::Web::Utils::FormatText qw(glossary_helptip);
+
+our %button_set = ('download' => 1, 'view' => 0);
+
 sub _init {
   my $self = shift;
   $self->cacheable(1);
   $self->ajaxable(1);
 }
 
-our %button_set = ('download' => 1, 'view' => 0);
+
 
 sub content {
   my $self         = shift;
@@ -171,7 +175,7 @@ sub content {
 
       my $table_details = {
         'Species'    => join('<br />(', split /\s*\(/, $species_defs->species_label($species_defs->production_name_mapping($species))),
-        'Type'       => $self->html_format ? $self->glossary_helptip(ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues").qq{<p class="top-margin"><a href="$tree_url">View Gene Tree</a></p>} : $self->glossary_helptip(ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues") ,
+        'Type'       => $self->html_format ? glossary_helptip($hub, ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues").qq{<p class="top-margin"><a href="$tree_url">View Gene Tree</a></p>} : glossary_helptip($hub, ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues") ,
         'dN/dS'      => qq{<span class="$dnds_class">$homoeologue_dnds_ratio</span>},
         'identifier' => $self->html_format ? $id_info : $stable_id,
         'Target %id' => qq{<span class="$target_class">}.sprintf('%.2f&nbsp;%%', $target).qq{</span>},

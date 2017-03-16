@@ -21,6 +21,8 @@ package EnsEMBL::Web::Component::Shared;
 use strict;
 use previous qw(species_stats);
 
+use EnsEMBL::Web::Utils::FormatText qw(helptip glossary_helptip get_glossary_entry);
+
 sub _sort_similarity_links {
   my $self             = shift;
   my $output_as_table  = shift || 0;
