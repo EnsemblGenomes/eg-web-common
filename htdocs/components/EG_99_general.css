@@ -18,3 +18,7 @@ a.clear_highlight_selectors.show{
 a.clear_highlight_selectors.hide{
 	display: none;
 }
+
+.embedded-box {
+  margin: 0 0 16px 0;
+}

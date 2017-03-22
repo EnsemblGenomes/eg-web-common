@@ -144,36 +144,32 @@ sub content {
   my $taxid        = $species_defs->TAXONOMY_ID;
   my $img_url      = $self->img_url;
 
-  my $html = '';
-  if ($hub->species_defs->multidb->{'DATABASE_PRODUCTION'}{'NAME'} and my $whatsnew_text = $self->_whatsnew_text) {
-    $html .= '<div class="column-wrapper">';
-    $html .= '<div class="round-box info-box unbordered">' . $whatsnew_text . '</div>';
-    $html .= '</div>';
-  } elsif (my $ack_text = $self->_other_text('acknowledgement', $species)) {
-    $html .= '<div class="column-wrapper">';
-    $html .= '<div class="plain-box round-box unbordered">' . $ack_text . '</div>';
-    $html .= '</div>';
-  }
-
-
-  $html .= '<div class="box-left">';
-  $html .= '<div class="round-box tinted-box unbordered">';
-  $html .= '<h2>Search</h2>';
+  my $html = '
+    <div class="column-wrapper">  
+      <div class="box-left">
+        <div class="round-box tinted-box unbordered">
+        <h2>Search</h2>';
   $html .= EnsEMBL::Web::Document::HTML::HomeSearch->new($hub)->render;
   $html .= '</div>';
   $html .= '</div>'; #box-left
-
+  
   $html .= '<div class="box-right">';
+    if ($hub->species_defs->multidb->{'DATABASE_PRODUCTION'}{'NAME'} and my $whatsnew_text = $self->_whatsnew_text) {
+    $html .= '<div class="round-box info-box unbordered">' . $whatsnew_text . '</div>';
+  } elsif (my $ack_text = $self->_other_text('acknowledgement', $species)) {
+    $html .= $ack_text;
+  }
+  $html .= '</div>'; # box-right
+  $html .= '</div>'; # column-wrapper
+
   my $about_text = $self->_other_text('about', $species);
   if ($about_text) {
-    $html .= '<div class="round-box tinted-box unbordered">'; 
+    $html .= '<div class="column-wrapper"><div class="round-box tinted-box unbordered">'; 
     $html .= $about_text;
     $html .= sprintf q{<p>Taxonomy ID %s</p>}, $hub->get_ExtURL_link("$taxid", 'UNIPROT_TAXONOMY', $taxid) if $taxid;
     $html .= qq(<p><a href="/$species/Info/Annotation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More information and statistics</a></p>);
-    $html .= '</div>';
+    $html .= '</div></div>';
   }
-  $html .= '</div>'; # box-right
-  
 
   my (@sections);
   
