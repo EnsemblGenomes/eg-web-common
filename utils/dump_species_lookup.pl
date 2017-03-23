@@ -7,10 +7,10 @@ use lib $Bin;
 use LibDirs;
 #use LoadPlugins;
 
-use EnsEMBL::Web::Hub; 
+use EnsEMBL::Web::DBHub; 
 use EnsEMBL::Web::DBSQL::MetaDataAdaptor;
 
-my $hub                 = EnsEMBL::Web::Hub->new;
+my $hub                 = EnsEMBL::Web::DBHub->new;
 my $meta_data_adaptor   = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($hub);
 my $genome_info_adaptor = $meta_data_adaptor->genome_info_adaptor;
 
