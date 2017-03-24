@@ -42,7 +42,7 @@ my @species      = $species_defs->valid_species;
 my $genomic_unit = $species_defs->GENOMIC_UNIT;
 my $release      = $species_defs->SITE_RELEASE_VERSION;
 my %core_dbs     = map { $species_defs->get_config($_, 'databases')->{DATABASE_CORE}->{NAME} => 1 } (@species);
-my $dbh          = $hub->database('core', $species[0])->db_handle;
+my $dbh          = $hub->database('core', $species[0])->dbc->db_handle;
 my $file;
 
 my $meta_data_adaptor = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($hub);
