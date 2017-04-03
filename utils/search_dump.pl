@@ -125,6 +125,7 @@ Usage: perl $0 <options>
   -index        Index to create. Defaults to ALL.
   -release      Release of the database to dump. Defaults to 'latest'.
   -pass         Password for user.
+  -skipexisting Skips if the XML file already present. It is skipexisting not skip_existing.
   -dir          Directory to write output to. Defaults to /lustre/scratch1/ensembl/gp1/xml.
   -help         This message.
 EOF
