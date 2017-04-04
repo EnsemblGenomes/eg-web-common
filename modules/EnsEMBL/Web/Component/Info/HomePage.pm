@@ -143,6 +143,15 @@ sub content {
   my $species      = $hub->species;
   my $taxid        = $species_defs->TAXONOMY_ID;
   my $img_url      = $self->img_url;
+  my $provider_link = '';
+
+  if ($species_defs->PROVIDER_NAME) {
+    my ($name, $url) = ($species_defs->PROVIDER_NAME, $species_defs->PROVIDER_URL);
+    $name = [$name] unless ref $name eq 'ARRAY';
+    $url  = [$url]  unless ref $url  eq 'ARRAY';
+    my @providers = map { $hub->make_link_tag(text => $name->[$_], url => $url->[$_]) } 0 .. scalar @{$name} - 1;
+    $provider_link = join ', ', @providers if @providers;
+  }
 
   my $html = '
     <div class="column-wrapper">  
@@ -167,6 +176,7 @@ sub content {
     $html .= '<div class="column-wrapper"><div class="round-box tinted-box unbordered">'; 
     $html .= $about_text;
     $html .= sprintf q{<p>Taxonomy ID %s</p>}, $hub->get_ExtURL_link("$taxid", 'UNIPROT_TAXONOMY', $taxid) if $taxid;
+    $html .= sprintf q{<p>Data source %s</p>}, $provider_link if $provider_link;
     $html .= qq(<p><a href="/$species/Info/Annotation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More information and statistics</a></p>);
     $html .= '</div></div>';
   }
