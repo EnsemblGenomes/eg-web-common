@@ -40,6 +40,8 @@ sub update_conf {
     '/nfs/public/rw/ensembl/bioperl-1.6.1'
   );
 
+  $SiteDefs::ENSEMBL_MIN_SPARE_SERVERS =  5;
+  $SiteDefs::ENSEMBL_MAX_SPARE_SERVERS = 20;
   $SiteDefs::APACHE_BIN    = '/usr/sbin/httpd';
   $SiteDefs::APACHE_DIR    = '/etc/httpd';
   $SiteDefs::MAX_PROCESS_SIZE = 850000; # Kill httpd over 850000KB
