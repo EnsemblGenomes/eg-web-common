@@ -33,7 +33,7 @@ use Imager;
  
 my $tmp = '/tmp';
 
-my ($plugin_root, $noimg, $division, $quiet, $pan);
+my ($plugin_root, $noimg, $division, $quiet, $pan, $needs_rename);
 my $host = 'http://www.ensemblgenomes.org';
 
 GetOptions(
@@ -43,6 +43,7 @@ GetOptions(
   'q'             => \$quiet, 
   'pan'           => \$pan,
   'host=s'        => \$host,
+  'needs_rename'     => \$needs_rename,  
 );
 
 die "please specify division (e.g. -d plants)" unless $division;
@@ -174,6 +175,25 @@ foreach my $species (keys %{$xml->{'node'}}) {
 
   unlink $tmpimg;
 }
+
+rename_pre_archive($aboutdir, $imgdir64, $imgdir48, $imgdir32, $imgdir16, $img_dir_large) if defined $needs_rename;
+
+sub rename_pre_archive {
+    my @dirs = @_;
+    foreach my $directory (@dirs) {
+     info("------------------------");
+     opendir(DIR, $directory) or die "Cannot open directory";
+     foreach my $file_name (grep {/^.*_(pre|archive)\.(html|png)$/} readdir(DIR)) {
+       (my $new_file_name = $file_name) =~ s/(^.*)_(pre|archive)\.(html|png)$/$1\.$3/;
+#       warn $file_name;
+#       warn $new_file_name;
+        info("Renaming $directory/$file_name to $directory/$new_file_name");
+        rename("$directory/$file_name", "$directory/$new_file_name") or print "Error renaming $file_name to $new_file_name: $!\n";
+     }
+      closedir(DIR);
+    }
+}
+
 
 sub make_dir {
   my @dirs = @_;
