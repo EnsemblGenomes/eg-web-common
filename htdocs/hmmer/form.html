@@ -96,7 +96,23 @@ MGPSENDPNLFVALYDFVASGDNTLSITKGEKLRVLGYNHNGEWCEAQTKNGQGWVPSNYITPVNSLEKHSWYHGPVSRN
 <script>
 window.onload = function() {
   $(function() {
-    
+
+    var tax_ids = {
+      bacteria: { include:'2', exclude: '' },
+      fungi:    { include:'4751', exclude: '' },
+      metazoa:  { include:'33208', exclude: '' },
+      plants:   { include:'33090,2797,2806,446134,661027,930023', exclude: '' },
+      protists: { include:'2759', exclude: '33090,33208,4751' }
+    }
+
+    for (var division in tax_ids) {
+      if (window.location.hostname.match(new RegExp(division, 'g'))) {
+        $( "#tax_included" ).val(tax_ids[division].include);    
+        $( "#tax_excluded" ).val(tax_ids[division].exclude); 
+        break;   
+      }
+    }
+
     $( "#hmmer-form" ).submit(function(event) {
       clearError();clearError()
 
