@@ -99,8 +99,6 @@ sub _parse {
 
   # Parse the web tree to create the static content site map
   $tree->{'STATIC_INFO'}  = $self->_load_in_webtree;
-  ## Parse species directories for static content
-  $tree->{'SPECIES_INFO'} = $self->_load_in_species_pages;
   $self->_info_line('Filesystem', 'Trawled web tree');
   
   $self->_info_log('Parser', 'Parsing ini files and munging dbs');
@@ -108,13 +106,14 @@ sub _parse {
   # Grab default settings first and store in defaults
   my $defaults = $self->_read_in_ini_file('DEFAULTS', {});
   $self->_info_line('Parsing', 'DEFAULTS ini file');
-  
+
+ 
   # Loop for each species exported from SiteDefs
   # grab the contents of the ini file AND
   # IF  the DB packed files exist expand them
   # o/w attach the species databases
   # load the data and store the packed files
-  foreach my $species (@$SiteDefs::ENSEMBL_DATASETS, 'MULTI') {
+  foreach my $species (@$SiteDefs::PRODUCTION_NAMES, 'MULTI') {
     $config_packer->species($species);
     
     $self->process_ini_files($species, $config_packer, $defaults);
@@ -124,14 +123,15 @@ sub _parse {
   $self->_info_log('Parser', 'Post processing ini files');
   
   # Loop over each tree and make further manipulations
-  foreach my $species (@$SiteDefs::ENSEMBL_DATASETS, 'MULTI') {
+  foreach my $species (@$SiteDefs::PRODUCTION_NAMES, 'MULTI') {
     $config_packer->species($species);
     $config_packer->munge('config_tree');
     $self->_info_line('munging', "$species config");
-  }
+  } 
+
 
 ## EG MULTI
-  foreach my $db (@$SiteDefs::ENSEMBL_DATASETS ) {
+  foreach my $db (@$SiteDefs::PRODUCTION_NAMES ) {
     my @species = map {ucfirst} @{$tree->{$db}->{DB_SPECIES}};
     my $species_lookup = { map {$_ => 1} @species };
 
@@ -141,7 +141,45 @@ sub _parse {
   }
 ##  
 
+
+
+
+
+ ## Compile strain info into a single structure
+  while (my($k, $v) = each (%$species_to_strains)) {
+    my $species = $name_lookup->{ucfirst($k)};
+    $tree->{$species}{'ALL_STRAINS'} = $v;
+  } 
+
+#warn Data::Dumper::Dumper($tree);
+# use Data::Dumper; 
+# $Data::Dumper::Maxdepth = 2;
+# $Data::Dumper::Sortkeys = 1;
+# warn ">>> ORIGINAL KEYS: ".Dumper($tree);
+
+  ## Finally, rename the tree keys for easy data access via URLs
+  ## (and backwards compatibility!)
+  my $datasets = [];
+  foreach my $species (@$SiteDefs::PRODUCTION_NAMES) {
+    my $url = $tree->{$species}{'SPECIES_URL'};
+    $tree->{$url} = $tree->{$species};
+    push @$datasets, $url;
+    delete $tree->{$species};
+  } 
+  $tree->{'MULTI'}{'ENSEMBL_DATASETS'} = $datasets;
+  #warn ">>> NEW KEYS: ".Dumper($tree);
+ 
+  ## Parse species directories for static content
+  $tree->{'SPECIES_INFO'} = $self->_load_in_species_pages;
   $CONF->{'_storage'} = $tree; # Store the tree
+  $self->_info_line('Filesystem', 'Trawled species static content');
+
+
+
+
+
+
+
 }
 
 our %cow_from_defaults = ( # copy-on-write from defautls for these sections.

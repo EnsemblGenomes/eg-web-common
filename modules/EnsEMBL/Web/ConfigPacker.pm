@@ -274,41 +274,6 @@ sub _summarise_compara_db {
   ##
   ###################################################################
 
-  ###################################################################
-  ## Section for storing the genome_db_ids <=> species_name
-  $res_aref = $dbh->selectall_arrayref('SELECT genome_db_id, name, assembly FROM genome_db');
-  
-  foreach my $row (@$res_aref) {
-    my ($genome_db_id, $species_name) = @$row;
-    
-    $species_name =~ tr/ /_/;
-    
-    $self->db_tree->{$db_name}{'GENOME_DB'}{$species_name} = $genome_db_id;
-    $self->db_tree->{$db_name}{'GENOME_DB'}{$genome_db_id} = $species_name;
-  }
-  ###################################################################
-  
-  ###################################################################
-  ## Section for storing the taxa properties
-  
-  # Default name is the name stored in species_tree_node: the glyphset will use it by default
-
-  # But a better name is the ensembl alias
-  $res_aref = $dbh->selectall_arrayref(qq(SELECT taxon_id, name FROM ncbi_taxa_name WHERE name_class='ensembl alias name'));
-  foreach my $row (@$res_aref) {
-    my ($taxon_id, $taxon_name) = @$row;
-    $self->db_tree->{$db_name}{'TAXON_NAME'}{$taxon_id} = $taxon_name;
-  }
-
-  # And we need the age of each ancestor
-  $res_aref = $dbh->selectall_arrayref(qq(SELECT taxon_id, name FROM ncbi_taxa_name WHERE name_class='ensembl timetree mya'));
-  foreach my $row (@$res_aref) {
-    my ($taxon_id, $taxon_mya) = @$row;
-    $self->db_tree->{$db_name}{'TAXON_MYA'}{$taxon_id} = $taxon_mya;
-  }
-
-
-  ###################################################################
   
   $dbh->disconnect;
 }
@@ -390,10 +355,8 @@ sub _munge_meta {
   while (my ($species_id, $meta_hash) = each (%$meta_info)) {
     next unless $species_id && $meta_hash && ref($meta_hash) eq 'HASH';
 
-## EG do not use species url    
-   # my $species = $meta_hash->{'species.url'}[0] || ucfirst $meta_hash->{'species.production_name'}[0]; 
-   my $species = ucfirst $meta_hash->{'species.production_name'}[0];
-##
+    my $species  = $meta_hash->{'species.url'}[0];
+
     my $bio_name = $meta_hash->{'species.scientific_name'}[0];
     
     ## Put other meta info into variables
@@ -404,11 +367,11 @@ sub _munge_meta {
 
       ## Set version of assembly name that we can use where space is limited 
       if ($meta_key eq 'assembly.name') {
-        $self->tree($species)->{'ASSEMBLY_SHORT_NAME'} = (length($value) > 16)
+        $self->tree->{'ASSEMBLY_SHORT_NAME'} = (length($value) > 16)
                   ? $self->db_tree->{'ASSEMBLY_VERSION'} : $value;
       }
 
-      $self->tree($species)->{$key} = $value;
+      $self->tree->{$key} = $value;
     }
 
     $self->tree($species)->{'DISPLAY_NAME'} = $self->tree($species)->{'SPECIES_COMMON_NAME'};
@@ -419,8 +382,9 @@ sub _munge_meta {
     if ($taxonomy && scalar(@$taxonomy)) {
       my %valid_taxa = map {$_ => 1} @{ $self->tree->{'TAXON_ORDER'} };
       my @matched_groups = grep {$valid_taxa{$_}} @$taxonomy;
-      $self->tree($species)->{'SPECIES_GROUP'} = $matched_groups[0] if @matched_groups;
-      $self->tree($species)->{'SPECIES_GROUP_HIERARCHY'} = \@matched_groups;
+      $self->tree->{'TAXONOMY'} = $taxonomy;
+      $self->tree->{'SPECIES_GROUP'} = $matched_groups[0] if @matched_groups;
+      $self->tree->{'SPECIES_GROUP_HIERARCHY'} = \@matched_groups;
     }
 
     ## create lookup hash for species aliases
@@ -429,9 +393,9 @@ sub _munge_meta {
     }
 
     ## Backwards compatibility
-    $self->tree($species)->{'SPECIES_BIO_NAME'}  = $bio_name;
+    $self->tree->{'SPECIES_BIO_NAME'}  = $bio_name;
     ## Used mainly in <head> links
-    ($self->tree($species)->{'SPECIES_BIO_SHORT'} = $bio_name) =~ s/^([A-Z])[a-z]+_([a-z]+)$/$1.$2/;
+    ($self->tree->{'SPECIES_BIO_SHORT'} = $bio_name) =~ s/^([A-Z])[a-z]+_([a-z]+)$/$1.$2/;
 
     #if ($self->tree->{'ENSEMBL_SPECIES'}) {
       push @{$self->tree->{'DB_SPECIES'}}, $species;
@@ -440,28 +404,28 @@ sub _munge_meta {
     #}
 
     
-    $self->tree($species)->{'SPECIES_META_ID'} = $species_id;
+    $self->tree->{'SPECIES_META_ID'} = $species_id;
 
     ## Munge genebuild info
     my @A = split '-', $meta_hash->{'genebuild.start_date'}[0];
     
-    $self->tree($species)->{'GENEBUILD_START'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
-    $self->tree($species)->{'GENEBUILD_BY'}    = $A[2];
+    $self->tree->{'GENEBUILD_START'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
+    $self->tree->{'GENEBUILD_BY'}    = $A[2];
 
     @A = split '-', $meta_hash->{'genebuild.initial_release_date'}[0];
     
-    $self->tree($species)->{'GENEBUILD_RELEASE'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
+    $self->tree->{'GENEBUILD_RELEASE'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
     
     @A = split '-', $meta_hash->{'genebuild.last_geneset_update'}[0];
 
-    $self->tree($species)->{'GENEBUILD_LATEST'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
+    $self->tree->{'GENEBUILD_LATEST'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
     
     @A = split '-', $meta_hash->{'assembly.date'}[0];
     
-    $self->tree($species)->{'ASSEMBLY_DATE'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
+    $self->tree->{'ASSEMBLY_DATE'} = $A[1] ? "$months[$A[1]] $A[0]" : undef;
     
 
-    $self->tree($species)->{'HAVANA_DATAFREEZE_DATE'} = $meta_hash->{'genebuild.havana_datafreeze_date'}[0];
+    $self->tree->{'HAVANA_DATAFREEZE_DATE'} = $meta_hash->{'genebuild.havana_datafreeze_date'}[0];
 
     # check if there are sample search entries defined in meta table ( the case with Ensembl Genomes)
     # they can be overwritten at a later stage  via INI files
@@ -481,10 +445,10 @@ sub _munge_meta {
       } 
     }
 
-    $self->tree($species)->{'SAMPLE_DATA'} = $shash if scalar keys %$shash;
+    $self->tree->{'SAMPLE_DATA'} = $shash if scalar keys %$shash;
 
     # check if the karyotype/list of toplevel regions ( normally chroosomes) is defined in meta table
-    @{$self->tree($species)->{'TOPLEVEL_REGIONS'}} = @{$meta_hash->{'regions.toplevel'}} if $meta_hash->{'regions.toplevel'};
+    @{$self->tree->{'TOPLEVEL_REGIONS'}} = @{$meta_hash->{'regions.toplevel'}} if $meta_hash->{'regions.toplevel'};
 
 ## EG    
     if ($self->is_collection('DATABASE_CORE')) {
