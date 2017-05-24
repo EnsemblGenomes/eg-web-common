@@ -355,7 +355,8 @@ sub _munge_meta {
   while (my ($species_id, $meta_hash) = each (%$meta_info)) {
     next unless $species_id && $meta_hash && ref($meta_hash) eq 'HASH';
 
-    my $species  = $meta_hash->{'species.url'}[0];
+    my $species          = $meta_hash->{'species.url'}[0];
+    my $production_name  = $meta_hash->{'species.production_'}[0];
 
     my $bio_name = $meta_hash->{'species.scientific_name'}[0];
     
@@ -374,7 +375,7 @@ sub _munge_meta {
       $self->tree->{$key} = $value;
     }
 
-    $self->tree($species)->{'DISPLAY_NAME'} = $self->tree($species)->{'SPECIES_COMMON_NAME'};
+    $self->tree($production_name)->{'DISPLAY_NAME'} = $self->tree($production_name)->{'SPECIES_COMMON_NAME'};
 
     ## Do species group
     my $taxonomy = $meta_hash->{'species.classification'};
@@ -452,8 +453,8 @@ sub _munge_meta {
 
 ## EG    
     if ($self->is_collection('DATABASE_CORE')) {
-      @{$self->tree($species)->{'ENSEMBL_CHROMOSOMES'}} = ();                                                                      #nickl: need to explicitly define as empty array by default otherwise SpeciesDefs looks for a value at collection level
-      @{$self->tree($species)->{'ENSEMBL_CHROMOSOMES'}} = @{$meta_hash->{'region.toplevel'}} if $meta_hash->{'region.toplevel'};
+      @{$self->tree($production_name)->{'ENSEMBL_CHROMOSOMES'}} = ();                                                                      #nickl: need to explicitly define as empty array by default otherwise SpeciesDefs looks for a value at collection level
+      @{$self->tree($production_name)->{'ENSEMBL_CHROMOSOMES'}} = @{$meta_hash->{'region.toplevel'}} if $meta_hash->{'region.toplevel'};
     }
 ##
 
@@ -481,27 +482,28 @@ sub _munge_meta {
         and seq_region_attrib.attrib_type_id =  (SELECT attrib_type_id FROM attrib_type where name = 'Top Level') 
         and meta.species_id=coord_system.species_id 
         and meta.meta_key = 'species.production_name'
-        and meta.meta_value = '" . $species . "'
+        and meta.meta_value = '" . $production_name . "'
         and seq_region.name = '" . $sname . "'
         and coord_system.name not in ('plasmid', 'chromosome')"
       ) || [];
 
       if (@$t_aref) {
-        @{$self->tree($species)->{'ENSEMBL_CHROMOSOMES'}} = ();
+        @{$self->tree($production_name)->{'ENSEMBL_CHROMOSOMES'}} = ();
       }
     }
 
 
     (my $group_name = $self->{'_species'}) =~ s/_collection//;
-    $self->tree($species)->{'SPECIES_DATASET'} = $group_name;
+    $self->tree($production_name)->{'SPECIES_DATASET'} = $group_name;
     
     # convenience flag to determine if species is polyploidy
-    $self->tree($species)->{POLYPLOIDY} = ($self->tree($species)->{PLOIDY} > 2);
+    $self->tree($production_name)->{POLYPLOIDY} = ($self->tree($production_name)->{PLOIDY} > 2);
 
 ## EG - munge EG genome info 
     if ($genome_info_adaptor) {
       my $dbname = $self->tree->{databases}->{DATABASE_CORE}->{NAME};
       foreach my $genome (@{ $genome_info_adaptor->fetch_all_by_dbname($dbname) }) {
+        warn "GI SP $species";
         my $species = $genome->species;
         $self->tree($species)->{'SEROTYPE'}     = $genome->serotype;
         $self->tree($species)->{'PUBLICATIONS'} = $genome->publications;
