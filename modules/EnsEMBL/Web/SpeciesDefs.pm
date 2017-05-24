@@ -142,16 +142,12 @@ sub _parse {
 ##  
 
 
-
-
-
  ## Compile strain info into a single structure
   while (my($k, $v) = each (%$species_to_strains)) {
     my $species = $name_lookup->{ucfirst($k)};
     $tree->{$species}{'ALL_STRAINS'} = $v;
   } 
 
-#warn Data::Dumper::Dumper($tree);
 # use Data::Dumper; 
 # $Data::Dumper::Maxdepth = 2;
 # $Data::Dumper::Sortkeys = 1;
@@ -161,11 +157,20 @@ sub _parse {
   ## (and backwards compatibility!)
   my $datasets = [];
   foreach my $species (@$SiteDefs::PRODUCTION_NAMES) {
-    my $url = $tree->{$species}{'SPECIES_URL'};
-    $tree->{$url} = $tree->{$species};
-    push @$datasets, $url;
-    delete $tree->{$species};
-  } 
+## EG - Keys like bacteria_0 in the tree wont have a SPECIES_URL. 
+#	Also we dont want to delete collection(eg: bacteria_0) from tree. ENSEMBL-4986.
+#	If $species doesnt have a SPECIES_URL(if a collection), push all the species url names of that collection to $datasets.
+    if (defined $tree->{$species}{'SPECIES_URL'}){
+      my $url = $tree->{$species}{'SPECIES_URL'};
+      $tree->{$url} = $tree->{$species};
+      push @$datasets, $url;
+      delete $tree->{$species};
+    } else {
+      push (@$datasets, @{$tree->{$species}->{'SPECIES_URL_NAMES'}});
+    }
+# EG
+  }
+
   $tree->{'MULTI'}{'ENSEMBL_DATASETS'} = $datasets;
   #warn ">>> NEW KEYS: ".Dumper($tree);
  
@@ -173,12 +178,6 @@ sub _parse {
   $tree->{'SPECIES_INFO'} = $self->_load_in_species_pages;
   $CONF->{'_storage'} = $tree; # Store the tree
   $self->_info_line('Filesystem', 'Trawled species static content');
-
-
-
-
-
-
 
 }
 
