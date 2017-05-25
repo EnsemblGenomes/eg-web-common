@@ -404,7 +404,7 @@ sub _munge_meta {
     #  $self->tree->{'DB_SPECIES'} = [ $species ];
     #}
 
-    push @{$self->tree->{'SPECIES_URL_NAMES'}}, $production_name;
+    push @{$self->tree->{'SPECIES_URL_NAMES'}}, $species;
 
  
     $self->tree($production_name)->{'SPECIES_META_ID'} = $species_id;
