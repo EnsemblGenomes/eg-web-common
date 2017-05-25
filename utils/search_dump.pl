@@ -475,19 +475,12 @@ sub dumpGene {
       print "Fetching probes...\n";  
     
       my $rows = $dbh->selectall_arrayref(
-        "SELECT x.dbprimary_acc, p.name 
-         FROM $FUNCGENDB.probe p, $FUNCGENDB.array_chip ac, $FUNCGENDB.array a, $FUNCGENDB.status s, 
-              $FUNCGENDB.status_name sn, $FUNCGENDB.object_xref ox, $FUNCGENDB.xref x 
-         WHERE sn.name='MART_DISPLAYABLE'        
-         AND sn.status_name_id=s.status_name_id       
-         AND s.table_name='array'        
-         AND s.table_id=a.array_id              
-         AND p.array_chip_id = ac.array_chip_id        
-         AND ac.array_id = a.array_id
-         AND p.probe_id=ox.ensembl_id
-         AND ox.ensembl_object_type='Probe'
-         AND ox.xref_id=x.xref_id
-         GROUP BY ox.object_xref_id"
+        "
+          select 
+            stable_id, name
+          from
+            $FUNCGENDB.probe join $FUNCGENDB.probe_transcript using (probe_id)
+         "
       );
       
       foreach (@$rows) {
@@ -498,20 +491,12 @@ sub dumpGene {
       print "Fetching probe sets...\n";  
     
       $rows = $dbh->selectall_arrayref(
-        "SELECT x.dbprimary_acc, ps.name 
-         FROM $FUNCGENDB.probe_set ps, $FUNCGENDB.probe p, $FUNCGENDB.array_chip ac, $FUNCGENDB.array a, 
-              $FUNCGENDB.status s, $FUNCGENDB.status_name sn, $FUNCGENDB.object_xref ox, $FUNCGENDB.xref x 
-         WHERE sn.name='MART_DISPLAYABLE'        
-         AND sn.status_name_id=s.status_name_id       
-         AND s.table_name='array'        
-         AND s.table_id=a.array_id        
-         AND ps.probe_set_id = p.probe_set_id             
-         AND p.array_chip_id = ac.array_chip_id        
-         AND ac.array_id = a.array_id
-         AND ps.probe_set_id=ox.ensembl_id
-         AND ox.ensembl_object_type='ProbeSet'
-         AND ox.xref_id=x.xref_id
-         GROUP BY ox.object_xref_id;"
+        "
+          select 
+            stable_id, name
+          from
+            $FUNCGENDB.probe_set join $FUNCGENDB.probe_set_transcript using (probe_set_id)
+         "
       );
       
       foreach (@$rows) {
