@@ -505,7 +505,7 @@ sub _munge_meta {
     if ($genome_info_adaptor) {
       my $dbname = $self->tree->{databases}->{DATABASE_CORE}->{NAME};
       foreach my $genome (@{ $genome_info_adaptor->fetch_all_by_dbname($dbname) }) {
-        warn "GI SP $species";
+#        warn "GI SP $species";
         my $species = $genome->species;
         $self->tree($species)->{'SEROTYPE'}     = $genome->serotype;
         $self->tree($species)->{'PUBLICATIONS'} = $genome->publications;
