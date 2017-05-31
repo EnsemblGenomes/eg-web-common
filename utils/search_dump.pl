@@ -636,7 +636,7 @@ sub dumpGene {
   
     foreach my $species (keys %$species_to_seq_region) {
       my $counter = make_counter(0);
-      my ($species_id)      = @{$dbh->selectrow_arrayref("SELECT DISTINCT(species_id) FROM meta WHERE meta_value = ? LIMIT 0,1", undef, $species)};
+      my ($species_id)      = @{$dbh->selectrow_arrayref("SELECT DISTINCT(species_id) FROM meta WHERE meta_key = 'species.display_name' and meta_value = ? LIMIT 0,1", undef, $species)};
       my ($taxon_id)        = @{$dbh->selectrow_arrayref("SELECT meta_value FROM meta WHERE meta_key = 'species.taxonomy_id' AND species_id = ?", undef, $species_id)};
       my ($production_name) = @{$dbh->selectrow_arrayref("SELECT meta_value FROM meta WHERE meta_key = 'species.production_name' AND species_id = ?", undef, $species_id)};
       
