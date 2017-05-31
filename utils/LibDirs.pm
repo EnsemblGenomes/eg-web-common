@@ -40,6 +40,7 @@ BEGIN {
   unshift @INC, "$WEBROOT/conf";
   
   require SiteDefs;
+  SiteDefs->import();
   map{ unshift @INC, $_ } (
     "$SERVERROOT/eg-web-common/modules",
     "$SERVERROOT/ensemblgenomes-api/modules",

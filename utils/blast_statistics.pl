@@ -18,7 +18,7 @@ BEGIN {
 
     # Load SiteDefs
     unshift @INC, File::Spec->catdir( $code_path, qw(ensembl-webcode conf) );
-    eval { require SiteDefs; };
+    eval { require SiteDefs; SiteDefs->import(); };
     if ($@) {
         print "ERROR: Can't use SiteDefs - $@\n";
         exit 1;
