@@ -60,7 +60,7 @@ foreach my $dir ( @dirs ) {
 
         # Evaluate the package so that Inline code can be compiled.
         eval qq(use $pkg_name);
-        error("Error loading:\n$@") if $@;
+        warn("Error loading:\n$@") if $@;
       }
     }
   }
