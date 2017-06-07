@@ -500,7 +500,7 @@ sub _munge_meta {
     }
 
 
-    (my $group_name = $self->{'_species'}) =~ s/_collection//;
+    (my $group_name = (ucfirst $self->{'_species'})) =~ s/_collection//;
     $self->tree($production_name)->{'SPECIES_DATASET'} = $group_name;
     
     # convenience flag to determine if species is polyploidy
