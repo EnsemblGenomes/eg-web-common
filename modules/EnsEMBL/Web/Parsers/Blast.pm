@@ -74,7 +74,7 @@ sub parse_xml {
         qend   => $qend,
         qori   => $qori,
         qframe => $qframe,
-        tid    => $hit_id,
+        tid    => ($hit_id =~ s/^EG\://r),
         tstart => $tstart,
         tend   => $tend,
         tori   => $tori,
