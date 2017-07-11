@@ -145,39 +145,8 @@ sub get_go_list {
   return \%go_hash;
 }
 
-## EG - remove status from gene type
-sub gene_type {
-  my $self = shift;
-  my $db = $self->get_db;
-  my $type = '';
-  if( $db eq 'core' ){
-    #$type = ucfirst(lc($self->Obj->status))." ".$self->Obj->biotype;
-    $type = $self->Obj->biotype;
-    $type =~ s/_/ /;
-    $type ||= $self->db_type;
-  } elsif ($db =~ /vega/) {
-    #my $biotype = ($self->Obj->biotype eq 'tec') ? uc($self->Obj->biotype) : ucfirst(lc($self->Obj->biotype));
-    #$type = ucfirst(lc($self->Obj->status))." $biotype";
-    my $type = ($self->Obj->biotype eq 'tec') ? uc($self->Obj->biotype) : ucfirst(lc($self->Obj->biotype));
-    $type =~ s/_/ /g;
-    $type =~ s/unknown //i;
-    return $type;
-  } else {
-    $type = $self->logic_name;
-    if ($type =~/^(proj|assembly_patch)/ ){
-      #$type = ucfirst(lc($self->Obj->status))." ".$self->Obj->biotype;
-      $type = ucfirst($self->Obj->biotype);
-    }
-    $type =~ s/_/ /g;
-    $type =~ s/^ccds/CCDS/;
-  }
-  $type ||= $db;
-  if( $type !~ /[A-Z]/ ){ $type = ucfirst($type) } #All lc, so format
-  return $type;
-}
-
 sub filtered_family_data {
-  my ($self, $family) = @_;                                                                                              1;
+  my ($self, $family) = @_;
   my $hub       = $self->hub;
   my $family_id = $family->stable_id;
   
