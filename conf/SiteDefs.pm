@@ -37,6 +37,7 @@ sub update_conf {
 
   push (@SiteDefs::ENSEMBL_LIB_DIRS, 
     $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules',
+    '/nfs/public/rw/ensembl/Bio-HTS-2.9',
     '/nfs/public/rw/ensembl/bioperl-1.6.1'
   );
 
