@@ -45,7 +45,6 @@ sub update_conf {
   $SiteDefs::APACHE_BIN    = '/usr/sbin/httpd';
   $SiteDefs::APACHE_DIR    = '/etc/httpd';
   $SiteDefs::ENSEMBL_MAX_PROCESS_SIZE = 850000; # Kill httpd over 850000KB
-  $SiteDefs::SAMTOOLS_DIR  = '/nfs/public/rw/ensembl/samtools';
   $SiteDefs::DATAFILE_BASE_PATH  = '';
 
   # Does this site have a large species set?
