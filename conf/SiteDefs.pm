@@ -84,6 +84,7 @@ sub update_conf {
 
   # EG rest server
   $SiteDefs::ENSEMBL_REST_DOC_URL = 'http://ensemblgenomes.org/info/access/rest';
+  $SiteDefs::Pathway              = 1; #enabling pathway widget
 }
 
 

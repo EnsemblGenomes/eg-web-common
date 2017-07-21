@@ -151,6 +151,14 @@ sub modify_tree {
     [qw(literature EnsEMBL::Web::Component::Gene::Literature)],
     { 'availability' => 'gene' }
   ));
+
+
+  my $gxa = $self->get_node('ExpressionAtlas');
+  my $pathway = $self->create_node('Pathway', 'Pathway',
+    [qw( pathway EnsEMBL::Web::Component::Gene::Pathway )],
+    { 'availability'  => 'gene has_pathway' }
+  );
+  $gxa->after($pathway);
   
 }
 
