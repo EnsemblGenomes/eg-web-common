@@ -49,7 +49,7 @@ sub user_agent {
     my $ua = LWP::UserAgent->new();
     $ua->agent('EnsemblGenomes Web ' . $ua->agent());
     $ua->env_proxy;
-    $ua->timeout(10);
+    $ua->timeout(30);
     $self->{user_agent} = $ua;
   }
   
