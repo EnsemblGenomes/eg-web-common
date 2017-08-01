@@ -47,6 +47,7 @@ sub update_conf {
   $SiteDefs::ENSEMBL_MAX_PROCESS_SIZE = 850000; # Kill httpd over 850000KB
   $SiteDefs::SAMTOOLS_DIR  = '/nfs/public/rw/ensembl/samtools';
   $SiteDefs::DATAFILE_BASE_PATH  = '';
+  $SiteDefs::R2R_BIN       = '/nfs/public/rw/ensembl/tools/R2R-1.0.5/src/r2r';
 
   # Does this site have a large species set?
   # (used by the interface to determine whether to use dropdown or auto-comeplete etc)
