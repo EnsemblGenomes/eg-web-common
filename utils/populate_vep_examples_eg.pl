@@ -312,7 +312,7 @@ sub select_slice {
   my $ta = $slices->[0]->adaptor->db->get_TranscriptAdaptor;
   
   # we want a slice with transcripts on
-  while(scalar @$trs == 0) {
+  while(scalar @$trs == 0 and @$slices) {
     $slice = shift @$slices;
     $trs = eval { $ta->fetch_all_by_Slice($slice) } || [];
   }
