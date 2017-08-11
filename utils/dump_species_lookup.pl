@@ -24,6 +24,13 @@ $genomes{$_->species} = $_ for @{ $genome_info_adaptor->fetch_all_with_compara }
 
 my @sorted = sort {$a->division cmp $b->division || $a->species cmp $b->species} values %genomes;
 
+# The ganome info db only has the Ensembl version of d.mel but we want an EnsemblMetazoa version 
+# (i.e. Ensembl use common name 'Fruitfly', EG do not)
+if (my $dmel = $genomes{'drosophila_melanogaster'}) {
+  $dmel->name('Drosophila melanogaster');
+  $dmel->division('EnsemblMetazoa');
+}
+
 say '[SPECIES_DISPLAY_NAME]';
 say sprintf('%s = %s', $_->species, $_->name) for @sorted;
 
