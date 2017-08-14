@@ -35,11 +35,8 @@ sub update_conf {
     $SiteDefs::ENSEMBL_SERVERROOT.'/eg-web-common/perl',
   );
 
-  push (@SiteDefs::ENSEMBL_LIB_DIRS, 
-    $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules',
-    '/nfs/public/rw/ensembl/Bio-HTS-2.9',
-    '/nfs/public/rw/ensembl/bioperl-1.6.1'
-  );
+  push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules';
+  push @$SiteDefs::ENSEMBL_EXTRA_INC, '/nfs/public/rw/ensembl/Bio-HTS-2.9', '/nfs/public/rw/ensembl/bioperl-1.6.1';
 
   $SiteDefs::ENSEMBL_MIN_SPARE_SERVERS =  5;
   $SiteDefs::ENSEMBL_MAX_SPARE_SERVERS = 20;
