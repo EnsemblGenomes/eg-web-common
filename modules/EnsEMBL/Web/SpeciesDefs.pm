@@ -129,19 +129,6 @@ sub _parse {
     $self->_info_line('munging', "$species config");
   } 
 
-
-## EG MULTI
-  foreach my $db (@$SiteDefs::PRODUCTION_NAMES ) {
-    my @species = map {ucfirst} @{$tree->{$db}->{DB_SPECIES}};
-    my $species_lookup = { map {$_ => 1} @species };
-
-    foreach my $sp (@species) {
-        $self->_merge_species_tree( $tree->{$sp}, $tree->{$db}, $species_lookup);
-    }
-  }
-##  
-
-
  ## Compile strain info into a single structure
   while (my($k, $v) = each (%$species_to_strains)) {
     my $species = $name_lookup->{ucfirst($k)};
@@ -156,24 +143,32 @@ sub _parse {
   ## Finally, rename the tree keys for easy data access via URLs
   ## (and backwards compatibility!)
   my $datasets = [];
-  foreach my $species (@$SiteDefs::PRODUCTION_NAMES) {
-## EG - Keys like bacteria_0 in the tree wont have a SPECIES_URL. 
-#	Also we dont want to delete collection(eg: bacteria_0) from tree. ENSEMBL-4986.
-#	If $species doesnt have a SPECIES_URL(if a collection), push all the species url names of that collection to $datasets.
+
+## EG
+  # rename all species keys - including species from collections
+  foreach my $species (sort keys %$tree) {
     if (defined $tree->{$species}{'SPECIES_URL'}){
-      my $url = $tree->{$species}{'SPECIES_URL'};
+      my $url       = $tree->{$species}{'SPECIES_URL'};
       $tree->{$url} = $tree->{$species};
       push @$datasets, $url;
       delete $tree->{$species};
-    } else {
-      push (@$datasets, @{$tree->{$species}->{'SPECIES_URL_NAMES'}});
     }
-# EG
   }
+
+  # merge collection info into the individual species hashes
+  foreach my $db (@$SiteDefs::PRODUCTION_NAMES ) {
+    my @species = @{$tree->{$db}->{DB_SPECIES}};
+    my $species_lookup = { map {$_ => 1} @species };
+
+    foreach my $sp (@species) {
+      $self->_merge_species_tree( $tree->{$sp}, $tree->{$db}, $species_lookup);
+    }
+  }
+##
 
   $tree->{'MULTI'}{'ENSEMBL_DATASETS'} = $datasets;
   #warn ">>> NEW KEYS: ".Dumper($tree);
- 
+
   ## Parse species directories for static content
   $tree->{'SPECIES_INFO'} = $self->_load_in_species_pages;
   $CONF->{'_storage'} = $tree; # Store the tree

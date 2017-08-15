@@ -405,15 +405,9 @@ sub _munge_meta {
     ## Used mainly in <head> links
     ($self->tree($production_name)->{'SPECIES_BIO_SHORT'} = $bio_name) =~ s/^([A-Z])[a-z]+_([a-z]+)$/$1.$2/;
 
-    #if ($self->tree->{'ENSEMBL_SPECIES'}) {
-      push @{$self->tree->{'DB_SPECIES'}}, $species;
-    #} else {
-    #  $self->tree->{'DB_SPECIES'} = [ $species ];
-    #}
+    push @{$self->tree->{'DB_SPECIES'}}, $species; # add to collection
+    $self->tree($production_name)->{'DB_SPECIES'} = [$species];
 
-    push @{$self->tree->{'SPECIES_URL_NAMES'}}, $species;
-
- 
     $self->tree($production_name)->{'SPECIES_META_ID'} = $species_id;
 
     ## Munge genebuild info
@@ -514,8 +508,8 @@ sub _munge_meta {
       foreach my $genome (@{ $genome_info_adaptor->fetch_all_by_dbname($dbname) }) {
 #        warn "GI SP $species";
         my $species = $genome->species;
-        $self->tree($species)->{'SEROTYPE'}     = $genome->serotype;
-        $self->tree($species)->{'PUBLICATIONS'} = $genome->publications;
+        $self->tree($production_name)->{'SEROTYPE'}     = $genome->serotype;
+        $self->tree($production_name)->{'PUBLICATIONS'} = $genome->publications;
       }
     }
 ##    
