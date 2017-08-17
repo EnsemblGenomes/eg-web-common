@@ -140,29 +140,32 @@ sub _parse {
 # $Data::Dumper::Sortkeys = 1;
 # warn ">>> ORIGINAL KEYS: ".Dumper($tree);
 
-  ## Finally, rename the tree keys for easy data access via URLs
-  ## (and backwards compatibility!)
+  ## Final munging
   my $datasets = [];
 
-## EG
-  # rename all species keys - including species from collections
-  foreach my $species (sort keys %$tree) {
-    if (defined $tree->{$species}{'SPECIES_URL'}){
-      my $url       = $tree->{$species}{'SPECIES_URL'};
-      $tree->{$url} = $tree->{$species};
-      push @$datasets, $url;
-      delete $tree->{$species};
-    }
-  }
+## EG - loop through ALL keys; we can't use @$SiteDefs::PRODUCTION_NAMES as per Ensembl 
+##      because that list doesn't include genomes in the collection dbs         
+  foreach my $key (sort keys %$tree) {
+    next unless (defined $tree->{$key}{'SPECIES_URL'}); # skip if not a species key
+    my $prodname = $key;
 
-  # merge collection info into the individual species hashes
-  foreach my $db (@$SiteDefs::PRODUCTION_NAMES ) {
-    my @species = @{$tree->{$db}->{DB_SPECIES}};
-    my $species_lookup = { map {$_ => 1} @species };
+    my $url = $tree->{$prodname}{'SPECIES_URL'};
 
-    foreach my $sp (@species) {
-      $self->_merge_species_tree( $tree->{$sp}, $tree->{$db}, $species_lookup);
-    }
+    ## Add in aliases to production names
+    $aliases->{$prodname} = $url;
+
+    ## Rename the tree keys for easy data access via URLs
+    ## (and backwards compatibility!)
+    $tree->{$url} = $tree->{$prodname};
+    push @$datasets, $url;
+    delete $tree->{$prodname} if $prodname ne $url;
+    
+    # For EG we need to merge collection info into the species hash
+    my @db_species = @{$tree->{$url}->{DB_SPECIES}};
+    my $species_lookup = { map {$_ => 1} @db_species };
+    foreach my $sp (@db_species) {
+      $self->_merge_species_tree( $tree->{$sp}, $tree->{$url}, $species_lookup);
+    } 
   }
 ##
 
