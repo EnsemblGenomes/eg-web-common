@@ -933,7 +933,6 @@ sub do_archive_stable_ids {
       $xml_data->{'feature_type'} = ucfirst($type);
       $xml_data->{'taxon_id'} = $taxon_id;
 
-      warn Data::Dumper::Dumper($xml_data);
       p geneLineXML( $species, $dataset, \%$xml_data, $counter );
       
    }
