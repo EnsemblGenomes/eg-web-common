@@ -159,12 +159,15 @@ sub _parse {
     $tree->{$url} = $tree->{$prodname};
     push @$datasets, $url;
     delete $tree->{$prodname} if $prodname ne $url;
-    
-    # For EG we need to merge collection info into the species hash
-    my @db_species = @{$tree->{$url}->{DB_SPECIES}};
+  }
+
+  # For EG we need to merge collection info into the species hash
+  foreach my $prodname (@$SiteDefs::PRODUCTION_NAMES) {
+    next unless $tree->{$prodname};
+    my @db_species = @{$tree->{$prodname}->{DB_SPECIES}};
     my $species_lookup = { map {$_ => 1} @db_species };
     foreach my $sp (@db_species) {
-      $self->_merge_species_tree( $tree->{$sp}, $tree->{$url}, $species_lookup);
+      $self->_merge_species_tree( $tree->{$sp}, $tree->{$prodname}, $species_lookup);
     } 
   }
 ##
