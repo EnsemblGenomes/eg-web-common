@@ -702,7 +702,7 @@ sub dumpGene {
              g.stable_id AS gsid, t.stable_id AS tsid, tr.stable_id AS trsid,
              g.version AS gversion, t.version AS tversion, tr.version AS trversion,
              g.description, ed.db_display_name, x.dbprimary_acc,x.display_label AS xdlgene, 
-             ad.display_label, ad.description, ad.web_data, g.source, g.status, g.biotype,
+             ad.display_label, ad.description, ad.web_data, g.source, g.biotype,
              sr.name AS seq_region_name, g.seq_region_start, g.seq_region_end
            FROM (gene AS g,
              analysis_description AS ad,
@@ -731,7 +731,7 @@ sub dumpGene {
             $gene_description,                   $extdb_db_display_name,
             $xref_primary_acc,                   $xref_display_label,
             $analysis_description_display_label, $analysis_description, $web_data,
-            $gene_source,                        $gene_status,
+            $gene_source,
             $gene_biotype,                       $seq_region_name,
             $seq_region_start,                   $seq_region_end
 
@@ -767,7 +767,6 @@ sub dumpGene {
               'ana_desc_label'         => $analysis_description_display_label,
               'ad'                     => $analysis_description,
               'source'                 => ucfirst($gene_source),
-              'st'                     => $gene_status,
               'biotype'                => $gene_biotype,
               'genomic_unit'           => $genomic_unit,
               'location'               => sprintf( '%s:%s-%s', $seq_region_name, $seq_region_start, $seq_region_end ),
