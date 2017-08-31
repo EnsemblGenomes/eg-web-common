@@ -447,7 +447,7 @@ sub dumpGene {
     print "Database: $DBNAME\n";
       
     my $dbh = connect_db($DBNAME);
-  
+ 
     my $has_stable_ids = $dbh->selectrow_array('SELECT COUNT(*) FROM gene WHERE stable_id IS NOT NULL');
     if (!$has_stable_ids) {
       warn "Skipping this database - the genes do not have stable IDs\n";
@@ -689,10 +689,11 @@ sub dumpGene {
  	      p geneLineXML( $species, $dataset, $gene_data, $counter );
       };
       
-      #my $sr_count = 0;
+      my $sr_count = 0;
       
       foreach my $seq_region_id ( keys %{ $species_to_seq_region->{$species} } ) {
-        #print ++$sr_count . " ";
+        $sr_count++;
+        print "$sr_count\r";
         #$|++;
 
         my $seq_region_synonyms = $dbh->selectall_arrayref('SELECT synonym FROM seq_region_synonym WHERE seq_region_id = ?', undef, $seq_region_id);
@@ -834,9 +835,10 @@ sub dumpGene {
       
       #DB -> core/otherfeatures
       #DBNAME -> database name
+      #$dataset -> dataset name eg:Ashbya gossypii or bacteria 10
       #species -> name of the species(display name) eg :Ashbya gossypii
-      
-      my $other_count = &do_archive_stable_ids( [ 'gene' ], $DB, $DBNAME, $species, $species_url_name, $conf, $dbh, $genomic_unit, $dataset, $taxon_id, $counter );
+      #Index old stable ids only when $dataset eq $species as stable_id_event mapping is not supported for collection dbs. 
+      &do_archive_stable_ids( [ 'gene' ], $DB, $DBNAME, $species, $species_url_name, $conf, $dbh, $genomic_unit, $dataset, $taxon_id, $counter ) if $dataset eq $species;
       
       footer( $counter->() );
     }
@@ -879,7 +881,6 @@ sub do_archive_stable_ids {
     $mapping{$type}{$osi}{'matches'}{$nsi}++;
   }
   
-  my $other_count = 0;
   foreach my $type ( keys %mapping ) {
     foreach my $osi ( keys %{$mapping{$type}} ) {
       my @current_sis = ();
@@ -894,7 +895,6 @@ sub do_archive_stable_ids {
         }
       }
       if( @current_sis ) {
-        $other_count++;
         my $example_id   = $mapping{$type}{$osi}{'example'};
         my $current_id_c = scalar(@current_sis );
         my $cur_txt = $current_id_c > 1 ? "$current_id_c current identifiers" : "$current_id_c current identifier";
@@ -912,14 +912,12 @@ sub do_archive_stable_ids {
         $xml_data = &GenerateIDHistoryURL($species_url_name, $osi, $type);
       }
       elsif( @deprecated_sis ) {
-        $other_count++;
         my $deprecated_id_c = scalar(@deprecated_sis);
         my $id = $deprecated_id_c > 1 ? 'identifiers' : 'identifier';
         $desc = qq(Ensembl $type $osi is no longer in the database but it has been mapped to $deprecated_id_c deprecated $id.);
         $xml_data =  &GenerateIDHistoryURL($species_url_name, $osi, $type);
       }
       else {
-        $other_count++;
         $desc = qq(Ensembl $type $osi is no longer in the database and has not been mapped to any newer identifiers.);
         $xml_data =  &GenerateIDHistoryURL($species_url_name, $osi, $type);
       }
@@ -936,7 +934,6 @@ sub do_archive_stable_ids {
       
    }
   }
-  return $other_count;
 }
 
 sub GenerateIDHistoryURL {
