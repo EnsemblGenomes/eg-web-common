@@ -234,6 +234,7 @@ sub connect_db {
     }
   }
 
+  $dbh->do("SET session wait_timeout=28800");
   return $dbh;
 }
 
