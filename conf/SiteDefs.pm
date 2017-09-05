@@ -38,6 +38,8 @@ sub update_conf {
   push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules';
   push @$SiteDefs::ENSEMBL_EXTRA_INC, '/nfs/public/rw/ensembl/Bio-HTS-2.9', '/nfs/public/rw/ensembl/bioperl-1.6.1';
 
+  $SiteDefs::PERL_RLIMIT_AS = '8192:16384';
+
   $SiteDefs::ENSEMBL_MIN_SPARE_SERVERS =  5;
   $SiteDefs::ENSEMBL_MAX_SPARE_SERVERS = 20;
   $SiteDefs::APACHE_BIN    = '/usr/sbin/httpd';
