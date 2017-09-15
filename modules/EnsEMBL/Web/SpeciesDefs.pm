@@ -183,9 +183,10 @@ sub _parse {
 }
 
 our %cow_from_defaults = ( # copy-on-write from defautls for these sections.
-                          'ENSEMBL_EXTERNAL_URLS' => 1,
                           'ENSEMBL_SPECIES_SITE'  => 1,
                           'SPECIES_DISPLAY_NAME'  => 1 );
+
+$cow_from_defaults{'ENSEMBL_EXTERNAL_URLS'} = 1 if $SiteDefs::ENSEMBL_SITETYPE =~ /bacteria/i;
 
 sub _merge_db_tree {
   my ($self, $tree, $db_tree, $key) = @_;
