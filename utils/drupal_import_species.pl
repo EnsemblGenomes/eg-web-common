@@ -165,7 +165,7 @@ foreach my $species (keys %{$xml->{'node'}}) {
   } 
 
   my $image = Imager->new();
-  $image->read(file => $tmpimg, png_ignore_benign_errors => 1) or die "Cannot read $tmpimg: ", $image->errstr();
+  $image->read(file => $tmpimg, png_ignore_benign_errors => 1);
 
   save_largeimage($image,"$img_dir_large/$Species.png");
   save_thumbnail($image, "$imgdir64/$Species.png", 64);
