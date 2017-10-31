@@ -38,3 +38,5 @@ sub init_form {
 
   return $form;
 }
+
+1;
