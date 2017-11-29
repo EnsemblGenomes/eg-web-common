@@ -29,17 +29,30 @@ sub content {
   my $self        = shift;
   my $hub         = $self->hub;
   my $object      = $self->object;
+  my $gene        = $object->gene;
   my $stable_id   = $object->stable_id;
   my $transcript  = $object->Obj;
   my $translation = $transcript->translation;
   my @xref        = $object->display_xref;
-  $self->caption($xref[0] ? "$xref[3]: $xref[0]" : !$object->gene ? $stable_id : 'Novel transcript');
-  $self->add_entry({
-    type  => 'Transcript',
-    label => $stable_id, 
-    link  => $hub->url({ type => 'Transcript', action => 'Summary' })
-  });
-  
+  $self->caption($gene->display_xref ? $gene->display_xref->db_display_name.": ".$gene->display_xref->display_id : !$gene ? $stable_id : 'Novel transcript');
+  if($xref[0] && $xref[0] != $stable_id) { # if there is transcript symbol then show it as the first label and stable id as second label, if not then stable id as first label
+    $self->add_entry({
+      type  => 'Transcript',
+      label => $xref[0]
+    });
+
+    $self->add_entry({
+      type  => ' ',
+      label => $transcript->version ? $stable_id . "." . $transcript->version : $stable_id,
+      link  => $hub->url({ type => 'Transcript', action => 'Summary' })
+    });
+ } else {
+    $self->add_entry({
+      type  => 'Transcript',
+      label => $transcript->version ? $stable_id . "." . $transcript->version : $stable_id,
+      link  => $hub->url({ type => 'Transcript', action => 'Summary' })
+    });
+ } 
 
   my $urls             = $hub->ExtURL;
   if (my $g = $object->gene) {
