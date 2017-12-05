@@ -832,14 +832,15 @@ sub dumpGene {
         }
         $output_gene->(\%old) if $old{'gene_id'}; 
       }
-      
+
+      (my $prod_name = $dataset) =~ s/ /_/g;
       
       #DB -> core/otherfeatures
       #DBNAME -> database name
       #$dataset -> dataset name eg:Ashbya gossypii or bacteria 10
       #species -> name of the species(display name) eg :Ashbya gossypii
-      #Index old stable ids only when $dataset eq $species as stable_id_event mapping is not supported for collection dbs. 
-      &do_archive_stable_ids( [ 'gene' ], $DB, $DBNAME, $species, $species_url_name, $conf, $dbh, $genomic_unit, $dataset, $taxon_id, $counter ) if $dataset eq $species;
+      #Index old stable ids only when $prod_name eq $production_name as stable_id_event mapping is not supported for collection dbs. 
+      &do_archive_stable_ids( [ 'gene', 'transcript' ], $DB, $DBNAME, $species, $species_url_name, $conf, $dbh, $genomic_unit, $dataset, $taxon_id, $counter ) if lc($prod_name) eq lc($production_name);
       
       footer( $counter->() );
     }
@@ -859,7 +860,8 @@ sub do_archive_stable_ids {
   foreach my $type (@$types) {
     $current_stable_ids{$type} = { map {@$_} @{$dbh->selectall_arrayref( "select stable_id,1 from $COREDB.$type" )}};
   }
-    
+  
+  print "Fetching stable id mappings...\n"; 
   my $types = join "','",@$types;
   my $sth = $dbh->prepare( qq(
     SELECT sie.type, sie.old_stable_id, if(isnull(sie.new_stable_id),'NULL',sie.new_stable_id)
