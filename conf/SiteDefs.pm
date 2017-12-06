@@ -78,7 +78,7 @@ sub update_conf {
 
   # REST endpoints
   $SiteDefs::NCBIBLAST_REST_ENDPOINT = 'http://www.ebi.ac.uk/Tools/services/rest/ncbiblast';
-  $SiteDefs::EBEYE_REST_ENDPOINT     = 'http://www.ebi.ac.uk/ebisearch/ws/rest';
+  $SiteDefs::EBEYE_REST_ENDPOINT     = 'https://www.ebi.ac.uk/ebisearch/ws/rest';
 
   # EG rest server
   $SiteDefs::ENSEMBL_REST_DOC_URL = 'http://ensemblgenomes.org/info/access/rest';
