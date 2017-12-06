@@ -34,7 +34,7 @@ my $debug = 0;
 sub new {
   my ($class, %args) = @_;
   my  $self = {
-    base_url => $args{base_url} || 'http://www.ebi.ac.uk/ebisearch/ws/rest',
+    base_url => $args{base_url} || 'https://www.ebi.ac.uk/ebisearch/ws/rest',
   };
   bless $self, $class;
   return $self;
