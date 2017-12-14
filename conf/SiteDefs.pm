@@ -64,13 +64,8 @@ sub update_conf {
   # best to diable for EG
   $SiteDefs::ENSEMBL_BLAST_BY_SEQID = 0;
 
-  # Flag to enable/disable BLAST, VEP, Assembly Converter
-  $SiteDefs::ENSEMBL_BLAST_ENABLED  = 1;
-  $SiteDefs::ENSEMBL_VEP_ENABLED    = 0;
-  $SiteDefs::ENSEMBL_MART_ENABLED   = 0;
-  $SiteDefs::ENSEMBL_AC_ENABLED     = 0;
-  $SiteDefs::ENSEMBL_HMMER_ENABLED  = 0;
-  $SiteDefs::ENSEMBL_FC_ENABLED     = 0;
+  # EG doesn't use file chameleon
+  $SiteDefs::ENSEMBL_FC_ENABLED = 0;
 
   #----------------------------------------------------------------------------
   # EXTERNAL
