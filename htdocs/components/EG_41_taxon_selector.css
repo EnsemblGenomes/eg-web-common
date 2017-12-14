@@ -14,7 +14,7 @@ div.taxon_selector_list ul 	{ padding: 0; margin: 0; }
 div.taxon_selector_list li 	{ list-style-image: none; list-style-type: none; clear: both; height: 22px; padding-left: 10px; position: relative; }
 div.taxon_selector_list li  { background-color: [[TINT_BG]]; color: [[CONTRAST_TEXT]]; border: 1px solid [[TINT_BORDER]]; }
 div.taxon_selector_list li span 		   {position: absolute; margin-top: 3px; white-space: nowrap;}
-div.taxon_selector_list li span.remove {cursor: pointer; height: 16px; width: 16px; margin: 3px; right: 0; background-image: url("/i/16/minus-button.png")}
+div.taxon_selector_list li span.remove {padding:0; cursor: pointer; height: 16px; width: 16px; margin: 3px; right: 0; background-image: url("/i/16/minus-button.png")}
 
 /*
 div.taxon_selector_hint 		{ margin: 0.25em 0.25em 0.5em 0.25em; border: 1px [[CONTRAST_BORDER]] solid; padding: 4px; background-color: [[CONTRAST_BG]]; overflow: hidden; }
