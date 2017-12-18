@@ -31,7 +31,7 @@ say "Finding fasta files...";
 
 my @fasta_files;
 find(sub{
-  push(@fasta_files, $File::Find::name) if /\.dna\.toplevel\.fa\.gz$/;
+  push(@fasta_files, $File::Find::name) if /\.dna\.toplevel\.fa$/;
 }, $fasta_path);
 
 say "Finding vep files...";
@@ -65,5 +65,5 @@ foreach my $vep_file (@vep_files) {
   my $assembly_path  = "$genome_path/$assembly_dir";
   say "copying $fasta_file --> $assembly_path";
   copy($fasta_file, $assembly_path) || die $!;
-  print `gunzip -v $assembly_path/*.fa.gz`;
+  #print `gunzip -v $assembly_path/*.fa.gz`;
 }

@@ -59,10 +59,10 @@ sub _species_sets {
   my $spsites         = $species_defs->ENSEMBL_SPECIES_SITE();
   my ($ortho_type);
   
-
   foreach my $species (keys %all_analysed_species) {
+    $species = ucfirst($species); # yuk!
     next if $skipped->{$species};
-    
+
     my $group = $spsites->{lc($species)};
     my $sets = [];
     my $orthologues = $orthologue_list->{$species} || {};
