@@ -115,8 +115,6 @@ sub _summarise_compara_db {
         and ml.type not like "%PARALOGUES"
         and ml.type not like "%HOMOEOLOGUES"
         and mls.source != "ucsc"
-        and ml.method_link_id != 22
-        and ml.method_link_id != 23
       group by mls.method_link_species_set_id, mls.method_link_id
       having count = 1
   ');
@@ -135,8 +133,6 @@ sub _summarise_compara_db {
         mlss.species_set_id = ss.species_set_id and 
         ss.genome_db_id = gd.genome_db_id and
         (ml.class like "GenomicAlign%" or ml.class like "%.constrained_element" or ml.class = "ConservationScore.conservation_score")
-        and ml.method_link_id != 22
-        and ml.method_link_id != 23
   ');
   
   my $constrained_elements = {};
@@ -218,8 +214,6 @@ sub _summarise_compara_db {
          mls2.species_set_id = ss2.species_set_id and
          ss1.genome_db_id = gd1.genome_db_id and
          ss2.genome_db_id = gd2.genome_db_id
-         and ml.method_link_id != 22
-         and ml.method_link_id != 23
     ');
   }
   
@@ -234,8 +228,6 @@ sub _summarise_compara_db {
         mls.method_link_id = ml.method_link_id and
         ml.type not like '%PARALOGUES'
         and ml.type not like "%HOMOEOLOGUES"
-        and ml.method_link_id != 22
-        and ml.method_link_id != 23
       group by mls.method_link_species_set_id, mls.method_link_id
       having count = 1
   });
