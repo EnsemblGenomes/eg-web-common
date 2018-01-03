@@ -60,7 +60,7 @@ sub render {
       'limit' => $tools_limit.'*',
       'tool'  => sprintf('<a href="%s" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $vep_link, $img_url),
       'code'  => sprintf('<a href="https://github.com/Ensembl/ensembl-tools/archive/release/%s.zip" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $sd->ENSEMBL_VERSION, $img_url),
-      'docs'  => '',
+      'docs'  => sprintf('<a href="https://ensembl.org/info/docs/tools/vep/index.html"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
     });
   }
 
@@ -86,7 +86,7 @@ sub render {
       'tool' => sprintf('<a href="%s" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $link, $img_url),
       'limit' => $tools_limit,
       'code' => '',
-      'docs' => ''
+      'docs' => sprintf('<a href="https://ensembl.org/Help/View?db=core;id=451" class="popup"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
     });
   }
 
