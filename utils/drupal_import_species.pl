@@ -30,6 +30,7 @@ use File::Basename;
 use File::Copy;
 use File::Path qw/make_path/;
 use Imager;
+use Try::Tiny;
  
 my $tmp = '/tmp';
 
@@ -165,7 +166,12 @@ foreach my $species (keys %{$xml->{'node'}}) {
   } 
 
   my $image = Imager->new();
-  $image->read(file => $tmpimg, png_ignore_benign_errors => 1);
+  try {
+     $image->read(file => $tmpimg, png_ignore_benign_errors => 1) or die;
+  } catch {
+     warn "png_ignore_benign_errors flag does not work. Going to ignore it";
+     $image->read(file => $tmpimg) or die "Cannot read: ", $image->errstr;
+  };
 
   save_largeimage($image,"$img_dir_large/$Species.png");
   save_thumbnail($image, "$imgdir64/$Species.png", 64);
