@@ -22,4 +22,3 @@ unless($division eq 'bacteria') {
 
 1;
 
-
