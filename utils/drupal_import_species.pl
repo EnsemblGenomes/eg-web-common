@@ -170,7 +170,7 @@ foreach my $species (keys %{$xml->{'node'}}) {
      $image->read(file => $tmpimg, png_ignore_benign_errors => 1) or die;
   } catch {
      warn "png_ignore_benign_errors flag does not work. Going to ignore it";
-     $image->read(file => $tmpimg);
+     $image->read(file => $tmpimg) or die "Cannot read: ", $image->errstr;
   };
 
   save_largeimage($image,"$img_dir_large/$Species.png");
