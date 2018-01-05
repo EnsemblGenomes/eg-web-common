@@ -31,7 +31,8 @@ use File::Copy;
 use File::Path qw/make_path/;
 use Imager;
 use Try::Tiny;
- 
+
+my $num_errors = 0; 
 my $tmp = '/tmp';
 
 my ($plugin_root, $noimg, $division, $quiet, $pan, $needs_rename);
@@ -76,7 +77,7 @@ my $xmldoc = get($url) or die "Fetch $url failed: $!\n";
 
 my $xml = XMLin(encode('utf-8', $xmldoc));
 my @fields = qw/acknowledgement about assembly annotation regulation variation other/;
-foreach my $species (keys %{$xml->{'node'}}) {
+foreach my $species (sort keys %{$xml->{'node'}}) {
   my $Species = ucfirst($species);
   my $node = $xml->{'node'};
   
@@ -165,12 +166,19 @@ foreach my $species (keys %{$xml->{'node'}}) {
     copy ($default_img, $tmpimg)
   } 
 
+  my $img_read = 0;
   my $image = Imager->new();
   try {
      $image->read(file => $tmpimg, png_ignore_benign_errors => 1) or die;
+     $img_read = 1;
   } catch {
-     warn "png_ignore_benign_errors flag does not work. Going to ignore it";
+     warn "png_ignore_benign_errors flag does not work ($tmpimg). Going to ignore it";
+    try {
      $image->read(file => $tmpimg) or die "Cannot read: ", $image->errstr;
+    } catch {
+      warn "ERROR: Cannot read: ", $image->errstr;
+      $num_errors++;
+    }
   };
 
   save_largeimage($image,"$img_dir_large/$Species.png");
@@ -183,6 +191,8 @@ foreach my $species (keys %{$xml->{'node'}}) {
 }
 
 rename_pre_archive($aboutdir, $imgdir64, $imgdir48, $imgdir32, $imgdir16, $img_dir_large) if defined $needs_rename;
+
+die "Dying due to earlier errors" if $num_errors;
 
 sub rename_pre_archive {
     my @dirs = @_;
