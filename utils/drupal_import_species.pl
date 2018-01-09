@@ -168,6 +168,10 @@ foreach my $species (sort keys %{$xml->{'node'}}) {
 
   my $img_read = 0;
   my $image = Imager->new();
+  unless(-e $tmpimg) {
+    warn "ERROR: Could not find '$tmpimg', skipping\n";
+    next;
+  }
   try {
      $image->read(file => $tmpimg, png_ignore_benign_errors => 1) or die;
      $img_read = 1;
