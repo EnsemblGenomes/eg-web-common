@@ -32,6 +32,9 @@ use File::Path qw/make_path/;
 use Imager;
 use Try::Tiny;
 
+use FindBin qw($Bin);
+chdir "$Bin/../..";
+
 my $num_errors = 0; 
 my $tmp = '/tmp';
 
