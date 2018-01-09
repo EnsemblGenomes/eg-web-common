@@ -161,9 +161,13 @@ foreach my $species (sort keys %{$xml->{'node'}}) {
     getstore($imgurl, $tmpimg);
   }
 
-  if ($default_img and (!$imgurl or !-e $tmpimg)) {
-    info("Using default species image");
-    copy ($default_img, $tmpimg)
+  if(!$imgurl or !-e $tmpimg) {
+    if($default_img) {
+      info("Using default species image");
+      copy ($default_img, $tmpimg);
+    } else {
+      warn "ERROR: no image and no default!\n";
+    }
   } 
 
   my $img_read = 0;
