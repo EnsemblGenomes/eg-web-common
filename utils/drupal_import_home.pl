@@ -37,6 +37,9 @@ use File::Basename;
 use File::Path qw/make_path/;
 use Cwd qw/cwd/;
 
+use FindBin qw($Bin);
+chdir "$Bin/../..";
+
 exit EG::Drupal::Fetch::Home::main();
 
 sub new {
