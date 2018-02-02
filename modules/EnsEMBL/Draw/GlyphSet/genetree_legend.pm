@@ -90,10 +90,10 @@ sub render_normal {
   if ($other_gene) {
     @orthos = (
       ['Genes','header'],
-      ['gene of interest', 'red', 'Gene ID', 'white'],
-      ['within-sp. paralog', 'blue', 'Gene ID', 'white'],
-      ['other gene', 'black', 'Gene ID', 'ff6666'],
-      ['other within-sp. paralog', 'black', 'Gene ID', 'white'],
+      ['gene of interest', 'red', 'Gene ID'],
+      ['within-sp. paralog', 'blue', 'Gene ID'],
+      ['other gene', 'black', 'Gene ID'],
+      ['other within-sp. paralog', 'black', 'Gene ID'],
     );
   }
   

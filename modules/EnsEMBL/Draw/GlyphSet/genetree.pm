@@ -110,6 +110,7 @@ sub _init {
   my $align_bitmap_width = $bitmap_width - $tree_bitmap_width;
   # Calculate space to reserve for the labels
   my( $fontname, $fontsize ) = $self->get_font_details( 'small' );
+  $fontsize = 7; # make default font size 7 instead of the 'small' font size of 6.4 which takes the floor value
   $fontsize = 8 if($tree->isa('Bio::EnsEMBL::Compara::CAFEGeneFamilyNode'));
   my( $longest_label ) = ( sort{ length($b) <=> length($a) } 
                            map{$_->{label}} @nodes );
@@ -398,7 +399,8 @@ sub _init {
       } 
 ## /EG
 
-      $txt->{'font'} = 'MediumBold' if($bold);
+      # increase the size of the text that has been flagged as bold
+      $txt->{'ptsize'} = 8 if ($bold);
       
       if ($f->{'_gene'}) {
         $txt->{'href'} = $self->_url({
