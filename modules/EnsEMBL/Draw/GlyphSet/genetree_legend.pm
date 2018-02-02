@@ -92,7 +92,7 @@ sub render_normal {
       ['Genes','header'],
       ['gene of interest', 'red', 'Gene ID'],
       ['within-sp. paralog', 'blue', 'Gene ID'],
-      ['other gene', 'black', 'Gene ID'],
+      ['other gene', '#ff6666', 'Gene ID'],
       ['other within-sp. paralog', 'black', 'Gene ID'],
     );
   }
