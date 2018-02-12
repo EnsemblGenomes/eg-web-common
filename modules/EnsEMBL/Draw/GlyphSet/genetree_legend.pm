@@ -35,10 +35,11 @@ sub render_normal {
 # EG highlight ontology terms
   my ($ot_term)       = split(',',$self->{highlights}->[8]);
 # EG wrap legends
-  my $min_col_width = 150; 
+  my $min_col_width = 220; 
   my $row = 0;
-  my $row_height = 8; #EG adjust as necessary when sets of keys grow
+  my $row_height = 9; #EG adjust as necessary when sets of keys grow
   my $max_cols = 7;# Number of boxes + 1, not sure why, fits best
+
   while($max_cols * $min_col_width > $im_width){
     $max_cols--;
     last if $max_cols < 2;
@@ -111,16 +112,16 @@ sub render_normal {
   
   my @collapsed_boxes = $vc->isa('Bio::EnsEMBL::Compara::CAFEGeneFamily') ? [] : (
     ['Collapsed Alignments','header'],
-    ["0 - 33% Aligned $alphabet",'white', 'darkgreen'],
-    ["33 - 66% Aligned $alphabet",'yellowgreen', 'darkgreen'],
-    ["66 - 100% Aligned $alphabet",'darkgreen','darkgreen'],
+    ["0 - 33% aligned $alphabet",'white', 'darkgreen'],
+    ["33 - 66% aligned $alphabet",'yellowgreen', 'darkgreen'],
+    ["66 - 100% aligned $alphabet",'darkgreen','darkgreen'],
   );
   
   #no alignments legend required for cafetree/speciestree
   my @boxes = $vc->isa('Bio::EnsEMBL::Compara::CAFEGeneFamily') ? [] : (
     ['Expanded Alignments','header'],
-    ["Gap",   'white', 'yellowgreen'],
-    ["Aligned $alphabet", 'yellowgreen',   'yellowgreen'],
+    ["gap",   'white', 'yellowgreen'],
+    ["aligned $alphabet", 'yellowgreen',   'yellowgreen'],
   );
 
   my ($legend, $colour, $style, $border, $label, $text, $box_border);
@@ -438,44 +439,6 @@ sub _create_label {
 sub draw_box {
   my ($self, $im_width, $x, $y, $NO_OF_COLUMNS, $th, $width, $height, $border, $colour) = @_;
   
-  if($border) {
-    #top horizontal line for border
-    $self->push($self->Rect({
-      'x'         => $im_width * $x/$NO_OF_COLUMNS,
-      'y'         => $y * ( $th + 3 ) + 1 + $th,
-      'width'     => 10,
-      'height'    => 0,
-      'colour'    => $border,
-      })
-    );
-    #left vertical line for border
-    $self->push($self->Rect({
-      'x'         => $im_width * ($x-0.005)/$NO_OF_COLUMNS, #the lower the value, the more to the left (<-) it is
-      'y'         => $y * ( $th + 3 ) + 1 + $th, # the lower the value, the higher up it is
-      'width'     => 0,
-      'height'    => 10,
-      'colour'    => $border,
-      })
-    );  
-    #right vertical line for border
-    $self->push($self->Rect({
-      'x'         => $im_width * ($x+0.0325)/$NO_OF_COLUMNS,
-      'y'         => $y * ( $th + 3 ) + 1 + $th, 
-      'width'     => 0,
-      'height'    => 10,
-      'colour'    => $border,
-      })
-    );
-    #bottom horizontal line for border
-    $self->push($self->Rect({
-      'x'         => $im_width * $x/$NO_OF_COLUMNS,
-      'y'         => ($y+0.08) * ( $th + 3 ) + 10 + $th,
-      'width'     => 10,
-      'height'    => 0,
-      'colour'    => $border,
-      })
-    );    
-  }
   #drawing middle square with fill colour
   $self->push($self->Rect({
     'x'         => $im_width * $x/$NO_OF_COLUMNS,
@@ -483,6 +446,7 @@ sub draw_box {
     'width'     => 10,
     'height'    => 8,
     'colour'    => $colour,
+    'bordercolour' => $border
     })
   );
 }

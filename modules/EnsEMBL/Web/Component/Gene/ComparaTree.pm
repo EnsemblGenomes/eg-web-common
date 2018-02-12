@@ -138,7 +138,7 @@ sub content {
   foreach my $this_leaf (@$leaves) {    
     if ($gene_to_highlight && $this_leaf->gene_member->stable_id eq $gene_to_highlight) {
       $highlight_gene_display_label = $this_leaf->gene_member->display_label || $gene_to_highlight;
-      $highlight_species            = $hub->species_defs->production_name_mapping($this_leaf->gene_member->genome_db->name);
+      $highlight_species            = $hub->species_defs->production_name_mapping($this_leaf->gene_member->genome_db->display_name);
       $highlight_genome_db_id       = $this_leaf->gene_member->genome_db_id;
       last;
     }
@@ -151,10 +151,10 @@ sub content {
       $html .= $self->_info('Highlighted genes',
         sprintf(
           '<p>The <i>%s</i> %s gene, its paralogues, its orthologue in <i>%s</i>, and paralogues of the <i>%s</i> gene, have all been highlighted. <a href="#" class="switch_highlighting on">Click here to disable highlighting</a>.</p>',
-          $hub->species_defs->get_config($hub->species_defs->production_name_mapping($member->genome_db->name), 'SPECIES_COMMON_NAME'),
+          $member->genome_db->display_name,
           $highlight_gene_display_label,
-          $hub->species_defs->get_config($highlight_species, 'SPECIES_COMMON_NAME'),
-          $hub->species_defs->get_config($highlight_species, 'SPECIES_COMMON_NAME')
+          $highlight_species,
+          $highlight_species
         )
       );
     } else {
@@ -165,9 +165,9 @@ sub content {
     $html .= $self->_info('Highlighted genes', 
       sprintf(
         '<p><i>%s</i> %s gene and its paralogues are highlighted. <a href="#" class="switch_highlighting off">Click here to enable highlighting of %s homologues</a>.</p>',
-        $hub->species_defs->get_config($hub->species_defs->production_name_mapping($member->genome_db->name), 'SPECIES_COMMON_NAME'),
+        $hub->species_defs->production_name_mapping($member->genome_db->display_name),
         $highlight_gene_display_label,
-        $hub->species_defs->get_config($highlight_species, 'SPECIES_COMMON_NAME')
+        $hub->species_defs->get_config($highlight_species, 'SPECIES_DISPLAY_NAME')
       )
     );
   }
@@ -335,7 +335,6 @@ sub content {
   
   push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
   push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
-  push @view_links, sprintf $li_tmpl, '#', 'Switch off highlighting' if $highlight_gene;
 # /EG
 
   {
