@@ -52,13 +52,6 @@ sub content {
   my $tree_stable_id       = $tree->tree->stable_id;
   my $highlight_gene       = $hub->param('g1');
   my $highlight_status     = $hub->get_cookie_value('gene_tree_highlighting') || 'on'; # get the the highlight switch status from the cookie
-
-  # Set $highlight_gene to undefined if the highlight status is off. This is due to the module relying heavily on $highlight_gene to do the rendering based on the highlight status.
-  if ($highlight_status eq 'off') {
-    $highlight_gene = undef;
-  }
-  
-  my $highlight_status     = $hub->get_cookie_value('gene_tree_highlighting') || 'on'; # get the the highlight switch status from the cookie
   my $highlight_ancestor   = $self->param('anc');
 
   # Set $highlight_gene to undefined if the highlight status is off. This is due to the module relying heavily on $highlight_gene to do the rendering based on the highlight status.
