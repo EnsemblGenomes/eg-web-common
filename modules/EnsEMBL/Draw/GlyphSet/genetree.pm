@@ -399,8 +399,12 @@ sub _init {
       } 
 ## /EG
 
-      # increase the size of the text that has been flagged as bold
-      $txt->{'ptsize'} = 8 if ($bold);
+      # use a higher font size is bold 
+      $txt->{'ptsize'} = 8 if $bold == 1;
+
+      # use even a higher font size if label colour is either red or light red
+      $txt->{'ptsize'} = 9 if $label_colour eq 'red';
+      $txt->{'ptsize'} = 9 if $label_colour eq 'ff6666';
       
       if ($f->{'_gene'}) {
         $txt->{'href'} = $self->_url({
