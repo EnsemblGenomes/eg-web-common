@@ -36,11 +36,6 @@ sub _content {
   }
 
   if($zmenu_label) {
-    # $self->add_entry({
-    #   type  => 'Gene Symbol',
-    #   label => $zmenu_label
-    # });
-
     $self->add_entry({
       type  => 'Gene',
       label => $zmenu_label,
