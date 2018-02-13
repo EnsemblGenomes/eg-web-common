@@ -50,8 +50,14 @@ sub content {
 
   my $leaves               = $tree->get_all_leaves;
   my $tree_stable_id       = $tree->tree->stable_id;
-  my $highlight_gene       = $self->param('g1');
+  my $highlight_gene       = $hub->param('g1');
+  my $highlight_status     = $hub->get_cookie_value('gene_tree_highlighting') || 'on'; # get the the highlight switch status from the cookie
   my $highlight_ancestor   = $self->param('anc');
+
+  # Set $highlight_gene to undefined if the highlight status is off. This is due to the module relying heavily on $highlight_gene to do the rendering based on the highlight status.
+  if ($highlight_status eq 'off') {
+    $highlight_gene = undef;
+  }
 
 ## EG 
   my $collapsed_nodes = $self->param('collapse');
@@ -118,32 +124,45 @@ sub content {
     }
   }
 
-  if ($highlight_gene) {
-    my $highlight_gene_display_label;
-    
-    foreach my $this_leaf (@$leaves) {    
-      if ($highlight_gene && $this_leaf->gene_member->stable_id eq $highlight_gene) {
-        $highlight_gene_display_label = $this_leaf->gene_member->display_label || $highlight_gene;
-        $highlight_species            = $hub->species_defs->production_name_mapping($this_leaf->gene_member->genome_db->name);
-        $highlight_genome_db_id       = $this_leaf->gene_member->genome_db_id;
-        last;
-      }
+  # store g1 param in a different param as $highlight_gene can be undef if highlighting is disabled
+  my $gene_to_highlight = $hub->param('g1');
+  my $highlight_gene_display_label;  
+      
+  foreach my $this_leaf (@$leaves) {    
+    if ($gene_to_highlight && $this_leaf->gene_member->stable_id eq $gene_to_highlight) {
+      $highlight_gene_display_label = $this_leaf->gene_member->display_label || $gene_to_highlight;
+      $highlight_species            = $hub->species_defs->production_name_mapping($this_leaf->gene_member->genome_db->display_name);
+      $highlight_genome_db_id       = $this_leaf->gene_member->genome_db_id;
+      last;
     }
+  }
 
+  # use $highlight_gene to check if highlight is enabled or not
+  # $gene_to_highlight will be used for getting info necessary to display the highlighting message
+  if ($highlight_gene) {
     if ($member && $gene && $highlight_species) {
       $html .= $self->_info('Highlighted genes',
         sprintf(
-          '<p>In addition to all <I>%s</I> genes, the %s gene (<I>%s</I>) and its paralogues have been highlighted. <a href="%s">Click here to switch off highlighting</a>.</p>', 
-          $hub->species_defs->get_config($hub->species_defs->production_name_mapping($member->genome_db->name), 'SPECIES_COMMON_NAME'),
+          '<p>The <i>%s</i> %s gene, its paralogues, its orthologue in <i>%s</i>, and paralogues of the <i>%s</i> gene, have all been highlighted. <a href="#" class="switch_highlighting on">Click here to disable highlighting</a>.</p>',
+          $member->genome_db->display_name,
           $highlight_gene_display_label,
-          $hub->species_defs->get_config($highlight_species, 'SPECIES_COMMON_NAME'),
-          $unhighlight
+          $highlight_species,
+          $highlight_species
         )
       );
     } else {
       $html .= $self->_warning('WARNING', "<p>$highlight_gene gene is not in this Gene Tree</p>");
       $highlight_gene = undef;
     }
+  } else {
+    $html .= $self->_info('Highlighted genes', 
+      sprintf(
+        '<p><i>%s</i> %s gene and its paralogues are highlighted. <a href="#" class="switch_highlighting off">Click here to enable highlighting of %s homologues</a>.</p>',
+        $hub->species_defs->production_name_mapping($member->genome_db->display_name),
+        $highlight_gene_display_label,
+        $hub->species_defs->get_config($highlight_species, 'SPECIES_DISPLAY_NAME')
+      )
+    );
   }
   
   # Get all the genome_db_ids in each clade
@@ -309,7 +328,6 @@ sub content {
   
   push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
   push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
-  push @view_links, sprintf $li_tmpl, $unhighlight, 'Switch off highlighting' if $highlight_gene;
 # /EG
 
   {
