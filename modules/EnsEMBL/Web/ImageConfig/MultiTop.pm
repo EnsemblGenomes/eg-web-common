@@ -36,7 +36,7 @@ sub init_cacheable {
   }
 }
 
-sub join_genes {
+sub connect_genes {
   my ($self, $chr, @slices) = @_;
   my ($ps, $pt, $ns, $nt) = map { $_->{'species'}, $_->{'target'} } @slices;
   my $sp         = $self->{'species'};
