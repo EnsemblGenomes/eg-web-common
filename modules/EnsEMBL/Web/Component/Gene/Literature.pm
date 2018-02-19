@@ -99,7 +99,7 @@ sub europe_pmc_articles {
   my ($self, $query) = @_;
   my $articles = [];
   my $error    = 0;
-  my $uri      = 'http://www.ebi.ac.uk/europepmc/webservices/rest/search/format=json&query=' . $query;
+  my $uri      = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search/format=json&query=' . $query;
   my $response = $self->_user_agent->get($uri);
 
   if ($response->is_success) {
