@@ -321,6 +321,18 @@ sub _assembly_text {
   $html .= sprintf '<p><a href="%s" class="modal_link nodeco" rel="modal_user_data">%sDisplay your data in %s</a></p>',
     $hub->url({ type => 'UserData', action => 'SelectFile', __clear => 1 }), qq|<img src="${img_url}24/page-user.png" class="homepage-link" />|, $species_defs->ENSEMBL_SITETYPE;
 
+  my $strains = $species_defs->ALL_STRAINS;
+
+  ## Insert link to strains page 
+  if ($strains) {
+    $html .= sprintf '<h3 class="light top-margin">Other strains</h3><p>This species has data on %s additional strains. <a href="%s">View list of strains</a></p>',
+                            scalar @$strains,
+                            $hub->url({'action' => 'Strains'}),
+  }
+
+
+
+
 #EG no old assemblies
  ## PREVIOUS ASSEMBLIES
  #my @old_archives;

@@ -296,7 +296,7 @@ sub _munge_meta {
     provider.url                  PROVIDER_URL
     provider.logo                 PROVIDER_LOGO
     species.strain                SPECIES_STRAIN
-    species.sql_name              SYSTEM_NAME
+    species.strain_collection     STRAIN_COLLECTION
     genome.assembly_type          GENOME_ASSEMBLY_TYPE
     gencode.version               GENCODE_VERSION
     species.biomart_dataset       BIOMART_DATASET

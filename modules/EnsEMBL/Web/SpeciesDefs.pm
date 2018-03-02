@@ -121,14 +121,32 @@ sub _parse {
   }
 
   $self->_info_log('Parser', 'Post processing ini files');
-  
+
+  # Prepare to process strain information
+  my $name_lookup = {};
+  my $species_to_strains = {};
+ 
   # Loop over each tree and make further manipulations
   foreach my $species (@$SiteDefs::PRODUCTION_NAMES, 'MULTI') {
     $config_packer->species($species);
     $config_packer->munge('config_tree');
     $self->_info_line('munging', "$species config");
-  } 
 
+    ## Need to gather strain info for all species
+    $name_lookup->{$config_packer->tree->{'SPECIES_COMMON_NAME'}} = $species;
+    my $collection = $config_packer->tree->{'STRAIN_COLLECTION'};
+    ## Key on actual URL, not production name
+    my $species_key = $config_packer->tree->{'SPECIES_URL'};
+    my $strain_name = $config_packer->tree->{'SPECIES_STRAIN'};
+    if ($collection && $strain_name !~ /reference/) {
+      if ($species_to_strains->{$collection}) {
+        push @{$species_to_strains->{$collection}}, $species_key;
+      }
+      else {
+        $species_to_strains->{$collection} = [$species_key];
+      }
+    }
+  }
  ## Compile strain info into a single structure
   while (my($k, $v) = each (%$species_to_strains)) {
     my $species = $name_lookup->{ucfirst($k)};
