@@ -26,7 +26,7 @@ sub species_list_url {
     return '/species.html'; 
 }
 
-sub add_all_species { 
+sub add_species_dropdown { 
   if (!$SiteDefs::LARGE_SPECIES_SET) {
       return  '<p><select class="_all_species"><option value="">-- Select a species --</option></select></p>' 
   }
