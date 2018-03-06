@@ -16,26 +16,21 @@ limitations under the License.
 
 =cut
 
-package EnsEMBL::Web::Document::HTML::SpeciesList;
+package EnsEMBL::Web::Document::HTML::GenomeList;
 
 use strict;
 use previous qw(render);
 
 
-sub render {
-  my $self = shift;
-  
-  my $html;
-
-  if ($SiteDefs::LARGE_SPECIES_SET) {
-    $html = qq(<div><h3>All genomes</h3><p><a href="/species.html">View full list of all $SiteDefs::SITE_NAME species</a></p></div>);
-  } else {
-    ## /info/about/species.html  -->  /species.html
-    $html = $self->PREV::render(@_);
-    $html =~ s/\/info\/about\/species\.html/\/species\.html/m;
-  }
-
-  return $html;
+sub species_list_url { 
+    return '/species.html'; 
 }
+
+sub add_all_species { 
+  if (!$SiteDefs::LARGE_SPECIES_SET) {
+      return  '<p><select class="_all_species"><option value="">-- Select a species --</option></select></p>' 
+  }
+}
+
 
 1;
