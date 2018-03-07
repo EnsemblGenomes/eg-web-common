@@ -63,6 +63,7 @@ if ($pan) {
 
 my $url         = "$host/export/ensembl-species/$division";
 my $aboutdir    = "$plugin_root/htdocs/ssi/species";
+my $imgdir      = "$plugin_root/htdocs/i/species";
 my $imgdir64    = "$plugin_root/htdocs/i/species/64";
 my $imgdir48    = "$plugin_root/htdocs/i/species/48";
 my $imgdir32    = "$plugin_root/htdocs/i/species/32";
@@ -193,6 +194,7 @@ foreach my $species (sort keys %{$xml->{'node'}}) {
   };
 
   save_largeimage($image,"$img_dir_large/$Species.png");
+  save_thumbnail($image, "$imgdir/$Species.png", 64);
   save_thumbnail($image, "$imgdir64/$Species.png", 64);
   save_thumbnail($image, "$imgdir48/$Species.png", 48);
   save_thumbnail($image, "$imgdir32/$Species.png", 32);
