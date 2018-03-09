@@ -79,17 +79,22 @@ sub intra_species_alignments {
  
     my @comparisons;
     
+    my @methods = $self->action =~ /Polyploid/ 
+      ? qw(POLYPLOID) 
+      : qw(LASTZ_NET TRANSLATED_BLAT_NET TRANSLATED_BLAT BLASTZ_NET);
 
-    my @methods = qw(LASTZ_NET TRANSLATED_BLAT_NET TRANSLATED_BLAT BLASTZ_NET);
     push @methods, 'ATAC' if $SiteDefs::ENSEMBL_SITETYPE =~ /plants/i;
 
     foreach my $method (@methods) { 
+      #warn "----------------$method-----------------------\n";
       my $mlss = $mlss_adaptor->fetch_by_method_link_type_GenomeDBs($method, [$genomedb], 1);
       next unless $mlss;
       
       my $genomic_align_blocks;
       
       if ($slice) {
+        #warn "fetch by slice\n";
+        #warn sprintf("slice %s:%s,%s\n", $slice->seq_region_name, $slice->start, $slice->end);
         $genomic_align_blocks = $genomic_align_block_adaptor->fetch_all_by_MethodLinkSpeciesSet_Slice($mlss, $slice);      
       } else {
         $genomic_align_blocks = $genomic_align_block_adaptor->fetch_all_by_MethodLinkSpeciesSet_DnaFrag($mlss, $source_dnafrag);
@@ -100,6 +105,7 @@ sub intra_species_alignments {
     
       foreach my $genomic_align_block (@$genomic_align_blocks) {
         my $group_id = $genomic_align_block->group_id;
+        #warn "gab " . $genomic_align_block->dbID . "\n";
         my $aligns   = $genomic_align_adaptor->fetch_all_by_GenomicAlignBlock($genomic_align_block);
         
         foreach my $align (@$aligns) {
