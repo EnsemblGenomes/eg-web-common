@@ -28,14 +28,14 @@ use strict;
    my $r           = $hub->create_padded_region()->{'r'} || $hub->param('r');
    my $url         = $hub->url({'type' => 'Location', 'action' => 'View', 'r' => $r});
 
-# ## EG  
-#   my $polyploid_link = '';
-#   if ($hub->species_defs->POLYPLOIDY) {
-#     $polyploid_link = sprintf(
-#       '<p><a href="%s">View genomic alignments of all homoeologues</a></p>', 
-#       $hub->url({'type' => 'Location', 'action' => 'MultiPolyploid'})
-#     );
-#   }
+ ## EG  
+   my $polyploid_link = '';
+   if ($hub->species_defs->POLYPLOIDY) {
+     $polyploid_link = sprintf(
+       '<p><a href="%s">View genomic alignments of all homoeologues</a></p>', 
+       $hub->url({'type' => 'Location', 'action' => 'MultiPolyploid'})
+     );
+   }
 
    my $annotation_link = '';
    if (my $annotation_url = $hub->species_defs->ANNOTATION_URL) {

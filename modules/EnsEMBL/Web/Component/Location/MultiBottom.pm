@@ -57,8 +57,9 @@ sub content {
                           LASTZ_PATCH => $self->param('opt_pairwise_lpatch') || '',
                           LASTZ_RAW => $self->param('opt_pairwise_raw') || '',
                           CACTUS_HAL_PW => $self->param('opt_pairwise_cactus_hal_pw') || '',
-## EG add ATAC alignments
+## EG add other alignment methods
                           ATAC => 1,
+                          POLYPLOID => 1,
 ##
 			};
 

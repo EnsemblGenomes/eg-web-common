@@ -79,8 +79,10 @@ sub intra_species_alignments {
  
     my @comparisons;
     
+    my @methods = $self->action =~ /Polyploid/ 
+      ? qw(POLYPLOID) 
+      : qw(LASTZ_NET TRANSLATED_BLAT_NET TRANSLATED_BLAT BLASTZ_NET);
 
-    my @methods = qw(LASTZ_NET TRANSLATED_BLAT_NET TRANSLATED_BLAT BLASTZ_NET);
     push @methods, 'ATAC' if $SiteDefs::ENSEMBL_SITETYPE =~ /plants/i;
 
     foreach my $method (@methods) { 
