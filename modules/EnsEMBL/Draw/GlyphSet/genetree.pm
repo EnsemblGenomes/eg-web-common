@@ -46,9 +46,10 @@ sub _init {
 ## EG
   my $highlight_annotations   = $self->{highlights}->[8]; # EG
 ##
-  my $tree          = $self->{'container'};
-  my $Config        = $self->{'config'};
-  my $bitmap_width = $Config->image_width(); 
+  my $tree           = $self->{'container'};
+  my $Config         = $self->{'config'};
+  my $highlight_gene = $Config->{_parameters}->{highlight_gene};
+  my $bitmap_width   = $Config->image_width();
 
   my $cdb = $Config->get_parameter('cdb');
   my $skey = $cdb =~ /pan/ ? "_pan_compara" : '';
@@ -188,23 +189,26 @@ sub _init {
       
     }
 
-    if ($f->{label}) {
-      if( $f->{_genes}->{$other_gene} ){
-        $bold = 1;
-        $label_colour = "ff6666";
-      } elsif( $f->{_genome_dbs}->{$other_genome_db_id} ){
-        $bold = 1;
-      } elsif( $f->{_genes}->{$current_gene} ){
-        $label_colour     = 'red';
-        $collapsed_colour = 'red';
-        $node_colour = 'navyblue';
-        $bold = defined($other_genome_db_id);
-      } elsif( $f->{_genome_dbs}->{$current_genome_db_id} ){
-        $label_colour     = 'blue';
-        $collapsed_colour = 'navyblue';
-        $bold = defined($other_genome_db_id);
+    if ( $f->{label} !~ m/homologs/ ) {
+      if ($f->{label}) {
+        if( $f->{_genes}->{$other_gene} ){
+          $bold = 1;
+          $label_colour = "ff6666";
+        } elsif( $f->{_genome_dbs}->{$other_genome_db_id} ){
+          $bold = 1 if $highlight_gene;
+        } elsif( $f->{_genes}->{$current_gene} ){
+          $label_colour     = 'red';
+          $collapsed_colour = 'red';
+          $node_colour = 'navyblue';
+          $bold = defined($other_genome_db_id);
+        } elsif( $f->{_genome_dbs}->{$current_genome_db_id} ){
+          $label_colour     = 'blue';
+          $collapsed_colour = 'navyblue';
+          $bold = defined($other_genome_db_id);
+        }
       }
     }
+    
     if ($f->{_fg_colour}) {
       # Use this foreground colour for this node if not already set
       $node_colour = $f->{_fg_colour} if (!$node_colour);
@@ -399,13 +403,9 @@ sub _init {
       } 
 ## /EG
 
-      # use a higher font size is bold 
+      # use a higher font size if bold 
       $txt->{'ptsize'} = 8 if $bold == 1;
-
-      # use even a higher font size if label colour is either red or light red
-      $txt->{'ptsize'} = 9 if $label_colour eq 'red';
-      $txt->{'ptsize'} = 9 if $label_colour eq 'ff6666';
-      
+    
       if ($f->{'_gene'}) {
         $txt->{'href'} = $self->_url({
           species  => $f->{'_species'},
