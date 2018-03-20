@@ -205,7 +205,8 @@ sub content {
     container_width => $image_width,
     image_width     => $image_width,
     slice_number    => '1|1',
-    cdb             => $cdb
+    cdb             => $cdb,
+    highlight_gene  => $highlight_gene
   });
   
   # Keep track of collapsed nodes
