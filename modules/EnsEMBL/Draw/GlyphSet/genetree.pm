@@ -48,7 +48,7 @@ sub _init {
 ##
   my $tree           = $self->{'container'};
   my $Config         = $self->{'config'};
-  my $highlight_gene = $Config->{_parameters}->{highlight_gene};
+  my $highlight_gene = $Config->get_parameter('highlight_gene');
   my $bitmap_width   = $Config->image_width();
 
   my $cdb = $Config->get_parameter('cdb');
@@ -189,23 +189,21 @@ sub _init {
       
     }
 
-    if ( $f->{label} !~ m/homologs/ ) {
-      if ($f->{label}) {
-        if( $f->{_genes}->{$other_gene} ){
-          $bold = 1;
-          $label_colour = "ff6666";
-        } elsif( $f->{_genome_dbs}->{$other_genome_db_id} ){
-          $bold = 1 if $highlight_gene;
-        } elsif( $f->{_genes}->{$current_gene} ){
-          $label_colour     = 'red';
-          $collapsed_colour = 'red';
-          $node_colour = 'navyblue';
-          $bold = defined($other_genome_db_id);
-        } elsif( $f->{_genome_dbs}->{$current_genome_db_id} ){
-          $label_colour     = 'blue';
-          $collapsed_colour = 'navyblue';
-          $bold = defined($other_genome_db_id);
-        }
+    if ($f->{label} && $f->{label} !~ m/homologs/) {
+      if( $f->{_genes}->{$other_gene} ){
+        $bold = 1;
+        $label_colour = "ff6666";
+      } elsif( $f->{_genome_dbs}->{$other_genome_db_id} ){
+        $bold = 1 if $highlight_gene;
+      } elsif( $f->{_genes}->{$current_gene} ){
+        $label_colour     = 'red';
+        $collapsed_colour = 'red';
+        $node_colour = 'navyblue';
+        $bold = defined($other_genome_db_id);
+      } elsif( $f->{_genome_dbs}->{$current_genome_db_id} ){
+        $label_colour     = 'blue';
+        $collapsed_colour = 'navyblue';
+        $bold = defined($other_genome_db_id);
       }
     }
     
