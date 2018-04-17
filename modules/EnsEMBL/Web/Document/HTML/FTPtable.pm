@@ -145,7 +145,7 @@ sub render {
   );
   $table->code = 'FTPtable::'.scalar(@rows);
   $table->{'options'}{'data_table_config'} = {iDisplayLength => 10};
-
+  
   my $pan_compara = $species_defs->get_config('MULTI', 'databases')->{DATABASE_COMPARA_PAN_ENSEMBL}->{NAME};
   my $compara = $species_defs->get_config('MULTI', 'databases')->{DATABASE_COMPARA}->{NAME};
   my $multi_sp = $g_units->{$genomic_unit};
@@ -155,21 +155,24 @@ sub render {
       {key => 'mysql',    sort=>'none',title => 'MySQL' },  
       {key => 'tsv',      sort=>'none',title => 'TSV'   },    
       {key => 'emf',      sort=>'none',title => 'EMF'   },
-      {key => 'maf',      sort=>'none',title => 'MAF'   },    
+      {key => 'maf',      sort=>'none',title => 'MAF'   },
+      {key => 'xml',      sort=>'none',title => 'XML'   },    
     ],
     [
       {
       database => qq{<strong>Pan_compara Multi-species</strong>},
       mysql   => qq{<a rel="external" title="$title{pan}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/mysql/$pan_compara/">MySQL</a>},
       emf     => qq{<a rel="external" title="$title{emf}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/emf/ensembl-compara/homologies">EMF</a>},
-      tsv     => qq{<a rel="external" title="$title{tsv}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/tsv/ensembl-compara/">TSV</a>},
+      tsv     => qq{<a rel="external" title="$title{tsv}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/tsv/ensembl-compara/homologies">TSV</a>},
+      xml     => qq{<a rel="external" title="$title{xml}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/xml/ensembl-compara/homologies">XML</a>},
       },
       {
       database => qq{<strong>$multi_sp Multi-species</strong>},
       mysql   => sprintf(qq{<a rel="external" title="%s" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/mysql/$compara">MySQL</a>},sprintf($title{compara},ucfirst $genomic_unit)),
       emf     => qq{<a rel="external" title="$title{emf}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/emf/ensembl-compara/homologies">EMF</a>},
-      tsv     => qq{<a rel="external" title="$title{tsv}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/tsv/ensembl-compara">TSV</a>},
-      maf     => qq{<a rel="external" title="$title{maf}" href="ftp://ftp.ensemblgenomes.org/pub/release-$rel/$genomic_unit/maf/ensembl-compara">MAF</a>},
+      tsv     => qq{<a rel="external" title="$title{tsv}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/tsv/ensembl-compara/homologies">TSV</a>},
+      maf     => qq{<a rel="external" title="$title{maf}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/maf/">MAF</a>},
+      xml     => qq{<a rel="external" title="$title{xml}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/xml/ensembl-compara/homologies">XML</a>},
       },
       {
       database => qq{<strong>Ensembl Mart</strong>},
