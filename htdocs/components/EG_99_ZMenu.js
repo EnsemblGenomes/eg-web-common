@@ -136,7 +136,7 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
           menu = [ '<a class="' + cls + ' loc-icon-a" href="' + url + '"><span class="loc-icon loc-change"></span>Jump to region (' + (end - start + 1) + ' bp)</a>' ];
 //// EG - add annotation linl          
           if ( $('#annotation-url').length ) {
-            menu.push('<a class="loc-icon-a constant" href="%"><span class="loc-icon loc-webapollo"></span>View region in WebApollo</a>'.replace('%', 
+            menu.push('<a class="loc-icon-a constant" href="%"><span class="loc-icon loc-webapollo"></span>View region in Apollo</a>'.replace('%', 
               $('#annotation-url').val()
                 .replace('###SEQ_REGION###', this.chr)
                 .replace('###START###', start)
