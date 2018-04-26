@@ -52,8 +52,8 @@ sub content {
   my $html = qq(
 <div class="column-wrapper">  
   <div class="column-one">
-    <div class="column-padding no-left-margin">
-      <img src="/i/species/48/$species.png" class="species-img float-left" alt="" />
+    <div class="column-padding no-left-margin species-box">
+      <img src="/i/species/48/$species.png" class="badge-48" alt="" />
       <h1 style="margin-bottom:0">$common_name Assembly and Gene Annotation</h1>
     </div>
   </div>
