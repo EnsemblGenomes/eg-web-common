@@ -155,14 +155,16 @@ sub content {
       $highlight_gene = undef;
     }
   } else {
-    $html .= $self->_info('Highlighted genes', 
-      sprintf(
-        '<p><i>%s</i> %s gene and its paralogues are highlighted. <a href="#" class="switch_highlighting off">Click here to enable highlighting of %s homologues</a>.</p>',
-        $hub->species_defs->production_name_mapping($member->genome_db->display_name),
-        $highlight_gene_display_label,
-        $hub->species_defs->get_config($highlight_species, 'SPECIES_DISPLAY_NAME')
-      )
-    );
+    if ($member) {
+      $html .= $self->_info('Highlighted genes', 
+        sprintf(
+          '<p><i>%s</i> %s gene and its paralogues are highlighted. <a href="#" class="switch_highlighting off">Click here to enable highlighting of %s homologues</a>.</p>',
+          $hub->species_defs->production_name_mapping($member->genome_db->display_name),
+          $highlight_gene_display_label,
+          $hub->species_defs->get_config($highlight_species, 'SPECIES_DISPLAY_NAME')
+        )
+      );
+    }
   }
   
   # Get all the genome_db_ids in each clade
