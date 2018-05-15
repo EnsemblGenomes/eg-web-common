@@ -31,6 +31,7 @@ use File::Copy;
 use File::Path qw/make_path/;
 use Imager;
 use Try::Tiny;
+use URI;
 
 use FindBin qw($Bin);
 chdir "$Bin/../..";
@@ -82,8 +83,10 @@ my $xmldoc = get($url) or die "Fetch $url failed: $!\n";
 my $xml = XMLin(encode('utf-8', $xmldoc));
 my @fields = qw/acknowledgement about assembly annotation regulation variation other/;
 foreach my $species (sort keys %{$xml->{'node'}}) {
-  my $Species = ucfirst($species);
+
   my $node = $xml->{'node'};
+  my $species_uri = URI->new($node->{$species}->{'url'});
+  my $Species = ucfirst(($species_uri->path_segments())[-1]);
   
   my $file = "$aboutdir/about_$Species.html";
   open(FH, ">$file") or die("Cannot write $file:$!\n");
