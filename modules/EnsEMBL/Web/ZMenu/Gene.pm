@@ -28,7 +28,7 @@ sub _content {
   my @xref         = $object->display_xref;
   my $g            = $hub->param('g');
 
-  $self->caption($xref[0] ? "$xref[3]: $xref[0]" : 'Novel transcript');
+  $self->caption($xref[0] ? "$xref[3]: $xref[0]" : 'Gene');
 
   my $zmenu_label = $object->stable_id;
   if ($species_defs->GENOMIC_UNIT eq 'bacteria') {

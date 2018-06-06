@@ -34,7 +34,7 @@ sub content {
   my $transcript  = $object->Obj;
   my $translation = $transcript->translation;
   my @xref        = $object->display_xref;
-  $self->caption($gene->display_xref ? $gene->display_xref->db_display_name.": ".$gene->display_xref->display_id : !$gene ? $stable_id : 'Novel transcript');
+  $self->caption($gene->display_xref ? $gene->display_xref->db_display_name.": ".$gene->display_xref->display_id : !$gene ? $stable_id : 'Transcript');
   if($xref[0] && $xref[0] != $stable_id) { # if there is transcript symbol then show it as the first label and stable id as second label, if not then stable id as first label
     $self->add_entry({
       type  => 'Transcript',
