@@ -40,17 +40,18 @@ use Storable qw(lock_nstore);
 use Getopt::Long;
 use lib $Bin;
 use LibDirs;
+use Bio::EnsEMBL::Registry;
 use lib "$LibDirs::SERVERROOT/ensemblgenomes-api/modules";
 use lib "$LibDirs::SERVERROOT/eg-web-bacteria/modules";
 
 $| = 1; # disable buffering - helps when running on LSF
 my $NO_CACHE = 1; # don't cache the registry
 
-use Bio::EnsEMBL::Registry;
+#use Bio::EnsEMBL::Registry; #Move it up to avoid loading Registry.pm inside eg-web-bacteria
 use Bio::EnsEMBL::DBSQL::DBAdaptor;
 use Bio::EnsEMBL::DBSQL::TaxonomyNodeAdaptor;
 
-my ($plugin_dir, $dump_binary);
+my ($plugin_dir, $dump_binary, $division);
 my ($host, $port, $user, $pass) = qw(localhost 3306 ensro);
 my ($thost, $tport, $tuser, $tpass); # for ncbi_taxonomy
 my $root_name = 'cellular organisms';
@@ -67,6 +68,7 @@ GetOptions(
   "plugin-dir=s" => \$plugin_dir,
   "dump-binary"  => \$dump_binary,
   "root=s"       => \$root_name,
+  "division=s"     => \$division
 );
 
 die "Please specifiy -plugin-dir" unless $plugin_dir;
@@ -76,6 +78,12 @@ if ($dump_binary) {
   # Check we have EnsEMBL::Web::TaxonTree available before we start
   eval('use EnsEMBL::Web::TaxonTree'); 
   die "Could not load EnsEMBL::Web::TaxonTree, it is required for storable dump ($@)" if $@;
+}
+
+if ($division eq 'bacteria') {
+  print "Loading script to lower the speed of generating new DB connection for Bacteria division\n";
+  eval('use Bio::EnsEMBL::DBSQL::TaxonomyNodeAdaptorDelay');
+  die "Could not load Bio::EnsEMBL::DBSQL::TaxonomyNodeAdaptorDelay, it is required to delay generating DB connections ($@)" if $@;
 }
 
 my @db_args = ( -host => $host, -port => $port, -user => $user, -pass => $pass );
@@ -131,7 +139,6 @@ Bio::EnsEMBL::Registry->load_registry_from_db(@db_args);
 #Bio::EnsEMBL::Registry->set_disconnect_when_inactive;
 
 my @dbas  = grep { $species{$_->species} } @{ Bio::EnsEMBL::Registry->get_all_DBAdaptors(-group => 'core') };
-
 #------------------------------------------------------------------------------
 
 print "fetching leaf nodes...\n";
