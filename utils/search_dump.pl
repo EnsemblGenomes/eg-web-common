@@ -448,12 +448,15 @@ sub dumpGene {
     print "Database: $DBNAME\n";
       
     my $dbh = connect_db($DBNAME);
- 
+
+    my $has_genes = $dbh->selectrow_array('SELECT COUNT(*) FROM gene'); 
     my $has_stable_ids = $dbh->selectrow_array('SELECT COUNT(*) FROM gene WHERE stable_id IS NOT NULL');
-    if (!$has_stable_ids) {
-      warn "Skipping this database - the genes do not have stable IDs\n";
-      return;
-    }
+    if ($has_genes) {
+      if (!$has_stable_ids) {
+        warn "Skipping this database ($DBNAME)) - the genes do not have stable IDs\n";
+        return;
+      }
+    } 
   
     $dbh->do("SET sql_mode = 'NO_BACKSLASH_ESCAPES'"); # metazoa have backslahes in thier gene names and synonyms :.(
     
