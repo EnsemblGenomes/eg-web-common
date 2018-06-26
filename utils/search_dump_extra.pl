@@ -17,7 +17,6 @@ use strict;
 use warnings;
 use DateTime;
 use Getopt::Long;
-use XML::Generator;
 use Data::Dumper;
 use HTML::Entities;
 use FindBin qw($Bin);
