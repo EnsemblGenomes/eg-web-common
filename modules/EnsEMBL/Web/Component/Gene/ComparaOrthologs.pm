@@ -118,6 +118,32 @@ sub _species_sets {
   return ($species_sets, $sets_by_species, $set_order);
 }
 
+# Override this method from ensembl webcode as there is no collection-default type in EG databases.
+# So checking for collection-[EG_DIVISION] type e.g. collection-fungi, collection-metazoa.
+# However, bacteria currently returns only one type called collection-pan. So might need to change this in the future. Will leave it as it is for now, since nothing breaks.
+sub _get_all_analysed_species {
+  my ($self, $cdb) = @_;
+
+  if (!$self->{'_all_analysed_species'}) {
+    $self->{"_mlss_adaptor_$cdb"} ||= $self->hub->get_adaptor('get_MethodLinkSpeciesSetAdaptor', $cdb);
+
+    my $pt_mlsss = $self->{"_mlss_adaptor_$cdb"}->fetch_all_by_method_link_type('PROTEIN_TREES');
+    my $best_pt_mlss;
+
+    if (scalar(@$pt_mlsss) > 1) {
+      my $collection_name = "collection-" . $self->hub->species_defs->EG_DIVISION;
+
+      ($best_pt_mlss) = grep {$_->species_set->name eq $collection_name} @$pt_mlsss;
+    } else {
+      $best_pt_mlss = $pt_mlsss->[0];
+    }
+
+    $self->{'_all_analysed_species'} = {map {$self->hub->species_defs->production_name_mapping($_->name) => 1} @{$best_pt_mlss->species_set->genome_dbs}};
+  }
+
+  return %{$self->{'_all_analysed_species'}};
+}
+
 sub in_archaea {
   my ($self, $species)=@_;
   
