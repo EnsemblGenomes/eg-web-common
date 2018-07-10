@@ -1,4 +1,5 @@
-use 5.16.1;
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -31,13 +32,13 @@ if (my $dmel = $genomes{'drosophila_melanogaster'}) {
   $dmel->division('EnsemblMetazoa');
 }
 
-say '[SPECIES_DISPLAY_NAME]';
-say sprintf('%s = %s', $_->species, $_->name) for @sorted;
+print "[SPECIES_DISPLAY_NAME]\n";
+printf("%s = %s\n", $_->species, $_->name) for @sorted;
 
-say "\n";
+print "\n";
 
-say '[ENSEMBL_SPECIES_SITE]';
-say sprintf('%s = %s', $_->species, fudge_division($_->division)) for @sorted;
+print '[ENSEMBL_SPECIES_SITE]';
+printf("%s = %s\n", $_->species, fudge_division($_->division)) for @sorted;
 
 
 # Fudge to convert EnsemblBacteria -> bacteria etc.
