@@ -14,7 +14,12 @@ then
     printf "\n\e[1;32m====> Creating $checkout checkout www_$www_branch for $division\e[0m\n";
     cd /nfs/public/release/ensweb/$checkout/$division;
     mkdir www_$www_branch;
+    
+    if [ $checkout != "live" ]
+    then
     ln -s www_$www_branch server;
+    fi
+    
     cd www_$www_branch;
     git ensembl --clone web eg-$division;
     git ensembl --checkout --branch release/$www_branch web;
