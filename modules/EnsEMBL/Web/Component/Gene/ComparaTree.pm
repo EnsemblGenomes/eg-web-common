@@ -66,7 +66,6 @@ sub content {
 ##
 
 # EG add ht param
-  my $unhighlight          = $highlight_gene ? $hub->url({ g1 => undef, collapse => $collapsed_nodes, ht => $self->param('ht') }) : '';
   my $image_width          = $self->image_width       || 800;
   my $colouring            = $self->param('colouring') || 'background';
   my $collapsability       = $is_genetree ? '' : ($vc->get('collapsability') || $self->param('collapsability'));
@@ -78,16 +77,10 @@ sub content {
   my @highlights           = $gene && $member ? ($gene->stable_id, $member->genome_db->dbID) : (undef, undef);
   my $hidden_genes_counter = 0;
   my $link                 = $hub->type eq 'GeneTree' ? '' : sprintf ' <a href="%s">%s</a>', $hub->url({ species => 'Multi', type => 'GeneTree', action => 'Image', gt => $tree_stable_id, __clear => 1 }), $tree_stable_id;
-  my (%hidden_genome_db_ids, $highlight_species, $highlight_genome_db_id);
-  my $html = '';
+  my $html                 = '<input type="hidden" class="panel_type" value="ComparaTree" />';
 
-#  my $html                 = sprintf '<h3>GeneTree%s</h3>%s', $link, $self->new_twocol(
-#    ['Number of genes',             scalar(@$leaves)                                                  ],
-#    ['Number of speciation nodes',  $self->get_num_nodes_with_tag($tree, 'node_type', 'speciation')   ],
-#    ['Number of duplication',       $self->get_num_nodes_with_tag($tree, 'node_type', 'duplication')  ],
-#    ['Number of ambiguous',         $self->get_num_nodes_with_tag($tree, 'node_type', 'dubious')      ],
-#    ['Number of gene split events', $self->get_num_nodes_with_tag($tree, 'node_type', 'gene_split')   ]
-#  )->render;
+  my (%hidden_genome_db_ids, $highlight_species, $highlight_species_name, $highlight_genome_db_id);
+
   my $parent      = $tree->tree->{'_supertree'};
   if (defined $parent) {
 
@@ -126,42 +119,45 @@ sub content {
 
   # store g1 param in a different param as $highlight_gene can be undef if highlighting is disabled
   my $gene_to_highlight = $hub->param('g1');
-  my $highlight_gene_display_label;  
-      
-  foreach my $this_leaf (@$leaves) {    
+  my $highlight_gene_display_label;
+
+  foreach my $this_leaf (@$leaves) {
     if ($gene_to_highlight && $this_leaf->gene_member->stable_id eq $gene_to_highlight) {
       $highlight_gene_display_label = $this_leaf->gene_member->display_label || $gene_to_highlight;
-      $highlight_species            = $hub->species_defs->production_name_mapping($this_leaf->gene_member->genome_db->display_name);
+      $highlight_species            = $hub->species_defs->production_name_mapping($this_leaf->gene_member->genome_db->name);
+      $highlight_species_name       = $this_leaf->gene_member->genome_db->display_name;
       $highlight_genome_db_id       = $this_leaf->gene_member->genome_db_id;
       last;
     }
   }
 
-  # use $highlight_gene to check if highlight is enabled or not
-  # $gene_to_highlight will be used for getting info necessary to display the highlighting message
-  if ($highlight_gene) {
-    if ($member && $gene && $highlight_species) {
-      $html .= $self->_info('Highlighted genes',
-        sprintf(
-          '<p>The <i>%s</i> %s gene, its paralogues, its orthologue in <i>%s</i>, and paralogues of the <i>%s</i> gene, have all been highlighted. <a href="#" class="switch_highlighting on">Click here to disable highlighting</a>.</p>',
-          $member->genome_db->display_name,
-          $highlight_gene_display_label,
-          $highlight_species,
-          $highlight_species
-        )
-      );
+  # check if highlight ancestor (anc param) is available or not
+  # if it isn't then there is no need for a message as there will be no g1 (highlight gene) as well
+  if ($highlight_ancestor) {
+    # use $highlight_gene to check if highlight is enabled or not
+    # $gene_to_highlight will be used for getting info necessary to display the highlighting message
+    if ($highlight_gene) {
+      if ($member && $gene && $highlight_species) {
+        $html .= $self->_info('Highlighted genes',
+          sprintf(
+            '<p>The <i>%s</i> %s gene, its paralogues, its orthologue in <i>%s</i>, and paralogues of the <i>%s</i> gene, have all been highlighted. <a href="#" class="switch_highlighting on">Click here to disable highlighting</a>.</p>',
+            $hub->species_defs->get_config($hub->species_defs->production_name_mapping($member->genome_db->name), 'SPECIES_COMMON_NAME'),
+            $highlight_gene_display_label,
+            $hub->species_defs->get_config($highlight_species, 'SPECIES_COMMON_NAME') || $highlight_species_name,
+            $hub->species_defs->get_config($highlight_species, 'SPECIES_COMMON_NAME') || $highlight_species_name
+          )
+        );
+      } else {
+        $html .= $self->_warning('WARNING', "<p>$highlight_gene gene is not in this Gene Tree</p>");
+        $highlight_gene = undef;
+      }
     } else {
-      $html .= $self->_warning('WARNING', "<p>$highlight_gene gene is not in this Gene Tree</p>");
-      $highlight_gene = undef;
-    }
-  } else {
-    if ($member) {
       $html .= $self->_info('Highlighted genes', 
         sprintf(
-          '<p><i>%s</i> %s gene and its paralogues are highlighted. <a href="#" class="switch_highlighting off">Click here to enable highlighting of %s homologues</a>.</p>',
-          $hub->species_defs->production_name_mapping($member->genome_db->display_name),
+          '<p>The <i>%s</i> %s gene and its paralogues are highlighted. <a href="#" class="switch_highlighting off">Click here to enable highlighting of %s homologues</a>.</p>',
+          $hub->species_defs->get_config($hub->species_defs->production_name_mapping($member->genome_db->name), 'SPECIES_COMMON_NAME'),
           $highlight_gene_display_label,
-          $hub->species_defs->get_config($highlight_species, 'SPECIES_DISPLAY_NAME')
+          $hub->species_defs->get_config($highlight_species, 'SPECIES_COMMON_NAME') || $highlight_species_name
         )
       );
     }
@@ -331,6 +327,7 @@ sub content {
   
   push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
   push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
+  push @view_links, sprintf $li_tmpl, '#', 'Switch off highlighting' if $highlight_gene;
 # /EG
 
   {
