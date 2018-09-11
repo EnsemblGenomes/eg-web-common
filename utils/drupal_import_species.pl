@@ -31,11 +31,13 @@ use File::Copy;
 use File::Path qw/make_path/;
 use Imager;
 use Try::Tiny;
+use Data::Dumper;
 
 use FindBin qw($Bin);
 chdir "$Bin/../..";
 
 my $num_errors = 0; 
+my $errors = {};
 my $tmp = '/tmp';
 
 my ($plugin_root, $noimg, $division, $quiet, $pan, $needs_rename);
@@ -184,11 +186,16 @@ foreach my $species (sort keys %{$xml->{'node'}}) {
      $image->read(file => $tmpimg, png_ignore_benign_errors => 1) or die;
      $img_read = 1;
   } catch {
-     warn "png_ignore_benign_errors flag does not work ($tmpimg). Going to ignore it";
+    my $err_str = '';
+    $err_str = "png_ignore_benign_errors flag does not work ($tmpimg). Going to ignore it";
+    warn $err_str;
+    push @{$errors->{'png_ignore_benign_errors flag does not work'}}, $tmpimg;
     try {
      $image->read(file => $tmpimg) or die "Cannot read: ", $image->errstr;
     } catch {
-      warn "ERROR: Cannot read: ", $image->errstr;
+      $err_str = $image->errstr . " File: $tmpimg";
+      warn $err_str;
+      push @{$errors->{'ERROR: Cannot read'}}, $err_str;
       $num_errors++;
     }
   };
@@ -204,6 +211,13 @@ foreach my $species (sort keys %{$xml->{'node'}}) {
 }
 
 rename_pre_archive($aboutdir, $imgdir64, $imgdir48, $imgdir32, $imgdir16, $img_dir_large) if defined $needs_rename;
+
+if ($num_errors) {
+  warn "\n\nERRORS:\n\n";
+  warn Dumper $errors;
+  warn "No. of errors: $num_errors\n";
+  die "Done with above errors" if $num_errors;
+}
 
 die "Dying due to earlier errors" if $num_errors;
 
