@@ -68,7 +68,7 @@ my $do = 0;
 
 SPECIES: foreach my $species(@all_species) {
 
-if ($start_from_species and $species lt $start_from_species) {
+if (($skip_species eq $species) or ($start_from_species and $species lt $start_from_species)) {
   warn "skipping $species\n";
   next;
 }
