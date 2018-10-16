@@ -24,14 +24,14 @@ foreach my $sp (sort keys %$files) {
   if($found) {
     say "=> Updating $ini_path/$sp.ini => $new_line";
     $new_line = quotemeta($new_line);
-    my $cmd = "perl -pi -e '\$_ = qq($new_line\\n) if /(ASSEMBLY_CONVERTER_FILES.*\n)/' $ini_path/$sp.ini";
-    system($cmd);
+    my $cmd = `per -pi -e '\$_ = qq($new_line\\n) if /(ASSEMBLY_CONVERTER_FILES.*\n)/' $ini_path/$sp.ini`;
+    say $cmd;
   }
   else {
     say "=> Adding new entry $ini_path/$sp.ini => $new_line";
     $new_line = quotemeta($new_line);
-    my $cmd = "perl -pi -e '\$_ .= qq(\\n$new_line\\n\\n) if /\\[general\\]/' $ini_path/$sp.ini";
-    system($cmd);
+    my $cmd = `perl -pi -e '\$_ .= qq(\\n$new_line\\n\\n) if /\\[general\\]/' $ini_path/$sp.ini`;
+    say $cmd;
   }
 }
 say "\n\n\n>>>  Mistakes are common!!! Please randomly cross check and ensure updates are correct <<< \n\n\n";
