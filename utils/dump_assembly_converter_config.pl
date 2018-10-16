@@ -22,18 +22,17 @@ foreach my $sp (sort keys %$files) {
   my $new_line = sprintf 'ASSEMBLY_CONVERTER_FILES = [%s]', join(' ', sort @{$files->{$sp}});
   my $found = `grep ASSEMBLY_CONVERTER_FILES $ini_path/$sp.ini`;
   if($found) {
-    my $cmd = "cp $ini_path/$sp.ini $ini_path/$sp.ini.bak";
+    say "=> Updating $ini_path/$sp.ini => $new_line";
+    $new_line = quotemeta($new_line);
+    my $cmd = "perl -pi -e '\$_ = qq($new_line\\n) if /(ASSEMBLY_CONVERTER_FILES.*\n)/' $ini_path/$sp.ini";
     system($cmd);
-    $cmd = "sed -e 's/ASSEMBLY_CONVERTER_FILES = .*/$new_line/' $ini_path/$sp.ini.bak > $ini_path/$sp.ini";
-    system($cmd);
-    $cmd = "diff $ini_path/$sp.ini.bak $ini_path/$sp.ini";
-    my $out = system($cmd);
-    unlink("$ini_path/$sp.ini.bak") if ($out == 0);
   }
   else {
-    say "Adding new entry ";
-    my $cmd = "echo >> $ini_path/$sp.ini; echo $new_line >> $ini_path/$sp.ini;";
+    say "=> Adding new entry $ini_path/$sp.ini => $new_line";
+    $new_line = quotemeta($new_line);
+    my $cmd = "perl -pi -e '\$_ .= qq(\\n$new_line\\n\\n) if /\\[general\\]/' $ini_path/$sp.ini";
     system($cmd);
   }
 }
+say "\n\n\n>>>  Mistakes are common!!! Please randomly cross check and ensure updates are correct <<< \n\n\n";
 
