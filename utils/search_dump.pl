@@ -1007,7 +1007,7 @@ sub geneLineXML {
   my $exon_count           = scalar keys %$exons;
   my $domain_count         = $xml_data->{'domain_count'};
   my $transcript_count     = scalar keys %$transcripts;
-  my $display_name         = $xml_data->{'display_name'};
+  my $display_name         = clean($xml_data->{'display_name'});
   my $genetrees            = $xml_data->{'genetrees'};
   my $probes               = $xml_data->{'probes'};
   my $probesets            = $xml_data->{'probesets'};
