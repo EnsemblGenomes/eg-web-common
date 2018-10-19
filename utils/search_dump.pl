@@ -896,7 +896,7 @@ sub do_archive_stable_ids {
       foreach my $nsi ( keys %{$mapping{$type}{$osi}{'matches'}} ) {
         if( $current_stable_ids{$type}{$nsi} ) {
           push @current_sis,$nsi;
-        } elsif( $_ ne 'NULL' ) {
+        } elsif( $nsi ne 'NULL' ) {
           push @deprecated_sis,$nsi;
         }
       }
