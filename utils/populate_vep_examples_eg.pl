@@ -421,7 +421,7 @@ sub convert_to_hgvs {
     # push @return, map {values %{$vf->get_all_hgvs_notations($_->transcript, 'p')}} @$tvs;
   }
   
-  @return = grep {defined($_)} @return;
+  @return = map {$_ =~ s/\.:/:/r} grep {defined($_)} @return;
     
   return [$return[0] || undef];
 }
