@@ -25,6 +25,7 @@ use strict;
 use EnsEMBL::Web::Document::HTML::HomeSearch;
 use EnsEMBL::Web::Document::HTML::Compara;
 use EnsEMBL::Web::Component::GenomicAlignments;
+use EnsEMBL::Web::Controller::SSI;
 
 use LWP::UserAgent;
 use JSON;
