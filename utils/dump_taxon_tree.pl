@@ -266,9 +266,13 @@ sub node_to_dynatree {
   
   if (@{$node->dba}) {
     foreach my $dba (@{$node->dba}) {
+      my $gca;
+      if ($dba->species =~ /gca_(\d+)/) {
+      	$gca = " (GCA_$1)";
+      }
       push @output, {  
         key   => ucfirst($dba->species),
-        title => $name
+        title => $name . $gca 
       };
     }
   }  
