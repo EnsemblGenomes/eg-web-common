@@ -44,6 +44,8 @@ BEGIN {
   map{ unshift @INC, $_ } (
     "$SERVERROOT/eg-web-common/modules",
     "$SERVERROOT/ensemblgenomes-api/modules",
+    "$SERVERROOT/ensembl-metadata/modules",
+    "$SERVERROOT/ensembl-taxonomy/modules",
     @SiteDefs::ENSEMBL_LIB_DIRS,
   );
 

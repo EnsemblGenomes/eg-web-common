@@ -36,7 +36,9 @@ sub update_conf {
   );
 
   push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules';
-
+  push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-metadata/modules';
+  push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-taxonomy/modules';
+  
   $SiteDefs::PERL_RLIMIT_AS = '8192:16384';
 
   $SiteDefs::ENSEMBL_MIN_SPARE_SERVERS =  5;

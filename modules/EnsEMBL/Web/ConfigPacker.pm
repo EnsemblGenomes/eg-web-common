@@ -25,7 +25,7 @@ use LWP::UserAgent;
 use JSON;
 use Data::Dumper;
 
-use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
+use Bio::EnsEMBL::MetaData::DBSQL::MetaDataDBAdaptor;
 
 use previous qw(munge_config_tree);
 
@@ -328,14 +328,16 @@ sub _munge_meta {
   my $metadata_db = $self->full_tree->{MULTI}->{databases}->{DATABASE_METADATA};
   my $genome_info_adaptor;
   if ($metadata_db) {
-    my $dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(
+    my $mdba = Bio::EnsEMBL::MetaData::DBSQL::MetaDataDBAdaptor->new(
       -USER   => $metadata_db->{USER},
       -PASS   => $metadata_db->{PASS},
       -PORT   => $metadata_db->{PORT},
       -HOST   => $metadata_db->{HOST},
       -DBNAME => $metadata_db->{NAME}
     );
-    $genome_info_adaptor = Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC => $dbc);
+    $genome_info_adaptor = $mdba->get_GenomeInfoAdaptor;
+    my $release = $mdba->get_DataReleaseInfoAdaptor->fetch_by_ensembl_genomes_release($SiteDefs::SITE_RELEASE_VERSION);
+    $genome_info_adaptor->data_release($release);
   }
 ##
 
@@ -497,8 +499,6 @@ sub _munge_meta {
     if ($genome_info_adaptor) {
       my $dbname = $self->tree->{databases}->{DATABASE_CORE}->{NAME};
       foreach my $genome (@{ $genome_info_adaptor->fetch_all_by_dbname($dbname) }) {
-#        warn "GI SP $species";
-        my $species = $genome->species;
         $self->tree($production_name)->{'SEROTYPE'}     = $genome->serotype;
         $self->tree($production_name)->{'PUBLICATIONS'} = $genome->publications;
       }
