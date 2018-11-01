@@ -8,7 +8,7 @@ use warnings;
 use FindBin qw($Bin);
 use Storable;
 
-my $conf = retrieve("$Bin/../../../config.sconf");
+my $conf = retrieve("$Bin/../../config.sconf");
 
 my $division = $conf->{'SiteDefs'}{'DIVISION'};
 my $release = $conf->{'SiteDefs'}{'SITE_RELEASE_VERSION'};
