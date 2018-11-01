@@ -80,7 +80,15 @@ sub _sort_similarity_links {
 
     if ($urls && $urls->is_linked($A)) {
       $type->{ID} = $primary_id;
-      $link = $urls->get_url($A, $type);
+#Extract Wormbase species and make a correct link
+      if ($A =~ /^wormbase/i) {
+         my $wormbase_link = $hub->species_defs->ENSEMBL_EXTERNAL_URLS->{uc ($hub->species) . '_URL'};
+         if ($wormbase_link) {
+            $type->{WORMBASE_SPECIES_NAME} =  substr $wormbase_link, rindex($wormbase_link, '/') + 1;         
+         }
+      }
+      $link = $urls->get_url($A, $type);      
+      
       my $word = $display_id;
       $word .= " ($primary_id)" if $A eq 'MARKERSYMBOL';
 
