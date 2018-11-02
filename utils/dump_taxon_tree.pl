@@ -41,7 +41,6 @@ use Getopt::Long;
 use lib $Bin;
 use LibDirs;
 use Bio::EnsEMBL::Registry;
-use lib "$LibDirs::SERVERROOT/ensemblgenomes-api/modules";
 use lib "$LibDirs::SERVERROOT/eg-web-bacteria/modules";
 
 $| = 1; # disable buffering - helps when running on LSF
@@ -49,7 +48,7 @@ my $NO_CACHE = 1; # don't cache the registry
 
 #use Bio::EnsEMBL::Registry; #Move it up to avoid loading Registry.pm inside eg-web-bacteria
 use Bio::EnsEMBL::DBSQL::DBAdaptor;
-use Bio::EnsEMBL::DBSQL::TaxonomyNodeAdaptor;
+use Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyNodeAdaptor;
 
 my ($plugin_dir, $dump_binary, $division);
 my ($host, $port, $user, $pass) = qw(localhost 3306 ensro);
@@ -82,8 +81,8 @@ if ($dump_binary) {
 
 if ($division eq 'bacteria') {
   print "Loading script to lower the speed of generating new DB connection for Bacteria division\n";
-  eval('use Bio::EnsEMBL::DBSQL::TaxonomyNodeAdaptorDelay');
-  die "Could not load Bio::EnsEMBL::DBSQL::TaxonomyNodeAdaptorDelay, it is required to delay generating DB connections ($@)" if $@;
+  eval('use Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyNodeAdaptorDelay');
+  die "Could not load Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyNodeAdaptorDelay, it is required to delay generating DB connections ($@)" if $@;
 }
 
 my @db_args = ( -host => $host, -port => $port, -user => $user, -pass => $pass );
@@ -150,7 +149,7 @@ my $dba = Bio::EnsEMBL::DBSQL::DBAdaptor->new(
   -group  => 'taxonomy',
 );
 
-my $node_adaptor = Bio::EnsEMBL::DBSQL::TaxonomyNodeAdaptor->new($dba);
+my $node_adaptor = Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyNodeAdaptor->new($dba);
 my $root         = shift(@{$node_adaptor->fetch_all_by_name_and_class($root_name, 'scientific name')});
 my $leaf_nodes   = $node_adaptor->fetch_by_coredbadaptors(\@dbas);
 

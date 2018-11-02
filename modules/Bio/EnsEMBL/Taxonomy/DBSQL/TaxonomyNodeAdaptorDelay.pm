@@ -1,15 +1,15 @@
-package Bio::EnsEMBL::DBSQL::TaxonomyNodeAdaptorDelay;
+package Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyNodeAdaptorDelay;
 
 use Time::HiRes qw(usleep);
 
 =head2 fetch_by_coredbadaptors
 
 Description : Fetch an array of nodes corresponding to the taxonomy IDs found in the supplied Ensembl DBAdaptors.
-Argument    : Bio::EnsEMBL::DBSQL::DBAdaptor
-Return type : Arrayref of Bio::EnsEMBL::TaxonomyNode
+Argument    : Bio::EnsEMBL::Taxonomy::DBSQL::DBAdaptor
+Return type : Arrayref of Bio::EnsEMBL::Taxonomy::TaxonomyNode
 =cut
 
-*Bio::EnsEMBL::DBSQL::TaxonomyNodeAdaptor::fetch_by_coredbadaptors = sub {
+*Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyNodeAdaptor::fetch_by_coredbadaptors = sub {
   my ($self, $core_dbas) = @_;
   my $nodes_by_taxa = {};
   for my $core_dba (@$core_dbas) {
