@@ -496,7 +496,8 @@ sub _munge_meta {
 ##    
   }
 
-  $genome_info_adaptor->{dbc}->db_handle->disconnect if $genome_info_adaptor; # EG - hacky, but seems to be needed
+  # Seems not needed for EG any more? In fact seems to break build_packed.
+  #$genome_info_adaptor->{dbc}->db_handle->disconnect if $genome_info_adaptor; # EG - hacky, but seems to be needed
 }
 
 # To get the available relations
