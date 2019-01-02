@@ -275,7 +275,7 @@ sub save_thumbnail {
   info("Writing $filename");
   my $thumb = $image->scale(xpixels => $size, ypixels => $size);
   if ($thumb) {
-     $thumb = $thumb->crop(right => $size, bottom => $size);
+     $thumb = $thumb->crop(width => $size, height => $size);
      $thumb->write(file => $filename);
   } else {
     info("*** Failed to create image for $filename ***");
