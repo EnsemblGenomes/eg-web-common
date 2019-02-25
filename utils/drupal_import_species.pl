@@ -30,7 +30,14 @@ use File::Basename;
 use File::Copy;
 use File::Path qw/make_path/;
 use Imager;
- 
+use Try::Tiny;
+use Data::Dumper;
+
+use FindBin qw($Bin);
+chdir "$Bin/../..";
+
+my $num_errors = 0; 
+my $errors = {};
 my $tmp = '/tmp';
 
 my ($plugin_root, $noimg, $division, $quiet, $pan, $needs_rename);
@@ -58,6 +65,7 @@ if ($pan) {
 
 my $url         = "$host/export/ensembl-species/$division";
 my $aboutdir    = "$plugin_root/htdocs/ssi/species";
+my $imgdir      = "$plugin_root/htdocs/i/species";
 my $imgdir64    = "$plugin_root/htdocs/i/species/64";
 my $imgdir48    = "$plugin_root/htdocs/i/species/48";
 my $imgdir32    = "$plugin_root/htdocs/i/species/32";
@@ -75,7 +83,7 @@ my $xmldoc = get($url) or die "Fetch $url failed: $!\n";
 
 my $xml = XMLin(encode('utf-8', $xmldoc));
 my @fields = qw/acknowledgement about assembly annotation regulation variation other/;
-foreach my $species (keys %{$xml->{'node'}}) {
+foreach my $species (sort keys %{$xml->{'node'}}) {
   my $Species = ucfirst($species);
   my $node = $xml->{'node'};
   
@@ -159,15 +167,41 @@ foreach my $species (keys %{$xml->{'node'}}) {
     getstore($imgurl, $tmpimg);
   }
 
-  if ($default_img and (!$imgurl or !-e $tmpimg)) {
-    info("Using default species image");
-    copy ($default_img, $tmpimg)
+  if(!$imgurl or !-e $tmpimg) {
+    if($default_img) {
+      info("Using default species image");
+      copy ($default_img, $tmpimg);
+    } else {
+      warn "ERROR: no image and no default!\n";
+    }
   } 
 
+  my $img_read = 0;
   my $image = Imager->new();
-  $image->read(file => $tmpimg, png_ignore_benign_errors => 1);
+  unless(-e $tmpimg) {
+    warn "ERROR: Could not find '$tmpimg', skipping\n";
+    next;
+  }
+  try {
+     $image->read(file => $tmpimg, png_ignore_benign_errors => 1) or die;
+     $img_read = 1;
+  } catch {
+    my $err_str = '';
+    $err_str = "png_ignore_benign_errors flag does not work ($tmpimg). Going to ignore it";
+    warn $err_str;
+    push @{$errors->{'png_ignore_benign_errors flag does not work'}}, $tmpimg;
+    try {
+     $image->read(file => $tmpimg) or die "Cannot read: ", $image->errstr;
+    } catch {
+      $err_str = $image->errstr . " File: $tmpimg";
+      warn $err_str;
+      push @{$errors->{'ERROR: Cannot read'}}, $err_str;
+      $num_errors++;
+    }
+  };
 
   save_largeimage($image,"$img_dir_large/$Species.png");
+  save_thumbnail($image, "$imgdir/$Species.png", 64);
   save_thumbnail($image, "$imgdir64/$Species.png", 64);
   save_thumbnail($image, "$imgdir48/$Species.png", 48);
   save_thumbnail($image, "$imgdir32/$Species.png", 32);
@@ -177,6 +211,15 @@ foreach my $species (keys %{$xml->{'node'}}) {
 }
 
 rename_pre_archive($aboutdir, $imgdir64, $imgdir48, $imgdir32, $imgdir16, $img_dir_large) if defined $needs_rename;
+
+if ($num_errors) {
+  warn "\n\nERRORS:\n\n";
+  warn Dumper $errors;
+  warn "No. of errors: $num_errors\n";
+  die "Done with above errors" if $num_errors;
+}
+
+die "Dying due to earlier errors" if $num_errors;
 
 sub rename_pre_archive {
     my @dirs = @_;
@@ -232,7 +275,7 @@ sub save_thumbnail {
   info("Writing $filename");
   my $thumb = $image->scale(xpixels => $size, ypixels => $size);
   if ($thumb) {
-     $thumb = $thumb->crop(right => $size, bottom => $size);
+     $thumb = $thumb->crop(width => $size, height => $size);
      $thumb->write(file => $filename);
   } else {
     info("*** Failed to create image for $filename ***");

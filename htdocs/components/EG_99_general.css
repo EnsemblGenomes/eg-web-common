@@ -22,3 +22,17 @@ a.clear_highlight_selectors.hide{
 .embedded-box {
   margin: 0 0 16px 0;
 }
+
+/* VEP species dropdown menu */
+.long_species_fieldset .long_species_field.form-field .ff-right {
+   margin-bottom: 0;
+   padding-bottom: 15px;
+}
+
+.long_species_fieldset .long_species_field.form-field {
+  overflow: visible;
+}
+
+.long_species_fieldset .chosen-container {
+ width: 365px !important;
+}

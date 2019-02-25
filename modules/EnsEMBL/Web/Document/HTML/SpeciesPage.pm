@@ -50,11 +50,10 @@ sub render {
   }
 
   # add meta data from Ensembl Genomes API (if available)
-  my $genome_info_adaptor = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($hub);
-  
-  if ($genome_info_adaptor) {
-    for my $genome (@{ $genome_info_adaptor->all_genomes_by_division }) {
-      my $sp = ucfirst $genome->species;
+  my $mda = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($hub);
+  if ($mda) {
+    for my $genome (@{ $mda->all_genomes_by_division }) { 
+      my $sp = ucfirst $genome->name;
       if (!$species{$sp}) {
         warn "Warning: got meta data for genome '$sp' but this species is not configured. Skipping.";
         next; 

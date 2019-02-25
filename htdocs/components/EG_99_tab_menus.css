@@ -8,8 +8,8 @@
 }
 
 #masthead .tab_context_menu {
-	background:none repeat scroll 0 0 #FFFFFF;
-	border:1px solid #CCCCCC;
+	background:none repeat scroll 0 0 [[WHITE]];
+	border:1px solid [[PALE_GREY]];
 	display:none;
 	margin:0;
 	max-height:272px;
@@ -32,7 +32,7 @@
 
 #masthead .tab_context_menu a {
 	background-image:none !important;
-	color:#3366BB !important;
+	color:[[VISITED]] !important;
 	display:block;
 	height:16px;
 	line-height:16px;

@@ -28,14 +28,14 @@ use strict;
    my $r           = $hub->create_padded_region()->{'r'} || $hub->param('r');
    my $url         = $hub->url({'type' => 'Location', 'action' => 'View', 'r' => $r});
 
-# ## EG  
-#   my $polyploid_link = '';
-#   if ($hub->species_defs->POLYPLOIDY) {
-#     $polyploid_link = sprintf(
-#       '<p><a href="%s">View genomic alignments of all homoeologues</a></p>', 
-#       $hub->url({'type' => 'Location', 'action' => 'MultiPolyploid'})
-#     );
-#   }
+ ## EG  
+   my $polyploid_link = '';
+   if ($hub->species_defs->POLYPLOIDY) {
+     $polyploid_link = sprintf(
+       '<p><a href="%s">View genomic alignments of all homoeologues</a></p>', 
+       $hub->url({'type' => 'Location', 'action' => 'MultiPolyploid'})
+     );
+   }
 
    my $annotation_link = '';
    if (my $annotation_url = $hub->species_defs->ANNOTATION_URL) {
@@ -46,8 +46,8 @@ use strict;
      $annotation_url =~ s/###END###/$end/;
    
      $annotation_link = sprintf(
-       '<br /><a href="%s"><img src="/i/48/webapollo.png" title="Go to WebApollo to curate gene models" style="border:1px solid #ccc;margin:5px 8px 0px 8px;vertical-align:middle" /></a>
-       Go to <a href="%s">WebApollo</a> to curate gene models (community annotation)', 
+       '<br /><a href="%s"><img src="/i/48/webapollo.png" title="Go to Apollo to curate gene models" style="border:1px solid #ccc;margin:5px 8px 0px 8px;vertical-align:middle" /></a>
+       Go to <a href="%s">Apollo</a> to curate gene models (community annotation)', 
        $annotation_url,
        $annotation_url
      );

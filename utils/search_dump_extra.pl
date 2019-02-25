@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 # Copyright [2009-2014] EMBL-European Bioinformatics Institute
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,6 @@ use strict;
 use warnings;
 use DateTime;
 use Getopt::Long;
-use XML::Generator;
 use Data::Dumper;
 use HTML::Entities;
 use FindBin qw($Bin);

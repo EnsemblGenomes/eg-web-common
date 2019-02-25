@@ -8,46 +8,46 @@ div.paginate {
     }
 
 div.paginate a {
-    border: 1px solid #cccccc;
+    border: 1px solid [[PALE_GREY]];
     margin-right:3px;
     padding:2px 8px;
 
     background-position:bottom;
     text-decoration: none;
 
-    color: #336699;
+    color: [[MAIN_V_DARK]];
     }
 
 div.paginate a:hover, div.paginate a:active {
 
-    border: 1px solid #2b55af;
+    border: 1px solid [[MAIN_V_DARK]];
     background-image:none;
-    background-color:#3666d4;
-    color: #fff;
+    background-color:[[MAIN_DARK]];
+    color: [[WHITE]];
     }
 div.paginate span.current {
     margin-right:3px;
     padding:2px 6px;
     
     font-weight: bold;
-    color: #000;
+    color: [[BLACK]];
     }
 div.paginate span.disabled {
     display:none;
     }
 div.paginate a.next{
-    border:2px solid #cccccc;
+    border:2px solid [[PALE_GREY]];
     margin:0 0 0 10px;
     }
 div.paginate a.next:hover{
-    border:2px solid #2b55af;
+    border:2px solid [[MAIN_V_DARK]];
     }
 div.paginate a.prev{
-    border:2px solid #cccccc;
+    border:2px solid [[PALE_GREY]];
     margin:0 10px 0 0;
     }
 div.paginate a.prev:hover{
-    border:2px solid #2b55af;
+    border:2px solid [[MAIN_V_DARK]];
     }
 
 div.hit {
@@ -56,26 +56,26 @@ div.hit {
 
 div.hit a.name  {
     font-size: 1.25em;
-    color: #336699;
+    color: [[MAIN_V_DARK]];
 		text-decoration: none;
 }
 
 div.hit a.url  {
     font-size: 1em;
-    color: #009933;
+    color: [[OK_DARK]];
     text-decoration: none;
 }
 
 div.hit td {
-    color: #555555;
+    color: [[DARK_GREY]];
 }
 
 div.hit th {
-    color: #555555;
+    color: [[DARK_GREY]];
 }
 
 div.hit div.title {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid [[PALE_GREY]];
   margin: 0 12px 7px 0;
 }
 

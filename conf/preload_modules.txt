@@ -406,7 +406,6 @@ EnsEMBL::Web::DataStructure::Node
 EnsEMBL::Web::DBHub
 EnsEMBL::Web::DBSQL::ArchiveAdaptor
 EnsEMBL::Web::DBSQL::DBConnection
-EnsEMBL::Web::DBSQL::ProductionAdaptor
 EnsEMBL::Web::DBSQL::WebsiteAdaptor
 EnsEMBL::Web::Document::Element
 EnsEMBL::Web::Document::Element::AccountLinks

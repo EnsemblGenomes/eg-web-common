@@ -30,7 +30,7 @@ sub menus {
     ms_domain              => 'Mass spectrometry peptides',
     
     # community annotation
-    cap                    => [ 'WebApollo gene models', 'gene_transcript' ],
+    cap                    => [ 'Apollo gene models', 'gene_transcript' ],
 
     # used to organise fungi/protists external tracks
     chromatin_binding      => 'Chromatin binding',      

@@ -68,7 +68,7 @@ my $do = 0;
 
 SPECIES: foreach my $species(@all_species) {
 
-if ($start_from_species and $species lt $start_from_species) {
+if (($skip_species eq $species) or ($start_from_species and $species lt $start_from_species)) {
   warn "skipping $species\n";
   next;
 }
@@ -421,7 +421,7 @@ sub convert_to_hgvs {
     # push @return, map {values %{$vf->get_all_hgvs_notations($_->transcript, 'p')}} @$tvs;
   }
   
-  @return = grep {defined($_)} @return;
+  @return = map {$_ =~ s/\.:/:/r} grep {defined($_)} @return;
     
   return [$return[0] || undef];
 }

@@ -46,9 +46,10 @@ sub _init {
 ## EG
   my $highlight_annotations   = $self->{highlights}->[8]; # EG
 ##
-  my $tree          = $self->{'container'};
-  my $Config        = $self->{'config'};
-  my $bitmap_width = $Config->image_width(); 
+  my $tree           = $self->{'container'};
+  my $Config         = $self->{'config'};
+  my $highlight_gene = $Config->get_parameter('highlight_gene');
+  my $bitmap_width   = $Config->image_width();
 
   my $cdb = $Config->get_parameter('cdb');
   my $skey = $cdb =~ /pan/ ? "_pan_compara" : '';
@@ -110,6 +111,7 @@ sub _init {
   my $align_bitmap_width = $bitmap_width - $tree_bitmap_width;
   # Calculate space to reserve for the labels
   my( $fontname, $fontsize ) = $self->get_font_details( 'small' );
+  $fontsize = 7; # make default font size 7 instead of the 'small' font size of 6.4 which takes the floor value
   $fontsize = 8 if($tree->isa('Bio::EnsEMBL::Compara::CAFEGeneFamilyNode'));
   my( $longest_label ) = ( sort{ length($b) <=> length($a) } 
                            map{$_->{label}} @nodes );
@@ -187,12 +189,12 @@ sub _init {
       
     }
 
-    if ($f->{label}) {
+    if ($f->{label} && $f->{label} !~ m/homologs/) {
       if( $f->{_genes}->{$other_gene} ){
         $bold = 1;
         $label_colour = "ff6666";
       } elsif( $f->{_genome_dbs}->{$other_genome_db_id} ){
-        $bold = 1;
+        $bold = 1 if $highlight_gene;
       } elsif( $f->{_genes}->{$current_gene} ){
         $label_colour     = 'red';
         $collapsed_colour = 'red';
@@ -204,6 +206,7 @@ sub _init {
         $bold = defined($other_genome_db_id);
       }
     }
+    
     if ($f->{_fg_colour}) {
       # Use this foreground colour for this node if not already set
       $node_colour = $f->{_fg_colour} if (!$node_colour);
@@ -398,8 +401,9 @@ sub _init {
       } 
 ## /EG
 
-      $txt->{'font'} = 'MediumBold' if($bold);
-      
+      # use a higher font size if bold 
+      $txt->{'ptsize'} = 8 if $bold == 1;
+    
       if ($f->{'_gene'}) {
         $txt->{'href'} = $self->_url({
           species  => $f->{'_species'},

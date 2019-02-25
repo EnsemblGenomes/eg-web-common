@@ -33,7 +33,7 @@ if (Ensembl.Panel.GenoverseMenu) {
             '<a class="loc-icon-a constant _action_' + action.toLowerCase() + 'Here" href="' + url + '"><span class="loc-icon ' + cssCls + '"></span>' + action + ' to region (' + bps + ' bp)</a>' ];
 
       if ( $('#annotation-url').length ) {
-        menu.push('<a class="loc-icon-a constant _action_extlink" href="%"><span class="loc-icon loc-webapollo"></span>View region in WebApollo</a>'.replace('%', 
+        menu.push('<a class="loc-icon-a constant _action_extlink" href="%"><span class="loc-icon loc-webapollo"></span>View region in Apollo</a>'.replace('%', 
           $('#annotation-url').val()
             .replace('###SEQ_REGION###', this.drag.chr)
             .replace('###START###', this.drag.start)

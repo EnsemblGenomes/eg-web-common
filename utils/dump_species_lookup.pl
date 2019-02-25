@@ -1,4 +1,5 @@
-use 5.16.1;
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -17,27 +18,27 @@ my $genome_info_adaptor = $meta_data_adaptor->genome_info_adaptor;
 my %genomes;
 
 foreach my $division (qw( Ensembl EnsemblBacteria EnsemblFungi EnsemblMetazoa EnsemblPlants EnsemblProtists )) {
-  $genomes{$_->species} = $_ for @{ $genome_info_adaptor->fetch_all_by_division($division) };
+  $genomes{$_->name} = $_ for @{ $genome_info_adaptor->fetch_all_by_division($division) };
 }
 
-$genomes{$_->species} = $_ for @{ $genome_info_adaptor->fetch_all_with_compara };
+$genomes{$_->name} = $_ for @{ $genome_info_adaptor->fetch_all_with_compara };
 
-my @sorted = sort {$a->division cmp $b->division || $a->species cmp $b->species} values %genomes;
+my @sorted = sort {$a->division cmp $b->division || $a->name cmp $b->name} values %genomes;
 
 # The ganome info db only has the Ensembl version of d.mel but we want an EnsemblMetazoa version 
 # (i.e. Ensembl use common name 'Fruitfly', EG do not)
 if (my $dmel = $genomes{'drosophila_melanogaster'}) {
-  $dmel->name('Drosophila melanogaster');
+  $dmel->display_name('Drosophila melanogaster');
   $dmel->division('EnsemblMetazoa');
 }
 
-say '[SPECIES_DISPLAY_NAME]';
-say sprintf('%s = %s', $_->species, $_->name) for @sorted;
+print "[SPECIES_DISPLAY_NAME]\n";
+printf("%s = %s\n", $_->name, $_->display_name) for @sorted;
 
-say "\n";
+print "\n";
 
-say '[ENSEMBL_SPECIES_SITE]';
-say sprintf('%s = %s', $_->species, fudge_division($_->division)) for @sorted;
+print '[ENSEMBL_SPECIES_SITE]';
+printf("%s = %s\n", $_->name, fudge_division($_->division)) for @sorted;
 
 
 # Fudge to convert EnsemblBacteria -> bacteria etc.

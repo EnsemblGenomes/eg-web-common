@@ -28,23 +28,20 @@ sub _content {
   my @xref         = $object->display_xref;
   my $g            = $hub->param('g');
 
-  $self->caption($xref[0] ? "$xref[3]: $xref[0]" : 'Novel transcript');
+  $self->caption($xref[0] ? "$xref[3]: $xref[0]" : 'Gene');
 
   my $zmenu_label = $object->stable_id;
   if ($species_defs->GENOMIC_UNIT eq 'bacteria') {
     $zmenu_label = $xref[0] ? $xref[0]." (".$object->stable_id.")" : $object->stable_id;
   }
-  
-  $self->add_entry({
-    type  => 'Gene',
-    label => $zmenu_label,
-    link  => $hub->url({
-      type => 'Gene',
-      action => 'Summary',
-      g => $g,
-#     __clear => '1' #gets rid of the url variation data in order to avoid a bug                                      
-    })
-  });
+
+  if($zmenu_label) {
+    $self->add_entry({
+      type  => 'Gene',
+      label => $zmenu_label,
+      link  => $hub->url({ type => 'Gene', action => 'Summary' })
+    });
+  }
 
   my $urls             = $hub->ExtURL;
   if (my $g = $object->Obj) {
@@ -98,23 +95,27 @@ sub _content {
   
   $self->add_entry({
     type  => 'Gene type',
-    label => $object->gene_type
+    label => $object->gene_type,
+    position => 8
   });
   
   $self->add_entry({
     type  => 'Strand',
-    label => $object->seq_region_strand < 0 ? 'Reverse' : 'Forward'
+    label => $object->seq_region_strand < 0 ? 'Reverse' : 'Forward',
+    position => 9
   });
   
   if ($object->analysis) {
     $self->add_entry({
       type  => 'Analysis',
       label => $object->analysis->display_label, 
+      position => 10
     });
     
     $self->add_entry({
       type       => 'Annotation method',
-      label_html => $object->analysis->description
+      label_html => $object->analysis->description,
+      position => 11
     });
   }
 

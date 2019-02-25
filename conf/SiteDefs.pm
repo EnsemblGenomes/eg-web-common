@@ -26,8 +26,8 @@ sub update_conf {
 
   $SiteDefs::ENSEMBL_COHORT = 'EnsemblGenomes';
   
-  $SiteDefs::SITE_RELEASE_VERSION = 38;
-  $SiteDefs::SITE_RELEASE_DATE    = 'January 2018';
+  $SiteDefs::SITE_RELEASE_VERSION = 43;
+  $SiteDefs::SITE_RELEASE_DATE    = 'March 2019';
   $SiteDefs::SITE_MISSION         = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
     
   @SiteDefs::ENSEMBL_PERL_DIRS    = (
@@ -36,7 +36,9 @@ sub update_conf {
   );
 
   push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules';
-
+  push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-metadata/modules';
+  push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-taxonomy/modules';
+  
   $SiteDefs::PERL_RLIMIT_AS = '8192:16384';
 
   $SiteDefs::ENSEMBL_MIN_SPARE_SERVERS =  5;

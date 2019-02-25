@@ -2,7 +2,6 @@ use 5.10.1;
 use strict;
 use warnings;
 use File::Find  qw(find);
-use File::Slurp qw(read_dir);
 use File::Copy  qw(copy);
 
 # helper script to copy FASTA files for assembly converter
@@ -13,10 +12,14 @@ my $ac_path    = $ARGV[1];
 die "Usage: $0 <source-fasta-path> <dest-ac-path>\n" unless $fasta_path and $ac_path;
 die "Cannot find fasta dir: $fasta_path\n" unless -d $fasta_path;
 die "Cannot find AC dir: $ac_path\n" unless -d $ac_path;
+my $dh;
 
-my @fasta_dirs = sort(grep {$_ ne 'bacteria'} read_dir($fasta_path));
-my @ac_dirs    = sort(read_dir($ac_path));
-
+opendir ($dh, $fasta_path) || die $!;
+my @fasta_dirs = sort(grep {$_ eq 'bacteria' || $_ !~/\.+/} readdir($dh));
+closedir $dh;
+opendir ($dh, $ac_path) || die $!;
+my @ac_dirs    = sort(grep {$_ !~/\.+/} readdir($dh));
+closedir $dh;
 foreach my $ac_dir (@ac_dirs) {
 
   my $copy_matches = sub{
@@ -27,3 +30,4 @@ foreach my $ac_dir (@ac_dirs) {
   
   find($copy_matches, "$fasta_path/$_") for @fasta_dirs;
 }
+

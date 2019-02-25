@@ -86,8 +86,7 @@ sub add_repeat_features {
 
   my $data    = $hashref->{'repeat_feature'}{'analyses'};
   my %options = (
-    glyphset    => '_repeat',
-    optimizable => 1,
+    glyphset    => 'repeat',
     depth       => 0.5,
     bump_width  => 0,
     strand      => 'r',

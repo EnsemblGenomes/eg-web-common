@@ -24,8 +24,8 @@ use strict;
 
 use EnsEMBL::Web::Document::HTML::HomeSearch;
 use EnsEMBL::Web::Document::HTML::Compara;
-use EnsEMBL::Web::DBSQL::ProductionAdaptor;
 use EnsEMBL::Web::Component::GenomicAlignments;
+use EnsEMBL::Web::Controller::SSI;
 
 use LWP::UserAgent;
 use JSON;
@@ -163,9 +163,7 @@ sub content {
   $html .= '</div>'; #box-left
   
   $html .= '<div class="box-right">';
-    if ($hub->species_defs->multidb->{'DATABASE_PRODUCTION'}{'NAME'} and my $whatsnew_text = $self->_whatsnew_text) {
-    $html .= '<div class="round-box info-box unbordered">' . $whatsnew_text . '</div>';
-  } elsif (my $ack_text = $self->_other_text('acknowledgement', $species)) {
+  if (my $ack_text = $self->_other_text('acknowledgement', $species)) {
     $html .= $ack_text;
   }
   $html .= '</div>'; # box-right
@@ -225,31 +223,6 @@ sub content {
   return $html;
 }
 
-sub _whatsnew_text {
-  my $self         = shift;
-  my $hub          = $self->hub;
-  my $species_defs = $hub->species_defs;
-  my $species      = $hub->species;
-  my $news_url     = $hub->url({'action' => 'WhatsNew'});
-
-  my $html = sprintf(qq(<h2><a href="%s" title="More release news"><img src="%s24/announcement.png" style="vertical-align:middle" alt="" /></a> What's New in %s release %s</h2>), $news_url, $self->img_url, $species_defs->SPECIES_COMMON_NAME, $species_defs->ENSEMBL_VERSION,);
-
-  if ($species_defs->multidb->{'DATABASE_PRODUCTION'}{'NAME'}) {
-    my $adaptor = EnsEMBL::Web::DBSQL::ProductionAdaptor->new($hub);
-    my $params  = {'release' => $species_defs->ENSEMBL_VERSION, 'species' => $species, 'limit' => 3};
-    my @changes = @{$adaptor->fetch_changelog($params)};
-
-    $html .= '<ul>';
-
-    foreach my $record (@changes) {
-      my $record_url = $news_url . '#change_' . $record->{'id'};
-      $html .= sprintf('<li><a href="%s" class="nodeco">%s</a></li>', $record_url, $record->{'title'});
-    }
-    $html .= '</ul>';
-  }
-
-  return $html;
-}
 
 sub _site_release {
   my $self = shift;

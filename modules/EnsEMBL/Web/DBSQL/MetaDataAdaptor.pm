@@ -23,7 +23,7 @@ use warnings;
 no warnings 'uninitialized';
 
 use Bio::EnsEMBL::DBSQL::DBConnection;
-use Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor;
+use Bio::EnsEMBL::MetaData::DBSQL::MetaDataDBAdaptor;
 
 sub new {
   my ($class, $hub) = @_;
@@ -42,32 +42,39 @@ sub new {
   return bless $self, $class;
 }
 
-sub db {
+sub mdba {
   my $self = shift;
   return unless $self->{'NAME'};
 
-  $self->{'dbc'} ||= Bio::EnsEMBL::DBSQL::DBConnection->new(
-      -USER   => $self->{USER},
-      -PASS   => $self->{PASS},
-      -PORT   => $self->{PORT},
-      -HOST   => $self->{HOST},
-      -DBNAME => $self->{NAME}
+  $self->{'mdba'} ||= Bio::EnsEMBL::MetaData::DBSQL::MetaDataDBAdaptor->new(
+    -USER   => $self->{USER},
+    -PASS   => $self->{PASS},
+    -PORT   => $self->{PORT},
+    -HOST   => $self->{HOST},
+    -DBNAME => $self->{NAME}
   );
   
-  return $self->{'dbc'};
+  return $self->{'mdba'};
 }
 
 sub genome_info_adaptor {
   my $self = shift;
-  return unless $self->db;
-  $self->{genome_info_adaptor} ||= Bio::EnsEMBL::Utils::MetaData::DBSQL::GenomeInfoAdaptor->new(-DBC => $self->db);
+  return unless $self->mdba;
+  
+  unless ($self->{genome_info_adaptor}) {
+    my $gdba    = $self->mdba->get_GenomeInfoAdaptor();
+    my $release = $self->mdba->get_DataReleaseInfoAdaptor->fetch_by_ensembl_genomes_release($SiteDefs::SITE_RELEASE_VERSION);
+    $gdba->data_release($release);
+    $self->{genome_info_adaptor} = $gdba;
+  }
+
   return $self->{genome_info_adaptor};
 }
 
 sub genome {
   my ($self, $species) = @_;
   $species ||= $self->{hub}->species;
-  return $self->genome_info_adaptor->fetch_by_species($species);
+  return $self->genome_info_adaptor->fetch_by_name($species);
 }
 
 sub all_genomes_by_division {

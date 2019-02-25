@@ -50,6 +50,30 @@ sub content {
     link        => $species_path,
     position    => 1
   });
+
+  if ($ens_prot) {
+    $self->add_entry({
+      type     => 'Protein',
+      label    => 'Summary',
+      position => 5,
+      link     => $hub->url({
+        type   => 'Transcript',
+        action => 'ProteinSummary',
+        t      => $ens_tran->stable_id 
+      })
+    });
+
+    $self->add_entry({
+      type     => ' ',
+      label    => 'Sequence',
+      position => 6,
+      link     => $hub->url({
+        type   => 'Transcript',
+        action => 'Sequence_Protein',
+        t      => $ens_tran->stable_id 
+      })
+    });
+  }
   
   if ($phy_link) {
     $self->add_entry({
@@ -57,7 +81,7 @@ sub content {
       label    => 'Gene in PhylomeDB',
       link     => $phy_link,
       external => 1,
-      position => 3
+      position => 16
     });
   }
   
@@ -67,7 +91,7 @@ sub content {
       label    => 'Gene in Genomicus',
       link     => $dyo_link,
       external => 1, 
-      position => 4
+      position => 17
     });
   }
   
@@ -77,22 +101,10 @@ sub content {
       label    => 'Gene in TreeFam',
       link     => $treefam_link,
       external => 1,
-      position => 5
+      position => 18
     });
   }
   
-  if ($ens_prot) {
-    $self->add_entry({
-      type     => 'Protein',
-      label    => $ens_prot->display_id,
-      position => 6,
-      link     => $hub->url({
-        type   => 'Transcript',
-        action => 'Sequence_Protein',
-        t      => $ens_tran->stable_id 
-      })
-    });
-  }
 }
 
 1;
