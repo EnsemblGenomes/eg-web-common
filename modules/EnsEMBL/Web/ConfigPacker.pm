@@ -357,9 +357,6 @@ sub _munge_meta {
     }
 
 
-    # Disable polyploid view for T. dicoccoides - ENSEMBL-5264
-    delete $self->tree($production_name)->{PLOIDY} if $production_name eq 'triticum_dicoccoides';
-
     $self->tree($production_name)->{'DISPLAY_NAME'} = $self->tree($production_name)->{'SPECIES_COMMON_NAME'};
 
     ## Do species group
