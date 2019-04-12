@@ -509,7 +509,8 @@ sub _summarise_go_db {
     SELECT o.ontology_id, o.namespace, o.name, t.accession, t.name 
     FROM term t 
     LEFT JOIN ontology o USING (ontology_id)  
-    WHERE t.is_root > 0 
+    WHERE t.is_root > 0
+    and t.is_obsolete = 0 
     AND o.name NOT IN ('OGMS', 'CHEBI', 'PR', 'PBO', 'SO', 'BTO', 'UO', 'UNKNOWN', 'CL', 'PCO')
     AND NOT (o.name = 'PHI' AND t.accession != 'PHI:0')
     ORDER BY o.name, o.namespace
