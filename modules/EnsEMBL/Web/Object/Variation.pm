@@ -34,4 +34,35 @@ sub count_ldpops {
   return $count;
 }
 
+
+## extract the primer/marker information linked to the variant
+sub get_primer_data {
+  my $self = shift;
+
+  my $attribs = $self->Obj->get_all_attributes();
+
+  if ($attribs->{'primer_type'}) {
+
+    foreach my $label ('primer_type', 'snp_type', 'total_contigs', 'link_to_primer') {
+      $attribs->{$label} =~ s/,$//;
+    }
+
+    # Build the link to the marker page
+    my $marker = $attribs->{'link_to_primer'};
+    my $url = $self->hub->url({
+        type   => 'Marker',
+        action => 'Details',
+        m      => $marker
+    });
+    my $marker_link = qq{<a href="$url">$marker</a>};
+
+    $self->{'primer_entry'} = "<ul><li><b>PRIMER TYPE:</b> ".$attribs->{'primer_type'}."</li>".
+                              "<li><b>SNP TYPE:</b> ".$attribs->{'snp_type'}."</li>".
+                              "<li><b>TOTAL CONTIGS:</b> ".$attribs->{'total_contigs'}."</li>".
+                              "<li><b>LINK TO PRIMER</b> : $marker_link</li></ul>";
+  }
+
+  return $self->{'primer_entry'};
+}
+
 1;
