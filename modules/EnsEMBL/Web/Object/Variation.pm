@@ -43,7 +43,7 @@ sub get_primer_data {
 
   if ($attribs->{'primer_type'}) {
 
-    foreach my $label ('primer_type', 'snp_type', 'total_contigs', 'link_to_primer') {
+    foreach my $label ('primer_type', 'snp_type', 'total_contigs', 'link_to_primer', 'ems_genotype') {
       $attribs->{$label} =~ s/,$//;
     }
 
@@ -58,6 +58,7 @@ sub get_primer_data {
 
     $self->{'primer_entry'} = "<ul><li><b>PRIMER TYPE:</b> ".$attribs->{'primer_type'}."</li>".
                               "<li><b>SNP TYPE:</b> ".$attribs->{'snp_type'}."</li>".
+                              "<li><b>EMS GENOTYPE:</b> ".$attribs->{'ems_genotype'}."</li>".
                               "<li><b>TOTAL CONTIGS:</b> ".$attribs->{'total_contigs'}."</li>".
                               "<li><b>LINK TO PRIMER</b> : $marker_link</li></ul>";
   }
