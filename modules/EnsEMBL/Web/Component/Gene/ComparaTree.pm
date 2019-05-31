@@ -321,7 +321,7 @@ sub content {
 
   if ($gene) {
     push @view_links, sprintf '<li><a href="%s">%s</a> (Default) </li>', $default_view_url, $highlight_gene ? 'View current genes only' : 'View current gene only';
-    push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_para || undef, g1 => $highlight_gene }), $highlight_gene ? 'View paralogs of current genes' : 'View paralogs of current gene';
+    push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_para || undef, g1 => $highlight_gene }), $highlight_gene ? 'View paralogues of current genes' : 'View paralogues of current gene';
   }
   
   push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';

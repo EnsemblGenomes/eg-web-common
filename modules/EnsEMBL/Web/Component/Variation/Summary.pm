@@ -50,7 +50,8 @@ sub content {
     $self->object->vari_class eq 'SNP' ? () : $self->three_prime_co_located(),
     $self->synonyms,
 ## EG
-    $self->inter_homoeologues,
+    $self->primer_marker,
+    #$self->inter_homoeologues,
 ##    
     $self->sets,
     $self->variation_source,
@@ -78,6 +79,22 @@ sub inter_homoeologues {
   return @rows ;
 }
 ##
+
+## EG Plants - display marker data
+sub primer_marker {
+  my $self   = shift;
+  my $object = $self->object;
+
+  my $marker = $object->get_primer_data();
+
+  return undef unless defined $marker;
+
+  return $marker
+      ? ['Marker/Primer', $marker]
+      : ()
+  ;
+}
+
 
 sub variation_source {
   my $self    = shift;

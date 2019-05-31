@@ -24,7 +24,7 @@ foreach my $sp (sort keys %$files) {
   if($found) {
     say "=> Updating $ini_path/$sp.ini => $new_line";
     $new_line = quotemeta($new_line);
-    my $cmd = `per -pi -e '\$_ = qq($new_line\\n) if /(ASSEMBLY_CONVERTER_FILES.*\n)/' $ini_path/$sp.ini`;
+    my $cmd = `perl -pi -e '\$_ = qq($new_line\\n) if /(ASSEMBLY_CONVERTER_FILES.*\n)/' $ini_path/$sp.ini`;
     say $cmd;
   }
   else {
