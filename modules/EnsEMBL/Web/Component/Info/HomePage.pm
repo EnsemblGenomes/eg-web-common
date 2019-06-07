@@ -295,7 +295,6 @@ sub _assembly_text {
     $hub->url({ type => 'UserData', action => 'SelectFile', __clear => 1 }), qq|<img src="${img_url}24/page-user.png" class="homepage-link" />|, $species_defs->ENSEMBL_SITETYPE;
 
   ## Insert link to strains page 
-  my $strains = $species_defs->ALL_STRAINS;
   if ($strains) {
     $html .= sprintf '<h3 class="light top-margin">Other strains</h3><p>This species has data on %s additional strains. <a href="%s">View list of strains</a></p>',
                             scalar @$strains,
