@@ -32,6 +32,10 @@ if (my $dmel = $genomes{'drosophila_melanogaster'}) {
   $dmel->division('EnsemblMetazoa');
 }
 
+if (my $dmel = $genomes{'caenorhabditis_elegans'}) {
+  $dmel->division('EnsemblMetazoa');
+}
+
 print "[SPECIES_DISPLAY_NAME]\n";
 printf("%s = %s\n", $_->name, $_->display_name) for @sorted;
 
