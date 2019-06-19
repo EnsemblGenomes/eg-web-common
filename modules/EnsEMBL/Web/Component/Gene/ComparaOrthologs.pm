@@ -41,11 +41,11 @@ sub _species_sets {
   my $set_order = [];
   my $is_pan = $self->hub->function eq 'pan_compara';
   if($is_pan){
-    $set_order = [qw(all ensembl metazoa plants fungi protists bacteria archaea)];
+    $set_order = [qw(all vertebrates metazoa plants fungi protists bacteria archaea)];
   }
   
   my $species_sets = {
-    'ensembl'     => {'title' => 'Vertebrates', 'desc' => '', 'species' => [], 'all' => 0},
+    'vertebrates' => {'title' => 'Vertebrates', 'desc' => '', 'species' => [], 'all' => 0},
     'metazoa'     => {'title' => 'Metazoa',     'desc' => '', 'species' => [], 'all' => 0},
     'plants'      => {'title' => 'Plants',      'desc' => '', 'species' => [], 'all' => 0},
     'fungi'       => {'title' => 'Fungi',       'desc' => '', 'species' => [], 'all' => 0},
