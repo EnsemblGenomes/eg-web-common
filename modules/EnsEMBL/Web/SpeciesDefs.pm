@@ -33,7 +33,7 @@ sub _get_NCBIBLAST_source_file {
   (my $type = lc $source_type) =~ s/_/\./;
 
   my $unit = $self->GENOMIC_UNIT;
-  my $path = $self->EBI_BLAST_DB_PREFIX || "ensemblgenomes/$unit";
+  my $path = ($self->EBI_BLAST_DB_PREFIX || "ensemblgenomes") . "/$unit";
   
   my $dataset = $self->get_config($species, 'SPECIES_DATASET');
 
