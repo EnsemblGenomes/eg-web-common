@@ -144,7 +144,7 @@ sub process_data {
       push @row_styles, $bgs[0]; 
 
       foreach (@{$hash->{extensions}}) {
-        $_->{desc} = delete $_->{source}; # rename column source -> desc
+        $_->{term} = delete $_->{description}; # rename column description -> term
         $table->add_row($_);
         push @row_styles, $bgs[0]; 
       }
