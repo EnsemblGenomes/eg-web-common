@@ -58,6 +58,8 @@ sub content {
       </div>
     };
   }
+
+  $content .= $self->survey_box;
   
   return $content;
 }
