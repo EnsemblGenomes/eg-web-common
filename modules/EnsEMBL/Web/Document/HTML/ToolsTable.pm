@@ -178,16 +178,6 @@ sub render {
     'docs' => sprintf('<a href="/info/docs/api/"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
   });
 
-  ## VIRTUAL MACHINE
-  $url = sprintf 'ftp://ftp.ensemblgenomes.org/pub/release-%s/virtual_machines', $SiteDefs::SITE_RELEASE_VERSION;
-  $table->add_row({
-    'name' => sprintf('<b><a class="nodeco" href="%s">Ensembl Genomes Virtual Machine</a></b>', $url),
-    'desc' => 'Pre-configured VirtualBox virtual machine (VM) running the latest Ensembl Genomes browser.',
-    'tool' => '',
-    'code' => sprintf('<a href="%s" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Virtual Machine" /></a>', $url, $img_url),
-    'docs' => sprintf('<a href="http://ensemblgenomes.org/info/access/virtual_machine"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
-  });
-  
   ## REST
   if (my $rest_url = $sd->ENSEMBL_REST_URL) {
     $table->add_row({
