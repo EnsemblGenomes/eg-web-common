@@ -102,11 +102,11 @@ sub render {
       gff3       => qq{<a rel="external"  title="$title{'gff3'}" href="$ftp_base_path_stub/gff3/$sp_dir">GFF3</a>},
       mysql      => join('<br/>',@mysql),
       tsv        => qq{<a rel="external"  title="$title{'tsv'}" href="$ftp_base_path_stub/tsv/$sp_dir/">TSV</a>},
-      vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/vep/">VEP</a>},
+      vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/variation/vep/">VEP</a>},
     };
     if ($hub->database('variation', $spp)) {
-      $data->{'gvf'} = qq{<a rel="external" title="$title{'gvf'}" href="$ftp_base_path_stub/gvf/$sp_dir">GVF</a>};
-      $data->{'vcf'} = qq{<a rel="external" title="$title{'vcf'}" href="$ftp_base_path_stub/vcf/$sp_dir">VCF</a>};
+      $data->{'gvf'} = qq{<a rel="external" title="$title{'gvf'}" href="$ftp_base_path_stub/variation/gvf/$sp_dir">GVF</a>};
+      $data->{'vcf'} = qq{<a rel="external" title="$title{'vcf'}" href="$ftp_base_path_stub/variation/vcf/$sp_dir">VCF</a>};
     }
     push(@rows, $data);
   }
