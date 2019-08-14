@@ -105,12 +105,12 @@ sub modify_tree {
   my $pancompara_menu = $self->create_node('PanCompara', 'Pan-taxonomic Compara', [qw(button_panel EnsEMBL::Web::Component::Gene::PanCompara_Portal)], {'availability' => 'gene database:compara_pan_ensembl core'});
 
   my $tree_node = $self->create_node(
-    'Compara_Tree/pan_compara',
+    'PanComparaTree',
     "Gene Tree",
     [
       qw(
         tree_summary EnsEMBL::Web::Component::Gene::ComparaTreeSummary
-        image EnsEMBL::Web::Component::Gene::ComparaTree
+        image EnsEMBL::Web::Component::Gene::PanComparaTree
         )
     ],
     {'availability' => 'gene database:compara_pan_ensembl core has_gene_tree_pan'}
