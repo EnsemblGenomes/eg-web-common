@@ -32,9 +32,9 @@ sub content {
 
   my $buttons       = [
     { title => 'Genomic alignments', img => '80/compara_align.gif', url => $availability->{'has_alignments_pan'} ? $hub->url({ action => 'Compara_Ortholog/Alignment_pan_compara' }) : '' },
-    { title => 'Gene tree',          img => '80/compara_tree.gif',  url => $availability->{'has_gene_tree_pan'}  ? $hub->url({ action => 'Compara_Tree/pan_compara'       }) : '' },
-    { title => 'Orthologues',        img => '80/compara_ortho.gif', url => $availability->{'has_orthologs_pan'}  ? $hub->url({ action => 'Compara_Ortholog/pan_compara'   }) : '' },
-    { title => 'Families',           img => '80/compara_fam.gif',   url => $availability->{'family_pan_ensembl'}         ? $hub->url({ action => 'Family/pan_compara'             }) : '' },
+    { title => 'Gene tree',          img => '80/compara_tree.gif',  url => $availability->{'has_gene_tree_pan'}  ? $hub->url({ action => 'PanComparaTree' }) : '' },
+    { title => 'Orthologues',        img => '80/compara_ortho.gif', url => $availability->{'has_orthologs_pan'}  ? $hub->url({ action => 'Compara_Ortholog/pan_compara' }) : '' },
+    { title => 'Families',           img => '80/compara_fam.gif',   url => $availability->{'family_pan_ensembl'} ? $hub->url({ action => 'Family/pan_compara' }) : '' },
   ];
 
   my $html  = $self->button_portal($buttons, 'portal-small');
