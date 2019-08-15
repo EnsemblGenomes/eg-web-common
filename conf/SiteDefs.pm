@@ -54,6 +54,8 @@ sub update_conf {
   # disable sprite maps - not used for EG
   $SiteDefs::ENSEMBL_DEBUG_IMAGES = 1;
   
+  $SiteDefs::GENE_FAMILY_ACTION = 'Gene_families'; # Used to build the link to gene families page
+
   #---------------------------------------------------------------------------- 
   # TOOLS
   #----------------------------------------------------------------------------
