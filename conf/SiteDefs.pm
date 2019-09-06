@@ -55,6 +55,7 @@ sub update_conf {
   $SiteDefs::ENSEMBL_DEBUG_IMAGES = 1;
   
   $SiteDefs::GENE_FAMILY_ACTION = 'Gene_families'; # Used to build the link to gene families page
+  $SiteDefs::FAMILY_ALIGNMENTS_DOWNLOADABLE   = 0; # Sequence alignments are not available for non-vertebrates
 
   #---------------------------------------------------------------------------- 
   # TOOLS
