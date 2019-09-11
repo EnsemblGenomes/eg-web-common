@@ -30,12 +30,6 @@ sub update_conf {
   $SiteDefs::SITE_RELEASE_DATE    = 'September 2019';
   $SiteDefs::SITE_MISSION         = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
     
-  @SiteDefs::ENSEMBL_PERL_DIRS    = (
-    $SiteDefs::ENSEMBL_WEBROOT.'/perl',
-    $SiteDefs::ENSEMBL_SERVERROOT.'/eg-web-common/perl',
-  );
-
-  push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensemblgenomes-api/modules';
   push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-metadata/modules';
   push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-taxonomy/modules';
   
