@@ -99,20 +99,29 @@ sub update_jobs {
       my $out_file = $job_data->{work_dir} . '/blast.out';
       my $xml_file = $job_data->{work_dir} . '/blast.xml';
 
-      my $text = $self->_get('result', [ $job_ref, 'out' ])->content;
-      file_put_contents($out_file, $text);
+      try {
 
-      my $xml = $self->_get('result', [ $job_ref, 'xml' ])->content;
-      file_put_contents($xml_file, $xml);
+        my $text = $self->_get('result', [ $job_ref, 'out' ])->content;
+        file_put_contents($out_file, $text);
 
-      my $parser   = EnsEMBL::Web::Parsers::Blast->new($self->hub);
-      my $hits     = $parser->parse_xml($xml, $job_data->{species}, $job_data->{source});
-      my $now      = parse_date('now');
-      my $orm_hits = [ map { {result_data => $_ || {}, created_at => $now } } @$hits ];
+        my $xml = $self->_get('result', [ $job_ref, 'xml' ])->content;
+        file_put_contents($xml_file, $xml);
+
+        my $parser   = EnsEMBL::Web::Parsers::Blast->new($self->hub);
+        my $hits     = $parser->parse_xml($xml, $job_data->{species}, $job_data->{source});
+        my $now      = parse_date('now');
+        my $orm_hits = [ map { {result_data => $_ || {}, created_at => $now } } @$hits ];
             
-      $job->result($orm_hits);
-      $job->status('done');
-      $job->dispatcher_status('done');      
+        $job->result($orm_hits);
+        $job->status('done');
+        $job->dispatcher_status('done'); 
+      
+      } catch {
+
+        my $error = $_;
+        $self->_fatal_job($job, $error, $self->default_error_message);    
+      
+      }     
 
     } elsif ($status =~ '^FAILED|FAILURE$') {
       
