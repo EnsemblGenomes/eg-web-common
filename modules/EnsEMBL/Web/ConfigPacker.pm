@@ -286,6 +286,7 @@ sub _munge_meta {
     provider.url                  PROVIDER_URL
     provider.logo                 PROVIDER_LOGO
     species.strain                SPECIES_STRAIN
+    strain.type                   STRAIN_TYPE
     species.sql_name              SYSTEM_NAME
     genome.assembly_type          GENOME_ASSEMBLY_TYPE
     gencode.version               GENCODE_VERSION
@@ -312,6 +313,11 @@ sub _munge_meta {
     }
   } else {
     $self->tree->{'DISPLAY_NAME'} = $meta_info->{1}{'species.display_name'}[0];
+  }
+
+  ## fall back to 'strain' if no strain type set
+  if (!$self->tree->{'STRAIN_TYPE'}) {
+    $self->tree->{'STRAIN_TYPE'} = 'strain';
   }
 
 ## EG
