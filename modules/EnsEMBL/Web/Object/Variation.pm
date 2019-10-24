@@ -41,9 +41,9 @@ sub get_primer_data {
 
   my $attribs = $self->Obj->get_all_attributes();
 
-  if ($attribs->{'primer_type'}) {
+   if ($attribs->{'primer_type'}) {
 
-    foreach my $label ('primer_type', 'snp_type', 'total_contigs', 'link_to_primer', 'ems_genotype') {
+    foreach my $label ('primer_type', 'snp_type', 'total_contigs', 'link_to_primer', 'ems_genotype', 'mutant_quality', 'residual_heterogeneity') {
       $attribs->{$label} =~ s/,$//;
     }
 
@@ -60,7 +60,22 @@ sub get_primer_data {
                               "<li><b>SNP TYPE:</b> ".$attribs->{'snp_type'}."</li>".
                               "<li><b>EMS GENOTYPE:</b> ".$attribs->{'ems_genotype'}."</li>".
                               "<li><b>TOTAL CONTIGS:</b> ".$attribs->{'total_contigs'}."</li>".
+                              "<li><b>MUTANT QUALITY:</b> ".$attribs->{'mutant_quality'}."</li>".
+                              "<li><b>RESIDUAL HETEROGENEITY:</b> ".$attribs->{'residual_heterogeneity'}."</li>".
                               "<li><b>LINK TO PRIMER</b> : $marker_link</li></ul>";
+  }
+
+  ##Cases where there is no link to a marker, we display less fields
+  elsif ($attribs->{'mutant_quality'}){
+
+    foreach my $label ('ems_genotype', 'mutant_quality', 'residual_heterogeneity') {
+      $attribs->{$label} =~ s/,$//;
+    }
+
+    $self->{'primer_entry'} = "<li><b>EMS GENOTYPE:</b> ".$attribs->{'ems_genotype'}."</li>".
+                              "<li><b>MUTANT QUALITY:</b> ".$attribs->{'mutant_quality'}."</li>".
+                              "<li><b>RESIDUAL HETEROGENEITY:</b> ".$attribs->{'residual_heterogeneity'}."</li></ul>";
+
   }
 
   return $self->{'primer_entry'};
