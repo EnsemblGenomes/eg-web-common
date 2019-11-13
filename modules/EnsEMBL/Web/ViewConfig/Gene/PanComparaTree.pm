@@ -1,6 +1,7 @@
 =head1 LICENSE
 
-Copyright [2009-2014] EMBL-European Bioinformatics Institute
+Copyright [1999-2015] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+Copyright [2016-2018] EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,19 +17,18 @@ limitations under the License.
 
 =cut
 
-package EnsEMBL::Web::Component::Gene::PanComparaTree;
+package EnsEMBL::Web::ViewConfig::Gene::PanComparaTree;
 
 use strict;
 use warnings;
 
-use base qw (EnsEMBL::Web::Component::Gene::ComparaTree);
+use parent qw(EnsEMBL::Web::ViewConfig::Gene::ComparaTree);
 
-sub view_config {
-  return $_[0]->hub->get_viewconfig('ComparaTree');
-}
+sub init_cacheable {
+  ## @override
+  my $self = shift;
 
-sub content {
-  return shift->SUPER::content('compara_pan_ensembl');
+  $self->SUPER::init_cacheable(@_);
 }
 
 1;
