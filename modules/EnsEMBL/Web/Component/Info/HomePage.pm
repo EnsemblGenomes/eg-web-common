@@ -411,7 +411,7 @@ sub _compara_text {
   #
 
   # EG pan tree
-  $tree_url = $species_defs->species_path . '/Gene/Compara_Tree/pan_compara?g=' . $sample_data->{'GENE_PARAM'};
+  $tree_url = $species_defs->species_path . '/Gene/PanComparaTree?g=' . $sample_data->{'GENE_PARAM'};
   if ($self->has_pan_compara('GeneTree')) {
     $html .=
       $self->is_bacteria
