@@ -26,9 +26,12 @@ use parent qw(EnsEMBL::Web::ViewConfig::Gene::ComparaTree);
 
 sub init_cacheable {
   ## @override
-  my $self = shift;
+  shift->SUPER::init_cacheable(@_);
+}
 
-  $self->SUPER::init_cacheable(@_);
+sub init_form_non_cacheable {
+  ## @override
+  shift->SUPER::init_form_non_cacheable('compara_pan_ensembl', @_);
 }
 
 1;
