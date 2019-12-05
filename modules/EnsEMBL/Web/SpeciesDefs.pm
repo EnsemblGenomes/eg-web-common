@@ -121,18 +121,35 @@ sub _parse {
   }
 
   $self->_info_log('Parser', 'Post processing ini files');
-  
+ 
+  # Prepare to process strain information
+  my $species_to_strains = {};
+  my $species_to_assembly = {};
+ 
   # Loop over each tree and make further manipulations
   foreach my $species (@$SiteDefs::PRODUCTION_NAMES, 'MULTI') {
     $config_packer->species($species);
     $config_packer->munge('config_tree');
     $self->_info_line('munging', "$species config");
+
+    ## Need to gather strain info for all species
+    my $strain_group = $config_packer->tree->{'STRAIN_GROUP'};
+    my $strain_name = $config_packer->tree->{'SPECIES_STRAIN'};
+    my $species_key = $config_packer->tree->{'SPECIES_URL'}; ## Key on actual URL, not production name
+    if ($strain_group && $strain_name !~ /reference/) {
+      if ($species_to_strains->{$strain_group}) {
+        push @{$species_to_strains->{$strain_group}}, $species_key;
+      }
+      else {
+        $species_to_strains->{$strain_group} = [$species_key];
+      }
+    }
+
   } 
 
  ## Compile strain info into a single structure
   while (my($k, $v) = each (%$species_to_strains)) {
-    my $species = $name_lookup->{ucfirst($k)};
-    $tree->{$species}{'ALL_STRAINS'} = $v;
+    $tree->{$k}{'ALL_STRAINS'} = $v;
   } 
 
 # use Data::Dumper; 

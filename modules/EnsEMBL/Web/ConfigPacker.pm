@@ -286,6 +286,7 @@ sub _munge_meta {
     provider.url                  PROVIDER_URL
     provider.logo                 PROVIDER_LOGO
     species.strain                SPECIES_STRAIN
+    species.strain_group          STRAIN_GROUP
     strain.type                   STRAIN_TYPE
     species.sql_name              SYSTEM_NAME
     genome.assembly_type          GENOME_ASSEMBLY_TYPE
