@@ -27,7 +27,7 @@ sub update_conf {
   $SiteDefs::ENSEMBL_COHORT = 'EnsemblGenomes';
   
   $SiteDefs::SITE_RELEASE_VERSION = 46;
-  $SiteDefs::SITE_RELEASE_DATE    = 'December 2019';
+  $SiteDefs::SITE_RELEASE_DATE    = 'January 2020';
   $SiteDefs::SITE_MISSION         = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
     
   push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-metadata/modules';
