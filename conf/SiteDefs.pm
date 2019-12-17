@@ -79,6 +79,9 @@ sub update_conf {
 
   ## Show docs about annotation
   $SiteDefs::HAS_ANNOTATION = 1;
+ 
+  # EG doesn't use VCF2PED
+  $SiteDefs::ENSEMBL_VP_ENABLED = 0;
 
   #----------------------------------------------------------------------------
   # EXTERNAL
