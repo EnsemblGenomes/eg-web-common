@@ -68,6 +68,9 @@ sub update_conf {
   # EG doesn't use file chameleon
   $SiteDefs::ENSEMBL_FC_ENABLED = 0;
 
+  # EG doesn't use VCF2PED
+  $SiteDefs::ENSEMBL_VP_ENABLED = 0;
+
   #----------------------------------------------------------------------------
   # EXTERNAL
   #----------------------------------------------------------------------------
