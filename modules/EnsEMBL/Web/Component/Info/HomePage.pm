@@ -345,8 +345,7 @@ sub _assembly_text {
  #}
 
   ## BIOSCHEMAS MARKUP
-  ## Don't mark up archives - it will only confuse search engine users
-  $html .= $self->include_bioschema_datasets unless ($species_defs->ENSEMBL_SUBTYPE eq 'Archive');
+  $html .= $self->include_bioschema_datasets; 
 
   return $html;
 }
