@@ -344,6 +344,9 @@ sub _assembly_text {
  #  );
  #}
 
+  ## BIOSCHEMAS MARKUP
+  $html .= $self->include_bioschema_datasets; 
+
   return $html;
 }
 
