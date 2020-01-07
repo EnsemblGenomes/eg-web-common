@@ -51,6 +51,7 @@ sub content {
     $self->synonyms,
 ## EG
     $self->primer_marker,
+    $self->external_links,
     #$self->inter_homoeologues,
 ##    
     $self->sets,
@@ -95,6 +96,20 @@ sub primer_marker {
   ;
 }
 
+## EG Plants - display external links
+sub external_links {
+  my $self   = shift;
+  my $object = $self->object;
+
+  my $data = $object->get_external_links();
+
+  return undef unless defined $data;
+
+  return $data
+      ? ['External Links', $data]
+      : ()
+  ;
+}
 
 sub variation_source {
   my $self    = shift;
