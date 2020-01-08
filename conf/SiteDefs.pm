@@ -38,8 +38,6 @@ sub update_conf {
 
   $SiteDefs::ENSEMBL_MIN_SPARE_SERVERS =  5;
   $SiteDefs::ENSEMBL_MAX_SPARE_SERVERS = 20;
-  $SiteDefs::APACHE_BIN    = '/usr/sbin/httpd';
-  $SiteDefs::APACHE_DIR    = '/etc/httpd';
   $SiteDefs::ENSEMBL_MAX_PROCESS_SIZE = 850000; # Kill httpd over 850000KB
 
   # Does this site have a large species set?
