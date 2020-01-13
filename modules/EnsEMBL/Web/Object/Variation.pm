@@ -81,4 +81,22 @@ sub get_primer_data {
   return $self->{'primer_entry'};
 }
 
+## extract external information linked to the variant
+sub get_external_links {
+  my $self = shift;
+
+  my $attribs = $self->Obj->get_all_attributes();
+
+  if ($attribs->{'cerealsdb_external_links'}){
+
+
+    my $link = qq{<a href="$attribs->{'cerealsdb_external_links'}">Additional details from CerealsDB</a>};
+    $self->{'external_link'} = "$link</ul>";
+
+  }
+
+
+  return $self->{'external_link'};
+}
+
 1;
