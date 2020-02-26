@@ -135,7 +135,7 @@ sub populate_tree {
       [qw(
         vepeffect       EnsEMBL::Web::Component::Tools::VEP::InputForm
         details         EnsEMBL::Web::Component::Tools::VEP::TicketDetails
-        tickets         EnsEMBL::Web::Component::Tools::TicketsList
+        tickets         EnsEMBL::Web::Component::Tools::VEP::TicketsList
       )],
       { 'availability' => 1, 'concise' => 'Variant Effect Predictor' }
     ));
@@ -156,7 +156,7 @@ sub populate_tree {
       [qw(
         ac_input        EnsEMBL::Web::Component::Tools::AssemblyConverter::InputForm
         ac_details      EnsEMBL::Web::Component::Tools::AssemblyConverter::TicketDetails
-        tickets         EnsEMBL::Web::Component::Tools::TicketsList
+        tickets         EnsEMBL::Web::Component::Tools::AssemblyConverter::TicketsList
       )],
       { 'availability' => 1 }
     ));
