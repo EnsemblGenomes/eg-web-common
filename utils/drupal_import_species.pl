@@ -40,11 +40,12 @@ my $num_errors = 0;
 my $errors = {};
 my $tmp = '/tmp';
 
-my ($plugin_root, $noimg, $division, $quiet, $pan, $needs_rename);
+my ($plugin_root, $noimg, $division, $sp_input, $quiet, $pan, $needs_rename);
 my $host = 'http://www.ensemblgenomes.org';
 
 GetOptions(
-  'd|division=s'  => \$division, 
+  'd|division=s'  => \$division,
+  's|species=s'   => \$sp_input,
   'plugin_root=s' => \$plugin_root, 
   'noimg'         => \$noimg, 
   'q'             => \$quiet, 
@@ -83,9 +84,15 @@ my $xmldoc = get($url) or die "Fetch $url failed: $!\n";
 
 my $xml = XMLin(encode('utf-8', $xmldoc));
 my @fields = qw/acknowledgement about assembly annotation regulation variation other/;
-foreach my $species (sort keys %{$xml->{'node'}}) {
+my @species_list = $sp_input? split(',', $sp_input) : sort keys %{$xml->{'node'}};
+
+foreach my $species (@species_list) {
   my $Species = ucfirst($species);
   my $node = $xml->{'node'};
+
+  if (keys %{$node->{$species}} <= 0) {
+    die "Node not found for $species in $url";
+  }
   
   my $file = "$aboutdir/about_$Species.html";
   open(FH, ">$file") or die("Cannot write $file:$!\n");
