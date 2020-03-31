@@ -66,10 +66,14 @@ sub content {
     <div class="column-padding no-left-margin">';
 
   ## Pull in Markdown content
-  my @sections = qw(acknowledge description annotation regulation variation other);
+  my @sections = qw(acknowledgement about assembly annotation regulation variation references other);
   foreach my $section (@sections) {
-    my $fragment =  EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, sprintf('/ssi/species/%s_%s.md', $species, $section));
-    $html .= $fragment if $fragment;
+    my $ext = $section eq 'acknowledgement' ? 'html' : 'md';
+    my $fragment =  EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, sprintf('/ssi/species/%s_%s.%s', $species, $section, $ext));
+    if ($fragment) { 
+      $html .= $section eq 'acknowledgement' ? '<div class="info-box embedded-box">'.$fragment.'</div>'
+                                             : $fragment;
+    };
   }
 
   ## Link to Wikipedia
