@@ -64,18 +64,13 @@ sub content {
 <div class="column-wrapper">  
   <div class="column-two">
     <div class="column-padding no-left-margin">';
-## EG START
-# We use the old pages named about_{species}.html - maybe we should replace them later
-#### ASSEMBLY
-# $html .= '<h2 id="assembly">Assembly</h2>';
-# $html .= EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, "/ssi/species/${species}_assembly.html");
 
-# $html .= '<h2 id="genebuild">Gene annotation</h2>';
-# $html .= EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, "/ssi/species/${species}_annotation.html");
-## ....EG....
-  $html .= EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, "/ssi/species/about_${species}.html");
-# $self->cut_tagged_section(\$html,'about');
-## EG END
+  ## Pull in Markdown content
+  my @sections = qw(acknowledge description annotation regulation variation other);
+  foreach my $section (@sections) {
+    my $fragment =  EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, sprintf('/ssi/species/%s_%s.md', $species, $section));
+    $html .= $fragment if $fragment;
+  }
 
   ## Link to Wikipedia
   $html .= $self->_wikipedia_link; 
