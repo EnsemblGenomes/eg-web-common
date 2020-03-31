@@ -15,7 +15,7 @@ use File::Path qw(make_path);
 
 ## Select which division to process
 
-my ($division, $in_dir, $out_dir, $tmp_dir);
+my ($division, $in_dir, $out_dir, $tmp_dir, $noclean);
 
 BEGIN{
   &GetOptions(
@@ -23,6 +23,7 @@ BEGIN{
     'out_dir'     => \$out_dir,
     'tmp_dir'     => \$tmp_dir,
     'division=s'  => \$division,
+    'noclean'    => \$noclean,
   );
 }
 
@@ -74,8 +75,19 @@ foreach my $file (@input) {
     ## Replace Drupal nbsp with ordinary space
     $line =~ s/<\!\-\-nbsp\-\->/ /g;
 
-    $sections{$section} .= "$line\n"
+    ## Remove any heading IDs, as MultiMarkdown will create unique ones
+    $line =~ s/<h(\d{1}) id="[a-zA-Z0-9]+"/<h$1/;
 
+    ## Ditto any reference IDs
+    $line =~ s/<li><a id="ref-[0-9]+"><\/a>/<li>/g;
+
+    ## Remove box div from acknowledgements
+    if ($section eq 'acknowledgement') {
+      $line =~ s/<div class="[\w|\s|-]+">//g;
+      $line =~ s/<\/div>//g;
+    }
+
+    $sections{$section} .= "$line\n";
   }
 
   ## Now write out each section to a file
@@ -106,16 +118,23 @@ foreach my $file (@tmp_files) {
   my $input_path  = sprintf '%s/%s', $tmp_dir, $file;
   next unless (-s $input_path); # skip empty files - not that there should be any
 
-  (my $name = $file) =~ s/\.html$//;
-  my $output_path = sprintf '%s/%s.md', $out_dir, $name;
-
-  my $cmd = qq(pandoc $input_path -f html -t markdown -s -o $output_path);
+  ## Don't convert acknowledgements, as they contain images and CSS
+  my $cmd;
+  if ($file =~ /acknowledgement/) {
+    my $output_path = sprintf '%s/%s', $out_dir, $file;
+    $cmd = qq(cp $input_path $output_path);
+  }
+  else {
+    (my $name = $file) =~ s/\.html$//;
+    my $output_path = sprintf '%s/%s.md', $out_dir, $name;
+    $cmd = qq(pandoc $input_path -f html -t markdown -s -o $output_path);
+  }
 
   system($cmd);
 
 }
 
 ## Clean up tmp files
-system("rm -r $tmp_dir");
+system("rm -r $tmp_dir") unless $noclean;
 
 print "DONE!\n\n";
