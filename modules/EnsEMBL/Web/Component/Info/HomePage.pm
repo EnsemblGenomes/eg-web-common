@@ -163,13 +163,13 @@ sub content {
   $html .= '</div>'; #box-left
   
   $html .= '<div class="box-right">';
-  if (my $ack_text = $self->_other_text('acknowledgement', $species)) {
+  if (my $ack_text = $self->_markdown('acknowledgements', $species, 1)) {
     $html .= $ack_text;
   }
   $html .= '</div>'; # box-right
   $html .= '</div>'; # column-wrapper
 
-  my $about_text = $self->_other_text('about', $species);
+  my $about_text = $self->_markdown('description', $species, 1);
   if ($about_text) {
     $html .= '<div class="column-wrapper"><div class="round-box tinted-box unbordered">'; 
     $html .= $about_text;
@@ -206,7 +206,7 @@ sub content {
   # $side++;
   }
 
-  my $other_text = $self->_other_text('other', $species);
+  my $other_text = $self->_markdown('other', $species, 1);
   push(@sections, $other_text) if $other_text =~ /\w/;
  #$html .= '<div class="' . $box_class[$side % 2] . '"><div class="round-box tinted-box unbordered">' . $other_text . '</div></div>' if $other_text =~ /\w/;
   
@@ -525,7 +525,7 @@ sub _variation_text {
     }
     $html .= '.</p>';
 
-    if ($self->_other_text('variation', $species)) {
+    if ($self->_markdown('variation', $species)) {
       $html .= qq(<p><a href="/$species/Info/Annotation#variation" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about variation in $display_name</a></p>);
     }
 
@@ -580,7 +580,7 @@ sub _funcgen_text {
 
     # EG add a link to about_[spp]#regulation
     my $display_name = $species_defs->SPECIES_SCIENTIFIC_NAME;
-    if ($self->_other_text('regulation', $species)) {
+    if ($self->_markdown('regulation', $species)) {
       $html .= qq(<p><a href="/$species/Info/Annotation#regulation" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about regulation in $display_name</a></p>);
     }
 
@@ -596,7 +596,7 @@ sub _funcgen_text {
 
     # EG add a link to about_[spp]#regulation
     my $display_name = $species_defs->SPECIES_SCIENTIFIC_NAME;
-    if ($self->_other_text('regulation', $species)) {
+    if ($self->_markdown('regulation', $species)) {
       $html .= qq(<p><a href="/$species/Info/Annotation#regulation" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about regulation in $display_name</a></p>);
     }
     $html .= qq(<p><a href="http://ensemblgenomes.org/info/data/microarray_mapping" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about the $site microarray annotation strategy</a></p>);
@@ -608,22 +608,19 @@ sub _funcgen_text {
 
 # EG
 
-=head2 _other_text
+=head2 _markdown
 
   Arg[1] : tag name to seek
   Arg[2] : species internal name e.g. Caenorhabditis_elegans
-  Return : text from htdocs/ssi/species/about_[species].html bounded by the string: <!-- {tag} -->
+  Arg[3] : whether to return file content or file existence
+  Return : HTML fragment or Boolean 
 
 =cut
 
-sub _other_text {
-  my ($self, $tag, $species) = @_;
-  my $file = "/ssi/species/about_${species}.html";
-  my $content = EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, $file);
-  my ($other_text) = $content =~ /^.*?<!--\s*\{$tag\}\s*-->(.*)<!--\s*\{$tag\}\s*-->.*$/ms;
-  #ENSEMBL-2535 strip subs
-  $other_text =~ s/(\{\{sub_[^\}]*\}\})//mg;
-  return $other_text;
+sub _markdown {
+  my ($self, $tag, $species, $flag) = @_;
+  my $file = sprintf '/ssi/species/%s_%s.md', $species, $tag;
+  return $flag ? EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, $file) : -e $file;
 }
 
 =head2 _has_compara
