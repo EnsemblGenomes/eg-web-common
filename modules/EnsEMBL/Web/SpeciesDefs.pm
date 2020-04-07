@@ -188,6 +188,41 @@ sub _parse {
     } 
   }
 ##
+  
+  ## Assign an image to this species
+  foreach my $key (sort keys %$tree) {
+    next unless (defined $tree->{$key}{'SPECIES_URL'}); # skip if not a species key
+    ## Check for a) genome-specific image, b) species-specific image
+    my $no_image  = 1;
+    ## Need to use full path, as image files are usually in another plugin
+    my $image_dir = sprintf '%s/eg-web-%s/htdocs/i/species', $SiteDefs::ENSEMBL_SERVERROOT, $SiteDefs::DIVISION;
+    my $image_path = sprintf '%s/%s.png', $image_dir, $key;
+    ## In theory this could be a trinomial, but we use whatever is set in species.species_name
+    my $binomial = $tree->{$key}{SPECIES_BINOMIAL};
+    if ($bionomial) {
+      $bionomial =~ s/ /_/g;
+    }
+    else {
+      ## Make a guess based on URL. Note that some fungi have weird URLs bc 
+      ## their taxonomy is uncertain, so this regex doesn't try to include them
+      ## (none of them have images in any case)
+      $key =~ /^([A-Za-z]+_[a-z]+)/;
+      $binomial = $1;
+    }
+    my $species_path = $binomial ? sprintf '%s/%s.png', $image_dir, $binomial : '';
+    if (-e $image_path) {
+      $tree->{$key}{'SPECIES_IMAGE'} = $key;
+      $no_image = 0;
+    }
+    elsif ($species_path && -e $species_path) {
+      $tree->{$key}{'SPECIES_IMAGE'} = $binomial;
+      $no_image = 0;
+    }
+    else {
+      $tree->{$key}{'SPECIES_IMAGE'} = 'default';
+      $no_image = 0;
+    }
+  }
 
   $tree->{'MULTI'}{'ENSEMBL_DATASETS'} = $datasets;
   #warn ">>> NEW KEYS: ".Dumper($tree);
