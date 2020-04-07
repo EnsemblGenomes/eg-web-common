@@ -40,6 +40,7 @@ sub content {
 
   my $common_name       = $species_defs->SPECIES_COMMON_NAME;
   my $display_name      = $species_defs->SPECIES_SCIENTIFIC_NAME;
+  my $image             = $species_defs->SPECIES_IMAGE;
   my $ensembl_version   = $species_defs->ENSEMBL_VERSION;
   my $current_assembly  = $species_defs->ASSEMBLY_NAME;
   my $accession         = $species_defs->ASSEMBLY_ACCESSION;
@@ -53,7 +54,7 @@ sub content {
 <div class="column-wrapper">  
   <div class="column-one">
     <div class="column-padding no-left-margin species-box">
-      <img src="/i/species/48/$species.png" class="badge-48" alt="" />
+      <img src="/i/species/$image.png" class="badge-48" alt="" />
       <h1 style="margin-bottom:0">$common_name Assembly and Gene Annotation</h1>
     </div>
   </div>
