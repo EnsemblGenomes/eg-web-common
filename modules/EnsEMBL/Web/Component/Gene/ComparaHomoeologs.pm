@@ -69,7 +69,6 @@ sub content {
     { key => 'Species',    align => 'left', width => '15%', sort => 'html'                                                },
     { key => 'Type',       align => 'left', width => '15%', sort => 'html'                                            },   
     { key => 'identifier', align => 'left', width => '40%', sort => 'none', title => 'Homoeologue'},      
-    { key => 'dN/dS',      align => 'left', width => '10%',  sort => 'html'                                             },
     { key => 'Target %id', align => 'left', width => '10%',  sort => 'position_html', label => 'Target %id', help => "Percentage of the homoeologous sequence matching the source sequence" },
     { key => 'Query %id',  align => 'left', width => '10%',  sort => 'position_html', label => 'Query %id',  help => "Percentage of the source sequence matching the sequence of the homoeologoue" },
   ];
@@ -87,10 +86,6 @@ sub content {
       
       # Add in homoeologue description
       my $homoeologue_desc = $homoeologue->{'homology_desc'};
-      
-      # Add in the dN/dS ratio
-      my $homoeologue_dnds_ratio = $homoeologue->{'homology_dnds_ratio'} || 'n/a';
-      my $dnds_class  = ($homoeologue_dnds_ratio ne "n/a" && $homoeologue_dnds_ratio >= 1) ? "box-highlight" : "";
 
       (my $spp = $homoeologue->{'spp'}) =~ tr/ /_/;
       $spp = $species_defs->production_name_mapping($spp);
@@ -176,7 +171,6 @@ sub content {
       my $table_details = {
         'Species'    => join('<br />(', split /\s*\(/, $species_defs->species_label($species_defs->production_name_mapping($species))),
         'Type'       => $self->html_format ? glossary_helptip($hub, ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues").qq{<p class="top-margin"><a href="$tree_url">View Gene Tree</a></p>} : glossary_helptip($hub, ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues") ,
-        'dN/dS'      => qq{<span class="$dnds_class">$homoeologue_dnds_ratio</span>},
         'identifier' => $self->html_format ? $id_info : $stable_id,
         'Target %id' => qq{<span class="$target_class">}.sprintf('%.2f&nbsp;%%', $target).qq{</span>},
         'Query %id'  => qq{<span class="$query_class">}.sprintf('%.2f&nbsp;%%', $query).qq{</span>},
