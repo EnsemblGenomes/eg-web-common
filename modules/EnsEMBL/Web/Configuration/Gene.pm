@@ -109,7 +109,7 @@ sub modify_tree {
     "Gene Tree",
     [
       qw(
-        tree_summary EnsEMBL::Web::Component::Gene::ComparaTreeSummary
+        tree_summary EnsEMBL::Web::Component::Gene::PanComparaTreeSummary
         image EnsEMBL::Web::Component::Gene::PanComparaTree
         )
     ],
