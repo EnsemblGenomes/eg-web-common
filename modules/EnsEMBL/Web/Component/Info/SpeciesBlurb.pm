@@ -40,6 +40,7 @@ sub content {
 
   my $common_name       = $species_defs->SPECIES_COMMON_NAME;
   my $display_name      = $species_defs->SPECIES_SCIENTIFIC_NAME;
+  my $image             = $species_defs->SPECIES_IMAGE;
   my $ensembl_version   = $species_defs->ENSEMBL_VERSION;
   my $current_assembly  = $species_defs->ASSEMBLY_NAME;
   my $accession         = $species_defs->ASSEMBLY_ACCESSION;
@@ -53,7 +54,7 @@ sub content {
 <div class="column-wrapper">  
   <div class="column-one">
     <div class="column-padding no-left-margin species-box">
-      <img src="/i/species/48/$species.png" class="badge-48" alt="" />
+      <img src="/i/species/$image.png" class="badge-48" alt="" />
       <h1 style="margin-bottom:0">$common_name Assembly and Gene Annotation</h1>
     </div>
   </div>
@@ -64,18 +65,17 @@ sub content {
 <div class="column-wrapper">  
   <div class="column-two">
     <div class="column-padding no-left-margin">';
-## EG START
-# We use the old pages named about_{species}.html - maybe we should replace them later
-#### ASSEMBLY
-# $html .= '<h2 id="assembly">Assembly</h2>';
-# $html .= EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, "/ssi/species/${species}_assembly.html");
 
-# $html .= '<h2 id="genebuild">Gene annotation</h2>';
-# $html .= EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, "/ssi/species/${species}_annotation.html");
-## ....EG....
-  $html .= EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, "/ssi/species/about_${species}.html");
-# $self->cut_tagged_section(\$html,'about');
-## EG END
+  ## Pull in Markdown content
+  my @sections = qw(acknowledgement about assembly annotation regulation variation references other);
+  foreach my $section (@sections) {
+    my $ext = $section eq 'acknowledgement' ? 'html' : 'md';
+    my $fragment =  EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, sprintf('/ssi/species/%s_%s.%s', $species, $section, $ext));
+    if ($fragment) { 
+      $html .= $section eq 'acknowledgement' ? '<div class="info-box embedded-box">'.$fragment.'</div>'
+                                             : $fragment;
+    };
+  }
 
   ## Link to Wikipedia
   $html .= $self->_wikipedia_link; 

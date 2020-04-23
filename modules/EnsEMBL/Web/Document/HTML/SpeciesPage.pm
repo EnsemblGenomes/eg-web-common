@@ -40,6 +40,7 @@ sub render {
     $species{$sp} = {
       'dir'        => $sp,
       'common'     => $species_defs->get_config($sp, 'SPECIES_COMMON_NAME'),
+      'image'      => $species_defs->get_config($sp, 'SPECIES_IMAGE'),
       'assembly'   => $species_defs->get_config($sp, 'ASSEMBLY_NAME'),
       'accession'  => $species_defs->get_config($sp, 'ASSEMBLY_ACCESSION'),
       'taxon_id'   => $species_defs->get_config($sp, 'TAXONOMY_ID'),
@@ -100,8 +101,9 @@ sub render {
     my $dir       = $info->{'dir'};
     next unless $dir;
     my $common    = $info->{'common'};
+    my $image     = $info->{'image'};
    
-    my $thumbnail_html = qq(<a href="/$dir/" style="padding-right:4px;"><img src="/i/species/48/$dir.png" width="48" height="48" title="$common" style="vertical-align:middle" /></a>);
+    my $thumbnail_html = qq(<a href="/$dir/" style="padding-right:4px;"><img src="/i/species/$image.png" width="48" height="48" title="$common" style="vertical-align:middle" /></a>);
     my $common_html    = qq(<a href="/$dir" class="bigtext">$common</a>);
     my $tick_html      = '<img src="/i/tick_16.png" width="16" height="16" />';
     my $uniprot_link   = qq(<a href="http://www.uniprot.org/taxonomy/$info->{'taxon_id'}" target="_blank">$info->{'taxon_id'}</a>);
