@@ -70,7 +70,7 @@ sub content {
   my @sections = qw(acknowledgement about assembly annotation regulation variation references other);
   foreach my $section (@sections) {
     my $ext = $section eq 'acknowledgement' ? 'html' : 'md';
-    my $fragment =  EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, sprintf('/ssi/species/%s_%s.%s', $species, $section, $ext));
+    my $fragment =  EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, sprintf('/ssi/species/%s_%s.%s', $species, $section, $ext), 1);
     if ($fragment) { 
       $html .= $section eq 'acknowledgement' ? '<div class="info-box embedded-box">'.$fragment.'</div>'
                                              : $fragment;

@@ -621,7 +621,7 @@ sub _fragment {
   my ($self, $tag, $species, $flag) = @_;
   my $ext = $tag eq 'acknowledgement' ? 'html' : 'md';
   my $file = sprintf '/ssi/species/%s_%s.%s', $species, $tag, $ext;
-  return $flag ? EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, $file) : -e $file;
+  return $flag ? EnsEMBL::Web::Controller::SSI::template_INCLUDE($self, $file, 1) : -e $file;
 }
 
 =head2 _has_compara
