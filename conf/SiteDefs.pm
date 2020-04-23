@@ -26,8 +26,8 @@ sub update_conf {
 
   $SiteDefs::ENSEMBL_COHORT = 'EnsemblGenomes';
   
-  $SiteDefs::SITE_RELEASE_VERSION = 47;
-  $SiteDefs::SITE_RELEASE_DATE    = 'April 2020';
+  $SiteDefs::SITE_RELEASE_VERSION = 48;
+  $SiteDefs::SITE_RELEASE_DATE    = 'July 2020';
   $SiteDefs::SITE_MISSION         = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
   $SiteDefs::BIOSCHEMAS_DATACATALOG = defer { 'http://'.$SiteDefs::DIVISION.'.ensembl.org/#project' };
     
