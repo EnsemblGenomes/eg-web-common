@@ -20,6 +20,7 @@ limitations under the License.
 package EnsEMBL::Web::ZMenu::ProteinSummary;
 
 use strict;
+use JSON qw(from_json);
 
 sub content {
   my $self        = shift;
@@ -48,9 +49,9 @@ sub content {
   (my $hit_db_spaces = $hit_db) =~ s/_/ /g;
   
   my $ms_domain = 0;
-  #my %web_data = %{$pf->analysis->web_data};
-  if (exists $pf->analysis->web_data->{'type'}) {
-    if ($pf->analysis->web_data->{'type'} eq 'ms_domain') {
+  my $web_data = from_json($pf->analysis->web_data);
+  if (exists $web_data->{'type'}) {
+    if ($web_data->{'type'} eq 'ms_domain') {
       $ms_domain = 1;
     }
   }
