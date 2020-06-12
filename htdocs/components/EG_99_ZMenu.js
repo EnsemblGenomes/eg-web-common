@@ -8,6 +8,7 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
     }
 
     this.base(url, expand);
+
   },
 
   buildMenuAjax: function () {
@@ -27,6 +28,7 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
       var title;
       
       if (domain[0].match(/www/)) {
+        // URL 
         // URL starts with www it is ensembl, gramene or ensemblgenomes
         title = domain[1].substr(0, 1).toUpperCase() + domain[1].substr(1, domain[1].length);
       } else if (this.href.match(/\.ensembl\./)) {
@@ -65,7 +67,6 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
           url  = url.replace(/.+\?/, '?');
           menu = [ '<a class="loc-icon-a" href="' + panel.speciesPath + '/Location/' + view + url + '"><span class="loc-icon loc-change"></span>Jump to region ' + view.toLowerCase() + '</a>' ];
     }
-    
     // Multi species view
     function multi() {
       var label = start ? 'region' : 'location';
@@ -85,10 +86,10 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
       var label  = start ? 'region' : 'location';
           label += panel.species === Ensembl.species ? '' : ' on ' + Ensembl.species.replace(/_/g, ' ');
       
-      menu    = [ '<a href="' + url.replace(/%s/, Ensembl.coreParams.r + ';align_start=' + start + ';align_end=' + end) + '">Jump to best aligned ' + label + '</a>' ];
+      menu    = [ '<a class="loc-icon-a" href="' + url.replace(/%s/, Ensembl.coreParams.r + ';align_start=' + start + ';align_end=' + end) + '"><span class="loc-icon loc-change"></span>Jump to best aligned ' + label + '</a>' ];
       caption = 'Alignment: ' + (start ? start + '-' + end : panel.location);
     }
-    
+
     // Region select
     if (this.coords.r) {
       start = Math.floor(min + (this.coords.s - this.areaCoords.l) * scale);
@@ -113,12 +114,12 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
         end   = this.end + this.start - tmp;
       }
       
-      if (this.align === true) {
+      if (this.align) {
         align();
       } else {
         url     = url.replace(/%s/, this.chr + ':' + start + '-' + end);
         caption = 'Region: ' + this.chr + ':' + start + '-' + end;
-        
+
         if (!locationView) {
           notLocation();
         } else if (this.multi !== false) {
@@ -132,7 +133,7 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
               cls = '';
             }
           }
-          
+
           menu = [ '<a class="' + cls + ' loc-icon-a" href="' + url + '"><span class="loc-icon loc-change"></span>Jump to region (' + (end - start + 1) + ' bp)</a>' ];
 //// EG - add annotation linl          
           if ( $('#annotation-url').length ) {
@@ -147,7 +148,7 @@ Ensembl.Panel.ZMenu = Ensembl.Panel.ZMenu.extend({
         }
       }
 
-      if (this.multi === false) {
+      if (this.multi === false && !this.align) {
         menu.unshift('<a class="_location_mark loc-icon-a" href="' + Ensembl.updateURL({mr: this.chr + ':' + start + '-' + end}, window.location.href) + '"><span class="loc-icon loc-mark"></span>Mark region (' + (end - start + 1) + ' bp)</a>');
       }
 
