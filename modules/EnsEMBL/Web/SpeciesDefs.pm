@@ -136,6 +136,7 @@ sub _parse {
     my $strain_group = $config_packer->tree->{'STRAIN_GROUP'};
     my $strain_name = $config_packer->tree->{'SPECIES_STRAIN'};
     my $species_key = $config_packer->tree->{'SPECIES_URL'}; ## Key on actual URL, not production name
+
     if ($strain_group && $strain_name !~ /reference/) {
       if ($species_to_strains->{$strain_group}) {
         push @{$species_to_strains->{$strain_group}}, $species_key;
@@ -189,9 +190,13 @@ sub _parse {
   }
 ##
   
-  ## Assign an image to this species
+  ## Assign a display name and image to this species
   foreach my $key (sort keys %$tree) {
     next unless (defined $tree->{$key}{'SPECIES_URL'}); # skip if not a species key
+
+    ## Needed for consistency with vertebrates
+    $tree->{$key}{'PREFERRED_DISPLAY_NAME'} = $tree->{$key}{'SPECIES_SCIENTIFIC_NAME'};
+
     ## Check for a) genome-specific image, b) species-specific image
     my $no_image  = 1;
     ## Need to use full path, as image files are usually in another plugin
