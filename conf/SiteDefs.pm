@@ -67,6 +67,9 @@ sub update_conf {
   # EG doesn't use file chameleon
   $SiteDefs::ENSEMBL_FC_ENABLED = 0;
 
+  ## Show docs about annotation
+  $SiteDefs::HAS_ANNOTATION = 1;
+
   #----------------------------------------------------------------------------
   # EXTERNAL
   #----------------------------------------------------------------------------
