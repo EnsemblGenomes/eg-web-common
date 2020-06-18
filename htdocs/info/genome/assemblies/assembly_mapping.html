@@ -1,0 +1,25 @@
+<html>
+<head>
+<meta name="order" content="1" />
+<title>Assembly mapping</title>
+</head>
+
+<body>
+
+<h1>Assembly mapping</h1>
+
+<p>Ensembl Genomes uses the A2Amapper, described below, to map between genome assemblies in different releases of Ensembl Genomes. The results of the mapping can be used to map data (in a variety of formats) to the current assembly, using the Assembly converter in the <a href="/tools.html">Tools</a> section of the Ensembl website or via the <a href="/info/docs/api/core/core_tutorial.html#project">Ensembl Core API</a>.</p>
+
+<p>Istrail S, Sutton GG, Florea L, Halpern AL, Mobarry CM, Lippert R et al. (2004) <a href="http://www.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=pubmed&amp;retmode=ref&amp;cmd=prlinks&amp;id=14769938"">Whole-genome shotgun assembly and comparison of human genome assemblies.</a> <em>Proc Natl Acad Sci U S A</em> 101 (7):1916-21. DOI: <a href="http://dx.doi.org/10.1073/pnas.0307971100"">10.1073/pnas.0307971100</a> PMID: <a href="http://pubmed.gov/14769938"">14769938</a></p>
+
+<blockquote>
+<p>We have developed a suite of tools, A2Amapper, for constructing a one-to-one correspondence between pairs of assemblies. Like other whole-genome comparison methods, A2Amapper is based on the identification of seed alignments, in this case unique exact matches, followed by a more aggressive local alignment phase between seeds within nonoverlapping chains of seeds. Cutoffs were carefully tuned to balance sensitivity (finding all correlations), specificity (finding only the true ones), and computational requirements. A2Amapper produces a set of one-to-one matches that are alignments of nearly identical pairs of segments imputed to be analogous up to polymorphisms.</p>
+
+<p>These large one-to-one matches are used to project position based features, such as variants between genome assembly versions.</p>
+</blockquote>
+
+<p class="center"><img src="/img/atac_features.png" style="height:442px; width:800px" /></p>
+
+
+</body>
+</html>

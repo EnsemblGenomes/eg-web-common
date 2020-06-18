@@ -1,0 +1,21 @@
+<html>
+<head>
+<meta name="order" content="1" />
+<title>Genome assemblies</title>
+</head>
+
+<body>
+
+<h1>Genome assemblies</h1>
+
+<h2>Assembly versions</h2>
+
+<p>The genome assemblies presented by Ensembl Genomes are provided by a wide variety of sources, but Ensembl Genomes follows a policy compatible with the <a href="/info/about/legal/browser_agreement">Browser Genome Release Agreement</a> of only using assemblies that have been submitted to the <a href="http://www.insdc.org/">INSDC</a> archives (<a href="http://www.ebi.ac.uk/ena">ENA</a>, <a href="http://www.ncbi.nlm.nih.gov/genbank/">GenBank</a> and <a href="http://www.ddbj.nig.ac.jp/">DDBJ</a>). These are usually loaded directly from the deposited sequences and assembly information in ENA or GenBank, even where the annotation is subsequently loaded from another source. Note that there are a small number of cases with legacy data that may not be completely consistent with that in the INSDC archives. Ensembl Genomes are actively working to resolve these inconsistencies.</p>
+<p>Details of each individual assembly are available on the information page from the browser for each species (<em>e.g. <a href="http://metazoa.ensembl.org/Anopheles_gambiae/Info/Annotation/">Anopheles gambiae</a></em>). These pages describe in outline how the assembly was created, and provide stable, third-party identifiers for the assembly. In addition to an accepted community assembly identifer, these identifiers include an accession number from the INSDC <a href="http://www.ebi.ac.uk/ena/about/genome_assembly_database">Genome Assembly Database</a>, which is used as an authorative source of assemblies.</p>
+<p>When assemblies change between releases, automatic mapping is carried out between releases to allow features localised on an old assembly to be projected forward. This process and its uses are described in more detail in <a href="/info/genome/assemblies/assembly_mapping.html">Assembly Mapping</a>.</p>
+<h2>Assembly information in Ensembl Genomes databases</h2>
+<p>The assembly identifiers described above are also used in the <a href="/info/data/mysql.html">MySQL databases</a> used by the Ensembl platform, including the <a href="/info/docs/api/">Ensembl API</a>. For most databases, the final number on the database name reflects the version number of the corresponding INSDC Assembly Database entry <em>e.g. </em>nasonia_vitripennis_core_21_74_2 corresponds to <a href="http://www.ebi.ac.uk/ena/data/view/GCA_000002325.2">GCA_000002325.2</a>. Note that this may not hold true for assemblies where an existing version history is not reflected by the corresponding INSDC assembly record. Within the database, the assembly identifiers can be found in the <a href="/info/docs/api/core/core_schema.html#meta">meta</a> tables of the core databases, with the keys 'assembly.name' for the establised assembly name and 'assembly.accession' for the INSDC assembly accession.</p>
+<p>In addition to top-level assembly identifiers, all "sequence-level" <a href="/info/docs/api/core/core_tutorial.html#slices">sequence regions</a> (normally contigs) use the versioned INSDC accession as their name. "Top-level" sequences (<em>e.g. </em>chromosomes or supercontigs) usually use the names assigned by their submitter, but the INSDC accession is provided as a synonym to allow third-party data to be mapped to the correct location.</p>
+
+</body>
+</html>

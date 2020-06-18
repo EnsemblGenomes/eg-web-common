@@ -44,6 +44,9 @@ sub update_conf {
   # (used by the interface to determine whether to use dropdown or auto-comeplete etc)
   $SiteDefs::LARGE_SPECIES_SET = 0;
 
+  # Static content flags
+  $SiteDefs::HAS_ANNOTATION             = 1;
+
   # disable sprite maps - not used for EG
   $SiteDefs::ENSEMBL_DEBUG_IMAGES = 1;
   
