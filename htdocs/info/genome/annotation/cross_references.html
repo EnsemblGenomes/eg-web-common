@@ -1,0 +1,121 @@
+<html>
+<head>
+<meta name="order" content="8" />
+<title>Annotation of external cross references</title>
+</head>
+
+<body>
+
+<h1>Annotation of external cross references</h1>
+
+<p>The identifiers, names and descriptions of the genes, transcripts and translations in 
+<a href="/info/about/">Ensembl Genomes</a> are typically imported from or created in 
+collaboration with the relevant communities for a given species. In addition, external 
+cross references to these objects are automatically created from various other databases as 
+part of the <a href="/info/about/release_cycle.html">standard release process</a>, as 
+described below.</p>
+
+<p>External cross references are useful for several interrelated purposes:</p>
+
+<ol>
+  <li>They can provide gene names and descriptions where no explicit data is readily available from the community.</li>
+  <li>The imported names, synonyms and descriptions can improve the quality of search results and aid in the biological interpretation of data.</li>
+  <li>They allow genes, transcripts and translations in Ensembl Genomes to be referenced using all the commonly available names, synonyms and identifiers for the species.</li>
+  <li>They allow bulk translation of identifiers (using <a href="/info/data/biomart/">BioMart</a>) facilitating data exchange between heterogeneous bioinformatics services.</li>
+</ol>
+
+<h2>Automatically creating and importing external cross references</h2>
+
+<p>There are two types of external cross reference (XRef), <b>direct</b> or <b>dependent</b>.</p>
+
+<ul>
+  <li>A <b>direct</b> XRef is one that can be directly linked to a gene, transcript or translation object in Ensembl Genomes by synonymy or sequence similarity.</li>
+  <li>A <b>dependent</b> XRef is one that is transitivly linked to the object <em>via the direct XRef</em>.</li>
+</ul>
+
+<p>For example, the translation for the <a href="http://plants.ensembl.org/Arabidopsis_thaliana/Transcript/Similarity?t=AT1G58030.1"><i>Arabidopsis thaliana</i> gene AT1G58030</a> in Ensembl Plants 
+is identical to the UniProtKB/Swiss-Prot</a> protein <a href="http://www.uniprot.org/uniprot/Q9ASS7">CAAT2_ARATH</a>, giving us a direct XRef by synonymy. Additionally, CAAT2_ARATH is annotated within 
+UniProtKB with XRefs to more than 20 other databases. A sub-set of these XRefs 
+(e.g. <a title="BT046174 in ENA" href="http://www.ebi.ac.uk/ena/data/view/BT046174">BT046174</a> in the European Nucleotide Archive) are additionally imported as 'dependent' XRefs based on the original 'direct' XRef.</p>
+
+<p>The process of importing XRefs for a given species consists of loading direct and dependent XRefs 
+from a pre-defined set of sources. Each source is configured to use either direct mappings (synonymy)
+or by sequence alignment using <a href="https://www.ebi.ac.uk/~guy/exonerate/">exonerate</a>. 
+The sources used are either generic, applying equally to all species; taxon-specific; or can be specific to a single species.</p>
+
+<p>Note that species imported directly from the <a href="http://www.insdc.org/">INSDC archives</a> 
+are processed differently, having direct XRefs for the primary INSDC feature and dependent XRefs 
+from UniProtKB. For more details, see <a href="/info/genome/annotation/insdc_annotation/">INSDC annotation import.</a></p>
+
+<h3>Ontology annotation</h3>
+
+<p>Cross references are used as a mechanism of adding ontology annotations to genes, transcripts 
+and translations in Ensembl Genomes. Ontology terms, typically but not exclusively from the 
+<a href="http://www.geneontology.org/">Gene Ontology</a>, are imported from four distinct 
+sources, two within the XRef pipeline described above and two separate sources, respectively:</p>
+
+<ol>
+  <li>As dependent XRefs from the UniProtKB source (itself derived from GOA).</li>
+  <li>From additional community sources, including annotations hosted in GOA but not yet imported into UniProtKB.</li>
+  <li>Via the InterPro2GO pipeline, using the results of the <a href="info/genome/annotation/protein_features.html">protein feature annotation</a> pipeline.</li>
+  <li>By projection of manually annotated terms from one-to-one orthologues (using 
+<a title="Peptide comparative genomics" href="info/genome/compara/peptide_compara/">gene trees</a>
+in a well annotated species to other related species. Terms with the following evidence codes are 
+projected: IDA, IC, IGI, IMP, IPI, ISS, NAS, ND, RCA, TAS.</li>
+</ol>
+
+<p>Ontology annotations come with additional standard information about the underlying 
+<a href="http://www.geneontology.org/GO.evidence.shtml">evidence supporting the annotation</a> 
+and <a href="http://www.geneontology.org/GO.ontology.structure.shtml#xp">qualifiers to refine the scope of the annotations</a>.</p>
+
+<h3>Common XRef sources</h3>
+
+<p>We import XRefs from this list of sources for all our species, unless otherwise specified 
+on the species homepage:</p>
+
+<ul>
+  <li>UniProtKB
+    <ul>
+      <li>GO</li>
+      <li>ArrayExpress</li>
+    </ul>
+  </li>
+  <li>Interpro</li>
+  <li>RefSeq
+    <ul>
+      <li>EntrezGene</li>
+    </ul>
+  </li>
+  <li>UniParc</li>
+</ul>
+
+<p>and where data is available from this list of sources:</p>
+
+<ul>
+  <li>RFAM</li>
+  <li>miRBase</li>
+  <li>UniGene</li>
+  <li>RNAMMER</li>
+  <li>TRNASCAN_SE</li>
+  <li>PHIbase</li>
+  <li>Gramene Pathway</li>
+</ul>
+
+<p>and an additional list of more than 100 species or taxon specific sources (see individual 
+species pages for details). </p>
+
+<h2>Accessing XRefs</h2>
+
+<p>Gene, transcript and translation XRefs are tabulated on the gene and transcript pages under 
+the External references section of the left hand menu. For example, for <i>Arabidopsis thaliana</i>,
+<a href="http://plants.ensembl.org/Arabidopsis_thaliana/Gene/Matches?g=AT3G52430">gene AT3G52430</a> 
+or <a href="http://plants.ensembl.org/Arabidopsis_thaliana/Transcript/Similarity?t=AT3G52430.1">transcript AT3G52430.1</a>. Additionally, XRefs may be returned within BioMart, or queried in the 
+<a href="/info/docs/api/core/core_tutorial.html#xrefs">Perl</a> or 
+<a href="http://rest.ensembl.org/">REST</a> APIs.</p>
+
+<p>Ontology annotations are displayed on dedicated views on the gene and transcript pages 
+under the Ontology section of the left hand menu. For example, <a http://plants.ensembl.org/Arabidopsis_thaliana/Gene/Ontology/biological_process?g=AT3G52430;oid=biological_process">gene AT3G52430</a> or <a href="http://plants.ensembl.org/Arabidopsis_thaliana/Transcript/Ontology/biological_process?oid=biological_process;t=AT3G52430.1;tab=i">transcript AT3G52430.1</a>.</p>
+
+
+</body>
+</html>

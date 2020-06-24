@@ -1,0 +1,40 @@
+<html>
+<head>
+<meta name="order" content="6" />
+<title>Protein feature annotation</title>
+</head>
+
+<body>
+
+<h1>Protein feature annotation</h1>
+
+<p>The <a href="https://github.com/ebi-pf-team/interproscan/wiki">InterProScan 5</a> pipeline [1] 
+is used to annotate the translations of gene models for each genome. The pipeline scans sequences 
+against <a href="http://www.ebi.ac.uk/interpro">InterPro</a> [2] signatures to identify protein 
+families and domains. InterPro signatures are predictive models, provided by the different databases 
+that make up the <a href="http://www.ebi.ac.uk/interpro/about.html#about_08">InterPro consortium</a>.
+In addition, coiled coils, signal peptides, transmembrane domains, and low complexity regions are 
+annotated with <a href="http://europepmc.org/abstract/MED/2031185">ncoils</a>, 
+<a href="http://europepmc.org/abstract/MED/21959131">SignalP</a>, 
+<a href="http://europepmc.org/abstract/MED/11152613">TMHMM</a>, and 
+<a href="http://www.biology.wustl.edu/gcg/seg.html">seg</a>, respectively.</p>
+
+<p>The InterPro families and domains are often associated with Gene Ontology (GO) terms and 
+pathways, and this information is loaded when protein features are annotated. For example, the 
+<a href="http://www.ebi.ac.uk/interpro/entry/IPR013483">IPR013483</a> family is linked, 
+by InterPro, to two GO terms and a KEGG pathway reference; consequently, these will be added as 
+cross-references to any translation that is annotated with the IPR013483 family.</p>
+
+<p>In the genome browser, protein features are displayed on the 'Splice variants' page 
+(when viewing a gene) and on the 'Protein summary' and 'Domains &amp; features' pages 
+(when viewing a transcript).</p>
+
+<h2>References</h2>
+
+<ol>
+  <li>Jones P <i>et al.</i> (2011) <a href="http://europepmc.org/abstract/MED/24451626">InterProScan 5: genome-scale protein function classification.</a> Bioinformatics <b>30</b>:1236-1240</li>
+  <li>Mitchell A <i>et al.</i> (2014) <a href="http://europepmc.org/abstract/MED/25428371">The InterPro protein families database: the classification resource after 15 years.</a> Nucleic Acids Res.</li>
+</ol>
+
+</body>
+</html>

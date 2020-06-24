@@ -1,0 +1,58 @@
+<html>
+<head>
+<meta name="order" content="7" />
+<title>Repeat feature annotation</title>
+</head>
+
+<body>
+
+<h1>Repeat feature annotation</h1>
+
+<p>If repeat data is present in INSDC when a genome is loaded, then those features are 
+imported into Ensembl Genomes. For bacterial genomes, this is currently the only source of 
+repeat data. For other divisions, a computational pipeline is additionally run, to annotate 
+three types of repeat:</p>
+
+<ul>
+  <li>Low-complexity regions (Dust [1])</li>
+  <li>Tandem repeats (<a href="http://tandem.bu.edu/trf/trf.html">TRF</a> [2])</li>
+  <li>Complex repeats (<a href="http://repeatmasker.org/">RepeatMasker</a> [3])</li>
+</ul>
+
+<p>Annotating repeats with RepeatMasker requires a repeat library. In most cases, a 
+species-specific library is not available, so the 
+<a href="http://www.girinst.org/repbase" title="RepBase">RepBase</a> [4] database of 
+eukaryotic repetitive elements is used. Species-specific repeat libraries from the 
+following sources are used where possible:</p>
+
+<ul>
+  <li><a href="http://wheat.pw.usda.gov/ITMI/Repeats/">TREP</a> for triticeae genomes.</li>
+  <li>The <a href="http://mips.helmholtz-muenchen.de/plant/recat/">MIPS Repeat Database</a> for plant genomes.</li>
+  <li>A rice repeat library from the <a href="http://www.genome.arizona.edu/modules/publisher/item.php?itemid=15">Arizona Genomics Institute</a> for rice genomes.</li>
+  <li><a href="/info/about/vectorbase" title="VectorBase species">Vectorbase</a> species use custom libraries, some of which are <a href="https://www.vectorbase.org/downloads?field_download_file_type_tid=1362&amp;field_status_value=Current" title="VectorBase repeat libraries">publicly available</a>. Contact <a href="http://www.vectorbase.org/contact" title="VectorBase">VectorBase</a> for further details.</li>
+  <li><a href="/info/data/wormbase_annotation" title="WormBase species">WormBase</a> species use custom libraries which are usually not made publicly available. Contact <a href="http://www.wormbase.org" title="WormBase">WormBase</a> for further details.</li>
+</ul>
+
+<h2>Viewing and accessing repeat features</h2>
+
+<p>By default, repeat features are not displayed in the genome browser; display them by using 
+the <a href="/info/website/control_panel.html">Configure this page</a> option. You can view all 
+repeats, or a subset of repeats based on type.</p>
+
+<p>The repeat annotations can be programatically accessed using the 
+<a href="/info/data/api.html">Ensembl API</a>. See the <a href="http://www.ensembl.org/info/docs/Doxygen/core-api/classBio_1_1EnsEMBL_1_1RepeatFeature.html">RepeatFeature</a> and <a href="http://www.ensembl.org/info/docs/Doxygen/core-api/classBio_1_1EnsEMBL_1_1DBSQL_1_1RepeatFeatureAdaptor.html">RepeatFeatureAdaptor</a> documentation for further details.</p>
+
+<p><b>For Ensembl Plants species only</b>, tandem repeats annotated by the TRF program are 
+not used to soft- and hardmask the genome sequences.</p>
+
+<h2>References</h2>
+
+<ol>
+  <li>Morgulis A <em>et al.</em> (2006) <a href="http://europepmc.org/abstract/MED/16796549">A fast and symmetric DUST implementation to mask low-complexity DNA sequences.</a> J Comput Biol. <b>13</b>:1028-40</li>
+  <li>Benson G (1999) <a href="http://europepmc.org/abstract/MED/9862982">Tandem repeats finder: a program to analyze DNA sequences.</a> Nucleic Acids Res. <b>27</b>: 573-580</li>
+  <li>Smit AFA, Hubley R, Green P (1996-2010) <em>RepeatMasker Open-3.0</em> <a href="http://www.repeatmasker.org">http://www.repeatmasker.org</a></li>
+  <li>Jurka J <em>et al.</em> (2005) <a href="http://europepmc.org/abstract/MED/16796549">Repbase Update, a database of eukaryotic repetitive elements.</a> Cytogenet Genome Res. <b>110</b>:462-467</li>
+</ol>
+
+</body>
+</html>
