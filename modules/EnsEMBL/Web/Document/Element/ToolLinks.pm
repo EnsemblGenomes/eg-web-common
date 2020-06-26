@@ -32,7 +32,7 @@ sub links {
   push @links, 'blast', sprintf '<a class="constant" href="%s">BLAST</a>', $hub->url({'species' => $hub->species || 'Multi', 'type' => 'Tools', 'action' => 'Blast', 'function' => ''}) if $sd->ENSEMBL_BLAST_ENABLED;
   push @links, 'biomart',       '<a class="constant" href="/biomart/martview">BioMart</a>';
   push @links, 'tools',         '<a class="constant" href="/tools.html">Tools</a>';
-  push @links, 'downloads',     '<a class="constant" href="/info/website/ftp/index.html">Downloads</a>';
+  push @links, 'downloads',     '<a class="constant" href="/info/data/ftp/index.html">Downloads</a>';
   push @links, 'docs',          '<a class="constant" href="/info/">Help &amp; Docs</a>';
   push @links, 'blog',          qq(<a class="constant" target="_blank" href="$blog">Blog</a>) if $blog;
 
