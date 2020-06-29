@@ -46,6 +46,8 @@ sub update_conf {
 
   # Static content flags
   $SiteDefs::HAS_ANNOTATION             = 1;
+  $SiteDefs::HAS_TUTORIALS              = 1;
+  $SiteDefs::HAS_API_DOCS               = 1;
 
   # disable sprite maps - not used for EG
   $SiteDefs::ENSEMBL_DEBUG_IMAGES = 1;
