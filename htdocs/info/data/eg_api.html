@@ -1,0 +1,252 @@
+<html>
+<head>
+<meta name="order" content="3" />
+<title>Ensembl Metadata Perl API</title>
+</head>
+
+<body>
+
+<h1>Ensembl Metadata Perl API</h1>
+
+<ul>
+<li><a href="#installing-the-api">Installing the API</a></li>
+<li><a href="#basic-use">Basic use</a></li>
+<li><a href="#">Advanced use</a></li>
+</ul>
+
+<p>Whilst all Ensembl Genomes database can be accessed using the standard 
+<a href="/info/data/api.html">Ensembl API</a>, the way that up to 250 genomes are loaded into a 
+single database presents some barriers to easy access for Ensembl Bacteria. To overcome this, a 
+<a href="https://github.com/Ensembl/ensembl-metadata">metadata API</a> is provided to make accessing 
+the data easier.</p>
+
+<p>The Bio::EnsEMBL::LookUp object provides an interface for loading the EnsEMBL Registry with the 
+large numbers of genomes from multiple databases, and allows individual DBAdaptor objects to be 
+retrieved for genomes that match criteria including ENA accession (or other seq_region name), 
+Genome Assembly accession, species name and taxonomy ID.</p>
+
+<p>Once <a href="http://www.ensembl.org/info/docs/Doxygen/core-api/classBio_1_1EnsEMBL_1_1DBSQL_1_1DBAdaptor.html">Bio::EnsEMBL::DBAdaptor</a> objects have been returned, they can be used as for any Ensembl species. Alternatively, the now-loaded <a href="http://www.ensembl.org/info/docs/Doxygen/core-api/classBio_1_1EnsEMBL_1_1Registry.html">Bio::EnsEMBL::Registry</a> object can be accessed directly.</p>
+
+<h2 id="installing-the-api">Installing the API</h2>
+
+<p>First, the standard Ensembl API and its dependencies should be <a class="external-link" href="http://www.ensembl.org/info/docs/api/api_installation.html" rel="nofollow">installed</a>. This should be the same version of Ensembl that is used by Ensembl Bacteria.</p>
+
+<p>Secondly, the ensembl-metadata API should be installed from the <a href="https://github.com/Ensembl/ensembl-metadata">GitHub repository</a>. You will need to add the modules directory from this package to your PERL5LIB. You may also need to install the CPAN package <a class="external-link" href="http://search.cpan.org/~makamaka/JSON-2.53/lib/JSON.pm" rel="nofollow">JSON</a> - please consult your local systems adminstration if you are unsure about how to do this.</p>
+
+<h2 id="basic-use">Basic use</h2>
+
+<p>The default mode for using the API is to use a specialised lookup database on the public MySQL server.</p>
+
+<h3>Building a helper</h3>
+
+<pre>
+use strict;
+use warnings;
+use Bio::EnsEMBL::LookUp;
+my $lookup = Bio::EnsEMBL::LookUp-&gt;new();
+</pre>
+
+<p>Once instantiated, the helper can be queried to retrieve Ensembl DBAdaptors in various ways:</p>
+
+<h3>Getting DBAdaptors by name</h3>
+
+<pre>
+use strict;
+use warnings;
+use Bio::EnsEMBL::LookUp;
+my $lookup = Bio::EnsEMBL::LookUp-&gt;new();
+my $dba = $lookup-&gt;get_by_name_exact('escherichia_coli_str_k_12_substr_mg1655');   
+my @dbas = @{$lookup-&gt;get_all_by_name_pattern('escherichia_coli_.*')};
+</pre>
+
+<h3>Getting DBAs by taxonomy</h3>
+
+<p>To get all genomes an organism identified by a given taxonomic node, supply the NCBI taxonomy ID to get_all_by_taxon_id(). For instance, for<em> Streptococcus sanguinis (strain SK36)</em>:</p>
+
+<pre>
+use strict;
+use warnings;
+use Bio::EnsEMBL::LookUp;
+my $lookup = Bio::EnsEMBL::LookUp-&gt;new();
+my @dbas = @{$lookup-&gt;get_all_by_taxon_id(388919)};
+</pre>
+
+<p>To get all genomes belonging to a branch of the taxonomy, supply the NCBI taxonomy ID of the root node for that branch to get_all_by_taxon_branch(). For instance, to find all genomes from the genus <em>Escherichia</em>:</p>
+
+<pre>
+use strict;
+use warnings;
+use Bio::EnsEMBL::LookUp;
+my $lookup = Bio::EnsEMBL::LookUp-&gt;new();
+my @dbas = @{$lookup-&gt;get_all_by_taxon_branch(561)};</pre>
+
+<h3>Getting DBAs by genomic INSDC accession</h3>
+
+<pre>
+use strict;
+use warnings;
+use Bio::EnsEMBL::LookUp;
+my $lookup = Bio::EnsEMBL::LookUp-&gt;new();
+my ($dba) = $lookup-&gt;get_all_by_accession("U00096");
+</pre>
+
+<h3>Getting DBAs by Genome Assembly accession</h3>
+
+<pre>
+use strict;
+use warnings;
+use Bio::EnsEMBL::LookUp;
+my $lookup = Bio::EnsEMBL::LookUp-&gt;new();
+my $dba = $lookup-&gt;get_by_assembly_accession("GCA_000005845.1");
+</pre>
+
+<p>Once obtained, DBAdaptor objects can be used as normal for an Ensembl species e.g.</p>
+
+<pre>
+my $genes = $dba-&gt;get_GeneAdaptor()-&gt;fetch_all();
+print "Found ".scalar @$genes." genes for ".$dba-&gt;species()."\n";
+</pre>
+
+<p><em>Important:</em> Once finished with a DBAdaptor object for the time being, it should be disconnected to avoid running out of connections on the MySQL server being used with following method:</p>
+
+<pre>
+$dba-&gt;dbc()-&gt;disconnect_if_idle();</pre>
+
+<p>Disconnected DBAdaptor objects can be used again without manually reconnecting. </p>
+
+<h2 id="advanced-use">Advanced use</h2>
+
+<p>The registry helper can be instantiated and used in a variety of ways. For instantiation from a local database set, the following code can be used (subsitute your own details):</p>
+
+<pre>
+register_dbs(
+                 "mysql.mydomain.com", 3306, "myuser",
+                 "mypass", "bacteria_[0-9]+_collection_core_17_70_1" );
+my $lookup = Bio::EnsEMBL::LookUp::LocalLookUp-&gt;new(-CLEAR_CACHE =&gt; 1);
+# use as required</pre>
+
+<p>The ensembl-metadata API can be used in conjunction with the <a href="/info/docs/api/compara/index.html">Compara Perl API</a> to access gene family data for Ensembl Bacteria. To find which families a gene belongs to:</p>
+
+<pre>
+use strict;
+use warnings;
+use Bio::EnsEMBL::LookUp;
+use Bio::EnsEMBL::Compara::DBSQL::DBAdaptor;
+print "Building helper\n";
+my $helper = Bio::EnsEMBL::LookUp-&gt;new();
+
+my $nom = 'escherichia_coli_str_k_12_substr_mg1655';
+print "Getting DBA for $nom\n";
+my ($dba) = @{$helper-&gt;get_by_name_exact($nom)};  
+
+my $gene = $dba-&gt;get_GeneAdaptor()-&gt;fetch_by_stable_id('b0344');
+print "Found gene " . $gene-&gt;external_name() . "\n";
+
+# load compara adaptor
+my $compara_dba = Bio::EnsEMBL::Compara::DBSQL::DBAdaptor-&gt;new(-HOST =&gt; 'mysql-eg-publicsql.ebi.ac.uk', -USER =&gt; 'anonymous', -PORT =&gt; '4157', -DBNAME =&gt; 'ensembl_compara_bacteria_24_77');
+# find the corresponding member
+my $member = $compara_dba-&gt;get_GeneMemberAdaptor()-&gt;fetch_by_source_stable_id('ENSEMBLGENE',$gene-&gt;stable_id());
+# find families involving this member
+for my $family (@{$compara_dba-&gt;get_FamilyAdaptor()-&gt;fetch_all_by_Member($member)}) {
+  print "Family ".$family-&gt;stable_id()."\n"; 
+}
+</pre>
+
+<p>To retrieve the genes belonging to a given family:</p>
+
+<pre>
+use strict;
+use warnings;
+use Bio::EnsEMBL::LookUp;
+use Bio::EnsEMBL::Compara::DBSQL::DBAdaptor;
+print "Building helper\n";
+my $helper = Bio::EnsEMBL::LookUp-&gt;new();
+
+# load compara adaptor
+my $compara_dba = Bio::EnsEMBL::Compara::DBSQL::DBAdaptor-&gt;new(-HOST =&gt; 'mysql-eg-publicsql.ebi.ac.uk', -USER =&gt; 'anonymous', -PORT =&gt; '4157', -DBNAME =&gt; 'ensembl_compara_bacteria_24_77');
+# find the corresponding member
+my $family = $compara_dba-&gt;get_FamilyAdaptor()-&gt;fetch_by_stable_id('MF_00395');
+print "Family " . $family-&gt;stable_id() . "\n";
+for my $member (@{$family-&gt;get_all_Members()}) {
+  my $genome_db = $member-&gt;genome_db();
+  print $genome_db-&gt;name();
+  my ($member_dba) = @{$helper-&gt;get_by_name_exact($genome_db-&gt;name())};
+  if (defined $member_dba) {
+  my $gene = $member_dba-&gt;get_GeneAdaptor()-&gt;fetch_by_stable_id($member-&gt;gene_member()-&gt;stable_id());
+  print $member_dba-&gt;species() . " " . $gene-&gt;external_name . "\n";
+        $member_dba-&gt;dbc()-&gt;disconnect_if_idle();
+  }
+}
+</pre>
+
+<p>To retrieve the genes belonging to a given family (in this case the HAMAP family for the cytochrome b6-f complex subunit 8), filtering to a specific branch of the taxonomy (in this case from the species <i>Prochlorococcus marinus</i>):</p>
+
+<pre>
+-use strict;
+use warnings;
+use Bio::EnsEMBL::LookUp;
+use Bio::EnsEMBL::Compara::DBSQL::DBAdaptor;
+
+print "Building helper\n";
+my $helper = Bio::EnsEMBL::LookUp-&gt;new();
+
+# find all genomes that descendants of a specified node to use as a filter
+my $taxid = 1219; # Prochlorococcus marinus
+print "Finding genomes for " . $taxid . "\n";
+my %target_species = map { $_-&gt;species() =&gt; $_ } @{$helper-&gt;get_all_by_taxon_branch($taxid)};
+
+# load compara adaptor
+my $compara_dba = Bio::EnsEMBL::Compara::DBSQL::DBAdaptor-&gt;new(-HOST =&gt; 'mysql-eg-publicsql.ebi.ac.uk', -USER =&gt; 'anonymous', -PORT =&gt; '4157', -DBNAME =&gt; 'ensembl_compara_bacteria_24_77');
+# find the corresponding member
+my $family = $compara_dba-&gt;get_FamilyAdaptor()-&gt;fetch_by_stable_id('MF_00395');
+print "Family " . $family-&gt;stable_id() . "\n";
+for my $member (@{$family-&gt;get_all_Members()}) {
+  my $genome_db = $member-&gt;genome_db();
+  # filter by taxon from the calculated list
+  my $member_dba = $target_species{$genome_db-&gt;name()};
+  if (defined $member_dba) {
+     my $gene = $member_dba-&gt;get_GeneAdaptor()-&gt;fetch_by_stable_id($member-&gt;gene_member()-&gt;stable_id());
+     print $member_dba-&gt;species() . " " . $gene-&gt;external_name . "\n";
+     $member_dba-&gt;dbc()-&gt;disconnect_if_idle();
+  }
+}
+</pre>
+
+<p>To retrieve the canonical peptides from genes belonging to a given family:</p>
+
+<pre>
+use strict;
+use warnings;
+use Bio::EnsEMBL::LookUp;
+use Bio::EnsEMBL::Compara::DBSQL::DBAdaptor;
+use Bio::SeqIO;
+print "Building helper\n";
+my $helper = Bio::EnsEMBL::LookUp-&gt;new();
+
+# load compara adaptor
+my $compara_dba = Bio::EnsEMBL::Compara::DBSQL::DBAdaptor-&gt;new(-HOST =&gt; 'mysql-eg-publicsql.ebi.ac.uk', -USER =&gt; 'anonymous', -PORT =&gt; '4157', -DBNAME =&gt; 'ensembl_compara_bacteria_24_77');
+
+# find the corresponding member
+my $family  = $compara_dba-&gt;get_FamilyAdaptor()-&gt;fetch_by_stable_id('MF_00395');
+
+# create a file to write to
+my $outfile = "&gt;" . $family-&gt;stable_id . ".fa";
+my $seq_out = Bio::SeqIO-&gt;new(-file   =&gt; $outfile,
+                -format =&gt; "fasta",);
+print "Writing family " . $family-&gt;stable_id() . " to $outfile\n";
+
+# loop over members
+for my $member (@{$family-&gt;get_all_Members()}) {
+  my $genome_db = $member-&gt;genome_db();
+  my ($member_dba) = @{$helper-&gt;get_by_name_exact($genome_db-&gt;name())};
+  if (defined $member_dba) {
+  my $gene = $member_dba-&gt;get_GeneAdaptor()-&gt;fetch_by_stable_id($member-&gt;gene_member()-&gt;stable_id());
+  print "Writing sequence for " . $member-&gt;stable_id() . "\n";
+  my $s = $gene-&gt;canonical_transcript()-&gt;translate();
+  $seq_out-&gt;write_seq($s);
+        $member_dba-&gt;dbc()-&gt;disconnect_if_idle();
+  }
+}</pre>
+
+</body>
+</html>

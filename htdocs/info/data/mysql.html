@@ -1,0 +1,113 @@
+<html>
+<head>
+<meta name="order" content="3" />
+<title>Public MySQL Server</title>
+</head>
+
+<body>
+
+<h1>The Ensembl Genomes public MySQL Servers</h1>
+
+<p>Ensembl Genomes and the Ensembl software platform use the <a href="http://www.mysql.com">MySQL</a> relational database management system to store data. MySQL databases are used by the web browser and <a href="https://rest.ensembl.org">REST service</a>, and can be used with the <a href="/info/data/api">Ensembl Perl API</a> or directly with a MySQL client (see below). The schema used by the Ensembl platform are described in the <a href="/info/docs/api/index.html">Ensembl API documentation</a>.</p>
+
+<p>MySQL databases are also used by the <a href="/info/data/biomart">BioMart</a> data warehouse 
+interface, although we recommend that you use the web interface to access data in BioMart, as 
+the mart schema contains many tables of denormalised data. Data can also be retrieved from 
+BioMart programmatically, using the <a href="http://www.biomart.org/martservice.html">XML-based martservice</a>.</p>
+
+<h2>Public MySQL Servers</h2>
+
+<p>Ensembl Genomes operates a MySQL server for public use which contains all databases from the 
+last 10 Ensembl Genomes releases, including those used for the BioMart interface. This server 
+can be used in conjuction with the <a href="http://www.ensembl.org/info/data/mysql.html">Ensembl public MySQL servers</a> (though Ensembl Genomes do not currently offer any mirror servers). Details of Ensembl and Ensembl Genomes servers are shown below, and all servers can be accessed using the user 'anonymous' (no password required): </p>
+
+<table class="ss tint">
+  <thead>
+    <tr>
+      <th>Dataset</th>
+      <th>Server</th>
+      <th>Port</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ensembl Genomes, all databases</td>
+      <td>mysql-eg-publicsql.ebi.ac.uk</td>
+      <td>4157</td>
+    </tr>
+    <tr>
+      <td>Ensembl</td>
+      <td>ensembldb.ensembl.org</td>
+      <td>5306</td>
+    </tr>
+    <tr>
+      <td>Ensembl Mart</td>
+      <td>martdb.ensembl.org</td>
+      <td>5316</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Note:</strong> Ensembl Genomes and <a href="http://www.ensembl.org/info/data/mysql.html">Ensembl</a> MySQL servers are located at different URLs. Ensembl Genomes databases from all five divisions are located on the same server. Ensembl BioMart is on a different server. Not all MySQL instances use the default port, so please ensure that you specify the correct port when trying to connect!</p>
+
+<p>The MySQL server is provided 'as-is', though scheduled downtime will be publicised on the mailing lists and on the <a href="https://www.ensembl.info">Ensembl blog</a>. Please note that processes that use this service excessively to the detriment of other users may be terminated without warning to preserve the service functionality. For intensive use of this server, an alternative is to set up a local MySQL database with <a href="info/data/ftp/">copies of Ensembl Genomes data</a>.</p>
+
+<p>The public MySQL server is restricted to data from the most recent 10 releases only. With each subsequent release, data from the oldest release will be removed at release time. The removal of each release will be announced with the intentions for the new release approximately 2 months in advance. MySQL dumps from all previous releases are always available from the <a href="ftp://ftp.ensemblgenomes.org/pub/current">Ensembl Genomes FTP site</a>.</p>
+
+<h2>Installing local MySQL databases</h2>
+
+<p>When creating a Ensembl Genomes mirror, or to use local MySQL databases with the Ensembl Perl API, dumps  of MySQL databases can be downloaded from the <a href="ftp://ftp.ensemblgenomes.org/pub/current">Ensembl Genomes FTP site</a>. Instructions for loading MySQL dumps onto a local MySQL server can be found in the <a href="/info/docs/webcode/mirror/install/ensembl-data.html">webcode documentation</a>.</p>
+
+<h2>Naming conventions</h2>
+
+<p>Most Ensembl Genomes MySQL databases follow a standard naming convention, using the following</p>
+
+<ul>
+  <li>genus_species is the binomial name (strain may be appended to species)</li>
+  <li>eg_version is the version of Ensembl Genomes for this release</li>
+  <li>ensembl_version is the version of the Ensembl schema/API used</li>
+  <li>assembly_version is the version of the genome assembly</li>
+  <li>division is the name of the Ensembl Genomes division (bacteria, metazoa, fungi, plants, protists; pan_homology is the pan-taxonomic compara database)</li>
+</ul>
+
+<p>The following conventions apply:</p>
+
+<ul>
+  <li>core databases -  &lt;genus_species&gt;_core_&lt;eg_version&gt;_&lt;ensembl_version&gt;_&lt;assembly_version&gt;</li>
+  <li>variation databases -  &lt;genus_species&gt;_variation_&lt;eg_version&gt;_&lt;ensembl_version&gt;_&lt;assembly_version&gt;</li>
+  <li>funcgen databases -  &lt;genus_species&gt;_funcgen_&lt;eg_version&gt;_&lt;ensembl_version&gt;_&lt;assembly_version&gt;</li>
+  <li>compara databases -  ensembl_compara__&lt;eg_version&gt;_&lt;ensembl_version&gt;</li>
+  <li>mart databases - _mart_&lt;eg_version&gt;, _seq_mart_&lt;eg_version&gt;, _snp_mart_&lt;eg_version&gt;</li>
+</ul>
+
+<h2>Collection databases</h2>
+
+<p>For Ensembl Bacteria, the genomes are loaded in batches of up to 250 into databases matching the pattern bacteria_&lt;db_number&gt;_collection_core_&lt;eg_version&gt;_&lt;ensembl_version&gt;_1 where:</p>
+
+<ul>
+  <li>db_number is the number representing the individual collection of genomes</li>
+  <li>eg_version is the version of Ensembl Genomes for this release</li>
+  <li>ensembl_version is the version of the Ensembl schema/API used</li>
+</ul>
+
+<p>The terminal number (which usually represents the assembly version) has no significance in this context. For the majority of genomes, there is no significance to which databases contain which genomes, but any new genomes are added to the last database in the list by db_number (or a new database with the next value of db_name if that has more than 250 genomes). However, genomes used in pan compara, which typically are references for key species, are found in collection bacteria_0. For this reason, users are strongly recommended to use the <a href="/info/access/eg_api">Ensembl Genomes API</a> to access Ensembl Bacteria.</p>
+
+<p>For Ensembl Fungi and Protists, from release 27 onwards, a large proportion of genomes are stored in collection databases in a similar way to bacteria, following the pattern fungi|protists_&lt;collection_name&gt;_collection_&lt;eg_version&gt;_&lt;ensembl_version&gt;_1. The naming convention is above, except the collection name is based on taxonomic grouping e.g. fungi_ascomycota1_collection_core_27_80_1 is the first database containing genomes from Ascomycota.</p>
+
+<p>In either case, please note that SQL statements designed to work on single species MySQL databases may not always work on collection databases. For instance, the gene table in a collection database contains genes for all genomes, so the following statement returns all protein-coding genes for all genomes:</p>
+
+<pre>
+select stable_id from gene where biotype='protein_coding';</pre>
+
+<p>To obtain genes for a given species, the following style of query is needed, where the genes are restricted to those coming from a genome with a particular name:</p>
+
+<pre>
+select stable_id from gene join seq_region using (seq_region_id) 
+join coord_system using (coord_system_id) join meta using (species_id) 
+where meta_key="species.production_name" and meta_value="escherichia_coli_str_k_12_substr_mg1655"
+and biotype="protein_coding";</pre>
+
+<p>Given this, you are <strong>strongly</strong> recommended to use the <a href="http://rest.ensembl.org">REST service</a>, and <a href="/info/data/api.html">Ensembl Perl API</a> where possible.</p>
+
+</body>
+</html>
