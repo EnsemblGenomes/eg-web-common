@@ -31,6 +31,11 @@ sub update_conf {
   $SiteDefs::SITE_MISSION         = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
   $SiteDefs::BIOSCHEMAS_DATACATALOG = defer { 'http://'.$SiteDefs::DIVISION.'.ensembl.org/#project' };
     
+  $SiteDefs::SPECIES_IMAGE_DIR          = defer { sprintf '%s/eg-web-%s/%s', 
+                                                $SiteDefs::ENSEMBL_SERVERROOT,
+                                                $SiteDefs::DIVISION,
+                                                $SiteDefs::DEFAULT_SPECIES_IMG_DIR };
+
   push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-metadata/modules';
   push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-taxonomy/modules';
   
