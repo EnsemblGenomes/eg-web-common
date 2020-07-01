@@ -51,7 +51,7 @@ sub ajax_species_autocomplete {
   # find matches
   my @matches;
   foreach my $sp (@species) {
-    my $name    = $species_defs->get_config($sp, "SPECIES_COMMON_NAME");
+    my $name    = $species_defs->get_config($sp, "SPECIES_DISPLAY_NAME");
     my $taxid   = $species_defs->get_config($sp, "TAXONOMY_ID");
     my $search  = $normalise->("$name $taxid");
     

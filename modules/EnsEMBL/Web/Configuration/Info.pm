@@ -21,14 +21,14 @@ package EnsEMBL::Web::Configuration::Info;
 sub caption {
     my $self = shift;
     my $species_defs = $self->hub->species_defs;
-    return sprintf 'Search <i>%s</i>', $species_defs->SPECIES_COMMON_NAME;
+    return sprintf 'Search <i>%s</i>', $species_defs->SPECIES_DISPLAY_NAME;
 }
 
 sub global_context {
   my $self         = shift;
   my $hub          = $self->model->hub;
   my $species_defs = $hub->species_defs;
-  my $species      = $species_defs->get_config($hub->species, 'SPECIES_COMMON_NAME');
+  my $species      = $species_defs->get_config($hub->species, 'SPECIES_DISPLAY_NAME');
   
   if ($species and $species ne 'common') {
     $self->page->global_context->add_entry(

@@ -38,7 +38,7 @@ sub content {
 #   return $self->wheatHomePage();
 # }
 
-  my $common_name       = $species_defs->SPECIES_COMMON_NAME;
+  my $common_name       = $species_defs->SPECIES_DISPLAY_NAME;
   my $display_name      = $species_defs->SPECIES_SCIENTIFIC_NAME;
   my $image             = $species_defs->SPECIES_IMAGE;
   my $ensembl_version   = $species_defs->ENSEMBL_VERSION;

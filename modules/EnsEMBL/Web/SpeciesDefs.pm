@@ -194,9 +194,6 @@ sub _parse {
   foreach my $key (sort keys %$tree) {
     next unless (defined $tree->{$key}{'SPECIES_URL'}); # skip if not a species key
 
-    ## Needed for consistency with vertebrates
-    $tree->{$key}{'PREFERRED_DISPLAY_NAME'} = $tree->{$key}{'SPECIES_SCIENTIFIC_NAME'};
-
     ## Check for a) genome-specific image, b) species-specific image
     my $no_image  = 1;
     ## Need to use full path, as image files are usually in another plugin

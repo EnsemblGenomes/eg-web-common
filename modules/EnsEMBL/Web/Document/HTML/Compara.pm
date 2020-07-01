@@ -53,11 +53,11 @@ sub species_table {
 
     if ($genomic_count) {
 	my @rows;
-	my $sp1 = $data->{$species}->{'common_name'};
+	my $sp1 = $data->{$species}->{'display_name'};
 	my $loc = $data->{$species}->{'sample_loc'} || '';
 
-	foreach my $sp (sort {$data->{$a}->{'common_name'} cmp $data->{$b}->{'common_name'}} keys %{$sdata->{'align'}||{}}) {
-	    my $sp2 = $data->{$sp}->{'common_name'};
+	foreach my $sp (sort {$data->{$a}->{'display_name'} cmp $data->{$b}->{'display_name'}} keys %{$sdata->{'align'}||{}}) {
+	    my $sp2 = $data->{$sp}->{'display_name'};
 	    foreach my $align (grep {$_ !~ /SYNTENY/} sort keys %{$sdata->{'align'}->{$sp}||{}}) {
 		my ($aid, $stats) = @{$sdata->{'align'}->{$sp}->{$align}||[]};
 		my $elink =  $self->hub->url({ 'species' => $species, 'type' => 'Location', 'action'=>'Compara_Alignments/Image', 'r'=>$loc, 'align' => $aid});
@@ -97,11 +97,11 @@ sub species_table {
 
     if ($synteny_count) {
 	my @rows;
-	my $sp1 = $data->{$species}->{'common_name'};
+	my $sp1 = $data->{$species}->{'display_name'};
 	my $loc = $data->{$species}->{'sample_loc'} || '';
 
-	foreach my $sp (sort {$data->{$a}->{'common_name'} cmp $data->{$b}->{'common_name'}} keys %{$sdata->{'align'}||{}}) {
-	    my $sp2 = $data->{$sp}->{'common_name'};
+	foreach my $sp (sort {$data->{$a}->{'display_name'} cmp $data->{$b}->{'display_name'}} keys %{$sdata->{'align'}||{}}) {
+	    my $sp2 = $data->{$sp}->{'display_name'};
 	    foreach my $align (grep {$_ =~ /SYNTENY/} sort keys %{$sdata->{'align'}->{$sp}||{}}) {
 		my ($aid, $stats) = @{$sdata->{'align'}->{$sp}->{$align}||[]};
 		push @rows, {
@@ -153,7 +153,7 @@ sub table {
 
    foreach my $sp (keys %$data) {
 	$data->{$sp}->{'name'} = $sp;
-	$data->{$sp}->{'common_name'}    = $hub->species_defs->get_config($sp, 'SPECIES_COMMON_NAME') || $hub->species_defs->get_config(ucfirst($sp), 'SPECIES_COMMON_NAME') || ucfirst($sp);
+	$data->{$sp}->{'display_name'}    = $hub->species_defs->get_config($sp, 'SPECIES_DISPLAY_NAME') || $hub->species_defs->get_config(ucfirst($sp), 'SPECIES_DISPLAY_NAME') || ucfirst($sp);
 	my $loc = $hub->species_defs->get_config($sp, 'SAMPLE_DATA') || $hub->species_defs->get_config(ucfirst($sp), 'SAMPLE_DATA') || {};
 
 	$data->{$sp}->{'sample_loc'} = $loc->{LOCATION_PARAM};
@@ -170,7 +170,7 @@ sub table {
     }
 
     my ($i, $j) = (0, 0);
-    foreach my $species (sort {$data->{$a}->{'common_name'} cmp $data->{$b}->{'common_name'}} keys %$data) {
+    foreach my $species (sort {$data->{$a}->{'display_name'} cmp $data->{$b}->{'display_name'}} keys %$data) {
 	my $ybg = $i++ % 2 ? 'bg1' : 'bg2';
 
 	my $sdata = $data->{$species};
@@ -203,7 +203,7 @@ $sample_location,
 $stats ? qq{<a href="/mlss.html?mlss=$aid">stats</a>} : '&nbsp;';
 	    }
 	    $astr .= qq{</table>};
-	    $ghtml .= sprintf qq{<tr class="%s"><td>%s</td><td>%s</td></tr>}, $xbg, $data->{$ss}->{'common_name'} || $ss, $astr;
+	    $ghtml .= sprintf qq{<tr class="%s"><td>%s</td><td>%s</td></tr>}, $xbg, $data->{$ss}->{'display_name'} || $ss, $astr;
 	}
 
 	$ghtml .= qq{</table>};
@@ -230,7 +230,7 @@ $stats ? qq{<a href="/mlss.html?mlss=$aid">stats</a>} : '&nbsp;';
 
     %s
   </td>
-</tr>}, $ybg, $sdata->{'name'}, $sdata->{'common_name'}, $chtml, $ghtml;
+</tr>}, $ybg, $sdata->{'name'}, $sdata->{'display_name'}, $chtml, $ghtml;
 	$thtml .= $sphtml;
     }
     

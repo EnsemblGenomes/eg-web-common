@@ -262,7 +262,7 @@ sub _munge_meta {
   my $self = shift;
   
   ##########################################
-  # SPECIES_COMMON_NAME     = Human        #
+  # SPECIES_DISPLAY_NAME    = Human        #
   # SPECIES_PRODUCTION_NAME = homo_sapiens #
   # SPECIES_SCIENTIFIC_NAME = Homo sapiens #
   ##########################################
@@ -271,7 +271,7 @@ sub _munge_meta {
     species.taxonomy_id           TAXONOMY_ID
     species.url                   SPECIES_URL
     species.stable_id_prefix      SPECIES_PREFIX
-    species.display_name          SPECIES_COMMON_NAME
+    species.display_name          SPECIES_DISPLAY_NAME
     species.production_name       SPECIES_PRODUCTION_NAME
     species.scientific_name       SPECIES_SCIENTIFIC_NAME
     species.species_name          SPECIES_BINOMIAL
@@ -308,13 +308,13 @@ sub _munge_meta {
   if ($self->is_collection('DATABASE_CORE')) {
 ##    
     if ($meta_info->{0}{'species.group'}) {
-      $self->tree->{'DISPLAY_NAME'} = $meta_info->{0}{'species.group'};
+      $self->tree->{'GROUP_DISPLAY_NAME'} = $meta_info->{0}{'species.group'};
     } else {
       (my $group_name = $self->{'_species'}) =~ s/_collection//;
-      $self->tree->{'DISPLAY_NAME'} = $group_name;
+      $self->tree->{'GROUP_DISPLAY_NAME'} = $group_name;
     }
   } else {
-    $self->tree->{'DISPLAY_NAME'} = $meta_info->{1}{'species.display_name'}[0];
+    $self->tree->{'GROUP_DISPLAY_NAME'} = $meta_info->{1}{'species.display_name'}[0];
   }
 
   ## fall back to 'strain' if no strain type set
@@ -364,9 +364,6 @@ sub _munge_meta {
       $self->tree($production_name)->{$key} = $value;
     }
 
-
-    $self->tree($production_name)->{'DISPLAY_NAME'} = $self->tree($production_name)->{'SPECIES_COMMON_NAME'};
-
     ## Do species group
     my $taxonomy = $meta_hash->{'species.classification'};
     
@@ -387,9 +384,6 @@ sub _munge_meta {
     ## otherwise the mapping in Apache handlers will fail
     $self->full_tree->{'MULTI'}{'SPECIES_ALIASES'}{$species} = $species;
 
-
-    ## Backwards compatibility
-    $self->tree($production_name)->{'SPECIES_BIO_NAME'}  = $bio_name;
     ## Used mainly in <head> links
     ($self->tree($production_name)->{'SPECIES_BIO_SHORT'} = $bio_name) =~ s/^([A-Z])[a-z]+_([a-z]+)$/$1.$2/;
 
