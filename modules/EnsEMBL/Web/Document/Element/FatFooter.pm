@@ -32,13 +32,11 @@ sub content {
   $html .= qq(
               <div class="column-four left">
                 <h3>About Us</h3>
-                <p><a href="http://ensemblgenomes.org/info/about">About us</a></p>
-                <p><a href="http://ensemblgenomes.org/info/about/contact">Contact us</a></p>
-                <p><a href="http://ensemblgenomes.org/info/publications">Citing Ensembl Genomes</a></p>
-                <p><a href="http://www.ebi.ac.uk/about/privacy">Privacy policy</a></p>
-                <p><a href="http://www.ensemblgenomes.org/info/about/cookies">Cookies</a></p>
-                <p><a href="http://www.ebi.ac.uk/Information/termsofuse.html">EMBL-EBI Terms of use</a></p>
-                <p><a href="http://ensemblgenomes.org/info/about/legal">Disclaimer</a></p>
+                <p><a href="/info/about/">About us</a></p>
+                <p><a href="/info/about/contact/">Contact us</a></p>
+                <p><a href="/info/about/publications.html">Citing Ensembl Genomes</a></p>
+                <p><a href="https://www.ebi.ac.uk/data-protection/ensembl/privacy-notice">Privacy policy</a></p>
+                <p><a href="/info/about/legal/">Disclaimer</a></p>
               </div>
   );
 
@@ -47,9 +45,9 @@ sub content {
               <div class="column-four left">
                 <h3>Get help</h3>
                 <p><a href="/info/website/">Using this website</a></p>
-                <p><a href="http://ensemblgenomes.org/info">Documentation</a></p>
-                <p><a href="/info/website/upload">Adding custom tracks</a></p>
-                <p><a href="/info/website/ftp/index.html">Downloading data</a></p>
+                <p><a href="/info/">Documentation</a></p>
+                <p><a href="/info/website/upload/">Adding custom tracks</a></p>
+                <p><a href="/info/data/">Downloading data</a></p>
               </div>
   );
 
