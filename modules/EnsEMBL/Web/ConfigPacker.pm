@@ -338,7 +338,7 @@ sub _munge_meta {
     $genome_info_adaptor->data_release($release);
 
     ## Get info about pan-compara species
-    my $dbh = $self->db_connect('DATABASE_METADATA');
+    my $dbh = $self->db_connect('DATABASE_METADATA', $metadata_db);
     my $version = $SiteDefs::ENSEMBL_VERSION;
     my $aref = $dbh->selectall_arrayref(
       "select 
