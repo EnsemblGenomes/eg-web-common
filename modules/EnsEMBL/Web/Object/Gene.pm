@@ -62,12 +62,8 @@ sub get_go_list {
         next;
       }
 
-      my $info_text;
+      my $info_text = $goxref->info_text;
       my $sources;
-
-      if ($goxref->info_type eq 'PROJECTION') {
-        $info_text= $goxref->info_text; 
-      }
 
       my $evidence = '';
 ## EG
