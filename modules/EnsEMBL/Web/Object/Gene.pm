@@ -126,17 +126,47 @@ sub get_go_list {
         }
      
         if($has_ancestor){        
+          my $hub = $self->hub;
+          my ($source, $mapped);
+          if ($info_text =~ /from ([a-z]+[ _][a-z]+) (gene|translation) (\S+)/i) {
+            my $gene        = $3;
+            my $type        = $2;
+            my $sci_name    = ucfirst $1;
+
+            (my $species   = $sci_name) =~ s/ /_/g;     
+      
+            my $param_type = $type eq 'translation' ? 'p' : substr $type, 0, 1;
+            my $url        = $hub->url({
+                                        species     => $species,
+                                        type        => 'Gene',
+                                        action      => $type eq 'translation' ? 'Ontologies/'.$hub->function : 'Summary',
+                                        $param_type => $gene,
+                                        __clear     => 1,
+                                      });
+
+            $mapped = qq{Propagated from $sci_name <a href="$url">$gene</a> by orthology};
+            $source = 'Ensembl';
+
+          } else {
+            $mapped = join ', ', @{$sources || []};
+            $source = $info_text;
+          }
+
+
           $go_hash{$go} = {
             transcript_id => $transcript_id,
-            evidence => $evidence,
-            term     => $term_name,
-            info     => $info_text,
-            source   => join(', ', @{$sources || []}),
+            evidence      => $evidence,
+            term          => $term_name,
+            source        => $source,
+            mapped        => $mapped,
 ## EG
-            extensions => \@extensions,
+            extensions    => \@extensions,
 ##
           };
-        }
+        }        
+
+
+ 
       }
 
     }
