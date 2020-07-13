@@ -31,6 +31,11 @@ sub update_conf {
   $SiteDefs::SITE_MISSION         = 'Ensembl Genomes provides integrated access to genome-scale data from invertebrate metazoa, plants, fungi, protists and bacteria in partnership with the scientifc communities that work in each domain.';
   $SiteDefs::BIOSCHEMAS_DATACATALOG = defer { 'http://'.$SiteDefs::DIVISION.'.ensembl.org/#project' };
     
+  $SiteDefs::SPECIES_IMAGE_DIR          = defer { sprintf '%s/eg-web-%s/%s', 
+                                                $SiteDefs::ENSEMBL_SERVERROOT,
+                                                $SiteDefs::DIVISION,
+                                                $SiteDefs::DEFAULT_SPECIES_IMG_DIR };
+
   push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-metadata/modules';
   push @$SiteDefs::ENSEMBL_API_LIBS, $SiteDefs::ENSEMBL_SERVERROOT . '/ensembl-taxonomy/modules';
   
@@ -43,6 +48,11 @@ sub update_conf {
   # Does this site have a large species set?
   # (used by the interface to determine whether to use dropdown or auto-comeplete etc)
   $SiteDefs::LARGE_SPECIES_SET = 0;
+
+  # Static content flags
+  $SiteDefs::HAS_ANNOTATION             = 1;
+  $SiteDefs::HAS_TUTORIALS              = 1;
+  $SiteDefs::HAS_API_DOCS               = 1;
 
   # disable sprite maps - not used for EG
   $SiteDefs::ENSEMBL_DEBUG_IMAGES = 1;
@@ -66,6 +76,9 @@ sub update_conf {
 
   # EG doesn't use file chameleon
   $SiteDefs::ENSEMBL_FC_ENABLED = 0;
+
+  ## Show docs about annotation
+  $SiteDefs::HAS_ANNOTATION = 1;
 
   #----------------------------------------------------------------------------
   # EXTERNAL

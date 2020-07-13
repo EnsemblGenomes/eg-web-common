@@ -1,0 +1,75 @@
+<html>
+<head>
+<meta name="order" content="2" />
+<title>INSDC annotation import</title>
+</head>
+
+<body>
+
+<p>Many genomes made available through Ensembl Genomes are imported from annotated records in the <a href="http://www.insdc.org/">INSDC</a> archives (<a href="http://www.ebi.ac.uk/ena">ENA</a>, <a href="http://www.ncbi.nlm.nih.gov/genbank/">GenBank</a> and <a href="http://www.ddbj.nig.ac.jp/">DDBJ</a>). This document gives an overview of the steps involved in loading these data. Note that the import pipeline is currently only for internal EBI use as it depends on resources only available within the European Bioinformatics Institute, though the data integrated by this pipeline are made freely available. For more information on how this pipeline is used for Ensembl Bacteria, see <a href="http://bacteria.ensembl.org/info/genome/annotation/insdc_annotation/bacteria_pipeline.html">Ensembl Bacteria import pipeline</a>. </p>
+
+<h2>Genome identification</h2>
+
+<p>Genomes imported from <a href="http://www.insdc.org/">INSDC</a> are uniquely identified by an INSDC assembly accession corresponding to an entry in the INSDC <a href="http://www.ebi.ac.uk/ena/about/genome_assembly_database">Genome Assembly Database</a>, which is used as an authorative source of assemblies. Each assembly record comprises basic metadata about the organism plus INSDC accessions for replicons, unassembled scaffolds and WGS sets.</p>
+
+<h2>Gene model generation</h2>
+
+<p>For each genome, the import pipeline runs the following steps:</p>
+
+<ul>
+  <li>retrieve and parse each entry from the <a href="https://www.ebi.ac.uk/ena/about/browser">ENA REST interface</a> to generate a basic genome model
+
+    <ul>
+      <li>parse out meta-data from the entry.</li>
+      <li>parse out sequence from the entry (for CON entries, the sequences and assembly of component entries is also retrieved).</li>
+      <li>parse out features and process each individually:
+        <ul>
+          <li>use locus_tag feature qualifiers to combine CDS, gene, 5'UTR, 3'UTR and mRNA features to produce protein-coding gene models.</li>
+          <li>use locus_tag feature qualifiers tRNA, rRNA and ncRNA features (and corresponding gene features) to production non-coding RNA gene models. Note that the INSDC data model may include genes containing both protein-coding and non-coding RNA transcripts, which are reflected in the finished genome model.</li>
+          <li>use mat_peptide, sig_peptide and transit_peptide to add additional protein features to protein-coding gene models.</li>
+          <li>generate repeat models from repeat_region features.</li>
+          <li>generate simple feature models from all other feature types that cannot be processed as above.</li>
+          <li>add external database references based on xref qualifiers.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>process each translations in the generated model to:
+    <ul>
+      <li>find the corresponding entry in <a href="http://www.uniprot.org/help/uniparc">UniParc</a> based on INSDC protein_id cross-references</li>
+      <li>use <a href="http://www.uniprot.org/help/uniparc">UniParc</a> identifiers to retrieve matches from <a href="https://www.ebi.ac.uk/interpro/">InterPro</a> to create protein features</li>
+      <li>use <a href="http://www.uniprot.org/">UniProtKB</a> identifiers to retrieve annotation from <a href="https://www.ebi.ac.uk/GOA">GOA</a>, or if no <a href="http://www.uniprot.org/">UniProtKB</a> mapping found, use <a href="https://www.ebi.ac.uk/interpro/">InterPro</a> signatures to retrieve annotation from <a href="https://www.ebi.ac.uk/GOA">GOA</a> using the InterPro2GO mapping.</li>
+      <li>use <a href="http://www.uniprot.org/">UniProtKB</a> identifiers to retrieve selected cross-references to other resources from the corresponding <a href="http://www.uniprot.org/">UniProtKB</a> record</li>
+    </ul>
+  </li>
+  <li>load imported genomes into Ensembl core MySQL databases.</li>
+  <li>Additional non-coding RNA gene models are generated based on available alignments of <a href="http://rfam.xfam.org">Rfam</a> family models to available INSDC genomic sequences.</li>
+</ul>
+
+<h2>Gene Identifier Assignment</h2>
+
+<p>The names and identifiers used within the Ensembl databases imported from INSDC for genes and gene products are derived as follows:</p>
+
+<ul>
+  <li>names
+    <ul>
+      <li>genes are named from the gene feature qualifier (e.g. yjdO)</li>
+      <li>transcripts are named from a composite of the gene name and the protein_id qualifier (e.g. yjdO/ABD18711)</li>
+    </ul>
+  </li>
+  <li>stable identifiers
+    <ul>
+      <li>the gene stable identifier is derived from the locus_tag qualifier or the protein_id qualifier if absent (e.g. b4559)</li>
+      <li>the transcript stable identifier is derived either from the protein_id qualifier of the corresponding CDS feature, or the locus_tag qualifier if no protein_id is specified (e.g. ABD18711)</li>
+      <li>the translation stable identifier is derived from the protein_id qualifier of the corresponding CDS feature (e.g. ABD18711)</li>
+    </ul>
+  </li>
+  <li>internal references
+    <ul>
+      <li>each feature derived from an ENA feature has a generated identifier of the form contig_acc:feature:location e.g. BX072543.1:CDS:868063..869034</li>
+    </ul>
+  </li>
+</ul>
+
+</body>
+</html>

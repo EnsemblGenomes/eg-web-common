@@ -35,7 +35,7 @@ sub content {
   my $species_defs = $self->species_defs;
   my $species_path = $species_defs->species_path;
   my $ack_text     = $species_defs->ACKNOWLEDGEMENT;
-  my $ack_url      = $species_defs->ACKNOWLEDGEMENT_URL || '/info/acknowledgement.html';
+  my $ack_url      = $species_defs->ACKNOWLEDGEMENT_URL || '/info/about/credits.html';
   my $db_provider  = $species_defs->DB_BUILDER;
   my $content;
   

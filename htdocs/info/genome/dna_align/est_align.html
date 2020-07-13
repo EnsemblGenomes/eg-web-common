@@ -1,0 +1,36 @@
+<html>
+<head>
+<meta name="order" content="1" />
+<title>EST Alignment</title>
+</head>
+
+<body>
+
+<h1>EST Alignment</h1>
+
+<p>Comprehensive sets of EST and full-length cDNA sequences have been aligned to most species 
+in Ensembl Genomes. When a genome is added, all of the EST sequences for the species are 
+retrieved from <a href="http://www.ncbi.nlm.nih.gov/dbEST/">dbEST</a> and aligned. Additional 
+EST collections are obtained from species-specific EST databases or directly contributed from 
+external research groups. The sets of aligned ESTs are updated intermittently, or by community 
+request. Details of an EST's source, along with a link to the source database, if available, 
+can be found by clicking on the track's "more information" icon in the Ensembl Genomes browser.</p>
+
+<h2>Alignment generation</h2>
+
+<p>EST alignments in Ensembl Genomes are generated with <a href="http://www.ebi.ac.uk/~guy/exonerate/">Exonerate</a> [1]. Typically, the genome sequence is soft-masked to improve alignment quality 
+without sacrificing sensitivity. Alignments shorter than 50 base-pairs, with introns longer than 
+25Kb, or with an Exonerate score below 300, are discarded. EST sequences from separate sources are 
+aligned in distinct batches, and are presented in separate browser tracks.</p>
+
+<h2>Data access</h2><p>EST alignments can be accessed programmatically using the Ensembl core API. 
+They are stored as <a href="http://www.ensembl.org/info/docs/Doxygen/core-api/classBio_1_1EnsEMBL_1_1DnaDnaAlignFeature.html">Bio::EnsEMBL::DnaDnaAlignFetaure</a> objects. More details on how to do this,
+ including sample code, are available in the "Alignment Features" section of the 
+<a href="/info/docs/api/core/core_tutorial.html">Ensembl Core API Tutorial.</a></p>
+
+<h2>References</h2>
+
+<p>[1] Slater and Birney, Automated generation of heuristics for biological sequence comparison. <a href="http://europepmc.org/abstract/MED/15713233">BMC Bioinformatics 2005, 6:31 </a></p>
+
+</body>
+</html>

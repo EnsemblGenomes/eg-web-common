@@ -50,7 +50,7 @@ sub content {
       foreach my $sp2 (keys %{$aln->{'species'}}){
         next if $sp1 eq $sp2;
         $data{$sp1} = [] unless exists $data{$sp1};
-        push(@{$data{$sp1}}, {species=> $species_defs->SPECIES_COMMON_NAME($sp2), id=>$aln->{'id'}, type=>$aln->{'type'},'set'=>$aln->{'species_set_id'}});
+        push(@{$data{$sp1}}, {species=> $species_defs->SPECIES_DISPLAY_NAME($sp2), id=>$aln->{'id'}, type=>$aln->{'type'},'set'=>$aln->{'species_set_id'}});
       }
     }
   }
@@ -68,7 +68,7 @@ sub content {
     my $align_table = $self->align_table($sp1,$loc,$data{$sp1});
     my $count = scalar @{$data{$sp1}};
     my $row = sprintf('<a title="Click to show/hide" rel="%s_aligns" class="toggle no_img closed" href="#"><span class="open closed" style="width:50%;float:left;"><strong><em>%s</em></strong></span></a> <span style="width:20px; float:left; text-align:right;padding-right:1em;">%d</span> genome alignment%s %s',
-      $sp1,$species_defs->SPECIES_COMMON_NAME($sp1),
+      $sp1,$species_defs->SPECIES_DISPLAY_NAME($sp1),
       $count,
       ($count > 1) ? "s" : "",
       $align_table);
@@ -98,7 +98,7 @@ sub align_table {
   my @sorted_data = sort { $a->{species} cmp $b->{species} } @$data;
 
   foreach my $aln (@sorted_data){  
-    my $sp1name = $species_defs->SPECIES_COMMON_NAME($sp1);
+    my $sp1name = $species_defs->SPECIES_DISPLAY_NAME($sp1);
     my $sp2name = $aln->{'species'};
 
     my $url = '/info/genome/compara/mlss/mlss_'.$aln->{'id'}.'/mlss_'.$aln->{'id'}.'.html';

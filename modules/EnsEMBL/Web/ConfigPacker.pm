@@ -262,7 +262,7 @@ sub _munge_meta {
   my $self = shift;
   
   ##########################################
-  # SPECIES_COMMON_NAME     = Human        #
+  # SPECIES_DISPLAY_NAME    = Human        #
   # SPECIES_PRODUCTION_NAME = homo_sapiens #
   # SPECIES_SCIENTIFIC_NAME = Homo sapiens #
   ##########################################
@@ -271,7 +271,7 @@ sub _munge_meta {
     species.taxonomy_id           TAXONOMY_ID
     species.url                   SPECIES_URL
     species.stable_id_prefix      SPECIES_PREFIX
-    species.display_name          SPECIES_COMMON_NAME
+    species.display_name          SPECIES_DISPLAY_NAME
     species.production_name       SPECIES_PRODUCTION_NAME
     species.scientific_name       SPECIES_SCIENTIFIC_NAME
     species.species_name          SPECIES_BINOMIAL
@@ -308,13 +308,13 @@ sub _munge_meta {
   if ($self->is_collection('DATABASE_CORE')) {
 ##    
     if ($meta_info->{0}{'species.group'}) {
-      $self->tree->{'DISPLAY_NAME'} = $meta_info->{0}{'species.group'};
+      $self->tree->{'GROUP_DISPLAY_NAME'} = $meta_info->{0}{'species.group'};
     } else {
       (my $group_name = $self->{'_species'}) =~ s/_collection//;
-      $self->tree->{'DISPLAY_NAME'} = $group_name;
+      $self->tree->{'GROUP_DISPLAY_NAME'} = $group_name;
     }
   } else {
-    $self->tree->{'DISPLAY_NAME'} = $meta_info->{1}{'species.display_name'}[0];
+    $self->tree->{'GROUP_DISPLAY_NAME'} = $meta_info->{1}{'species.display_name'}[0];
   }
 
   ## fall back to 'strain' if no strain type set
@@ -336,7 +336,35 @@ sub _munge_meta {
     $genome_info_adaptor = $mdba->get_GenomeInfoAdaptor;
     my $release = $mdba->get_DataReleaseInfoAdaptor->fetch_by_ensembl_genomes_release($SiteDefs::SITE_RELEASE_VERSION);
     $genome_info_adaptor->data_release($release);
+
+    ## Get info about pan-compara species
+    my $dbh = $self->db_connect('DATABASE_METADATA', $metadata_db);
+    my $version = $SiteDefs::ENSEMBL_VERSION;
+    my $aref = $dbh->selectall_arrayref(
+      "select 
+          o.name, o.url_name, o.display_name, o.scientific_name, d.name 
+        from 
+          organism as o, genome as g, data_release as r, division as d 
+        where 
+          o.organism_id = g.organism_id 
+          and g.data_release_id = r.data_release_id 
+          and g.division_id = d.division_id
+          and g.has_pan_compara = 1
+          and r.ensembl_version = $version"
+        );    
+    foreach my $row (@$aref) {
+      my ($prod_name, $url, $display_name, $sci_name, $division) = @$row;
+      $division =~ s/Ensembl//;
+      $self->db_tree->{'PAN_COMPARA_LOOKUP'}{$url} = {
+                'production_name' => $prod_name,
+                'species_url'     => $url,
+                'display_name'    => $display_name,
+                'scientific_name' => $sci_name,
+                'division'        => lc $division,
+          };
+    }
   }
+
 ##
 
   while (my ($species_id, $meta_hash) = each (%$meta_info)) {
@@ -364,9 +392,6 @@ sub _munge_meta {
       $self->tree($production_name)->{$key} = $value;
     }
 
-
-    $self->tree($production_name)->{'DISPLAY_NAME'} = $self->tree($production_name)->{'SPECIES_COMMON_NAME'};
-
     ## Do species group
     my $taxonomy = $meta_hash->{'species.classification'};
     
@@ -387,9 +412,6 @@ sub _munge_meta {
     ## otherwise the mapping in Apache handlers will fail
     $self->full_tree->{'MULTI'}{'SPECIES_ALIASES'}{$species} = $species;
 
-
-    ## Backwards compatibility
-    $self->tree($production_name)->{'SPECIES_BIO_NAME'}  = $bio_name;
     ## Used mainly in <head> links
     ($self->tree($production_name)->{'SPECIES_BIO_SHORT'} = $bio_name) =~ s/^([A-Z])[a-z]+_([a-z]+)$/$1.$2/;
 
@@ -491,13 +513,13 @@ sub _munge_meta {
     $self->tree($production_name)->{POLYPLOIDY} = ($self->tree($production_name)->{PLOIDY} > 2);
 
 ## EG - munge EG genome info 
-    if ($genome_info_adaptor) {
-      my $dbname = $self->tree->{databases}->{DATABASE_CORE}->{NAME};
-      foreach my $genome (@{ $genome_info_adaptor->fetch_all_by_dbname($dbname) }) {
-        $self->tree($production_name)->{'SEROTYPE'}     = $genome->serotype;
-        $self->tree($production_name)->{'PUBLICATIONS'} = $genome->publications;
-      }
-    }
+#    if ($genome_info_adaptor) {
+#      my $dbname = $self->tree->{databases}->{DATABASE_CORE}->{NAME};
+#      foreach my $genome (@{ $genome_info_adaptor->fetch_all_by_dbname($dbname) }) {
+#        $self->tree($production_name)->{'SEROTYPE'}     = $genome->serotype;
+#        $self->tree($production_name)->{'PUBLICATIONS'} = $genome->publications;
+#      }
+#    }
 ##    
   }
 

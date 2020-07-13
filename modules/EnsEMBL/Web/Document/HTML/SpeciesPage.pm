@@ -38,15 +38,15 @@ sub render {
 
   foreach my $sp (@valid_species) {
     $species{$sp} = {
-      'dir'        => $sp,
-      'common'     => $species_defs->get_config($sp, 'SPECIES_COMMON_NAME'),
-      'image'      => $species_defs->get_config($sp, 'SPECIES_IMAGE'),
-      'assembly'   => $species_defs->get_config($sp, 'ASSEMBLY_NAME'),
-      'accession'  => $species_defs->get_config($sp, 'ASSEMBLY_ACCESSION'),
-      'taxon_id'   => $species_defs->get_config($sp, 'TAXONOMY_ID'),
-      'group'      => $species_defs->get_config($sp, 'SPECIES_GROUP'),
-      'variation'  => $species_defs->get_config($sp, 'databases')->{'DATABASE_VARIATION'},
-      'regulation' => $species_defs->get_config($sp, 'databases')->{'DATABASE_FUNCGEN'},
+      'dir'           => $sp,
+      'display_name'  => $species_defs->get_config($sp, 'SPECIES_DISPLAY_NAME'),
+      'image'         => $species_defs->get_config($sp, 'SPECIES_IMAGE'),
+      'assembly'      => $species_defs->get_config($sp, 'ASSEMBLY_NAME'),
+      'accession'     => $species_defs->get_config($sp, 'ASSEMBLY_ACCESSION'),
+      'taxon_id'      => $species_defs->get_config($sp, 'TAXONOMY_ID'),
+      'group'         => $species_defs->get_config($sp, 'SPECIES_GROUP'),
+      'variation'     => $species_defs->get_config($sp, 'databases')->{'DATABASE_VARIATION'},
+      'regulation'    => $species_defs->get_config($sp, 'databases')->{'DATABASE_FUNCGEN'},
     };
   }
 
@@ -73,7 +73,7 @@ sub render {
 
   my $columns = [
     { key => 'thumbnail',    title => '',                         width => '2%',  align => 'left', sort => 'none' },
-    { key => 'common',       title => 'Name',                     width => '47%', align => 'left', sort => 'string' },
+    { key => 'display_name', title => 'Name',                     width => '47%', align => 'left', sort => 'string' },
     { key => 'group',        title => 'Classification',           width => '8%', align => 'left', sort => 'string' },
     { key => 'taxon_id',     title => 'Taxon ID',                 width => '8%', align => 'left', sort => 'integer' },
     { key => 'assembly',     title => 'Assembly',                 width => '8%', align => 'left' },
@@ -96,32 +96,32 @@ sub render {
   $table->code     = 'species_index';
   $table->filename = 'Species';
   
-  foreach my $info (sort {$a->{'common'} cmp $b->{'common'}} values %species) {
+  foreach my $info (sort {$a->{'display_name'} cmp $b->{'display_name'}} values %species) {
     next unless $info;
-    my $dir       = $info->{'dir'};
+    my $dir           = $info->{'dir'};
     next unless $dir;
-    my $common    = $info->{'common'};
-    my $image     = $info->{'image'};
+    my $display_name  = $info->{'display_name'};
+    my $image         = $info->{'image'};
    
-    my $thumbnail_html = qq(<a href="/$dir/" style="padding-right:4px;"><img src="/i/species/$image.png" width="48" height="48" title="$common" style="vertical-align:middle" /></a>);
-    my $common_html    = qq(<a href="/$dir" class="bigtext">$common</a>);
+    my $thumbnail_html = qq(<a href="/$dir/" style="padding-right:4px;"><img src="/i/species/$image.png" width="48" height="48" title="$display_name" style="vertical-align:middle" /></a>);
+    my $display_name_html = qq(<a href="/$dir" class="bigtext">$display_name</a>);
     my $tick_html      = '<img src="/i/tick_16.png" width="16" height="16" />';
     my $uniprot_link   = qq(<a href="http://www.uniprot.org/taxonomy/$info->{'taxon_id'}" target="_blank">$info->{'taxon_id'}</a>);
     my $ena_link       = $info->{'accession'} ? qq(<a href="http://www.ebi.ac.uk/ena/data/view/$info->{'accession'}" target="_blank">$info->{'accession'}</a>) : '-';
 
     $table->add_row({
-      'thumbnail'    => $thumbnail_html,
-      'common'       => $common_html,
-      'group'        => $info->{'group'},
-      'taxon_id'     => $uniprot_link,
-      'assembly'     => $info->{'assembly'},
-      'accession'    => $ena_link,
-      'variation'    => $info->{'variation'}    ? $tick_html : '-',
-      'regulation'   => $info->{'regulation'}   ? $tick_html : '-',
-      'genome_align' => $info->{'genome_align'} ? $tick_html : '-',
-      'other_align'  => $info->{'other_align'}  ? $tick_html : '-',
-      'compara'      => $info->{'compara'}      ? $tick_html : '-',
-      'pan_compara'  => $info->{'pan_compara'}  ? $tick_html : '-',
+      'thumbnail'     => $thumbnail_html,
+      'display_name'  => $display_name_html,
+      'group'         => $info->{'group'},
+      'taxon_id'      => $uniprot_link,
+      'assembly'      => $info->{'assembly'},
+      'accession'     => $ena_link,
+      'variation'     => $info->{'variation'}    ? $tick_html : '-',
+      'regulation'    => $info->{'regulation'}   ? $tick_html : '-',
+      'genome_align'  => $info->{'genome_align'} ? $tick_html : '-',
+      'other_align'   => $info->{'other_align'}  ? $tick_html : '-',
+      'compara'       => $info->{'compara'}      ? $tick_html : '-',
+      'pan_compara'   => $info->{'pan_compara'}  ? $tick_html : '-',
     });
   }
 

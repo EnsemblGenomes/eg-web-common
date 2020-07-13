@@ -1,0 +1,54 @@
+<html>
+<head>
+<meta name="order" content="3" />
+<title>Short-read sequence alignment</title>
+</head>
+
+<body>
+
+<h1>Short-read sequence alignment</h1>
+
+<p>The Sequence Read Archive (SRA) is a international public archival  of raw short read sequencing 
+data from the next generation of sequencing platforms, established under the guidance of the 
+International Nucleotide Sequence Database Collaboration (INSDC). More information about the
+<a href="http://www.ebi.ac.uk/ena/about/sra_format">metadata data storage model</a> from SRA
+is available on the EBI website.</p>
+
+<h2>Use of SRA in Ensembl Genomes </h2>
+
+<p>In Ensembl Genome, expression data under various studies are mapped to the genome and the
+<a href="http://samtools.sourceforge.net/SAMv1.pdf">BAM format</a> files thus obtained are 
+configured to displayed in the genome browser. Re-sequencing data from the SRA are used for 
+SNP calling and displayed as variation data in Ensembl Genomes.</p>
+
+<h3>Generation of alignments</h3>
+
+<p>The reads from the SRA are downloaded from the <a href="http://www.ebi.ac.uk/ena/">European Nucleotide Archive</a> (ENA) 
+in fastq format and mapped to the genome using <a href="http://research-pub.gene.com/gmap/">GSNAP</a>
+ or <a href="http://bio-bwa.sourceforge.net/">Burrow Wheeler Aligner</a>(BWA). The mapped information
+is stored in <a href="http://samtools.sourceforge.net/SAMv1.pdf">Sequence Alignment Map</a> (SAM) 
+format. <a href="http://samtools.sourceforge.net/">SAMtools</a> are used to convert it into 
+Binary format (BAM).</p>
+
+<h3>SNP Calling </h3>
+
+<p>BAM files obtained from mapping the resequenced data using the above method are also used 
+for SNP calling. SAMtools uses mapped data to call the sequence variants, which are stored in a 
+<a href="http://vcftools.sourceforge.net/specs.html">Variant Call Format</a> (VCF). VCF is then 
+imported into an Ensembl Variation database.</p>
+
+<h2>Re-submission to ENA</h2>
+
+<p>The BAM and VCF files obtained using the above method are then resubmitted to the European 
+Nucleotide Archive as as 'Analysis' object with reference to the original Study and the Assembly 
+version of the genome it is mapped to. </p>
+
+<h2>Data Visualisation</h2>
+
+<p>The variation data obtained from mapping SRA data can be visualized using the 
+<a href="/info/genome/variation/index.html">Ensembl Variation Browser and API </a>. The expression 
+data mapped in BAM format can be visualised in the Ensembl Genome browser as customised tracks.</p>
+
+
+</body>
+</html>

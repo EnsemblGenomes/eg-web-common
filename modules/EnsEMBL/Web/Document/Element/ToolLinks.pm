@@ -25,16 +25,16 @@ sub links {
   my $self  = shift;
   my $hub   = $self->hub;
   my $sd    = $self->species_defs;
+  my $blog  = $sd->ENSEMBL_BLOG_URL;
   my @links;
 
   push @links, 'hmmer',         '<a class="constant" href="/hmmer">HMMER</a>' if $sd->ENSEMBL_HMMER_ENABLED;
   push @links, 'blast', sprintf '<a class="constant" href="%s">BLAST</a>', $hub->url({'species' => $hub->species || 'Multi', 'type' => 'Tools', 'action' => 'Blast', 'function' => ''}) if $sd->ENSEMBL_BLAST_ENABLED;
   push @links, 'biomart',       '<a class="constant" href="/biomart/martview">BioMart</a>';
   push @links, 'tools',         '<a class="constant" href="/tools.html">Tools</a>';
-  push @links, 'downloads',     '<a class="constant" href="/info/website/ftp/index.html">Downloads</a>';
-  push @links, 'docs',          '<a class="constant" href="http://www.ensemblgenomes.org/info">Documentation</a>';
-  push @links, 'help',          '<a class="constant" href="/info/website/index.html">Website help</a>';
-
+  push @links, 'downloads',     '<a class="constant" href="/info/data/ftp/index.html">Downloads</a>';
+  push @links, 'docs',          '<a class="constant" href="/info/">Help &amp; Docs</a>';
+  push @links, 'blog',          qq(<a class="constant" target="_blank" href="$blog">Blog</a>) if $blog;
 
   return \@links;
 }

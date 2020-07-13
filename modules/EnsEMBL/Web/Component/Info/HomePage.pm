@@ -234,7 +234,7 @@ sub _assembly_text {
   my $hub              = $self->hub;
   my $species_defs     = $hub->species_defs;
   my $species          = $hub->species;
-  my $name             = $species_defs->SPECIES_COMMON_NAME;
+  my $name             = $species_defs->SPECIES_DISPLAY_NAME;
   my $img_url          = $self->img_url;
   my $sample_data      = $species_defs->SAMPLE_DATA;
   my $ensembl_version  = $self->_site_release;

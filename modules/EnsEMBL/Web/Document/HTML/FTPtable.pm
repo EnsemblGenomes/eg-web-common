@@ -18,98 +18,13 @@ limitations under the License.
 
 package EnsEMBL::Web::Document::HTML::FTPtable;
 
-### This module outputs a table of links to the FTP site
-
-use strict;
-use warnings;
-
-use EnsEMBL::Web::Document::Table;
-
-use base qw(EnsEMBL::Web::Document::HTML);
-
-sub render {
-  my $self = shift;
-
+sub multi_table {
+  my ($self, $rel, %title) = @_;
   my $hub             = $self->hub;
   my $species_defs    = $hub->species_defs;
 
-  my $rel = $species_defs->SITE_RELEASE_VERSION;
-
-  my @species = $species_defs->valid_species;
-  my %title = (
-    dna       => 'Masked and unmasked genome sequences associated with the assembly (contigs, chromosomes etc.)',
-    cdna      => 'cDNA sequences for protein-coding genes',
-    cds       => 'Coding sequences for protein-coding genes',
-    ncrna     => 'Non-coding RNA sequences',
-    prot      => 'Protein sequences for protein-coding genes',
-    rna       => 'Non-coding RNA gene predictions',
-    embl      => 'Ensembl Genomes database dumps in EMBL nucleotide sequence database format',
-    genbank   => 'Ensembl Genomes database dumps in GenBank nucleotide sequence database format',
-    gtf       => 'Gene sets for each species in GTF format. These files include annotations of both coding and non-coding genes',
-    gff3      => 'Gene sets and other features for each species in GFF3 format. These files include genes, transcripts and repeat features',
-    emf       => 'Alignments of resequencing data from the Compara database',
-    gvf       => 'Variation data in GVF format',
-    vcf       => 'Variation data in VCF format',
-    vep       => 'Cache files for use with the VEP script',
-    coll      => 'Additional regulation data (not in database)',
-    bed       => 'Constrained elements calculated using GERP',
-    files     => 'Additional release data stored as flat files rather than MySQL for performance reasons',
-    ancestral => 'Ancestral Allele data in FASTA format',
-    bam       => 'Alignments against the genome',
-    core      => '%s core data export',
-    otherfeatures     => '%s other features data export',
-    variation      => '%s variation data export',
-    funcgen   => '%s funcgen data export',
-    pan       => 'Pan-taxomic Compara data export',
-    compara   => '%s Compara data export',
-    mart      => '%s BioMart data export',
-    tsv       => 'Tab separated files containing selected data for individual species and from comparative genomics',
-    maf       => 'Pairwise alignment data in MAF format',
-
-  );
-  $title{$_} = encode_entities($title{$_}) for keys %title;
-
-  my @rows;
-  foreach my $spp (sort @species) {
-    my $sp_name            = $spp =~ s/_/ /r;
-    my $common             = $species_defs->get_config($spp, 'SPECIES_COMMON_NAME');
-    my $genomic_unit       = $species_defs->get_config($spp, 'GENOMIC_UNIT');
-    my $dataset            = $species_defs->get_config($spp, 'SPECIES_DATASET');
-    my $sp_var             = lc($spp).'_variation';
-    my $sp_dir             = ($dataset eq $spp ? '' : lc($dataset) . '_collection/') . lc($spp);
-    my $ftp_base_path_stub = "ftp://ftp.ensemblgenomes.org/pub/release-$rel/$genomic_unit";
-    
-    my @mysql;
-    foreach my $db( qw/core otherfeatures funcgen variation/){
-      my $db_config =  $species_defs->get_config($spp, 'databases')->{'DATABASE_' . uc($db)};
-      if($db_config){
-        my $title = sprintf($title{$db}, $sp_name);
-        my $db_name = $db_config->{NAME};
-        push(@mysql, qq{<a rel="external" title="$title" href="$ftp_base_path_stub/mysql/$db_name">MySQL($db)</a>});
-      }
-    }
-        
-    my $data = {
-      species    => qq{<strong><a href="/${\lc($spp)}">$sp_name</a></strong>},
-      dna        => qq{<a rel="external"  title="$title{'dna'}" href="$ftp_base_path_stub/fasta/$sp_dir/dna/">FASTA</a> (DNA)},
-      cdna       => qq{<a rel="external"  title="$title{'cdna'}" href="$ftp_base_path_stub/fasta/$sp_dir/cdna/">FASTA</a> (cDNA)},
-      cds        => qq{<a rel="external"  title="$title{'cds'}" href="$ftp_base_path_stub/fasta/$sp_dir/cds/">FASTA</a> (CDS)},
-      ncrna      => qq{<a rel="external"  title="$title{'ncrna'}" href="$ftp_base_path_stub/fasta/$sp_dir/ncrna/">FASTA</a> (ncRNA)},
-      prot       => qq{<a rel="external"  title="$title{'prot'}" href="$ftp_base_path_stub/fasta/$sp_dir/pep/">FASTA</a> (protein)},
-      embl       => qq{<a rel="external"  title="$title{'embl'}" href="$ftp_base_path_stub/embl/} . $sp_dir . qq{/">EMBL</a>},
-      genbank    => qq{<a rel="external"  title="$title{'genbank'}" href="$ftp_base_path_stub/genbank/} . $sp_dir . qq{/">GenBank</a>},
-      gtf        => qq{<a rel="external"  title="$title{'gtf'}" href="$ftp_base_path_stub/gtf/$sp_dir">GTF</a>},
-      gff3       => qq{<a rel="external"  title="$title{'gff3'}" href="$ftp_base_path_stub/gff3/$sp_dir">GFF3</a>},
-      mysql      => join('<br/>',@mysql),
-      tsv        => qq{<a rel="external"  title="$title{'tsv'}" href="$ftp_base_path_stub/tsv/$sp_dir/">TSV</a>},
-      vep        => qq{<a rel="external"  title="$title{'vep'}" href="$ftp_base_path_stub/variation/vep/">VEP</a>},
-    };
-    if ($hub->database('variation', $spp)) {
-      $data->{'gvf'} = qq{<a rel="external" title="$title{'gvf'}" href="$ftp_base_path_stub/variation/gvf/$sp_dir">GVF</a>};
-      $data->{'vcf'} = qq{<a rel="external" title="$title{'vcf'}" href="$ftp_base_path_stub/variation/vcf/$sp_dir">VCF</a>};
-    }
-    push(@rows, $data);
-  }
+  ## Override default parameter
+  $rel = $species_defs->SITE_RELEASE_VERSION;
 
   my $genomic_unit = $species_defs->GENOMIC_UNIT;
 
@@ -121,31 +36,6 @@ sub render {
    'protists' => 'Protists',
   };
 
-
-  my $table    = EnsEMBL::Web::Document::Table->new(
-    [
-      {key=>'species',    sort=>'html', title=>'Species'},
-      {key => 'dna',      sort=>'none', title => 'DNA'},    
-      {key => 'cdna',     sort=>'none', title => 'cDNA'},
-      {key => 'cds',      sort=>'none', title => 'CDS'},
-      {key => 'ncrna',    sort=>'none', title => 'ncRNA'},   
-      {key => 'prot',     sort=>'none', title => 'Protein'},    
-      {key => 'embl',     sort=>'none', title => 'EMBL'},   
-      {key => 'genbank',  sort=>'none', title => 'GENBANK'},
-      {key => 'mysql',    sort=>'none', title => 'MySQL'},  
-      {key => 'tsv',      sort=>'none', title => 'TSV'},    
-      {key => 'gtf',      sort=>'none', title => 'GTF'},    
-      {key => 'gff3',     sort=>'none', title => 'GFF3'},   
-      {key => 'gvf',      sort=>'none', title => 'GVF'},    
-      {key => 'vcf',      sort=>'none', title => 'VCF'},    
-      {key => 'vep',      sort=>'none', title => 'VEP'},
-    ],
-    \@rows,
-    { data_table=>1, exportable=>0 }
-  );
-  $table->code = 'FTPtable::'.scalar(@rows);
-  $table->{'options'}{'data_table_config'} = {iDisplayLength => 10};
-  
   my $pan_compara = $species_defs->get_config('MULTI', 'databases')->{DATABASE_COMPARA_PAN_ENSEMBL}->{NAME};
   my $compara = $species_defs->get_config('MULTI', 'databases')->{DATABASE_COMPARA}->{NAME};
   my $multi_sp = $g_units->{$genomic_unit};
@@ -181,13 +71,34 @@ sub render {
     ],
     { data_table=>0 }
   );
-  $table->add_option('class','no_col_toggle');
 
-  return sprintf(qq{<h3>Multi-species data</h3>%s<h3>Single species data</h3><div id="species_ftp_dl" class="js_panel"><input type="hidden" class="panel_type" value="Content"/>%s</div>},
-    $multi_table->render,$table->render);
-      
+  return $multi_table; 
 }
 
+sub metadata {
+  my $self = shift;
+  my $sd = $self->hub->species_defs;
 
+  my $division = $sd->EG_DIVISION;
+  my $uc_div   = ucfirst($division);
+
+  return qq(
+<h3>Metadata</h3>
+
+<p>Data files containing metadata for Ensembl Genomes from release 15 onwards can be found 
+in the root directory or appropriate division directory of each release e.g.
+<a href="ftp://ftp.ensemblgenomes.org/pub/current/$division/">ftp://ftp.ensemblgenomes.org/pub/current/$division/</a>.</p>
+
+<p>The following files are provided:</p>
+
+<ul>
+  <li><a href="ftp://ftp.ensemblgenomes.org/pub/current/species.txt">species.txt</a> (or e.g. <a href="ftp://ftp.ensemblgenomes.org/pub/current/$division/species_Ensembl$uc_div.txt">species_Ensembl$uc_div.txt</a>) - simple tab-separated file containing basic information about each genome</li>
+  <li><a href="ftp://ftp.ensemblgenomes.org/pub/current/species_metadata.json">species_metadata.json</a> (or e.g. <a href="ftp://ftp.ensemblgenomes.org/pub/current/$division/species_metadata_Ensembl$uc_div.json">species_metadata_Ensembl$uc_div.json</a>) - full metadata about each genome in JSON format, including comparative analyses, sequence region names etc.</li>
+  <li><a href="ftp://ftp.ensemblgenomes.org/pub/current/species_metadata.xml">species_metadata.xml</a> (or e.g. <a href="ftp://ftp.ensemblgenomes.org/pub/current/$division/species_metadata_Ensembl$uc_div.xml">species_metadata_Ensembl$uc_div.xml</a>) - full metadata about each genome in XML format, including comparative analyses, sequence region names etc.</li>
+  <li><a href="ftp://ftp.ensemblgenomes.org/pub/current/uniprot_report.txt">uniprot_report.txt</a> (or e.g. <a href="ftp://ftp.ensemblgenomes.org/pub/current/$division/uniprot_report_Ensembl$uc_div.txt">uniprot_report_Ensembl$uc_div.txt</a>) - specialised tab-separated file containing information about mapping of genome to UniProtKB</li>
+</ul>
+  );
+
+}
 
 1;
