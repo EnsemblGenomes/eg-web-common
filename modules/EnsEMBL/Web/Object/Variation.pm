@@ -81,6 +81,7 @@ sub get_primer_data {
   return $self->{'primer_entry'};
 }
 
+## extract external information linked to the variant
 sub get_external_links {
   my $self = shift;
 
