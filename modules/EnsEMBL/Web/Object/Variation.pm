@@ -81,21 +81,33 @@ sub get_primer_data {
   return $self->{'primer_entry'};
 }
 
-## extract external information linked to the variant
 sub get_external_links {
   my $self = shift;
 
   my $attribs = $self->Obj->get_all_attributes();
 
-  if ($attribs->{'cerealsdb_external_links'}){
+  ##Get necessary attribs for external links
+  my $html_out;
+  my $external_link = $attribs->{'cerealsdb_external_links'};
+  my $qtl_link      = $attribs->{'cerealsdb_qtl'};
 
-
-    my $link = qq{<a href="$attribs->{'cerealsdb_external_links'}">Additional details from CerealsDB</a>};
-    $self->{'external_link'} = "$link</ul>";
-
+  ##Removing extra comma at the end of the link if it appears
+  if ($external_link){
+        $external_link =~ s/,$//g
   }
 
+  ##Just external link to CerealsDB
+  if ($external_link){
+    $html_out = qq{<a href="$external_link">Additional details from CerealsDB</a>};
+  }
 
+  ##QTL link as well
+  if ($qtl_link){
+    $html_out = qq{<ul><li><a href="$external_link">Additional details from CerealsDB</a></li>
+                       <li><a href="$qtl_link">QTL data from CerealsDB</a></li>};
+  }
+
+  $self->{'external_link'} = "$html_out</ul>";
   return $self->{'external_link'};
 }
 
