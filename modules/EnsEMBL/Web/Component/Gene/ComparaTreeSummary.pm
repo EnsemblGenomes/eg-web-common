@@ -31,11 +31,11 @@ sub content {
     my ($gene, $member, $tree, $node);
 
     if ($is_genetree) {
-  $tree   = $object->Obj;
-  $member = undef;
+      $tree   = $object->Obj;
+      $member = undef;
     } else {
-  $gene = $object;
-  ($member, $tree, $node) = $self->get_details($cdb);
+      $gene = $object;
+      ($member, $tree, $node) = $self->get_details($cdb);
     }
 
     return $tree . $self->genomic_alignment_links($cdb) if $self->param('g') && !$is_genetree && !defined $member;
@@ -95,7 +95,7 @@ sub content {
 
     $html .= $self->new_twocol(
       ['Number of genes',             scalar(@$leaves)                                                  ],
-      ['Number of speciation nodes',  $self->get_num_nodes_with_tag($tree, 'node_type', 'speciation')   ],
+      ['Number of speciation nodes',  $self->get_num_nodes_with_tag($tree, 'node_type', 'speciation') + $self->get_num_nodes_with_tag($tree, 'node_type', 'sub-speciation')  ],
       ['Number of duplication nodes', $self->get_num_nodes_with_tag($tree, 'node_type', 'duplication')  ],
       ['Number of ambiguous nodes',   $self->get_num_nodes_with_tag($tree, 'node_type', 'dubious')      ],
       ['Number of gene split events', $self->get_num_nodes_with_tag($tree, 'node_type', 'gene_split')   ],
