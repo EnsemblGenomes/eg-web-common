@@ -18,6 +18,8 @@ limitations under the License.
 
 package EnsEMBL::Web::Component::Gene::TreeSummary;
 
+## NOTE: This component appears to be redundant
+
 use strict;
 
 use Bio::AlignIO;
@@ -95,7 +97,6 @@ sub content {
     ['Number of ambiguous',         $self->get_num_nodes_with_tag($tree, 'node_type', 'dubious')      ],
     ['Number of gene split events', $self->get_num_nodes_with_tag($tree, 'node_type', 'gene_split')   ]
   )->render;
-
   
   return $html;
 }
