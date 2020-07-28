@@ -102,7 +102,37 @@ sub _summarise_compara_db {
   push @{$self->db_tree->{'compara_like_databases'}}, $db_name;
 
   $self->_summarise_generic($db_name, $dbh);
-  
+
+  if ($code eq 'compara_pan_ensembl') {
+    ## Get info about pan-compara species
+    my $metadata_db = $self->full_tree->{MULTI}->{databases}->{DATABASE_METADATA};
+    my $dbh = $self->db_connect('DATABASE_METADATA', $metadata_db);
+    my $version = $SiteDefs::ENSEMBL_VERSION;
+    my $aref = $dbh->selectall_arrayref(
+      "select 
+          o.name, o.url_name, o.display_name, o.scientific_name, d.name 
+        from 
+          organism as o, genome as g, data_release as r, division as d 
+        where 
+          o.organism_id = g.organism_id 
+          and g.data_release_id = r.data_release_id 
+          and g.division_id = d.division_id
+          and g.has_pan_compara = 1
+          and r.ensembl_version = $version"
+        );    
+    foreach my $row (@$aref) {
+      my ($prod_name, $url, $display_name, $sci_name, $division) = @$row;
+      $division =~ s/Ensembl//;
+      $self->full_tree->{'MULTI'}{'PAN_COMPARA_LOOKUP'}{$url} = {
+                'production_name' => $prod_name,
+                'species_url'     => $url,
+                'display_name'    => $display_name,
+                'scientific_name' => $sci_name,
+                'division'        => lc $division,
+          };
+    }
+  }
+ 
 ## EG - exclude HOMOEOLOGUES
   # See if there are any intraspecies alignments (ie a self compara)
   my $intra_species_aref = $dbh->selectall_arrayref('
@@ -337,32 +367,6 @@ sub _munge_meta {
     my $release = $mdba->get_DataReleaseInfoAdaptor->fetch_by_ensembl_genomes_release($SiteDefs::SITE_RELEASE_VERSION);
     $genome_info_adaptor->data_release($release);
 
-    ## Get info about pan-compara species
-    my $dbh = $self->db_connect('DATABASE_METADATA', $metadata_db);
-    my $version = $SiteDefs::ENSEMBL_VERSION;
-    my $aref = $dbh->selectall_arrayref(
-      "select 
-          o.name, o.url_name, o.display_name, o.scientific_name, d.name 
-        from 
-          organism as o, genome as g, data_release as r, division as d 
-        where 
-          o.organism_id = g.organism_id 
-          and g.data_release_id = r.data_release_id 
-          and g.division_id = d.division_id
-          and g.has_pan_compara = 1
-          and r.ensembl_version = $version"
-        );    
-    foreach my $row (@$aref) {
-      my ($prod_name, $url, $display_name, $sci_name, $division) = @$row;
-      $division =~ s/Ensembl//;
-      $self->db_tree->{'PAN_COMPARA_LOOKUP'}{$url} = {
-                'production_name' => $prod_name,
-                'species_url'     => $url,
-                'display_name'    => $display_name,
-                'scientific_name' => $sci_name,
-                'division'        => lc $division,
-          };
-    }
   }
 
 ##
