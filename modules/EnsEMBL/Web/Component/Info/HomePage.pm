@@ -145,8 +145,8 @@ sub content {
   my $img_url      = $self->img_url;
   my $provider_link = '';
 
-  if ($species_defs->PROVIDER_NAME) {
-    my ($name, $url) = ($species_defs->PROVIDER_NAME, $species_defs->PROVIDER_URL);
+  if ($species_defs->ASSEMBLY_PROVIDER_NAME) {
+    my ($name, $url) = ($species_defs->ASSEMBLY_PROVIDER_NAME, $species_defs->ASSEMBLY_PROVIDER_URL);
     $name = [$name] unless ref $name eq 'ARRAY';
     $url  = [$url]  unless ref $url  eq 'ARRAY';
     my @providers = map { $hub->make_link_tag(text => $name->[$_], url => $url->[$_]) } 0 .. scalar @{$name} - 1;
