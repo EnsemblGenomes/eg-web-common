@@ -131,10 +131,7 @@ sub variation_source {
   my $source_prefix = 'View in';
 
   # Source link
-  if ($source =~ /dbSNP/) {
-    $sname       = 'DBSNP';
-    $source_link = $hub->get_ExtURL_link("$source_prefix dbSNP", $sname, $name);
-  } elsif ($source =~ /ClinVar/i) {
+  if ($source =~ /ClinVar/i) {
     $sname = ($name =~ /^rs/) ?  'CLINVAR_DBSNP' : 'CLINVAR';
     $source_link = $hub->get_ExtURL_link("About $source", $sname, $name);
   } elsif ($source =~ /SGRP/) {
