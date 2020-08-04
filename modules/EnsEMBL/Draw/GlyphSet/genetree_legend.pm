@@ -33,7 +33,11 @@ sub render_normal {
   my $other_gene            = $self->{highlights}->[5];
   my $highlight_ancestor    = $self->{highlights}->[6];
 # EG highlight ontology terms
-  my ($ot_term)       = split(',',$self->{highlights}->[8]);
+  my @ot_terms; 
+  foreach (@{$self->{highlights}->[8]||[]}) {     
+    my ($term) = split(',',  $_);
+    push @ot_terms, $term;
+  } 
 # EG wrap legends
   my $min_col_width = 220; 
   my $row = 0;
@@ -84,8 +88,8 @@ sub render_normal {
     ['within-sp. paralog', 'blue', 'Gene ID'],
   );
 # EG ontology highlight
-  if($ot_term){
-    push (@orthos, ["annotated with\n$ot_term", 'black', 'Gene ID', undef, 'acef9b']);
+  if (scalar @ot_terms){
+    push (@orthos, ["annotated with\n".join(', ', @ot_terms), 'black', 'Gene ID', undef, 'acef9b']);
   }
 # /EG
   if ($other_gene) {
