@@ -106,9 +106,9 @@ sub _summarise_compara_db {
   if ($code eq 'compara_pan_ensembl') {
     ## Get info about pan-compara species
     my $metadata_db = $self->full_tree->{MULTI}->{databases}->{DATABASE_METADATA};
-    my $dbh = $self->db_connect('DATABASE_METADATA', $metadata_db);
+    my $meta_dbh = $self->db_connect('DATABASE_METADATA', $metadata_db);
     my $version = $SiteDefs::ENSEMBL_VERSION;
-    my $aref = $dbh->selectall_arrayref(
+    my $aref = $meta_dbh->selectall_arrayref(
       "select 
           o.name, o.url_name, o.display_name, o.scientific_name, d.name 
         from 
@@ -120,15 +120,36 @@ sub _summarise_compara_db {
           and g.has_pan_compara = 1
           and r.ensembl_version = $version"
         );    
+    ## Also get info about Archaea from pan-compara itself, for bacteria
+    my $archaea = {};
+    my $bref = $dbh->selectall_arrayref(
+          "select 
+            g.name from ncbi_taxa_node a 
+          join 
+            ncbi_taxa_name an using (taxon_id) 
+          join 
+            ncbi_taxa_node c on (c.left_index>a.left_index and c.right_index<a.right_index) 
+          join 
+            genome_db g on (g.taxon_id=c.taxon_id) 
+          where 
+            an.name='Archaea' 
+            and an.name_class='scientific name'
+    ");
+    $archaea->{$_->[0]} = 1 for @$bref;
+
     foreach my $row (@$aref) {
       my ($prod_name, $url, $display_name, $sci_name, $division) = @$row;
       $division =~ s/Ensembl//;
-      $self->full_tree->{'MULTI'}{'PAN_COMPARA_LOOKUP'}{$url} = {
-                'production_name' => $prod_name,
+      my $subdivision;
+      if ($division eq 'Bacteria') {
+        $subdivision = 'archaea' if $archaea->{$prod_name};
+      }
+      $self->full_tree->{'MULTI'}{'PAN_COMPARA_LOOKUP'}{$prod_name} = {
                 'species_url'     => $url,
                 'display_name'    => $display_name,
                 'scientific_name' => $sci_name,
                 'division'        => lc $division,
+                'subdivision'     => $subdivision,
           };
     }
   }

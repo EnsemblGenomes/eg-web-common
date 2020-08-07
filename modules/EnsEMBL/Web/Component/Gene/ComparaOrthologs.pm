@@ -20,17 +20,6 @@ package EnsEMBL::Web::Component::Gene::ComparaOrthologs;
 
 use strict;
 
-sub is_archaea {
-  my ($self,$species) = @_;
-  unless(exists($self->{'_archaea'})){
-    # munge archaea in pan-compara
-    my $adaptor = $self->hub->database('compara_pan_ensembl');
-    my $results = $adaptor->dbc->db_handle->selectall_arrayref(qq{select g.name from ncbi_taxa_node a join ncbi_taxa_name an using (taxon_id) join ncbi_taxa_node c on (c.left_index>a.left_index and c.right_index<a.right_index) join genome_db g on (g.taxon_id=c.taxon_id) where an.name='Archaea' and an.name_class='scientific name';});
-    $self->{'_archaea'}->{$_->[0]} = 1 for @$results;
-  }
-  return exists($self->{'_archaea'}->{$species});
-}
-
 sub _species_sets {
 ## Group species into sets - separate method so it can be pluggable easily
   my ($self, $orthologue_list, $skipped, $orthologue_map, $cdb) = @_;
@@ -39,9 +28,12 @@ sub _species_sets {
   my $species_defs  = $self->hub->species_defs;
   my %all_analysed_species = $self->_get_all_analysed_species($cdb);
   my $set_order = [];
+  my $pan_lookup = {};
   my $is_pan = $cdb =~/compara_pan_ensembl/;
-  if($is_pan){
+
+  if ($is_pan) {
     $set_order = [qw(all vertebrates metazoa plants fungi protists bacteria archaea)];
+    $pan_lookup  = $species_defs->get_config('MULTI', 'PAN_COMPARA_LOOKUP');
   }
   
   my $species_sets = {
@@ -56,67 +48,64 @@ sub _species_sets {
   };
   
   my $sets_by_species = {};
-  my $spsites         = $species_defs->ENSEMBL_SPECIES_SITE();
 
-  foreach my $species (keys %all_analysed_species) {
-    next if $skipped->{$species};
+  foreach my $prod_name (keys %all_analysed_species) {
 
-    my ($orth_type);
-    my $group = $spsites->{lc($species)};
-
-    my $sets = [];
-    my $orthologues = $orthologue_list->{$species};
-    my $no_ortho = 0;
-    my $species_name = $species;
-
-    # Check if orthologues doesn't exist.
-    # If so, then try to convert the species name to species url by capitalizing the first letter.
-    # Do the same for species name which will be used within the loop.
-    if (!$orthologues) {
-      $orthologues = $orthologue_list->{ucfirst $species} || {};
-      $species_name = ucfirst $species;
+    my $species;
+    if ($is_pan) {
+      $species = $pan_lookup->{$prod_name}{'species_url'};
+    }
+    else {
+      $species = $species_defs->production_name_mapping($prod_name);
     }
 
-    if($group eq 'bacteria'){
-      $group = 'archaea' if $self->is_archaea(lc $species);
-    } elsif (!$is_pan){ 
+    my $orthologues = $orthologue_list->{$species};
+    my $no_ortho = 0;
+    my ($orth_type, $group);
+    my $sets = [];
+
+    if (!$orthologue_list->{$species} && $species ne $self->hub->species) {
+      $no_ortho = 1;
+    }
+
+    foreach my $stable_id (keys %$orthologues) {
+      my $orth_info = $orthologue_list->{$species}->{$stable_id};
+      my $orth_desc = ucfirst($orth_info->{'homology_desc'});
+      $orth_type->{$species}{$orth_desc} = 1;
+    }
+
+    if ($species ne $self->hub->species && !$orth_type->{$species}{'1-to-1'} && !$orth_type->{$species}{'1-to-many'}
+          && !$orth_type->{$species}{'Many-to-many'}) {
+      $no_ortho = 1;
+    }
+
+    ## Sort into groups
+    if ($is_pan) {
+      $group = $pan_lookup->{$prod_name}{'subdivision'} ? $pan_lookup->{$prod_name}{'subdivision'} : $pan_lookup->{$prod_name}{'division'};
+    }
+    else {
       # not the pan compara page - generate groups
-      $group = $species_defs->get_config($species_name, 'SPECIES_GROUP') || $spsites->{lc($species_name)} || 'Undefined';
+      $group = $species_defs->get_config($species, 'SPECIES_GROUP') || 'Undefined';
 
       if(!exists $species_sets->{$group}){
         $species_sets->{$group} = {'title' => ucfirst $group, 'species' => [], 'all' => 0};
         push @$set_order, $group;
       }
-    }
-
-    if (!$orthologue_list->{$species_name} && $species_name ne $self->hub->species) {
-      $no_ortho = 1;
-    }
-
-    foreach my $stable_id (keys %$orthologues) {
-      my $orth_info = $orthologue_list->{$species_name}->{$stable_id};
-      my $orth_desc = ucfirst($orth_info->{'homology_desc'});
-      $orth_type->{$species_name}{$orth_desc} = 1;
-    }
-
-    if ($species_name ne $self->hub->species && !$orth_type->{$species_name}{'1-to-1'} && !$orth_type->{$species_name}{'1-to-many'}
-          && !$orth_type->{$species_name}{'Many-to-many'}) {
-      $no_ortho = 1;
-    }
+    }    
 
     foreach my $ss_name ('all', $group) {
-      push @{$species_sets->{$ss_name}{'species'}}, $species_name;
+      push @{$species_sets->{$ss_name}{'species'}}, $species;
       push (@$sets, $ss_name) if exists $species_sets->{$ss_name};
 
-      while (my ($k, $v) = each (%{$orth_type->{$species_name}})) {
+      while (my ($k, $v) = each (%{$orth_type->{$species}})) {
         $species_sets->{$ss_name}{$k} += $v;
       }
 
       $species_sets->{$ss_name}{'none'}++ if $no_ortho;
-      $species_sets->{$ss_name}{'all'}++ if $species_name ne $self->hub->species;
+      $species_sets->{$ss_name}{'all'}++ if $species ne $self->hub->species;
     }
     
-    $sets_by_species->{$species_name} = $sets;
+    $sets_by_species->{$species} = $sets;
   }
 
   if(!$is_pan) {
@@ -148,7 +137,7 @@ sub _get_all_analysed_species {
       $best_pt_mlss = $pt_mlsss->[0];
     }
 
-    $self->{'_all_analysed_species'} = {map {$self->hub->species_defs->production_name_mapping($_->name) => 1} @{$best_pt_mlss->species_set->genome_dbs}};
+    $self->{'_all_analysed_species'} = {map {$_->name => 1} @{$best_pt_mlss->species_set->genome_dbs}};
   }
 
   return %{$self->{'_all_analysed_species'}};
@@ -168,11 +157,6 @@ sub get_no_ortho_species_html {
   }
 
   return $no_ortho_species_html;
-}
-
-sub in_archaea {
-  my ($self, $species)=@_;
-  
 }
 
 1;
