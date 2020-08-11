@@ -183,32 +183,20 @@ sub content {
   
 
   push(@sections, $self->_assembly_text);
-# $html .= '<div class="box-left"><div class="round-box tinted-box unbordered">' . $self->_assembly_text . '</div></div>';
   push(@sections, $self->_genebuild_text) if $species_defs->SAMPLE_DATA->{GENE_PARAM};
- #$html .= '<div class="box-right"><div class="round-box tinted-box unbordered">' . $self->_genebuild_text . '</div></div>' if $species_defs->SAMPLE_DATA->{GENE_PARAM};
 
-# my @box_class = ('box-left', 'box-right');
-# my $side = 0;
-  
   if ($self->has_compara or $self->has_pan_compara) {
     push(@sections, $self->_compara_text);
- #  $html .= '<div class="' . $box_class[$side % 2] . '"><div class="round-box tinted-box unbordered">' . $self->_compara_text . '</div></div>';
- #  $side++;
   }
 
   push(@sections, $self->_variation_text);
- #$html .= '<div class="' . $box_class[$side % 2] . '"><div class="round-box tinted-box unbordered">' . $self->_variation_text . '</div></div>';
- #$side++;
 
   if ($hub->database('funcgen')) {
     push(@sections, $self->_funcgen_text);
-  # $html .= '<div class="' . $box_class[$side % 2] . '"><div class="round-box tinted-box unbordered">' . $self->_funcgen_text . '</div></div>';
-  # $side++;
   }
 
   my $other_text = $self->_fragment('other', $species, 1);
   push(@sections, $other_text) if $other_text =~ /\w/;
- #$html .= '<div class="' . $box_class[$side % 2] . '"><div class="round-box tinted-box unbordered">' . $other_text . '</div></div>' if $other_text =~ /\w/;
   
   my @box_class = ('box-left', 'box-right');
   my $side = 0;
@@ -306,43 +294,6 @@ sub _assembly_text {
                             $hub->url({'action' => 'Strains'}),
                             $strain_text,
   }
-
-  
-#EG no old assemblies
- ## PREVIOUS ASSEMBLIES
- #my @old_archives;
- #
- ## Insert dropdown list of old assemblies
- #foreach my $release (reverse sort keys %archive) {
- #  next if $release == $ensembl_version;
- #  next if $assemblies{$release} eq $previous;
-
- #  push @old_archives, {
- #    url      => sprintf('http://%s.archive.ensembl.org/%s/', lc $archive{$release},           $species),
- #    assembly => "$assemblies{$release}",
- #    release  => (sprintf '(%s release %s)',                  $species_defs->ENSEMBL_SITETYPE, $release),
- #  };
-
- #  $previous = $assemblies{$release};
- #}
-
- ## Combine archives and pre
- #my $other_assemblies;
- #if (@old_archives) {
- #  $other_assemblies .= join '', map qq(<li><a href="$_->{'url'}" class="nodeco">$_->{'assembly'}</a> $_->{'release'}</li>), @old_archives;
- #}
-
- #my $pre_species = $species_defs->get_config('MULTI', 'PRE_SPECIES');
- #if ($pre_species->{$species}) {
- #  $other_assemblies .= sprintf('<li><a href="http://pre.ensembl.org/%s/" class="nodeco">%s</a> (Ensembl pre)</li>', $species, $pre_species->{$species}[1]);
- #}
-
- #if ($other_assemblies) {
- #  $html .= qq(
- #    <h3 style="color:#808080;padding-top:8px">Other assemblies</h3>
- #    <ul>$other_assemblies</ul>
- #  );
- #}
 
   ## BIOSCHEMAS MARKUP
   $html .= $self->include_bioschema_datasets; 
