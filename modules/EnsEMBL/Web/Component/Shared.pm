@@ -641,7 +641,7 @@ sub species_stats {
   });
   $summary->add_row({
       'name' => '<b>Genebuild by</b>',
-      'stat' => $sd->GENEBUILD_BY
+      'stat' => $sd->ANNOTATION_PROVIDER_NAME
   });
   my @A         = @{$meta_container->list_value_by_key('genebuild.method')};
   my $method  = ucfirst($A[0]) || '';
@@ -675,9 +675,9 @@ sub species_stats {
   
   # data source
 
-  if (my $names = $sd->PROVIDER_NAME) {
+  if (my $names = $sd->ASSEMBLY_PROVIDER_NAME) {
     
-    my $urls = $sd->PROVIDER_URL;
+    my $urls = $sd->ASSEMBLY_PROVIDER_URL;
 
     $names = [$names] if ref $names ne 'ARRAY';
     $urls  = [$urls]  if ref $urls  ne 'ARRAY';
