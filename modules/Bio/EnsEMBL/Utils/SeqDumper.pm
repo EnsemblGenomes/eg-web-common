@@ -142,7 +142,7 @@ sub dump_embl {
 
   #Description
 ## EG : 
-  my $providers  =  join ' ,',  @{ $meta_container->list_value_by_key('provider.name') };
+  my $providers  =  join ' ,',  @{ $meta_container->list_value_by_key('annotation.provider_name') };
   
   $self->write($FH, $EMBL_HEADER, 'DE', $meta_container->get_scientific_name() .
                " $name_str $start..$end " . ($providers ? "annotated by $providers" : ''));
