@@ -148,8 +148,16 @@ sub content {
           )
         );
       } else {
-        $html .= $self->_warning('WARNING', "<p>$highlight_gene gene is not in this Gene Tree</p>");
-        $highlight_gene = undef;
+        my $hl_member = $object->get_compara_Member($cdb, $highlight_gene);
+        my $hl_adaptor = $hl_member->adaptor->db->get_adaptor('GeneTree')    || return;
+        my $hl_tree    = $hl_adaptor->fetch_all_by_Member($hl_member, -clusterset_id => $clusterset_id)->[0];
+        unless ($hl_tree) {
+            $hl_tree = $hl_adaptor->fetch_default_for_Member($hl_member);
+        }
+        my $highlight_gene_tree_link = sprintf ' <a href="%s">%s</a>', $hub->url({ species => 'Multi', type => 'GeneTree', action => 'Image', gt => $hl_tree->stable_id, g1 => $highlight_gene, __clear => 1 }), $hl_tree->stable_id;
+        my $doc_link = '<a target="_blank" href="/info/genome/compara/super_trees.html">more</a>';
+        $html .= $self->_warning('The requested gene is in a different Gene Tree', "<p>$highlight_gene is part of a different Gene Tree,  $highlight_gene_tree_link, 
+                    than the one displayed here. Both are part of the same Super tree (find out $doc_link about Super trees)</p>");
       }
     } else {
       $html .= $self->_info('Highlighted genes', 
