@@ -52,10 +52,9 @@ sub content {
   my %skipped;
   
   foreach my $homology_type (@homoeologues) {
-    foreach (keys %$homology_type) {
-      (my $species = $_) =~ tr/ /_/;
-      $homoeologue_list{$species} = {%{$homoeologue_list{$species}||{}}, %{$homology_type->{$_}}};
-      $skipped{$species}        += keys %{$homology_type->{$_}} if $self->param('species_' . lc $species) eq 'off';
+    foreach my $species (keys %$homology_type) {
+      $homoeologue_list{$species} = {%{$homoeologue_list{$species}||{}}, %{$homology_type->{$species}}};
+      $skipped{$species}        += keys %{$homology_type->{$species}} if $self->param('species_' . lc $species) eq 'off';
     }
   }
   
@@ -87,7 +86,7 @@ sub content {
       # Add in homoeologue description
       my $homoeologue_desc = $homoeologue->{'homology_desc'};
 
-      (my $spp = $homoeologue->{'spp'}) =~ tr/ /_/;
+      my $spp = $homoeologue->{'spp'};
       $spp = $species_defs->production_name_mapping($spp);
       my $link_url = $hub->url({
         species => $spp,
