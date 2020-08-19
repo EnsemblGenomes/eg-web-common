@@ -36,14 +36,11 @@ sub init_cacheable {
     spritelib         => { default => $self->species_defs->ENSEMBL_WEBROOT . '/htdocs/img/sprites' },
   });
 
-## EG set spritelib for division
-  my $site = $SiteDefs::ENSEMBL_SITETYPE =~ s/Ensembl //r; #/
-  my $sp_img_48 = $self->species_defs->ENSEMBL_SERVERROOT . '/eg-web-' . lc($site) . '/htdocs/i/species/48'; # 
-##
-  if(-e $sp_img_48) {
+  my $sp_img = $self->species_defs->SPECIES_IMAGE_DIR;
+  if(-e $sp_img) {
     $self->set_parameters({ spritelib => {
       %{$self->get_parameter('spritelib')||{}},
-      species => $sp_img_48,
+      species => $sp_img,
     }});
   }
 
