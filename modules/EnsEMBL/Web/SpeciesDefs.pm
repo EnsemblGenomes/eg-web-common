@@ -18,7 +18,7 @@ limitations under the License.
 
 package EnsEMBL::Web::SpeciesDefs;
 
-#use strict;
+use strict;
 use warnings;
 
 use previous qw(retrieve);
@@ -86,8 +86,12 @@ sub _parse {
   ### Repeat for MULTI.ini
   ### Returns: boolean
 
-  my $self = shift; 
-  $CONF->{'_storage'} = {};
+  my $self = shift;
+
+  {  
+    no strict "vars";
+    $CONF->{'_storage'} = {};
+  }
 
   $self->_info_log('Parser', 'Starting to parse tree');
 
@@ -170,6 +174,7 @@ sub _parse {
     my $url = $tree->{$prodname}{'SPECIES_URL'};
 
     ## Add in aliases to production names
+    my $aliases  = $tree->{'MULTI'}{'ENSEMBL_SPECIES_URL_MAP'};
     $aliases->{$prodname} = $url;
 
     ## Rename the tree keys for easy data access via URLs
@@ -201,8 +206,8 @@ sub _parse {
     my $image_path = sprintf '%s/%s.png', $image_dir, $key;
     ## In theory this could be a trinomial, but we use whatever is set in species.species_name
     my $binomial = $tree->{$key}{SPECIES_BINOMIAL};
-    if ($bionomial) {
-      $bionomial =~ s/ /_/g;
+    if ($binomial) {
+      $binomial =~ s/ /_/g;
     }
     else {
       ## Make a guess based on URL. Note that some fungi have weird URLs bc 
@@ -231,7 +236,10 @@ sub _parse {
 
   ## Parse species directories for static content
   $tree->{'SPECIES_INFO'} = $self->_load_in_species_pages;
-  $CONF->{'_storage'} = $tree; # Store the tree
+  {
+    no strict "vars";
+    $CONF->{'_storage'} = $tree; # Store the tree
+  }
   $self->_info_line('Filesystem', 'Trawled species static content');
 
 }
