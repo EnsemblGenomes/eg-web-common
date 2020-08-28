@@ -160,7 +160,7 @@ sub add_alignments {
   my $alignments = {};
   my $self_label = $species_defs->species_label($species, 'no_formatting');
 ## EG
-  my $static     = $species_defs->ENSEMBL_SITETYPE eq 'Vega' ? '/info/data/comparative_analysis.html' : 'http://ensemblgenomes.org/info/data/whole_genome_alignment';
+  my $static     = '/info/genome/compara/whole_genome_alignment.html';
 ##
 
   foreach my $row (values %{$hashref->{'ALIGNMENTS'}}) {
@@ -227,7 +227,7 @@ sub add_alignments {
       if ($row->{'conservation_score'}) {
         my ($program) = $hashref->{'CONSERVATION_SCORES'}{$row->{'conservation_score'}}{'type'} =~ /(.+)_CONSERVATION_SCORE/;
 ## EG
-        $options{'description'} = qq{<a href="http://ensemblgenomes.org/info/data/whole_genome_alignment">$program conservation scores</a> based on the $row->{'name'}};
+        $options{'description'} = qq{<a href="/info/genome/compara/whole_genome_alignment.html">$program conservation scores</a> based on the $row->{'name'}};
 ##
         $alignments->{'conservation'}{"$row->{'id'}_scores"} = {
           %options,
@@ -258,7 +258,7 @@ sub add_alignments {
         display     => 'off',
         renderers   => [ 'off', 'Off', 'compact', 'On' ],
 ## EG
-        description => qq{<a href="http://ensemblgenomes.org/info/data/whole_genome_alignment">$n_species way whole-genome multiple alignments</a>.; } . 
+        description => qq{<a href="/info/genome/compara/whole_genome_alignment.html">$n_species way whole-genome multiple alignments</a>.; } . 
                        join('; ', sort map { $species_defs->species_label($_, 'no_formatting') } grep { $_ ne 'ancestral_sequences' } keys %{$row->{'species'}}),
       };
 ##

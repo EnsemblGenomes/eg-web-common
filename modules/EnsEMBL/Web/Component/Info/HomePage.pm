@@ -417,8 +417,8 @@ sub _compara_text {
   else {
     $html .= '<p><strong>What can I find?</strong>  Homologues, gene trees, and whole genome alignments across multiple species.</p>';
   }
-  $html .= qq(<p><a href="http://ensemblgenomes.org/info/data/comparative_genomics" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about comparative analyses</a></p>);
-  $html .= qq(<p><a href="/prot_tree_stats.html" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />Phylogenetic overview of gene families</a></p>);
+  $html .= qq(<p><a href="/info/genome/compara/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about comparative analyses</a></p>);
+  $html .= qq(<p><a href="/info/genome/compara/prot_tree_stats.html" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />Phylogenetic overview of gene families</a></p>);
 
   if ($species_defs->ENSEMBL_FTP_URL) {
     my $ftp_url = sprintf '%s/release-%s/emf/ensembl-compara/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version;
@@ -481,7 +481,7 @@ sub _variation_text {
     }
 
     my $site = $species_defs->ENSEMBL_SITETYPE;
-    $html .= qq(<p><a href="http://ensemblgenomes.org/info/data/variation" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about variation in $site</a></p>);
+    $html .= qq(<p><a href="/info/genome/variation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about variation in $site</a></p>);
 
     if ($species_defs->ENSEMBL_FTP_URL) {
       my @links;
@@ -550,7 +550,7 @@ sub _funcgen_text {
     if ($self->_fragment('regulation', $species)) {
       $html .= qq(<p><a href="/$species/Info/Annotation#regulation" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about regulation in $display_name</a></p>);
     }
-    $html .= qq(<p><a href="http://ensemblgenomes.org/info/data/microarray_mapping" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about the $site microarray annotation strategy</a></p>);
+    $html .= qq(<p><a href="/info/genome/dna_align/microarray_mapping.html" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about the $site microarray annotation strategy</a></p>);
 
   }
 
