@@ -100,7 +100,7 @@ sub render {
 
 ## EG - add link back to alignemnts, italize the species names
   ## HEADER AND INTRO
-  $html .= sprintf('<h1><i>%s</i> vs <i>%s</i> %s Results</h1> <p style="padding-top:10px;padding-bottom:10px">Back to <a href="/compara_analyses.html">all analyses</a><p>',
+  $html .= sprintf('<h1><i>%s</i> vs <i>%s</i> %s Results</h1> <p style="padding-top:10px;padding-bottom:10px">Back to <a href="/info/genome/compara/compara_analyses.html">all analyses</a><p>',
                         $ref_common, $nonref_common, $type,
             );
 
@@ -110,7 +110,7 @@ sub render {
 alignments were downloaded from <a href="$ucsc">UCSC</a> in $site release $release.</p>};
   }
   elsif ($type eq 'Synteny') {
-    $html .= sprintf '<p><a href="http://ensemblgenomes.org/info/data/synteny">%s</a> was calculated between %s (<i>%s</i>, %s) and %s (<i>%s</i>, %s) in %s release %s.</p>',
+    $html .= sprintf '<p><a href="/info/genome/compara/synteny.html">%s</a> was calculated between %s (<i>%s</i>, %s) and %s (<i>%s</i>, %s) in %s release %s.</p>',
               $type, $ref_common, $ref_sp, $ref_assembly, $nonref_common, $nonref_sp, $nonref_assembly,
               $site, $release;
   } else {

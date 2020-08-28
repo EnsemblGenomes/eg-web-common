@@ -53,7 +53,7 @@ sub e_logo {
   my $alt = 'Ensembl Genomes Home';
   return sprintf(
     '<a href="%s"><img src="%s%s" alt="%s" title="%s" class="print_hide" style="width:%spx;height:%spx" /></a>',
-    'http://www.ensemblgenomes.org/', $self->img_url, 'e.png', $alt, $alt, 43, 40
+    '/', $self->img_url, 'e.png', $alt, $alt, 43, 40
   );
 }
 

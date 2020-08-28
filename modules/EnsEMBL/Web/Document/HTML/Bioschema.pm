@@ -47,7 +47,7 @@ sub render {
                             '@type' => 'Dataset',
                             'name'  =>  sprintf('%s Comparative Genomics Data', $sitename),
                             'includedInDataCatalog' => $catalog,
-                            'url'   => 'http://ensemblgenomes.org/info/data/comparative_genomics',
+                            'url'   => '/info/genome/compara',
                             'description' => 'Cross-genome resources and analyses at both the sequence level and the gene level',
                             'keywords' => 'phylogenetics, evolution, homology, synteny',
                             'distribution'  => [{
