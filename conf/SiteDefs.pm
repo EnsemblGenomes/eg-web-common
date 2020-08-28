@@ -92,7 +92,7 @@ sub update_conf {
   $SiteDefs::EBEYE_REST_ENDPOINT     = 'https://www.ebi.ac.uk/ebisearch/ws/rest';
 
   # EG rest server
-  $SiteDefs::ENSEMBL_REST_DOC_URL = 'http://ensemblgenomes.org/info/access/rest';
+  $SiteDefs::ENSEMBL_REST_DOC_URL = '/info/data/rest.html';
   $SiteDefs::Pathway              = 1; #enabling pathway widget
 }
 
