@@ -265,13 +265,11 @@ sub node_to_dynatree {
   
   if (@{$node->dba}) {
     foreach my $dba (@{$node->dba}) {
-      my $gca;
-      if ($dba->species =~ /gca_(\d+)/) {
-      	$gca = " (GCA_$1)";
-      }
+      my $meta_adaptor = Bio::EnsEMBL::Registry->get_adaptor( $dba->species, "core", "MetaContainer" );
+      my $display_name = $meta_adaptor->get_display_name();
       push @output, {  
         key   => ucfirst($dba->species),
-        title => $name . $gca 
+        title => $display_name
       };
     }
   }  
