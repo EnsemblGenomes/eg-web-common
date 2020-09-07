@@ -265,8 +265,7 @@ sub node_to_dynatree {
   
   if (@{$node->dba}) {
     foreach my $dba (@{$node->dba}) {
-      my $meta_adaptor = Bio::EnsEMBL::Registry->get_adaptor( $dba->species, "core", "MetaContainer" );
-      my $display_name = $meta_adaptor->get_display_name();
+      my $display_name = get_node_display_name($dba, $name);
       push @output, {  
         key   => ucfirst($dba->species),
         title => $display_name
@@ -275,6 +274,22 @@ sub node_to_dynatree {
   }  
   
   return @output;
+}
+
+sub get_node_display_name {
+  # this subroutine should not be necessary; we expect each node to have core adaptors, including the MetaContainer,
+  # but at the same time, we are a bit nervous to trust the Perl API entirely
+  my ($node_dba, $fallback_name) = @_;
+  my $meta_adaptor = Bio::EnsEMBL::Registry->get_adaptor( $node_dba->species, "core", "MetaContainer" );
+  if ($meta_adaptor) {
+    return $meta_adaptor->get_display_name();
+  } else {
+    if ($node_dba->species =~ /gca_(\d+)/) {
+      return $fallback_name . " (GCA_$1)";
+    } else {
+      return $fallback_name;
+    }
+  }
 }
 
 #------------------------------------------------------------------------------
