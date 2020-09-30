@@ -630,10 +630,6 @@ sub species_stats {
       'name' => '<b>Database version</b>',
       'stat' => $sd->ENSEMBL_VERSION.'.'.$sd->SPECIES_RELEASE_VERSION
   });
-  $summary->add_row({
-      'name' => '<b>Base Pairs</b>',
-      'stat' => $self->thousandify($genome_container->get_total_length()),
-  });
   my $header = glossary_helptip($self->hub, 'Golden Path Length', 'Golden path length');
   $summary->add_row({
       'name' => "<b>$header</b>",
