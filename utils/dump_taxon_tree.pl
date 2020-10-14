@@ -282,7 +282,9 @@ sub get_node_display_name {
   my ($node_dba, $fallback_name) = @_;
   my $meta_adaptor = Bio::EnsEMBL::Registry->get_adaptor( $node_dba->species, "core", "MetaContainer" );
   if ($meta_adaptor) {
-    return $meta_adaptor->get_display_name();
+    my $display_name = $meta_adaptor->get_display_name();
+    $meta_adaptor->dbc->disconnect_if_idle();
+    return $display_name;
   } else {
     if ($node_dba->species =~ /gca_(\d+)/) {
       return $fallback_name . " (GCA_$1)";
