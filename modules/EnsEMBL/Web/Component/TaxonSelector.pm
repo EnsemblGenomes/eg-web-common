@@ -29,35 +29,36 @@ use HTML::Entities qw(encode_entities);
 sub _init {
   my $self = shift;
   my $hub = $self->hub;
-  
+
   $self->cacheable(0);
   $self->ajaxable(0);
-  
+
   # these can be overridden in child
-  $self->{panel_type}      = 'TaxonSelector'; 
+  $self->{panel_type}      = 'TaxonSelector';
   $self->{method}          = 'get'; # get|post
   $self->{action}          = undef; # url to send data to
-  $self->{extra_params}    = {}; # additional params to send     
-  $self->{redirect}        = $hub->url({ function => undef }, 0, 1); # url to redirect to                   
-  
-  $self->{link_text}       = 'Species selector';  
+  $self->{extra_params}    = {}; # additional params to send
+  $self->{redirect}        = $hub->url({ function => undef }, 0, 1); # url to redirect to
+
+  $self->{link_text}       = 'Species selector';
   $self->{finder_prompt}   = 'Start typing the name of a species or collection...';
-  $self->{data_url}        = '/taxon_tree_data.js'; 
+  $self->{data_url}        = '/taxon_tree_data.js';
   $self->{selection_limit} = undef;
-  $self->{is_blast}        = 0,
+  $self->{is_tools}        = $self->{is_tools} || 0,
   $self->{tip_text}        = 'Click the + and - icons to navigate the tree, click the checkboxes to select/deselect a species or collection.
                               <br />Currently selected species are listed on the right.';
-  $self->{entry_node}      = undef;     
-                                     
+  $self->{entry_node}      = undef;
+  $self->{multiselect}     = $hub->param('multiselect') || $self->{multiselect} || 1;
+
 }
 
 sub content {
   my $self = shift;
   return '' unless $self->{link_text};
-  
+
   my $hub = $self->hub;
   my $url = $self->ajax_url('ajax');
-    
+
   return qq{<div class="other_tool"><p><a class="config modal_link" href="$url">$self->{link_text}</a></p></div>};
 }
 
@@ -68,14 +69,15 @@ sub content_ajax {
 
   my %params = (
     dataUrl => $self->{data_url},
-    isBlast => $self->{is_blast},
+    isTools => $self->{is_tools},
   );
 
   $params{defaultKeys}    = [@default_species]       if @default_species;
   $params{entryNode}      = $self->{entry_node}      if $self->{entry_node};
   $params{selectionLimit} = $self->{selection_limit} if $self->{selection_limit};
   $params{defaultsEleId}  = $self->{defaults_ele_id} if $self->{defaults_ele_id};
-  
+  $params{multiSelect}    = $self->{multiselect}     if $self->{multiselect};
+
   return $self->jsonify({
     content   => $self->render_selector,
     panelType => $self->{panel_type},
@@ -91,14 +93,14 @@ sub render_selector {
   my $action       = $self->{action};
   my $method       = $self->{method};
   my $extra_params = $self->{extra_params} || {};
-  
+
   $extra_params->{redirect} = $self->{redirect} if $self->{redirect};
-  
+
   my $hidden_fields;
   foreach (keys %$extra_params) {
     $hidden_fields .= qq{<input type="hidden" name="$_" value="$extra_params->{$_}" />\n};
   }
-  
+
   return qq{
     <div class="content">
       <form action="$action" method="$method" class="hidden">
@@ -127,12 +129,12 @@ sub render_selector {
 
 sub render_tip {
   my $self = shift;
-  
+
   my $tip_text = $self->{tip_text};
   if ($self->{selection_limit}) {
     $tip_text .= " You can select up to $self->{selection_limit} species.";
   }
-  
+
   return qq{
     <div class="info">
       <h3>Tip</h3>

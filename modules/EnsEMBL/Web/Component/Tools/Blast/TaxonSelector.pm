@@ -16,7 +16,7 @@ limitations under the License.
 
 =cut
 
-package EnsEMBL::Web::Component::Blast::TaxonSelector;
+package EnsEMBL::Web::Component::Tools::Blast::TaxonSelector;
 
 use strict;
 use warnings;
@@ -29,7 +29,7 @@ sub _init {
   $self->SUPER::_init;
   
   $self->{selection_limit} = 25;
-  $self->{is_blast}        = 1;
+  $self->{is_tools}         = 1;
 }
 
 1;
