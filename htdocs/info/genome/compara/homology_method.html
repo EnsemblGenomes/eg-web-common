@@ -263,25 +263,6 @@ They are linked by duplication nodes, and have a lower confidence index.
 <img style="width: 768px; height: 249px;" alt="gene split" src="gene_split.png" />
 </p>
 
-
-
-
-<h2 id="dnds">dN/dS estimations</h2>
-
-<p>We only calculate these dN/dS values for high-coverage closely-related pairs of
-species, using codeml from the PAML package<a href="#fn5" class="fn-link">6</a>. When the species evolutionary distance is too large, the
-saturation of the dS values biases the estimated dN/dS
-ratio. When the dS value of a given ortholog gene pair is too large, we mask out the dN/dS ratio,
-although the N, S, dN, dS and log-likelihood (lnL) values can still be obtained for all pairs.</p>
-
-<!-- <p>For the (sub)trees that have all dS branches shorter than 1.8, we -->
-<!-- also calculate sitewise dN/dS values for every (sub)alignment using -->
-<!-- SLR<a href="#fn6" class="fn-link">6</a>.</p> -->
-
-
-
-
-
 <h2 id="notes">Notes and References</h2>
 
 <ol>
