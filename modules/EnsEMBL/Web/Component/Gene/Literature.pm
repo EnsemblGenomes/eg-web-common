@@ -18,13 +18,12 @@ limitations under the License.
 
 package EnsEMBL::Web::Component::Gene::Literature;
 use strict;
-use base qw(EnsEMBL::Web::Component::Gene);
-use Data::Dumper;
-use URI::Escape;
-use JSON;
-use LWP::UserAgent;
 
-# TODO: move EuropePMC functionality into stand-alone web-service module
+use URI::Escape qw(uri_escape);
+
+use EnsEMBL::Web::Utils::Publications qw(get_publications_by_query_string);
+
+use base qw(EnsEMBL::Web::Component::Gene);
 
 sub content {
   my $self         = shift;
@@ -32,51 +31,45 @@ sub content {
   my $object       = $self->object;
   my $html;
   
-  my $query = sprintf '("%s") AND ("%s")&synonym=true', join('" OR "', @{$self->get_gene_names}),$hub->species_defs->SPECIES_SCIENTIFIC_NAME;
-  my ($articles, $error) = $self->europe_pmc_articles($query.'&pageSize=50');
+  my $query = uri_escape(sprintf '("%s") AND ("%s")', join('" OR "', @{$self->get_gene_names}),$hub->species_defs->SPECIES_SCIENTIFIC_NAME).'&synonym=true';
+  ## Fetch a maximum of 50 results from this query
+  my ($results, $error) = get_publications_by_query_string($query.'&pageSize=50', $hub);
 
   if ($error) {
   
-    $html .= $self->_info_panel('error', 'Failed to fetch articles from EuropePMC', $error);
+    $html .= $self->_info_panel('error', 'Failed to fetch articles from EuropePMC', $results);
   
-  } else {
+  } 
+  else {
 
-    my $table = $self->new_table(
-      [
-        { key => 'pubmed_id', title => 'PubMed&nbsp;ID', width => '6%',  align => 'left', sort => 'html' },
-        { key => 'title',     title => 'Title',          width => '50%', align => 'left', sort => 'string' },
-        { key => 'authors',   title => 'Authors',        width => '22%', align => 'left', sort => 'html' },
-        { key => 'journal',   title => 'Journal',        width => '22%', align => 'left', sort => 'string' },
-      ], 
-      [], 
-      { 
-        class      => 'no_col_toggle',
-        data_table => 1, 
-        exportable => 0,
-        data_table_config => {
+    if (scalar @$results) {
+
+      $html .= sprintf '<p>Showing the top %d hits from <a href="https://europepmc.org/search?query=%s">Europe PubMed Central</a></p>', scalar(@$results), $query;
+
+      my $table = $self->new_table(
+        [
+          { key => 'pubmed_id', title => 'PubMed&nbsp;ID', width => '6%',  align => 'left', sort => 'html' },
+          { key => 'title',     title => 'Title',          width => '50%', align => 'left', sort => 'string' },
+          { key => 'authors',   title => 'Authors',        width => '22%', align => 'left', sort => 'html' },
+          { key => 'journal',   title => 'Journal',        width => '22%', align => 'left', sort => 'string' },
+        ], 
+        $results, 
+        { 
+          class      => 'no_col_toggle',
+          data_table => 1, 
+          exportable => 0,
+          data_table_config => {
             iDisplayLength => 10
-        },
-      }
-    );
+          },
+        }
+      );
 
-    foreach (@$articles) {
-      my @authors = split /\s*,\s+|\s*and\s+/, $_->{authorString};
-      @authors = map {sprintf '<a href="http://europepmc.org/search?page=1&query=%s">%s</a>', uri_escape(qq(AUTH:"$_")), $_  } @authors;
-
-      $table->add_row({
-        pubmed_id => sprintf( '<a href="%s" style="white-space:nowrap">%s</a>', $hub->get_ExtURL('PUBMED', $_->{pmid}), $_->{pmid} ),
-        title     => $_->{title},
-        authors   => join(', ', @authors),
-        journal   => sprintf '%s %s(%s) %s', $_->{journalTitle}, $_->{journalVolume}, $_->{issue}, $_->{pubYear}
-      });
+      $html .= $table->render;  
     }
-
-    $html .= scalar(@$articles) == 0 ?
-             sprintf '<p>There are no hits for this gene from <a href="https://europepmc.org/search?query=%s">Europe PubMed Central</a></p>', uri_escape($query) : 
-             sprintf '<p>Showing the top %d hits from <a href="https://europepmc.org/search?query=%s">Europe PubMed Central</a></p>', scalar(@$articles), uri_escape($query);
-    $html .= $table->render;  
+    else {
+      $html .= sprintf '<p>There are no hits for this gene from <a href="https://europepmc.org/search?query=%s">Europe PubMed Central</a></p>', uri_escape($query); 
+    }
   }
-
   return $html;
 }
 
@@ -93,33 +86,6 @@ sub get_gene_names {
   }
   
   return \@names;
-}
-
-sub europe_pmc_articles {
-  my ($self, $query) = @_;
-  my $articles = [];
-  my $error    = 0;
-  my $uri      = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search/format=json&query=' . $query;
-  my $response = $self->_user_agent->get($uri);
-
-  if ($response->is_success) {
-    my $content = $response->content;
-    $content =~ s/^jsonp\((.*)\)$/$1/ if $content =~ /^jsonp/;
-    eval { $articles = from_json($content)->{resultList}->{result} };
-    $error = $@ if $@;
-  } else {
-    $error = $response->status_line;
-  }
-
-  return $articles, $error;  
-}
-
-sub _user_agent {
-  my $self = shift;
-  my $ua = LWP::UserAgent->new;
-  $ua->agent($SiteDefs::SITE_NAME . ' ' . $SiteDefs::SITE_RELEASE_VERSION);
-  $ua->env_proxy;
-  return $ua;
 }
 
 1;
