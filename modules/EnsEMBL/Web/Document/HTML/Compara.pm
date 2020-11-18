@@ -200,7 +200,7 @@ sub table {
 <td style="padding:0px 10px 0px 0px;text-align:left;width:60px;">%s</td>
 <td style="padding:0px 10px 0px 0px;text-align:left;width:40px;">%s</td><tr>},
 $sample_location,
-$stats ? qq{<a href="/mlss.html?mlss=$aid">stats</a>} : '&nbsp;';
+$stats ? qq{<a href="/info/genome/compara/mlss.html?mlss=$aid">stats</a>} : '&nbsp;';
 	    }
 	    $astr .= qq{</table>};
 	    $ghtml .= sprintf qq{<tr class="%s"><td>%s</td><td>%s</td></tr>}, $xbg, $data->{$ss}->{'display_name'} || $ss, $astr;
