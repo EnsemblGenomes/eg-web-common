@@ -1,7 +1,3 @@
-/* change the species drop-down menu to be single column, with max-height and vertical scroll */
-#masthead div.dropdown.species          { width: 300px }
-#masthead div.dropdown.species ul       { max-height: 400px; overflow-x: hidden; overflow-y: auto}
-#masthead div.dropdown.species ul li    { width: default; float: none; }
 #masthead div.dropdown.clade            { width: 300px }
 #masthead div.dropdown.clade ul         { max-height: 400px; overflow-x: hidden; overflow-y: auto}
 #masthead div.dropdown.clade ul li      { width: default; float: none; }
