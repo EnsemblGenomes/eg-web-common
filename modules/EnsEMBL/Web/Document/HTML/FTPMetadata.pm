@@ -29,7 +29,8 @@ sub render {
   my $self = shift;
   my $hub          = $self->hub;
   my $species_defs = $hub->species_defs;
-  my $prefix       = 'ftp://ftp.ensemblgenomes.org/pub/release-' . $species_defs->SITE_RELEASE_VERSION;
+  my $ftp          = $species_defs->ENSEMBL_GENOMES_FTP_URL;
+  my $prefix       = sprintf '%s/release-%s', $ftp, $species_defs->SITE_RELEASE_VERSION;
   my $site         = $species_defs->ENSEMBL_SITETYPE;
   my $unit         = $species_defs->GENOMIC_UNIT;
   
@@ -39,7 +40,7 @@ sub render {
     <h2>Metadata</h2>
     <p>
       Detailed metadata on the genomes provided by Ensembl Genomes is available from the FTP site in TSV, JSON and XML formats 
-      (<a href="ftp://ftp.ensemblgenomes.org/pub/README_metadata">format details</a>).
+      (<a href="$ftp/README_metadata">format details</a>).
     </p>
     <p>
       $site:

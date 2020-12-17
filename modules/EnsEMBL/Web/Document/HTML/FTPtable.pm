@@ -22,6 +22,7 @@ sub multi_table {
   my ($self, $rel, %title) = @_;
   my $hub             = $self->hub;
   my $species_defs    = $hub->species_defs;
+  my $ftp             = $species_defs->ENSEMBL_GENOMES_FTP_URL;
 
   ## Override default parameter
   $rel = $species_defs->SITE_RELEASE_VERSION;
@@ -51,22 +52,22 @@ sub multi_table {
     [
       {
       database => qq{<strong>Pan_compara Multi-species</strong>},
-      mysql   => qq{<a rel="external" title="$title{pan}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/mysql/$pan_compara/">MySQL</a>},
-      emf     => qq{<a rel="external" title="$title{emf}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/emf/ensembl-compara/homologies">EMF</a>},
-      tsv     => qq{<a rel="external" title="$title{tsv}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/tsv/ensembl-compara/homologies">TSV</a>},
-      xml     => qq{<a rel="external" title="$title{xml}" href="ftp://ftp.ensemblgenomes.org/pub/pan_ensembl/release-$rel/xml/ensembl-compara/homologies">XML</a>},
+      mysql   => qq{<a rel="external" title="$title{pan}" href="$ftp/pan_ensembl/release-$rel/mysql/$pan_compara/">MySQL</a>},
+      emf     => qq{<a rel="external" title="$title{emf}" href="$ftp/pan_ensembl/release-$rel/emf/ensembl-compara/homologies">EMF</a>},
+      tsv     => qq{<a rel="external" title="$title{tsv}" href="$ftp/pan_ensembl/release-$rel/tsv/ensembl-compara/homologies">TSV</a>},
+      xml     => qq{<a rel="external" title="$title{xml}" href="$ftp/pan_ensembl/release-$rel/xml/ensembl-compara/homologies">XML</a>},
       },
       {
       database => qq{<strong>$multi_sp Multi-species</strong>},
-      mysql   => sprintf(qq{<a rel="external" title="%s" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/mysql/$compara">MySQL</a>},sprintf($title{compara},ucfirst $genomic_unit)),
-      emf     => qq{<a rel="external" title="$title{emf}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/emf/ensembl-compara/homologies">EMF</a>},
-      tsv     => qq{<a rel="external" title="$title{tsv}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/tsv/ensembl-compara/homologies">TSV</a>},
-      maf     => qq{<a rel="external" title="$title{maf}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/maf/">MAF</a>},
-      xml     => qq{<a rel="external" title="$title{xml}" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/xml/ensembl-compara/homologies">XML</a>},
+      mysql   => sprintf(qq{<a rel="external" title="%s" href="$ftp/$genomic_unit/release-$rel/mysql/$compara">MySQL</a>},sprintf($title{compara},ucfirst $genomic_unit)),
+      emf     => qq{<a rel="external" title="$title{emf}" href="$ftp/$genomic_unit/release-$rel/emf/ensembl-compara/homologies">EMF</a>},
+      tsv     => qq{<a rel="external" title="$title{tsv}" href="$ftp/$genomic_unit/release-$rel/tsv/ensembl-compara/homologies">TSV</a>},
+      maf     => qq{<a rel="external" title="$title{maf}" href="$ftp/$genomic_unit/release-$rel/maf/">MAF</a>},
+      xml     => qq{<a rel="external" title="$title{xml}" href="$ftp/$genomic_unit/release-$rel/xml/ensembl-compara/homologies">XML</a>},
       },
       {
       database => qq{<strong>Ensembl Mart</strong>},
-      mysql   => sprintf(qq{<a rel="external" title="%s" href="ftp://ftp.ensemblgenomes.org/pub/$genomic_unit/release-$rel/mysql/$genomic_unit\_mart_$rel">MySQL</a>},sprintf($title{mart},ucfirst $genomic_unit)),
+      mysql   => sprintf(qq{<a rel="external" title="%s" href="$ftp/$genomic_unit/release-$rel/mysql/$genomic_unit\_mart_$rel">MySQL</a>},sprintf($title{mart},ucfirst $genomic_unit)),
       }
     ],
     { data_table=>0 }
@@ -87,15 +88,15 @@ sub metadata {
 
 <p>Data files containing metadata for Ensembl Genomes from release 15 onwards can be found 
 in the root directory or appropriate division directory of each release e.g.
-<a href="ftp://ftp.ensemblgenomes.org/pub/current/$division/">ftp://ftp.ensemblgenomes.org/pub/current/$division/</a>.</p>
+<a href="$ftp/current/$division/">$ftp/current/$division/</a>.</p>
 
 <p>The following files are provided:</p>
 
 <ul>
-  <li><a href="ftp://ftp.ensemblgenomes.org/pub/current/species.txt">species.txt</a> (or e.g. <a href="ftp://ftp.ensemblgenomes.org/pub/current/$division/species_Ensembl$uc_div.txt">species_Ensembl$uc_div.txt</a>) - simple tab-separated file containing basic information about each genome</li>
-  <li><a href="ftp://ftp.ensemblgenomes.org/pub/current/species_metadata.json">species_metadata.json</a> (or e.g. <a href="ftp://ftp.ensemblgenomes.org/pub/current/$division/species_metadata_Ensembl$uc_div.json">species_metadata_Ensembl$uc_div.json</a>) - full metadata about each genome in JSON format, including comparative analyses, sequence region names etc.</li>
-  <li><a href="ftp://ftp.ensemblgenomes.org/pub/current/species_metadata.xml">species_metadata.xml</a> (or e.g. <a href="ftp://ftp.ensemblgenomes.org/pub/current/$division/species_metadata_Ensembl$uc_div.xml">species_metadata_Ensembl$uc_div.xml</a>) - full metadata about each genome in XML format, including comparative analyses, sequence region names etc.</li>
-  <li><a href="ftp://ftp.ensemblgenomes.org/pub/current/uniprot_report.txt">uniprot_report.txt</a> (or e.g. <a href="ftp://ftp.ensemblgenomes.org/pub/current/$division/uniprot_report_Ensembl$uc_div.txt">uniprot_report_Ensembl$uc_div.txt</a>) - specialised tab-separated file containing information about mapping of genome to UniProtKB</li>
+  <li><a href="$ftp/current/species.txt">species.txt</a> (or e.g. <a href="$ftp/current/$division/species_Ensembl$uc_div.txt">species_Ensembl$uc_div.txt</a>) - simple tab-separated file containing basic information about each genome</li>
+  <li><a href="$ftp/current/species_metadata.json">species_metadata.json</a> (or e.g. <a href="$ftp/current/$division/species_metadata_Ensembl$uc_div.json">species_metadata_Ensembl$uc_div.json</a>) - full metadata about each genome in JSON format, including comparative analyses, sequence region names etc.</li>
+  <li><a href="$ftp/current/species_metadata.xml">species_metadata.xml</a> (or e.g. <a href="$ftp/current/$division/species_metadata_Ensembl$uc_div.xml">species_metadata_Ensembl$uc_div.xml</a>) - full metadata about each genome in XML format, including comparative analyses, sequence region names etc.</li>
+  <li><a href="$ftp/current/uniprot_report.txt">uniprot_report.txt</a> (or e.g. <a href="$ftp/current/$division/uniprot_report_Ensembl$uc_div.txt">uniprot_report_Ensembl$uc_div.txt</a>) - specialised tab-separated file containing information about mapping of genome to UniProtKB</li>
 </ul>
   );
 

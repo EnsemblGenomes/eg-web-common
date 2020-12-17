@@ -138,7 +138,7 @@ sub render {
       'desc'  => "Parse a vcf file to create a linkage pedigree file (ped) and a marker information file, which together may be loaded into ld visualization tools like Haploview.",
       'tool'  => sprintf('<a href="%s" class="nodeco"><img src="%s16/tool.png" alt="Tool" title="Go to online tool" /></a>', $link, $img_url),
       'limit' => '',
-      'code'  => sprintf('<a href="ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/browser/vcf_to_ped_converter/version_1.1/vcf_to_ped_convert.pl" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $img_url),
+      'code'  => sprintf('<a href="http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/browser/vcf_to_ped_converter/version_1.1/vcf_to_ped_convert.pl" rel="external" class="nodeco"><img src="%s16/download.png" alt="Download" title="Download Perl script" /></a>', $img_url),
       'docs'  => '',
     });
   }
@@ -171,10 +171,11 @@ sub render {
   }
 
   ## PERL API 
+  my $ftp = $sd->ENSEMBL_FTP_URL;
   $table->add_row({
     'name' => '<b>Ensembl Perl API</b>',
     'desc' => 'Programmatic access to all Ensembl data using simple Perl scripts',
-    'from' => qq(<a href="https://github.com/Ensembl">GitHub</a> or <a href="ftp://ftp.ensembl.org/pub/ensembl-api.tar.gz" rel="external">FTP download</a> (current release only)),
+    'from' => qq(<a href="https://github.com/Ensembl">GitHub</a> or <a href="$ftp/ensembl-api.tar.gz" rel="external">FTP download</a> (current release only)),
     'docs' => sprintf('<a href="/info/docs/api/"><img src="%s16/info.png" alt="Documentation" /></a>', $img_url)
   });
 
