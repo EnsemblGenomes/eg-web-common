@@ -230,6 +230,12 @@ sub _parse {
   $tree->{'MULTI'}{'ENSEMBL_DATASETS'} = $datasets;
   #warn ">>> NEW KEYS: ".Dumper($tree);
 
+  ## File format info 
+  my $format_info = $self->_get_file_format_info($tree);;
+  $tree->{'MULTI'}{'UPLOAD_FILE_FORMATS'} = $format_info->{'upload'};
+  $tree->{'MULTI'}{'REMOTE_FILE_FORMATS'} = $format_info->{'remote'};
+  $tree->{'MULTI'}{'DATA_FORMAT_INFO'} = $format_info->{'formats'};
+
   ## Parse species directories for static content
   $tree->{'SPECIES_INFO'} = $self->_load_in_species_pages;
   {
