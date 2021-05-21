@@ -144,7 +144,7 @@ sub _summarise_compara_db {
       if ($division eq 'Bacteria') {
         $subdivision = 'archaea' if $archaea->{$prod_name};
       }
-      $self->full_tree->{'MULTI'}{'PAN_COMPARA_LOOKUP'}{$prod_name} = {
+      $self->db_tree->{'PAN_COMPARA_LOOKUP'}{$prod_name} = {
                 'species_url'     => $url,
                 'display_name'    => $display_name,
                 'scientific_name' => $sci_name,

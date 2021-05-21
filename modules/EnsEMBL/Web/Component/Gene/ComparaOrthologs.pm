@@ -33,7 +33,7 @@ sub _species_sets {
 
   if ($is_pan) {
     $set_order = [qw(all vertebrates metazoa plants fungi protists bacteria archaea)];
-    $pan_lookup  = $species_defs->get_config('MULTI', 'PAN_COMPARA_LOOKUP');
+    $pan_lookup  = $species_defs->multi_val('PAN_COMPARA_LOOKUP');
   }
   
   my $species_sets = {
