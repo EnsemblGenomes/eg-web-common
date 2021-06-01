@@ -48,7 +48,7 @@ sub _intraspecies_sql {
   ');
 }
 
-sub _genome_names_sql {
+sub _homologies_sql {
 ## need to exclude HOMOEOLOGUES as well as PARALOGUES otherwise too many method link species sets that prevents web site from starting
   return qq(
     select ml.type, gd.name, gd.name, count(*) as count
