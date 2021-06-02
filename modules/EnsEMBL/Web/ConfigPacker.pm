@@ -45,7 +45,7 @@ sub _intraspecies_sql {
         and mls.source != "ucsc"
       group by mls.method_link_species_set_id, mls.method_link_id
       having count = 1
-  ');
+  );
 }
 
 sub _homologies_sql {
