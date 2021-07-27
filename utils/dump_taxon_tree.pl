@@ -41,6 +41,7 @@ use Getopt::Long;
 use lib $Bin;
 use LibDirs;
 use Bio::EnsEMBL::Registry;
+use EnsEMBL::Web::DBHub;
 use lib "$LibDirs::SERVERROOT/eg-web-bacteria/modules";
 
 $| = 1; # disable buffering - helps when running on LSF
@@ -104,7 +105,10 @@ if (!@species_args) {
   }
 }
 die 'Need a list of species!' if !@species_args;
-my %species = map {lc($_) => 1} @species_args; 
+
+my $hub          = EnsEMBL::Web::DBHub->new;
+my $species_defs = $hub->species_defs;
+my %species = map {$species_defs->SPECIES_PRODUCTION_NAME($_) => 1} @species_args;
 
 print "\nDumping taxon tree for " . scalar(keys %species) . " species...\n";
 
