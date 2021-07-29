@@ -76,6 +76,9 @@ sub abbreviated_species_label {
 # MULTI SPECIES
 #------------------------------------------------------------------------------
 
+sub _load_in_taxonomy_division {}
+
+=pod
 sub _parse {
   ### Does the actual parsing of .ini files
   ### (1) Open up the DEFAULTS.ini file(s)
@@ -245,6 +248,7 @@ sub _parse {
   $self->_info_line('Filesystem', 'Trawled species static content');
 
 }
+=cut
 
 our %cow_from_defaults = ( # copy-on-write from defautls for these sections.
                           'ENSEMBL_SPECIES_SITE'  => 1,
