@@ -75,13 +75,13 @@ sub abbreviated_species_label {
 sub _load_in_taxonomy_division {}
 
 sub _get_cow_defaults {
-## EG to overwrite behaviour on ensembl-webcode in which the sections in 
-## default ones are deep-copied into species defs regardless of whether 
-## there is any update in the species ini file.
+## To overwrite behaviour on ensembl-webcode, in which the sections in 
+## DEFAULTS.ini are deep-copied into species defs regardless of whether 
+## there is any difference in the species ini file.
 ## For EG, we want only copy-on-write. The sections specified in default will 
-## only be deep-copied into species defs when there is an update for the same 
-## section in the species ini file. Otherwise, a use hashref to point to the one 
-## in default.
+## only be deep-copied into species defs when there is a difference in the same 
+## section in the species ini file. Otherwise, use a hashref to point to the one 
+## in DEFAULTS.
   my $self = shift;
 
   $cow_from_defaults = { 
@@ -97,26 +97,13 @@ sub _merge_db_tree {
   return unless defined $db_tree;
   Hash::Merge::set_behavior('RIGHT_PRECEDENT');
   my $t = merge($tree->{$key}, $db_tree->{$key});
-  my $cow_from_defaults = %{$self->_get_cow_defaults};
+  my %cow_from_defaults = %{$self->_get_cow_defaults};
   foreach my $k ( %cow_from_defaults ) {
       $t->{$k} = $tree->{$key}->{$k} if defined $tree->{$key}->{$k};
   }
 
   $tree->{$key} = $t;
 }
-
-## EG MULTI
-sub _merge_species_tree {
-  my ($self, $a, $b, $species_lookup) = @_;
-
-  foreach my $key (keys %$b) {
-## EG - don't bloat the configs with references to all the other speices in this dataset    
-      next if $species_lookup->{$key}; 
-##
-      $a->{$key} = $b->{$key} unless exists $a->{$key};
-  }
-}
-##
 
 
 ## EG always return true so that we never force a config repack
@@ -127,26 +114,5 @@ sub retrieve {
   return 1; 
 }
 ##
-
-sub production_name_mapping {
-  ### As the name said, the function maps the production name with the species URL,
-  ### @param production_name - species production name
-  ### Return string = the corresponding species url name, which is the name web uses for URL and other code, or production name as fallback
-  my ($self, $production_name) = @_;
-  my $mapping_name = '';
-
-  ## EG - in EG we still use production name. Don't need to map them into url name.
-  foreach ($self->valid_species) {
-    if ($self->get_config($_, 'SPECIES_PRODUCTION_NAME') eq lc($production_name)) {
-      $mapping_name = $self->get_config($_, 'SPECIES_URL');
-      last;
-    }
-  }
-
-  ## EG - species may be from another divison or from external site (e.g. Ensembl)
-  ## There are instances where species url is returned
-  ## When it isn't returned then production name can be used instead
-  return $mapping_name || $production_name;
-}
 
 1;
