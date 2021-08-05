@@ -35,9 +35,10 @@ sub _get_NCBIBLAST_source_file {
   my $unit = $self->GENOMIC_UNIT;
   my $path = ($self->EBI_BLAST_DB_PREFIX || "ensemblgenomes") . "/$unit";
   
-  my $dataset = $self->get_config($species, 'SPECIES_DATASET');
+  my $dataset   = $self->get_config($species, 'SPECIES_DATASET');
+  my $prodname  = $self->get_config($species, 'SPECIES_PRODUCTION_NAME');
 
-  if ($dataset && $species ne $dataset) { # add collection
+  if ($dataset && lc($prodname) ne lc($dataset)) { # add collection
     $path .= '/' . lc($dataset) . '_collection';
   }
 
