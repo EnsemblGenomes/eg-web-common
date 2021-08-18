@@ -32,7 +32,7 @@ sub content {
   my ($gene, $member, $tree, $node, $test_tree);
 
   my $type   = $self->param('data_type') || $hub->type;
-  my $vc = $self->view_config($type);
+  my $vc = $self->viewconfig($type);
 
 ## EG  
   my $url_function = $hub->function;
