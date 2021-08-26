@@ -85,10 +85,10 @@ sub _get_cow_defaults {
 ## in DEFAULTS.
   my $self = shift;
 
-  $cow_from_defaults = { 
-                        'ENSEMBL_SPECIES_SITE'  => 1,
-                        'SPECIES_DISPLAY_NAME'  => 1 
-                        };
+  my $cow_from_defaults = { 
+                            'ENSEMBL_SPECIES_SITE'  => 1,
+                            'SPECIES_DISPLAY_NAME'  => 1 
+                          };
   $cow_from_defaults->{'ENSEMBL_EXTERNAL_URLS'} = 1 if $SiteDefs::ENSEMBL_SITETYPE =~ /bacteria/i;
   return $cow_from_defaults;
 }
@@ -99,7 +99,7 @@ sub _merge_db_tree {
   Hash::Merge::set_behavior('RIGHT_PRECEDENT');
   my $t = merge($tree->{$key}, $db_tree->{$key});
   my %cow_from_defaults = %{$self->_get_cow_defaults};
-  foreach my $k ( %cow_from_defaults ) {
+  foreach my $k ( keys %cow_from_defaults ) {
       $t->{$k} = $tree->{$key}->{$k} if defined $tree->{$key}->{$k};
   }
 
