@@ -41,15 +41,15 @@ sub _get_NCBIBLAST_source_file {
     $path .= '/' . lc($dataset) . '_collection';
   }
 
-  $path .= '/' . lc $species; # add species folder
+  $path .= '/' . $prodname; # add species folder
 
-  return sprintf '%s/%s.%s.%s', $path, $species, $assembly, $type unless $type =~ /latestgp/;
+  return sprintf '%s/%s.%s.%s', $path, ucfirst($prodname), $assembly, $type unless $type =~ /latestgp/;
 
   $type =~ s/latestgp(.*)/dna$1\.toplevel/;
   $type =~ s/.masked/_rm/;
   $type =~ s/.soft/_sm/;
 
-  return sprintf '%s/%s.%s.%s', $path, $species, $assembly, $type;
+  return sprintf '%s/%s.%s.%s', $path, ucfirst($prodname), $assembly, $type;
 }
 
 ## EG ENSEMBL-2967 - abbreviate long species names
