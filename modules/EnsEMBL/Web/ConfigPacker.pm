@@ -31,6 +31,10 @@ sub munge_config_tree {
   $self->_configure_external_resources;
 }
 
+sub _summarise_compara_alignments {
+  ## EG - now done on the fly - too many alignments to put in configs 
+}
+
 sub _intraspecies_sql {
 ## need to exclude HOMOEOLOGUES as well as PARALOGUES otherwise too many method link species sets that prevents web site from starting
   return qq(
