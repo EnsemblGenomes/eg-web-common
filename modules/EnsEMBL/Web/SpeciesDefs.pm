@@ -38,7 +38,7 @@ sub _get_NCBIBLAST_source_file {
   my $dataset   = $self->get_config($species, 'SPECIES_DATASET');
   my $prodname  = $self->get_config($species, 'SPECIES_PRODUCTION_NAME');
 
-  if ($dataset && $prodname ne lc($dataset)) { # add collection
+  if ($dataset && $prodname ne $dataset) { # add collection
     $path .= '/' . lc($dataset) . '_collection';
   }
 
