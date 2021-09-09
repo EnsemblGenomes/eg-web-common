@@ -27,7 +27,7 @@ use Compress::Zlib;
 use Data::Dumper;
 
 use strict;
-use previous qw(get_homology_matches get_desc_mapping);
+use previous qw(get_homology_matches);
 
 sub get_go_list {
   my $self = shift ;
@@ -260,19 +260,6 @@ sub get_homology_matches {
     $_->{display_id} =~ s/^Novel Ensembl prediction$// for (values %$sp);
   }
   return $matches;
-}
-
-## EG add eg-specific mappings
-sub get_desc_mapping {
-  my $self = shift;
-  my %mapping = $self->PREV::get_desc_mapping(@_);
-  return (
-    %mapping,
-    gene_split          => 'gene split',
-    homoeolog_one2one   => '1-to-1',
-    homoeolog_one2many  => '1-to-many',
-    homoeolog_many2many => 'many-to-many',   
-  )
 }
 
 ## EG Revert genome_db name hack
