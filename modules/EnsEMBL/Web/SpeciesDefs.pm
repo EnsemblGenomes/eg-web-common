@@ -75,7 +75,7 @@ sub abbreviated_species_label {
 
 sub _load_in_taxonomy_division {}
 
-sub _get_cow_defaults {
+sub _get_deepcopy_defaults {
 ## To overwrite behaviour on ensembl-webcode, in which the sections in 
 ## DEFAULTS.ini are deep-copied into species defs regardless of whether 
 ## there is any difference in the species ini file.
@@ -85,12 +85,12 @@ sub _get_cow_defaults {
 ## in DEFAULTS.
   my $self = shift;
 
-  my $cow_from_defaults = { 
+  my $deepcopy_defaults = { 
                             'ENSEMBL_SPECIES_SITE'  => 1,
                             'SPECIES_DISPLAY_NAME'  => 1 
                           };
-  $cow_from_defaults->{'ENSEMBL_EXTERNAL_URLS'} = 1 if $SiteDefs::ENSEMBL_SITETYPE =~ /bacteria/i;
-  return $cow_from_defaults;
+  $deepcopy_defaults->{'ENSEMBL_EXTERNAL_URLS'} = 1 if $SiteDefs::ENSEMBL_SITETYPE =~ /bacteria/i;
+  return $deepcopy_defaults;
 }
 
 sub _merge_db_tree {
