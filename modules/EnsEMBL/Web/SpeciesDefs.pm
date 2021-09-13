@@ -98,8 +98,8 @@ sub _merge_db_tree {
   return unless defined $db_tree;
   Hash::Merge::set_behavior('RIGHT_PRECEDENT');
   my $t = merge($tree->{$key}, $db_tree->{$key});
-  my %cow_from_defaults = %{$self->_get_cow_defaults};
-  foreach my $k ( keys %cow_from_defaults ) {
+  my %deepcopy_from_defaults = %{$self->_get_deepcopy_defaults};
+  foreach my $k ( keys %deepcopy_from_defaults ) {
       $t->{$k} = $tree->{$key}->{$k} if defined $tree->{$key}->{$k};
   }
 
