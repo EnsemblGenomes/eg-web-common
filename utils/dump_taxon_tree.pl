@@ -139,9 +139,8 @@ Bio::EnsEMBL::Registry->load_registry_from_db(@db_args);
 #Bio::EnsEMBL::Registry->set_disconnect_when_inactive;
 
 my @adaptors = @{ Bio::EnsEMBL::Registry->get_all_DBAdaptors(-group => 'core') };
-my @dbas;;
 
-my @dbas  = grep { $species{$_->species} } @{ Bio::EnsEMBL::Registry->get_all_DBAdaptors(-group => 'core') };
+my @dbas  = grep { $species{$_->species} } @adaptors;
 
 #------------------------------------------------------------------------------
 
@@ -272,7 +271,7 @@ sub node_to_dynatree {
     foreach my $dba (@{$node->dba}) {
       my $meta = get_meta($dba, $name);
       push @output, {  
-        key   => $meta->{'url'},
+        key   => $meta->{'prod_name'},
         title => $meta->{'display_name'}
       };
     }
@@ -290,12 +289,12 @@ sub get_meta {
 
   if ($meta_adaptor) {
     $meta->{'display_name'} = $meta_adaptor->get_display_name();
-    $meta->{'url'} = $meta_adaptor->single_value_by_key('species.url');
+    $meta->{'prod_name'} = $meta_adaptor->single_value_by_key('species.production_name');
 
     $meta_adaptor->dbc->disconnect_if_idle();
   } else {
     $meta->{'display_name'} = ($node_dba->species =~ /gca_(\d+)/) ? $fallback_name . " (GCA_$1)" : $fallback_name;
-    $meta->{'url'} = $fallback_name;
+    $meta->{'prod_name'} = $fallback_name;
   }
   return $meta;
 }
