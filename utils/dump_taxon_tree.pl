@@ -287,15 +287,13 @@ sub get_meta {
   my $meta_adaptor = Bio::EnsEMBL::Registry->get_adaptor( $node_dba->species, "core", "MetaContainer" );
   my $meta = {};
 
-  if ($meta_adaptor) {
-    $meta->{'display_name'} = $meta_adaptor->get_display_name();
-    $meta->{'prod_name'} = $meta_adaptor->single_value_by_key('species.production_name');
+  $meta->{'display_name'} = $meta_adaptor ? $meta_adaptor->get_display_name() : (($node_dba->species =~ /gca_(\d+)/) ? $fallback_name . " (GCA_$1)" : $fallback_name);
+  $meta->{'prod_name'} = $meta_adaptor ? $meta_adaptor->single_value_by_key('species.production_name') : $fallback_name;
 
+  if($meta_adaptor) {
     $meta_adaptor->dbc->disconnect_if_idle();
-  } else {
-    $meta->{'display_name'} = ($node_dba->species =~ /gca_(\d+)/) ? $fallback_name . " (GCA_$1)" : $fallback_name;
-    $meta->{'prod_name'} = $fallback_name;
   }
+
   return $meta;
 }
 
