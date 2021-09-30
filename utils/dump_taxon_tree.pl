@@ -104,7 +104,8 @@ if (!@species_args) {
   }
 }
 die 'Need a list of species!' if !@species_args;
-my %species = map {lc($_) => 1} @species_args; 
+
+my %species = map {$_ => 1} @species_args;
 
 print "\nDumping taxon tree for " . scalar(keys %species) . " species...\n";
 
@@ -137,7 +138,10 @@ print "getting db adaptors...\n";
 Bio::EnsEMBL::Registry->load_registry_from_db(@db_args);
 #Bio::EnsEMBL::Registry->set_disconnect_when_inactive;
 
-my @dbas  = grep { $species{$_->species} } @{ Bio::EnsEMBL::Registry->get_all_DBAdaptors(-group => 'core') };
+my @adaptors = @{ Bio::EnsEMBL::Registry->get_all_DBAdaptors(-group => 'core') };
+
+my @dbas  = grep { $species{$_->species} } @adaptors;
+
 #------------------------------------------------------------------------------
 
 print "fetching leaf nodes...\n";
@@ -265,10 +269,10 @@ sub node_to_dynatree {
   
   if (@{$node->dba}) {
     foreach my $dba (@{$node->dba}) {
-      my $display_name = get_node_display_name($dba, $name);
+      my $meta = get_meta($dba, $name);
       push @output, {  
-        key   => ucfirst($dba->species),
-        title => $display_name
+        key   => $meta->{'prod_name'},
+        title => $meta->{'display_name'}
       };
     }
   }  
@@ -276,22 +280,21 @@ sub node_to_dynatree {
   return @output;
 }
 
-sub get_node_display_name {
+sub get_meta {
   # this subroutine should not be necessary; we expect each node to have core adaptors, including the MetaContainer,
   # but at the same time, we are a bit nervous to trust the Perl API entirely
   my ($node_dba, $fallback_name) = @_;
   my $meta_adaptor = Bio::EnsEMBL::Registry->get_adaptor( $node_dba->species, "core", "MetaContainer" );
-  if ($meta_adaptor) {
-    my $display_name = $meta_adaptor->get_display_name();
+  my $meta = {};
+
+  $meta->{'display_name'} = $meta_adaptor ? $meta_adaptor->get_display_name() : (($node_dba->species =~ /gca_(\d+)/) ? $fallback_name . " (GCA_$1)" : $fallback_name);
+  $meta->{'prod_name'} = $meta_adaptor ? $meta_adaptor->single_value_by_key('species.production_name') : $fallback_name;
+
+  if($meta_adaptor) {
     $meta_adaptor->dbc->disconnect_if_idle();
-    return $display_name;
-  } else {
-    if ($node_dba->species =~ /gca_(\d+)/) {
-      return $fallback_name . " (GCA_$1)";
-    } else {
-      return $fallback_name;
-    }
   }
+
+  return $meta;
 }
 
 #------------------------------------------------------------------------------
