@@ -618,7 +618,7 @@ sub species_stats {
       $a_id .= " ($long)";
     }
     if (my ($acc) = @{$meta_container->list_value_by_key('assembly.accession')}) {
-      $acc = sprintf('INSDC Assembly <a href="http://www.ebi.ac.uk/ena/data/view/%s">%s</a>', $acc, $acc);
+      $acc = sprintf('INSDC Assembly <a href="https://www.ebi.ac.uk/ena/browser/view/%s">%s</a>', $acc, $acc);
       $a_id .= ", $acc";
     }
   }
