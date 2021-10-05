@@ -30,7 +30,8 @@ sub add_species_fieldset {
 ##
   foreach (sort { ($a =~ /^<.*?>(.+)/ ? $1 : $a) cmp ($b =~ /^<.*?>(.+)/ ? $1 : $b) } keys %species) { 
     # complicated if statement which basically show/hide strain or main species depending on the view you are (when you are on a main species, do not show strain species and when you are on a strain species or strain view from main species, show only strain species)
-    next if ((!$self->view_config->hub->param('strain') && $self->view_config->species_defs->get_config($species{$_},'IS_STRAIN_OF')) || (($self->view_config->hub->param('strain')  || $self->view_config->species_defs->IS_STRAIN_OF) && !$self->view_config->species_defs->get_config($species{$_}, 'RELATED_TAXON'))); 
+  next if ((!$hub->param('strain') && $hub->is_strain($species{$_})) 
+              || (($hub->param('strain') || $hub->is_strain) && !$self->view_config->species_defs->get_config($species{$_}, 'RELATED_TAXON')));
     
     $self->add_form_element({
       'fieldset'  => 'Selected species',
