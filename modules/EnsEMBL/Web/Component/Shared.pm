@@ -618,8 +618,8 @@ sub species_stats {
       $a_id .= " ($long)";
     }
     if (my ($acc) = @{$meta_container->list_value_by_key('assembly.accession')}) {
-      $acc = sprintf('INSDC Assembly <a href="https://www.ebi.ac.uk/ena/browser/view/%s">%s</a>', $acc, $acc);
-      $a_id .= ", $acc";
+      my $assembly_url = $self->hub->get_ExtURL('ENA_FEATURE', $acc);
+      $a_id .= qq {, INSDC Assembly <a href="$assembly_url">$acc</a>};
     }
   }
   $summary->add_row({
