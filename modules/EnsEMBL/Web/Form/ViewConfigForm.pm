@@ -24,9 +24,10 @@ no warnings "uninitialized";
 
 sub add_species_fieldset {
   my $self          = shift;
+  my $hub           = $self->view_config->hub;
   my $species_defs  = $self->view_config->species_defs;
 ## EG  
-  my %species       = map { $species_defs->species_label($_) => $_ } $self->view_config->hub->compara_species;
+  my %species       = map { $species_defs->species_label($_) => $_ } $hub->compara_species;
 ##
   foreach (sort { ($a =~ /^<.*?>(.+)/ ? $1 : $a) cmp ($b =~ /^<.*?>(.+)/ ? $1 : $b) } keys %species) { 
     # complicated if statement which basically show/hide strain or main species depending on the view you are (when you are on a main species, do not show strain species and when you are on a strain species or strain view from main species, show only strain species)
