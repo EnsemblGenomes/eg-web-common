@@ -52,7 +52,7 @@ use Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyNodeAdaptor;
 
 my ($plugin_dir, $dump_binary, $division);
 my ($host, $port, $user, $pass) = qw(localhost 3306 ensro);
-my ($thost, $tport, $tuser, $tpass); # for ncbi_taxonomy
+my ($version, $thost, $tport, $tuser, $tpass); # for ncbi_taxonomy
 my $root_name = 'cellular organisms';
 
 GetOptions(
@@ -67,10 +67,27 @@ GetOptions(
   "plugin-dir=s" => \$plugin_dir,
   "dump-binary"  => \$dump_binary,
   "root=s"       => \$root_name,
-  "division=s"     => \$division
+  "division=s"   => \$division,
+  "version=s"    => \$version
 );
 
-die "Please specifiy -plugin-dir" unless $plugin_dir;
+if (!$host || !$port || !$version || !$thost || !$tport || !$plugin_dir) {
+  die "Missing input options\
+    -host : species db host
+    -port : species db port
+    -user : species db username (optional, defaults to ensro)
+    -pass : species db password (optional, defaults to ensro password)
+    -thost : taxonomy db host
+    -tport : taxonomy db port
+    -tuser : taxonomy db username (optional, defaults to ensro)
+    -tpass : taxonomy db password (optional, defaults to ensro password)
+    -plugin-dir : plugins directory
+    -dump-binary : option to dump binary
+    -root : taxonomy root name (optional, defaults to cellular organisms)
+    -division: (-division bacteria) is only for bacteria to adjust no. of db connections
+    -version: ensembl release version used to choose the correct taxonomy database
+  ";
+}
 
 if ($dump_binary) {
   # Dump EnsEMBL::Web::TaxonTree storable file (needed for Bacteria gene families)
@@ -148,7 +165,7 @@ print "fetching leaf nodes...\n";
 
 my $dba = Bio::EnsEMBL::DBSQL::DBAdaptor->new(
   @ncbi_taxonomy_db_args,
-  -dbname => 'ncbi_taxonomy',
+  -dbname => $version ? "ncbi_taxonomy_$version" : 'ncbi_taxonomy',
   -driver => 'mysql',
   -group  => 'taxonomy',
 );
