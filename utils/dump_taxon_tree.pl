@@ -288,7 +288,7 @@ sub node_to_dynatree {
     foreach my $dba (@{$node->dba}) {
       my $meta = get_meta($dba, $name);
       push @output, {  
-        key   => $meta->{'prod_name'},
+        key   => $meta->{'url'},
         title => $meta->{'display_name'}
       };
     }
@@ -305,7 +305,7 @@ sub get_meta {
   my $meta = {};
 
   $meta->{'display_name'} = $meta_adaptor ? $meta_adaptor->get_display_name() : (($node_dba->species =~ /gca_(\d+)/) ? $fallback_name . " (GCA_$1)" : $fallback_name);
-  $meta->{'prod_name'} = $meta_adaptor ? $meta_adaptor->single_value_by_key('species.production_name') : $fallback_name;
+  $meta->{'url'} = $meta_adaptor ? $meta_adaptor->single_value_by_key('species.url') : $fallback_name;
 
   if($meta_adaptor) {
     $meta_adaptor->dbc->disconnect_if_idle();
