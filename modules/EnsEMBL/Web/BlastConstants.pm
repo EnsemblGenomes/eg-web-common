@@ -46,9 +46,13 @@ sub CONFIGURATION_FIELDS {
         'type'                => 'dropdown',
         'label'               => 'E-value threshold',
         'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(1e-200 1e-100 1e-50 1e-10 1e-5 1e-4 1e-3 1e-2 1e-1 1.0 10 100 1000 10000) ]
-      }
-      ]
-
+      },
+      'hsps'                => {
+        'type'                => 'dropdown',
+        'label'               => 'Maximum HSPs per hit',
+        'value'               => '100',
+        'values'              => [ map { 'value' => $_, 'caption' => $_ }, qw(1 2 5 10 50 100) ]
+      }]
     },
 
     'scoring'             => {
@@ -107,6 +111,7 @@ sub CONFIGURATION_FIELDS {
       'caption'             => '',
       'fields'              => [
 
+
       'filter'              => {
         'type'                => 'checklist',
         'label'               => 'Filter low complexity regions',
@@ -135,6 +140,7 @@ sub CONFIGURATION_DEFAULTS {
       'gapopen'                 => '5',
       'gapext'                  => '2',
       'gapalign'                => '1',      
+      'hsps'                    => '100'
     },
 
     'NCBIBLAST_BLASTP'        => {
@@ -143,6 +149,7 @@ sub CONFIGURATION_DEFAULTS {
       'gapopen'                 => '11',
       'gapext'                  => '1',
       'gapalign'                => '1',      
+      'hsps'                    => '100'
     },
 
     'NCBIBLAST_BLASTX'        => {
@@ -151,10 +158,12 @@ sub CONFIGURATION_DEFAULTS {
       'gapopen'                 => '11',
       'gapext'                  => '1',
       'gapalign'                => '1',            
+      'hsps'                    => '100'
     },
 
     'NCBIBLAST_TBLASTX'       => {
       'matrix'                  => 'BLOSUM62',
+      'hsps'                    => '100'
     },
 
     'NCBIBLAST_TBLASTN'       => {
@@ -164,6 +173,7 @@ sub CONFIGURATION_DEFAULTS {
       'gapext'                  => '1',
       'gapalign'                => '1',   
       'compstats'               => 'F',
+      'hsps'                    => '100'
     },
 
   };
