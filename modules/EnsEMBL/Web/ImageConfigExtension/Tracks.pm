@@ -152,8 +152,10 @@ sub add_alignments {
   my ($self, $key, $hashref, $species) = @_;
 
   return unless grep $self->get_node($_), qw(multiple_align pairwise_tblat pairwise_blastz pairwise_other conservation);
-
+  
   my $species_defs = $self->species_defs;
+  ## Convert to production name, as that's what we now prefer
+  $species         = $species_defs->get_config($species, 'SPECIES_PRODUCTION_NAME');
 
   return if $species_defs->ENSEMBL_SUBTYPE eq 'Pre';
 
