@@ -80,6 +80,7 @@ sub metadata {
   my $self = shift;
   my $sd = $self->hub->species_defs;
 
+  my $ftp = $sd->ENSEMBL_GENOMES_FTP_URL;
   my $division = $sd->EG_DIVISION;
   my $uc_div   = ucfirst($division);
 
