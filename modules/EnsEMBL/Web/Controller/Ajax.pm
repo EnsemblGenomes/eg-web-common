@@ -34,8 +34,18 @@ sub ajax_species_autocomplete {
   my $term          = $hub->param('term'); # will return everything if no term specified
   my $result_format = $hub->param('result_format') || 'simple'; # simple/chosen
   
-  my @species = $species_defs->valid_species;
-  
+  ## For ID history mapper, filter out species with no data
+  my @species;
+  if ($hub->action eq 'IDMapper') {
+    foreach ($species_defs->valid_species) {
+      my $history = $species_defs->table_info_other($_, 'core', 'stable_id_event');
+      push @species, $_ if $history->{'rows'};
+    }
+  }
+  else {
+    @species = $species_defs->valid_species;
+  }
+ 
   # sub to normalise strings for comparison e.g. k-12 == k12
   my $normalise = sub { 
     my $str = shift;
