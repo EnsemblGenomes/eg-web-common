@@ -490,7 +490,11 @@ sub _variation_text {
     my $site = $species_defs->ENSEMBL_SITETYPE;
     $html .= qq(<p><a href="/info/genome/variation/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about variation in $site</a></p>);
 
-    if ($species_defs->ENSEMBL_FTP_URL) {
+    ## Is this species VCF-driven?
+    my $meta_info = $species_defs->databases->{'DATABASE_VARIATION'}{'meta_info'}->{1};
+    my $vcf_only  = $meta_info && $meta_info->{'variation_source.database'}->[0] eq '0';
+
+    if ($species_defs->ENSEMBL_FTP_URL && !$vcf_only) {
       my @links;
       foreach my $format (qw/gvf vcf/){
         push(@links, sprintf('<a href="%s/release-%s/variation/%s/%s/" class="nodeco _ht" title="Download (via FTP) all <em>%s</em> variants in %s format">%s</a>', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, $format, lc $species, $display_name, uc $format,uc $format));
