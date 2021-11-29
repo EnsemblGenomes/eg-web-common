@@ -43,10 +43,12 @@ sub content {
   my $alignments   = $db_hash->{'DATABASE_COMPARA' . ($cdb =~ /pan_ensembl/ ? '_PAN_ENSEMBL' : '')}{'ALIGNMENTS'} || {}; # Get the compara database hash
 
   my $species = $hub->species;
+  my $prodname = $species_defs->SPECIES_PRODUCTION_NAME;
   my $options = '<option value="">-- Select an alignment --</option>';
-  
-  # Order by number of species (name is in the form "6 primates EPO"
-  foreach my $row (sort { $a->{'name'} <=> $b->{'name'} } grep { $_->{'class'} !~ /pairwise/ && $_->{'species'}->{$species} } values %$alignments) {
+ 
+  # List ultiple alignments first - order by number of species 
+  # (name is in the form "6 primates EPO"
+  foreach my $row (sort { $a->{'name'} <=> $b->{'name'} } grep { $_->{'class'} !~ /pairwise/ && $_->{'species'}->{$prodname} } values %$alignments) {
     (my $name = $row->{'name'}) =~ s/_/ /g;
     
     $options .= sprintf(
@@ -57,7 +59,7 @@ sub content {
     );
   }
   
-  # For the variation compara view, only allow multi-way alignments
+  # Now pairwise alignments (non-variation views only)
   if ($hub->type ne 'Variation') {
     $options .= '<optgroup label="Pairwise alignments">';
 
@@ -65,7 +67,7 @@ sub content {
     
     foreach my $i (grep { $alignments->{$_}{'class'} =~ /pairwise/ } keys %$alignments) {
       foreach (keys %{$alignments->{$i}->{'species'}}) {
-        if ($alignments->{$i}->{'species'}->{$species} && $_ ne $species) {
+        if ($alignments->{$i}->{'species'}->{$prodname} && $_ ne $prodname) {
           my $type = lc $alignments->{$i}->{'type'};
           
           $type =~ s/_net//;
