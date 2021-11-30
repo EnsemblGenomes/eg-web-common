@@ -39,9 +39,10 @@ sub content {
 
   return $self->_error('Unknown alignment', '<p>The alignment you have selected does not exist in the current database.</p>') unless $align_details;
   
-  my $primary_species = $hub->species;
+  my $primary_species = $hub->species; 
+  my $prodname        = $species_defs->SPECIES_PRODUCTION_NAME;
   
-  if (!exists $align_details->{'species'}->{$primary_species}) {
+  if (!exists $align_details->{'species'}->{$prodname}) {
     return $self->_error('Unknown alignment', sprintf(
       '<p>%s is not part of the %s alignment in the database.</p>', 
       $species_defs->species_label($primary_species),
@@ -114,7 +115,7 @@ sub content {
 
   my ($alert_box, $error) = $self->check_for_align_problems({
                                 'align'   => $align, 
-                                'species' => $primary_species, 
+                                'species' => $prodname, 
                                 'cdb'     => $self->param('cdb') || 'compara',
                                 });
 
