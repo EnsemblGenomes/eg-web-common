@@ -92,9 +92,10 @@ sub content_ajax {
     }
   }
   
-  foreach my $alignment (grep { $_->{'species'}{$primary_species} && $_->{'class'} =~ /pairwise/ } values %$alignments) {
+  my $prodname = $species_defs->SPECIES_PRODUCTION_NAME;
+  foreach my $alignment (grep { $_->{'species'}{$prodname} && $_->{'class'} =~ /pairwise/ } values %$alignments) {
     foreach (keys %{$alignment->{'species'}}) {
-      if ($_ ne $primary_species) {
+      if ($_ ne $prodname) {
         my $type = lc $alignment->{'type'};
            $type =~ s/_net//;
            $type =~ s/_/ /g;
