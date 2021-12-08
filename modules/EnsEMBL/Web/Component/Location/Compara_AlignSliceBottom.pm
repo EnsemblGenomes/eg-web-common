@@ -59,11 +59,12 @@ sub content {
                         });
   my %aligned_species = map { $_->{'name'} => 1 } @$slices;
   my $i               = 1;
+  my $lookup          = $species_defs->prodnames_to_urls_lookup;
   my (@images, $html);
   
   my ($caption_height,$caption_img_offset) = (0,-24);
   foreach (@$slices) {
-    my $species      = $_->{'name'} eq 'Ancestral_sequences' ? 'Multi' : $species_defs->production_name_mapping($_->{'name'}); # Cheating: set species to Multi to stop errors due to invalid species.
+    my $species      = $_->{'name'} eq 'Ancestral_sequences' ? 'Multi' : $lookup->{$_->{'name'}}; # Cheating: set species to Multi to stop errors due to invalid species.
     my $image_config = $hub->get_imageconfig({'type' => 'alignsliceviewbottom', 'cache_code' => "alignsliceviewbottom_$i", 'species' => $species});
     
     $image_config->set_parameters({
@@ -74,7 +75,7 @@ sub content {
       more_slices     => $i != @$slices,
     });
     
-    my ($species_name, $slice_name) = split ':', $species_defs->production_name_mapping($_->{'name'});
+    my ($species_name, $slice_name) = split ':', $_->{'name'};
     
 ## EG use abbreviated species name  
     my $panel_caption = $species_defs->abbreviated_species_label($species_name) || 'Ancestral sequences';

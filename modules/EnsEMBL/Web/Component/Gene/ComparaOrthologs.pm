@@ -49,6 +49,7 @@ sub _species_sets {
   
   my $sets_by_species = {};
 
+  my $lookup = $species_defs->prodnames_to_urls_lookup;
   foreach my $prod_name (keys %all_analysed_species) {
 
     my $species;
@@ -56,7 +57,7 @@ sub _species_sets {
       $species = $pan_lookup->{$prod_name}{'species_url'};
     }
     else {
-      $species = $species_defs->production_name_mapping($prod_name);
+      $species = $lookup->{$prod_name};
     }
 
     my $orthologues = $orthologue_list->{$species};
