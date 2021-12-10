@@ -63,9 +63,7 @@ sub content_ajax {
   my $chromosomes     = $species_defs->ENSEMBL_CHROMOSOMES;
   my (%species, %included_regions);
 
-## EG  
   foreach my $alignment (@intra_species) {
-##
     my $type = lc $alignment->{'type'};
     my ($s)  = grep /--$alignment->{'target_name'}$/, keys %{$alignment->{'species'}};
     my ($sp, $target) = split '--', $s;
@@ -74,13 +72,6 @@ sub content_ajax {
     $species{$s} = $species_defs->species_label($sp, 1) . (grep($target eq $_, @$chromosomes) ? ' chromosome' : '') . " $target - $type";
   }
 
-## EG can't see why we would need to do this....?  
-  # foreach (grep !$species{$_}, keys %shown) {
-  #   my ($sp, $target) = split '--';
-  #   $included_regions{$target} = $hub->intra_species_alignments('DATABASE_COMPARA', $sp, $target) if $sp eq $primary_species;
-  # }
-##  
-  
   foreach my $target (keys %included_regions) {
     my $s     = "$primary_species--$target";
     my $label = $species_label . (grep($target eq $_, @$chromosomes) ? ' chromosome' : '');
@@ -93,17 +84,20 @@ sub content_ajax {
   }
   
   my $prodname = $species_defs->SPECIES_PRODUCTION_NAME;
+  my $lookup = $species_defs->production_name_lookup; 
+
   foreach my $alignment (grep { $_->{'species'}{$prodname} && $_->{'class'} =~ /pairwise/ } values %$alignments) {
     foreach (keys %{$alignment->{'species'}}) {
-      if ($_ ne $prodname) {
+      my $sp = $lookup->{$_};
+      if ($sp ne $primary_species) {
         my $type = lc $alignment->{'type'};
            $type =~ s/_net//;
            $type =~ s/_/ /g;
         
-        if ($species{$_}) {
-          $species{$_} .= "/$type";
+        if ($species{$sp}) {
+          $species{$sp} .= "/$type";
         } else {
-          $species{$_} = $species_defs->species_label($_, 1) . " - $type";
+          $species{$sp} = $species_defs->species_label($sp, 1) . " - $type";
         }
       }
     }
