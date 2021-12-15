@@ -112,10 +112,11 @@ sub init_cacheable {
 
 sub multi {
   my ($self, $methods, $chr, $pos, $total,$all_slices, @slices) = @_;
-  my $sp              = $self->{'species'};
-  my $multi_hash      = $self->species_defs->multi_hash;
-  my $primary_species = $self->hub->species;
-  my $p               = $pos == $total && $total > 2 ? 2 : 1;
+  my $primary_species   = $self->hub->species;
+  my $current_species   = $self->{'species'};
+  my $current_prodname  = $self->species_defs->get_config($current_species, 'SPECIES_PRODUCTION_NAME');
+  my $multi_hash        = $self->species_defs->multi_hash;
+  my $p                 = $pos == $total && $total > 2 ? 2 : 1;
   my ($i, %alignments, @strands);
 
 ## EG
@@ -125,14 +126,14 @@ sub multi {
   my %target_regions  = map { $params->{"s$_"} => $params->{"r$_"} } grep s/^s(\d+)$/$1/, keys %$params;
   
   my $intra_species_slice;  
-  if ($sp == $primary_species) {
+  if ($current_species == $primary_species) {
     my ($sr, $start, $end, $strand);
-    if (my $target_region = $target_regions{"$sp--$chr"}) {
+    if (my $target_region = $target_regions{"$current_species--$chr"}) {
       ($sr, $start, $end, $strand) = ($chr, ($target_region =~ m/.+:(\d+)-(\d+):(.+)/));
     } else {
       ($sr, $start, $end, $strand) = (($primary_region =~ m/(.+):(\d+)-(\d+)/), 1);
     }
-    my $slice_adaptor = $hub->get_adaptor('get_SliceAdaptor', 'core', $sp);
+    my $slice_adaptor = $hub->get_adaptor('get_SliceAdaptor', 'core', $current_species);
     $intra_species_slice = $slice_adaptor->fetch_by_region(undef, $sr, $start, $end, $strand);
   }
 ##
@@ -144,20 +145,21 @@ sub multi {
     next unless exists $multi_hash->{$db};
 
 ## EG   
-    my @intra_species_alignments = @{ $hub->intra_species_alignments($db, $sp, $intra_species_slice) } if $intra_species_slice;
+    my @intra_species_alignments = @{ $hub->intra_species_alignments($db, $current_species, $intra_species_slice) } if $intra_species_slice;
 
     foreach (values %{$multi_hash->{$db}{'ALIGNMENTS'}}, @intra_species_alignments) {
 ##
       next unless $methods->{$_->{'type'}};
       next unless $_->{'class'} =~ /pairwise_alignment/;
-      next unless $_->{'species'}{$sp} || $_->{'species'}{"$sp--$chr"};
+      next unless $_->{'species'}{$current_prodname} || $_->{'species'}{"$current_prodname--$chr"};
 
       my %align = %$_; # Make a copy for modification
 
       $i = $p;
 
       foreach (@slices) {
-        if ($align{'species'}{$_->{'species'} eq $sp ? $_->{'species_check'} : $_->{'species'}} && !($_->{'species_check'} eq $primary_species && $sp eq $primary_species)) {
+        my $check_prodname = $self->species_defs->get_config($_->{'species_check'}, 'SPECIES_PRODUCTION_NAME');
+        if ($align{'species'}{$check_prodname}) {
           $align{'order'} = $i;
           $align{'ori'}   = $_->{'strand'};
           $align{'gene'}  = $_->{'g'};
@@ -196,7 +198,7 @@ sub multi {
     my $strand = shift @strands;
 
     foreach my $align (sort { $a->{'type'} cmp $b->{'type'} } @{$alignments{$_}}) {
-      my ($other_species) = grep $_ ne $sp, keys %{$align->{'species'}};
+      my ($other_species) = grep $_ ne $current_prodname, keys %{$align->{'species'}};
 
       $decorations->before(
         $self->create_track("$align->{'id'}:$align->{'type'}:$_", $align->{'name'}, {
