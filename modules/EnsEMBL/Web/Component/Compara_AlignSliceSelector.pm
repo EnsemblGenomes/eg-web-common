@@ -44,6 +44,7 @@ sub content {
 
   my $species = $hub->species;
   my $prodname = $species_defs->SPECIES_PRODUCTION_NAME;
+  my $lookup = $species_defs->production_name_lookup;
   my $options = '<option value="">-- Select an alignment --</option>';
  
   # List ultiple alignments first - order by number of species 
@@ -73,7 +74,7 @@ sub content {
           $type =~ s/_net//;
           $type =~ s/_/ /g;
           
-          $species_hash{$species_defs->species_label($_, 1) . "###$type"} = $i;
+          $species_hash{$species_defs->species_label($lookup->{$_}, 1) . "###$type"} = $i;
         }
       } 
     }
