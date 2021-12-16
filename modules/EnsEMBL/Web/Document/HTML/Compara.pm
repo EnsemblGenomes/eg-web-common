@@ -143,58 +143,58 @@ sub species_table {
 }
 
 sub table {
-    my ($self, $species) = @_;
+  my ($self, $species) = @_;
     
-    my $hub  = $self->hub;
-    my $methods = ['SYNTENY', 'TRANSLATED_BLAT_NET','BLASTZ_NET', 'LASTZ_NET', 'ATAC'];
-    my $data = get_compara_alignments($hub->database('compara'), $methods);
+  my $hub  = $self->hub;
+  my $methods = ['SYNTENY', 'TRANSLATED_BLAT_NET','BLASTZ_NET', 'LASTZ_NET', 'ATAC'];
+  my $data = get_compara_alignments($hub->database('compara'), $methods);
 
-    my $thtml = qq{<table id="genomic_align_table" class="no_col_toggle ss autocenter" style="width: 100%" cellpadding="0" cellspacing="0">};
+  my $thtml = qq{<table id="genomic_align_table" class="no_col_toggle ss autocenter" style="width: 100%" cellpadding="0" cellspacing="0">};
 
-   foreach my $sp (keys %$data) {
-	$data->{$sp}->{'name'} = $sp;
-	$data->{$sp}->{'display_name'}    = $hub->species_defs->get_config($sp, 'SPECIES_DISPLAY_NAME') || $hub->species_defs->get_config(ucfirst($sp), 'SPECIES_DISPLAY_NAME') || ucfirst($sp);
-	my $loc = $hub->species_defs->get_config($sp, 'SAMPLE_DATA') || $hub->species_defs->get_config(ucfirst($sp), 'SAMPLE_DATA') || {};
+  foreach my $sp (keys %$data) {
+	  $data->{$sp}->{'name'} = $sp;
+	  $data->{$sp}->{'display_name'}    = $hub->species_defs->get_config($sp, 'SPECIES_DISPLAY_NAME') || $hub->species_defs->get_config(ucfirst($sp), 'SPECIES_DISPLAY_NAME') || ucfirst($sp);
+	  my $loc = $hub->species_defs->get_config($sp, 'SAMPLE_DATA') || $hub->species_defs->get_config(ucfirst($sp), 'SAMPLE_DATA') || {};
 
-	$data->{$sp}->{'sample_loc'} = $loc->{LOCATION_PARAM};
-	(my $short_name = ucfirst($sp)) =~ s/([A-Z])[a-z]+_([a-z]{3})([a-z]+)?/$1.$2/; ## e.g. H.sap
-	$data->{$sp}->{'short_name'}     = $short_name;
-	my $chash = {};
-	map { map {$chash->{$_}++} keys %{$data->{$sp}->{'align'}->{$_} || {}} } keys %{$data->{$sp}->{'align'}||{}};
-	$data->{$sp}->{'counts'} = $chash; 
-    }
+	  $data->{$sp}->{'sample_loc'} = $loc->{LOCATION_PARAM};
+	  (my $short_name = ucfirst($sp)) =~ s/([A-Z])[a-z]+_([a-z]{3})([a-z]+)?/$1.$2/; ## e.g. H.sap
+	  $data->{$sp}->{'short_name'}     = $short_name;
+	  my $chash = {};
+	  map { map {$chash->{$_}++} keys %{$data->{$sp}->{'align'}->{$_} || {}} } keys %{$data->{$sp}->{'align'}||{}};
+	  $data->{$sp}->{'counts'} = $chash; 
+  }
 
 
-    if ($species) {
-	return $self->species_table($data, $species);
-    }
+  if ($species) {
+	  return $self->species_table($data, $species);
+  }
 
-    my ($i, $j) = (0, 0);
-    foreach my $species (sort {$data->{$a}->{'display_name'} cmp $data->{$b}->{'display_name'}} keys %$data) {
-	my $ybg = $i++ % 2 ? 'bg1' : 'bg2';
+  my ($i, $j) = (0, 0);
+  foreach my $species (sort {$data->{$a}->{'display_name'} cmp $data->{$b}->{'display_name'}} keys %$data) {
+	  my $ybg = $i++ % 2 ? 'bg1' : 'bg2';
 
-	my $sdata = $data->{$species};
+	  my $sdata = $data->{$species};
 
-	my $ghtml = sprintf qq{
+	  my $ghtml = sprintf qq{
 <table id="%s_aligns" class="no_col_toggle ss toggle_table hide toggleable autocenter all_species_tables" style="width: 100%;" cellpadding="0" cellspacing="0">
 
 }, $sdata->{'name'};
-	$j = $i;
-	my $adata = $sdata->{'align'};
-	foreach my $ss (sort keys %{$adata || {}}) {
-	    my $xbg = $j++ % 2 ? 'bg1' : 'bg2';
-	    my $astr = qq{<table cellpadding="0" cellspacing="2" style="width:100%">};
-	    foreach my $a (sort keys %{$adata->{$ss} || {}}) {
-		my ($aid, $stats) = @{$adata->{$ss}->{$a} || []};
-		my $sample_location = '&nbsp;';
-		if ($sdata->{'sample_loc'}) {
-		    if ($a =~ /SYNTENY/) {
-			$sample_location = sprintf qq{<a href="/%s/Location/Synteny?r=%s;otherspecies=%s">example</a>},$species,$sdata->{'sample_loc'}, ucfirst($ss);
-		    } else {
-			$sample_location = sprintf qq{<a href="/%s/Location/Compara_Alignments/Image?align=%s;r=%s">example</a>},$species,$aid,$sdata->{'sample_loc'};
+	  $j = $i;
+	  my $adata = $sdata->{'align'};
+	  foreach my $ss (sort keys %{$adata || {}}) {
+      my $xbg = $j++ % 2 ? 'bg1' : 'bg2';
+      my $astr = qq{<table cellpadding="0" cellspacing="2" style="width:100%">};
+      foreach my $a (sort keys %{$adata->{$ss} || {}}) {
+		    my ($aid, $stats) = @{$adata->{$ss}->{$a} || []};
+		    my $sample_location = '&nbsp;';
+		    if ($sdata->{'sample_loc'}) {
+		      if ($a =~ /SYNTENY/) {
+			      $sample_location = sprintf qq{<a href="/%s/Location/Synteny?r=%s;otherspecies=%s">example</a>},$species,$sdata->{'sample_loc'}, ucfirst($ss);
+		      } else {
+			      $sample_location = sprintf qq{<a href="/%s/Location/Compara_Alignments/Image?align=%s;r=%s">example</a>},$species,$aid,$sdata->{'sample_loc'};
+		      }
 		    }
-		}
-		$astr .= sprintf qq{<tr>
+		    $astr .= sprintf qq{<tr>
 <td style="padding:0px 10px 0px 0px;text-align:right;">&nbsp;</td>
 <td style="padding:0px 10px 0px 0px;text-align:right;widht:20px">$a |</td>
 <td style="padding:0px 10px 0px 0px;text-align:left;width:60px;">%s</td>
@@ -204,19 +204,19 @@ $stats ? qq{<a href="/info/genome/compara/mlss.html?mlss=$aid">stats</a>} : '&nb
 	    }
 	    $astr .= qq{</table>};
 	    $ghtml .= sprintf qq{<tr class="%s"><td>%s</td><td>%s</td></tr>}, $xbg, $data->{$ss}->{'display_name'} || $ss, $astr;
-	}
+	  }
 
-	$ghtml .= qq{</table>};
-	my $total = 0;
-	map { $total += $sdata->{'counts'}->{$_} } sort keys %{$sdata->{'counts'}||{}};
-	my $synteny_count = $sdata->{'counts'}->{'SYNTENY'} || 0;
-	my $genomic_count = $total - $synteny_count;
+	  $ghtml .= qq{</table>};
+	  my $total = 0;
+	  map { $total += $sdata->{'counts'}->{$_} } sort keys %{$sdata->{'counts'}||{}};
+	  my $synteny_count = $sdata->{'counts'}->{'SYNTENY'} || 0;
+	  my $genomic_count = $total - $synteny_count;
 
-	my $synteny_str = $synteny_count > 1 ? 'syntenies' : 'synteny';
-	my $chtml = sprintf qq {
+	  my $synteny_str = $synteny_count > 1 ? 'syntenies' : 'synteny';
+	  my $chtml = sprintf qq {
 <span style="text-align:left">%s</span> &nbsp; <span style="text-align:left">%s</span>}, $genomic_count ? ("$genomic_count alignment".($genomic_count > 1 ? 's':'')): "&nbsp;", $synteny_count ? "$synteny_count $synteny_str" : "&nbsp;";
 
-	my $sphtml = sprintf qq{
+	  my $sphtml = sprintf qq{
 <tr class="%s">
   <td>
 
@@ -231,12 +231,12 @@ $stats ? qq{<a href="/info/genome/compara/mlss.html?mlss=$aid">stats</a>} : '&nb
     %s
   </td>
 </tr>}, $ybg, $sdata->{'name'}, $sdata->{'display_name'}, $chtml, $ghtml;
-	$thtml .= $sphtml;
-    }
+	  $thtml .= $sphtml;
+  }
     
-    $thtml .= qq{</table>};
+  $thtml .= qq{</table>};
 
-    my $html = sprintf qq{
+  my $html = sprintf qq{
 <div id="GenomicAlignmentsTab" class="js_panel">
 <input type="hidden" class="panel_type" value="Content"/>
 <div class="info-box">
@@ -251,7 +251,7 @@ $stats ? qq{<a href="/info/genome/compara/mlss.html?mlss=$aid">stats</a>} : '&nb
 </div>
 }, $thtml;
 
-    return $html;
+  return $html;
 }
 
 sub get_compara_alignments {
