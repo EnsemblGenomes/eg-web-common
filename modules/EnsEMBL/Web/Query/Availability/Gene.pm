@@ -14,7 +14,8 @@ sub get {
   my $member    = $self->compara_member($args) if $get->[0]->{'database:compara'};
 
   if ($member) {
-    my $num_homoeologues = $member->number_of_homoeologues;
+    my $division = $self->sd_config($args,"DIVISION");
+    my $num_homoeologues = $member->number_of_homoeologues // $member->number_of_homoeologues($division);
     $get->[0]->{counts}->{homoeologs} = $num_homoeologues;
     $get->[0]->{has_homoeologs}       = $num_homoeologues;
   }
