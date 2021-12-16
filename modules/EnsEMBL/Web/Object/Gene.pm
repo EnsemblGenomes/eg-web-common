@@ -270,6 +270,7 @@ sub fetch_homology_species_hash {
   my $homology_description = shift;
   my $compara_db           = shift || 'compara';
   my ($homologies, $classification, $query_member) = $self->get_homologies($homology_source, $homology_description, $compara_db);
+  my $name_lookup          = $self->hub->species_defs->production_name_lookup;
   my %homologues;
 
   foreach my $homology (@$homologies) {
@@ -293,9 +294,7 @@ sub fetch_homology_species_hash {
       }      
     }
 
-    # FIXME: ucfirst $genome_db_name is a hack to get species names right for the links in the orthologue/paralogue tables.
-    # There should be a way of retrieving this name correctly instead.
-    push @{$homologues{ucfirst $genome_db_name}}, [ $target_member, $homology->description, $homology->species_tree_node(), $query_perc_id, $target_perc_id, $dnds_ratio, $homology->{_gene_tree_node_id}, $homology->dbID, $goc_score, $goc_threshold, $wgac, $wga_threshold, $highconfidence ];    
+    push @{$homologues{$name_lookup->{$genome_db_name}}}, [ $target_member, $homology->description, $homology->species_tree_node(), $query_perc_id, $target_perc_id, $dnds_ratio, $homology->{_gene_tree_node_id}, $homology->dbID, $goc_score, $goc_threshold, $wgac, $wga_threshold, $highconfidence ];    
   }
 
   @{$homologues{$_}} = sort { $classification->{$a->[2]} <=> $classification->{$b->[2]} } @{$homologues{$_}} for keys %homologues;  

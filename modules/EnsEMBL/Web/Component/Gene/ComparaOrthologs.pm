@@ -24,12 +24,13 @@ sub _species_sets {
 ## Group species into sets - separate method so it can be pluggable easily
   my ($self, $orthologue_list, $skipped, $orthologue_map, $cdb) = @_;
   
-  my $hub          = $self->hub;
+  my $hub           = $self->hub;
   my $species_defs  = $self->hub->species_defs;
   my %all_analysed_species = $self->_get_all_analysed_species($cdb);
-  my $set_order = [];
-  my $pan_lookup = {};
-  my $is_pan = $cdb =~/compara_pan_ensembl/;
+  my $set_order     = [];
+  my $lookup        = $hub->species_defs->production_name_lookup;
+  my $pan_lookup    = {};
+  my $is_pan        = $cdb =~/compara_pan_ensembl/;
 
   if ($is_pan) {
     $set_order = [qw(all vertebrates metazoa plants fungi protists bacteria archaea)];
@@ -145,15 +146,17 @@ sub _get_all_analysed_species {
 }
 
 # Override this method from ensembl webcode due to inconsistencies in what is used as species name in %not_seen hash.
-# However, $sets_by_species uses only species url, so first letter needs to be in caps.
+# However, $sets_by_species uses only species url
 sub get_no_ortho_species_html {
   my ($self, $not_seen, $sets_by_species) = @_;
   my $hub = $self->hub;
   my $no_ortho_species_html = '';
+  my $lookup = $hub->species_defs->production_name_lookup;
 
   foreach (sort {lc $a cmp lc $b} keys %$not_seen) {
-    if ($sets_by_species->{ucfirst $_}) {
-      $no_ortho_species_html .= '<li class="'. join(' ', @{$sets_by_species->{ucfirst $_}}) .'">'. $hub->species_defs->species_label($_) .'</li>';
+    my $sp_url = $lookup->{$_};
+    if ($sets_by_species->{$sp_url}) {
+      $no_ortho_species_html .= '<li class="'. join(' ', @{$sets_by_species->{$sp_url}}) .'">'. $hub->species_defs->species_label($sp_url) .'</li>';
     }
   }
 
