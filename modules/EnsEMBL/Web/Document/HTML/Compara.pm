@@ -151,10 +151,12 @@ sub table {
 
   my $thtml = qq{<table id="genomic_align_table" class="no_col_toggle ss autocenter" style="width: 100%" cellpadding="0" cellspacing="0">};
 
+  my $lookup = $hub->species_defs->production_name_lookup;
   foreach my $sp (keys %$data) {
 	  $data->{$sp}->{'name'} = $sp;
-	  $data->{$sp}->{'display_name'}    = $hub->species_defs->get_config($sp, 'SPECIES_DISPLAY_NAME') || $hub->species_defs->get_config(ucfirst($sp), 'SPECIES_DISPLAY_NAME') || ucfirst($sp);
-	  my $loc = $hub->species_defs->get_config($sp, 'SAMPLE_DATA') || $hub->species_defs->get_config(ucfirst($sp), 'SAMPLE_DATA') || {};
+    my $sp_url = $lookup->{$sp};
+	  $data->{$sp}->{'display_name'} = $hub->species_defs->get_config($sp_url, 'SPECIES_DISPLAY_NAME');
+	  my $loc = $hub->species_defs->get_config($sp_url, 'SAMPLE_DATA') || {};
 
 	  $data->{$sp}->{'sample_loc'} = $loc->{LOCATION_PARAM};
 	  (my $short_name = ucfirst($sp)) =~ s/([A-Z])[a-z]+_([a-z]{3})([a-z]+)?/$1.$2/; ## e.g. H.sap
