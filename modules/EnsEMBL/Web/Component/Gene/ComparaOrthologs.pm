@@ -119,9 +119,9 @@ sub _species_sets {
   return ($species_sets, $sets_by_species, $set_order);
 }
 
-# Override this method from ensembl webcode as there is no collection-default type in EG databases.
-# So checking for collection-[EG_DIVISION] type e.g. collection-fungi, collection-metazoa.
-# However, bacteria currently returns only one type called collection-pan. So might need to change this in the future. Will leave it as it is for now, since nothing breaks.
+# Override this method from ensembl webcode as historically there was no collection-default type in EG databases.
+# Hence also checks for collection-[EG_DIVISION] type e.g. collection-fungi, collection-metazoa.
+# N.B. bacteria currently returns only one type called collection-pan. So might need to change this in the future. Will leave it as it is for now, since nothing breaks.
 sub _get_all_analysed_species {
   my ($self, $cdb) = @_;
 
@@ -132,9 +132,12 @@ sub _get_all_analysed_species {
     my $best_pt_mlss;
 
     if (scalar(@$pt_mlsss) > 1) {
-      my $collection_name = "collection-" . $self->hub->species_defs->EG_DIVISION;
-
-      ($best_pt_mlss) = grep {$_->species_set->name eq $collection_name} @$pt_mlsss;
+      foreach (@$pt_mlsss) {
+        if ($_->species_set->name eq 'collection-default' || $_->species_set->name eq "collection-" . $self->hub->species_defs->EG_DIVISION) {
+          $best_pt_mlss = $_;
+          last;
+        }
+      }
     } else {
       $best_pt_mlss = $pt_mlsss->[0];
     }
