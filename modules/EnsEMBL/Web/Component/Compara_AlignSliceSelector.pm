@@ -42,10 +42,10 @@ sub content {
   my $extra_inputs = join '', map qq(<input type="hidden" name="$_" value="$url->[1]{$_}" />), sort keys %{$url->[1] || {}};
   my $alignments   = $db_hash->{'DATABASE_COMPARA' . ($cdb =~ /pan_ensembl/ ? '_PAN_ENSEMBL' : '')}{'ALIGNMENTS'} || {}; # Get the compara database hash
 
-  my $species = $hub->species;
-  my $prodname = $species_defs->SPECIES_PRODUCTION_NAME;
-  my $lookup = $species_defs->production_name_lookup;
-  my $options = '<option value="">-- Select an alignment --</option>';
+  my $species   = $hub->species;
+  my $prodname  = $species_defs->SPECIES_PRODUCTION_NAME;
+  my $lookup    = $species_defs->prodnames_to_urls_lookup;
+  my $options   = '<option value="">-- Select an alignment --</option>';
  
   # List ultiple alignments first - order by number of species 
   # (name is in the form "6 primates EPO"

@@ -151,7 +151,7 @@ sub table {
 
   my $thtml = qq{<table id="genomic_align_table" class="no_col_toggle ss autocenter" style="width: 100%" cellpadding="0" cellspacing="0">};
 
-  my $lookup = $hub->species_defs->production_name_lookup;
+  my $lookup = $hub->species_defs->prodnames_to_urls_lookup;
   foreach my $sp (keys %$data) {
 	  $data->{$sp}->{'name'} = $sp;
     my $sp_url = $lookup->{$sp};

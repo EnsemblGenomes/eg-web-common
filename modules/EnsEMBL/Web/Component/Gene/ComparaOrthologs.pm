@@ -28,7 +28,7 @@ sub _species_sets {
   my $species_defs  = $self->hub->species_defs;
   my %all_analysed_species = $self->_get_all_analysed_species($cdb);
   my $set_order     = [];
-  my $lookup        = $hub->species_defs->production_name_lookup;
+  my $lookup        = $hub->species_defs->prodnames_to_urls_lookup;
   my $pan_lookup    = {};
   my $is_pan        = $cdb =~/compara_pan_ensembl/;
 
@@ -154,7 +154,7 @@ sub get_no_ortho_species_html {
   my ($self, $not_seen, $sets_by_species) = @_;
   my $hub = $self->hub;
   my $no_ortho_species_html = '';
-  my $lookup = $hub->species_defs->production_name_lookup;
+  my $lookup = $hub->species_defs->prodnames_to_urls_lookup;
 
   foreach (sort {lc $a cmp lc $b} keys %$not_seen) {
     my $sp_url = $lookup->{$_};

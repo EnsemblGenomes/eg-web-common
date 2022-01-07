@@ -270,7 +270,7 @@ sub fetch_homology_species_hash {
   my $homology_description = shift;
   my $compara_db           = shift || 'compara';
   my ($homologies, $classification, $query_member) = $self->get_homologies($homology_source, $homology_description, $compara_db);
-  my $name_lookup          = $self->hub->species_defs->production_name_lookup;
+  my $name_lookup          = $self->hub->species_defs->prodnames_to_urls_lookup;
   my %homologues;
 
   foreach my $homology (@$homologies) {
