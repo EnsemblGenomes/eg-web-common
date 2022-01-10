@@ -78,7 +78,7 @@ sub content {
     my ($species_name, $slice_name) = split ':', $_->{'name'};
     
 ## EG use abbreviated species name  
-    my $panel_caption = $species_defs->abbreviated_species_label($species_name) || 'Ancestral sequences';
+    my $panel_caption = $species_defs->abbreviated_species_label($lookup->{$species_name}) || 'Ancestral sequences';
 ##
     $panel_caption   .= " $slice_name" if $slice_name;
 
