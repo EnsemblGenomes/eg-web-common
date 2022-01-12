@@ -26,9 +26,10 @@ sub _species_sets {
   
   my $hub           = $self->hub;
   my $species_defs  = $self->hub->species_defs;
-  my %all_analysed_species = $self->_get_all_analysed_species($cdb);
-  my $set_order     = [];
+  my $compara_spp   = $species_defs->multi_hash->{'DATABASE_COMPARA'}{'COMPARA_SPECIES'};
   my $lookup        = $hub->species_defs->prodnames_to_urls_lookup;
+  my $sets_by_species = {};
+  my $set_order     = [];
   my $pan_lookup    = {};
   my $is_pan        = $cdb =~/compara_pan_ensembl/;
 
@@ -48,10 +49,7 @@ sub _species_sets {
     'all'         => {'title' => 'All',         'desc' => '', 'species' => [], 'all' => 0},
   };
   
-  my $sets_by_species = {};
-
-  my $lookup = $species_defs->prodnames_to_urls_lookup;
-  foreach my $prod_name (keys %all_analysed_species) {
+  foreach my $prod_name (keys %$compara_spp) {
 
     my $species;
     if ($is_pan) {
@@ -117,53 +115,6 @@ sub _species_sets {
   }
 
   return ($species_sets, $sets_by_species, $set_order);
-}
-
-# Override this method from ensembl webcode as historically there was no collection-default type in EG databases.
-# Hence also checks for collection-[EG_DIVISION] type e.g. collection-fungi, collection-metazoa.
-# N.B. bacteria currently returns only one type called collection-pan. So might need to change this in the future. Will leave it as it is for now, since nothing breaks.
-sub _get_all_analysed_species {
-  my ($self, $cdb) = @_;
-
-  if (!$self->{'_all_analysed_species'}) {
-    $self->{"_mlss_adaptor_$cdb"} ||= $self->hub->get_adaptor('get_MethodLinkSpeciesSetAdaptor', $cdb);
-
-    my $pt_mlsss = $self->{"_mlss_adaptor_$cdb"}->fetch_all_by_method_link_type('PROTEIN_TREES');
-    my $best_pt_mlss;
-
-    if (scalar(@$pt_mlsss) > 1) {
-      foreach (@$pt_mlsss) {
-        if ($_->species_set->name eq 'collection-default' || $_->species_set->name eq "collection-" . $self->hub->species_defs->EG_DIVISION) {
-          $best_pt_mlss = $_;
-          last;
-        }
-      }
-    } else {
-      $best_pt_mlss = $pt_mlsss->[0];
-    }
-
-    $self->{'_all_analysed_species'} = {map {$_->name => 1} @{$best_pt_mlss->species_set->genome_dbs}};
-  }
-
-  return %{$self->{'_all_analysed_species'}};
-}
-
-# Override this method from ensembl webcode due to inconsistencies in what is used as species name in %not_seen hash.
-# However, $sets_by_species uses only species url
-sub get_no_ortho_species_html {
-  my ($self, $not_seen, $sets_by_species) = @_;
-  my $hub = $self->hub;
-  my $no_ortho_species_html = '';
-  my $lookup = $hub->species_defs->prodnames_to_urls_lookup;
-
-  foreach (sort {lc $a cmp lc $b} keys %$not_seen) {
-    my $sp_url = $lookup->{$_};
-    if ($sets_by_species->{$sp_url}) {
-      $no_ortho_species_html .= '<li class="'. join(' ', @{$sets_by_species->{$sp_url}}) .'">'. $hub->species_defs->species_label($sp_url) .'</li>';
-    }
-  }
-
-  return $no_ortho_species_html;
 }
 
 1;
