@@ -46,7 +46,7 @@ sub init_form {
 
   $self->add_fieldset('Comparative features');
 ## EG  
-  foreach ([ 'blastz', 'BLASTz/LASTz net pairwise alignments' ], [ 'tblat', 'Translated BLAT net pairwise alignments' ], [ 'lpatch', 'LASTz patch alignments' ], [ 'atac', 'ATAC alignments' ]) {
+  foreach ([ 'blastz', 'BLASTz/LASTz net pairwise alignments' ], [ 'tblat', 'Translated BLAT net pairwise alignments' ], [ 'lpatch', 'LASTz patch alignments' ], [ 'atac', 'ATAC alignments' ], ['cactus_hal_pw', 'Cactus HAL alignments']) {
 ##
     $self->add_form_element({
       type   => 'DropDown',
