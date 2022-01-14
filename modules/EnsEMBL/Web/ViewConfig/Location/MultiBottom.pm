@@ -36,6 +36,7 @@ sub init {
     opt_pairwise_lpatch   => 'normal',
 ## EG
     opt_pairwise_atac     => 'normal',
+    opt_pairwise_cactus_hal_pw => 'compact',
 ##
     opt_join_genes_bottom => 'off',
   });
