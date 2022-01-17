@@ -150,14 +150,12 @@ sub add_repeat_features {
 
 sub add_alignments {
   my ($self, $key, $hashref, $species) = @_;
+  return if $species_defs->ENSEMBL_SUBTYPE eq 'Pre';
 
   return unless grep $self->get_node($_), qw(multiple_align pairwise_tblat pairwise_blastz pairwise_other conservation cactus_hal_pw);
   
   my $species_defs = $self->species_defs;
-  ## Convert to production name, as that's what we now prefer
-  $species         = $species_defs->get_config($species, 'SPECIES_PRODUCTION_NAME');
-
-  return if $species_defs->ENSEMBL_SUBTYPE eq 'Pre';
+  my $lookup       = $species_defs->prodnames_to_urls_lookup;
 
   my $alignments = {};
   my $self_label = $species_defs->species_label($species, 'no_formatting');
@@ -170,7 +168,8 @@ sub add_alignments {
 
     if ($row->{'class'} =~ /pairwise_alignment/) {
       my ($other_species) = grep { !/^$species$|ancestral_sequences$/ } keys %{$row->{'species'}};
-         $other_species ||= $species if scalar keys %{$row->{'species'}} == 1;
+      $other_species      = $lookup->{$other_species};
+      $other_species    ||= $species if scalar keys %{$row->{'species'}} == 1;
       my $other_label     = $species_defs->species_label($other_species, 'no_formatting');
       my ($menu_key, $description, $type);
 
