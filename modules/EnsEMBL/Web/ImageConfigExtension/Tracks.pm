@@ -150,11 +150,11 @@ sub add_repeat_features {
 
 sub add_alignments {
   my ($self, $key, $hashref, $species) = @_;
+  my $species_defs = $self->species_defs;
   return if $species_defs->ENSEMBL_SUBTYPE eq 'Pre';
 
   return unless grep $self->get_node($_), qw(multiple_align pairwise_tblat pairwise_blastz pairwise_other conservation cactus_hal_pw);
   
-  my $species_defs = $self->species_defs;
   my $lookup       = $species_defs->prodnames_to_urls_lookup;
 
   my $alignments = {};
