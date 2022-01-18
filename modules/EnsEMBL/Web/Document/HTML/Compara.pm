@@ -39,7 +39,6 @@ sub species_table {
     my ($self, $data, $species) = @_;
 
     my $html = '';
-    $species = lc($species) if $species;
     my $sdata = $data->{$species} || {};
 
     return $html unless $sdata;
@@ -52,27 +51,29 @@ sub species_table {
     my $genomic_count = $total - $synteny_count;
 
     if ($genomic_count) {
-	my @rows;
-	my $sp1 = $data->{$species}->{'display_name'};
-	my $loc = $data->{$species}->{'sample_loc'} || '';
+	    my @rows;
+	    my $sp1 = $data->{$species}->{'display_name'};
+	    my $loc = $data->{$species}->{'sample_loc'} || '';
 
-	foreach my $sp (sort {$data->{$a}->{'display_name'} cmp $data->{$b}->{'display_name'}} keys %{$sdata->{'align'}||{}}) {
-	    my $sp2 = $data->{$sp}->{'display_name'};
-	    foreach my $align (grep {$_ !~ /SYNTENY/} sort keys %{$sdata->{'align'}->{$sp}||{}}) {
-		my ($aid, $stats) = @{$sdata->{'align'}->{$sp}->{$align}||[]};
-		my $elink =  $self->hub->url({ 'species' => $species, 'type' => 'Location', 'action'=>'Compara_Alignments/Image', 'r'=>$loc, 'align' => $aid});
-		push @rows, {
-		    'species' => $loc ? $self->_link("<em>$sp1</em> : <em>$sp2</em>", $elink) : $sp2,
-		    'type' => $align . ($stats ? qq{ | <a href="/mlss.html?mlss=$aid">stats</a>} : '')
-		};
-	    }    	
-	}
+      my $lookup = $self->hub->species_defs->prodnames_to_urls_lookup;
 
-	my $style = 'position:absolute; z-index:10; width:40% !important;';
+	    foreach my $sp (sort {$data->{$a}->{'display_name'} cmp $data->{$b}->{'display_name'}} keys %{$sdata->{'align'}||{}}) {
+	      my $sp2 = $data->{$sp}->{'display_name'};
+	      foreach my $align (grep {$_ !~ /SYNTENY/} sort keys %{$sdata->{'align'}->{$sp}||{}}) {
+		      my ($aid, $stats) = @{$sdata->{'align'}->{$sp}->{$align}||[]};
+		      my $elink =  $self->hub->url({ 'species' => $species, 'type' => 'Location', 'action'=>'Compara_Alignments/Image', 'r'=>$loc, 'align' => $aid});
+		      push @rows, {
+		        'species' => $loc ? $self->_link("<em>$sp1</em> : <em>$sp2</em>", $elink) : $sp2,
+		        'type' => $align . ($stats ? qq{ | <a href="/mlss.html?mlss=$aid">stats</a>} : '')
+		      };
+	      }    	
+	    }
 
-	my $table    = EnsEMBL::Web::Document::Table->new([
-	    {key=>'species',title=>'Species'},
-	    {key=>'type',title=>'Type',align=>'right'}
+	    my $style = 'position:absolute; z-index:10; width:40% !important;';
+
+	    my $table    = EnsEMBL::Web::Document::Table->new([
+	              {key=>'species',title=>'Species'},
+	              {key=>'type',title=>'Type',align=>'right'}
 							  ],
 							  \@rows,
 							  {
@@ -84,7 +85,7 @@ sub species_table {
 							  },
 	    );
 
-	my $shtml = sprintf qq{
+	    my $shtml = sprintf qq{
 <p>
  <div class="js_panel">
 
@@ -96,26 +97,26 @@ sub species_table {
     }
 
     if ($synteny_count) {
-	my @rows;
-	my $sp1 = $data->{$species}->{'display_name'};
-	my $loc = $data->{$species}->{'sample_loc'} || '';
+	    my @rows;
+	    my $sp1 = $data->{$species}->{'display_name'};
+	    my $loc = $data->{$species}->{'sample_loc'} || '';
 
-	foreach my $sp (sort {$data->{$a}->{'display_name'} cmp $data->{$b}->{'display_name'}} keys %{$sdata->{'align'}||{}}) {
-	    my $sp2 = $data->{$sp}->{'display_name'};
-	    foreach my $align (grep {$_ =~ /SYNTENY/} sort keys %{$sdata->{'align'}->{$sp}||{}}) {
-		my ($aid, $stats) = @{$sdata->{'align'}->{$sp}->{$align}||[]};
-		push @rows, {
-		    'species' => $loc ? $self->_link("<em>$sp1</em> : <em>$sp2</em>", $self->hub->url({ 'species' => $species, 'type' => 'Location', 'action'=>'Synteny', 'r'=>$loc, 'otherspecies' => ucfirst($sp)})) : $sp2,
- 		    'type' => $stats ? qq{ | <a href="/mlss.html?mlss=$aid">stats</a>} : ''
-		};
-	    }    	
-	}
+	    foreach my $sp (sort {$data->{$a}->{'display_name'} cmp $data->{$b}->{'display_name'}} keys %{$sdata->{'align'}||{}}) {
+	      my $sp2 = $data->{$sp}->{'display_name'};
+	      foreach my $align (grep {$_ =~ /SYNTENY/} sort keys %{$sdata->{'align'}->{$sp}||{}}) {
+		      my ($aid, $stats) = @{$sdata->{'align'}->{$sp}->{$align}||[]};
+		      push @rows, {
+		        'species' => $loc ? $self->_link("<em>$sp1</em> : <em>$sp2</em>", $self->hub->url({ 'species' => $species, 'type' => 'Location', 'action'=>'Synteny', 'r'=>$loc, 'otherspecies' => ucfirst($sp)})) : $sp2,
+ 		        'type' => $stats ? qq{ | <a href="/mlss.html?mlss=$aid">stats</a>} : ''
+		      };
+	      }    	
+	    }
 
-	my $style = 'position:absolute; z-index:1; width:40% !important;';
+	    my $style = 'position:absolute; z-index:1; width:40% !important;';
 
-	my $table    = EnsEMBL::Web::Document::Table->new([
-	    {key=>'species',title=>'Species'},
-	    {key=>'type',title=>'Type',align=>'right'}
+	    my $table    = EnsEMBL::Web::Document::Table->new([
+	              {key=>'species',title=>'Species'},
+	              {key=>'type',title=>'Type',align=>'right'}
 							  ],
 							  \@rows,
 							  {
@@ -128,7 +129,7 @@ sub species_table {
 	    );
 
 
-	my $shtml = sprintf qq{
+	    my $shtml = sprintf qq{
 <p>
  <div class="js_panel">
 
@@ -137,9 +138,9 @@ sub species_table {
  </div>
 </p>}, $synteny_count, $species, $table->render;
         $html .= $shtml;
-    }
+  }
 
-    return $html;
+  return $html;
 }
 
 sub table {
@@ -155,11 +156,12 @@ sub table {
   foreach my $sp (keys %$data) {
 	  $data->{$sp}->{'name'} = $sp;
     my $sp_url = $lookup->{$sp};
+    $data->{$sp}->{'url'} = $sp_url;
 	  $data->{$sp}->{'display_name'} = $hub->species_defs->get_config($sp_url, 'SPECIES_DISPLAY_NAME');
 	  my $loc = $hub->species_defs->get_config($sp_url, 'SAMPLE_DATA') || {};
 
 	  $data->{$sp}->{'sample_loc'} = $loc->{LOCATION_PARAM};
-	  (my $short_name = ucfirst($sp)) =~ s/([A-Z])[a-z]+_([a-z]{3})([a-z]+)?/$1.$2/; ## e.g. H.sap
+	  (my $short_name = ucfirst($sp_url)) =~ s/([A-Z])[a-z]+_([a-z]{3})([a-z]+)?/$1.$2/; ## e.g. H.sap
 	  $data->{$sp}->{'short_name'}     = $short_name;
 	  my $chash = {};
 	  map { map {$chash->{$_}++} keys %{$data->{$sp}->{'align'}->{$_} || {}} } keys %{$data->{$sp}->{'align'}||{}};
@@ -189,11 +191,12 @@ sub table {
       foreach my $a (sort keys %{$adata->{$ss} || {}}) {
 		    my ($aid, $stats) = @{$adata->{$ss}->{$a} || []};
 		    my $sample_location = '&nbsp;';
+        my $species_url     = $sdata->{'url'};
 		    if ($sdata->{'sample_loc'}) {
 		      if ($a =~ /SYNTENY/) {
-			      $sample_location = sprintf qq{<a href="/%s/Location/Synteny?r=%s;otherspecies=%s">example</a>},$species,$sdata->{'sample_loc'}, ucfirst($ss);
+			      $sample_location = sprintf qq{<a href="/%s/Location/Synteny?r=%s;otherspecies=%s">example</a>},$species_url,$sdata->{'sample_loc'}, $data->{$ss}{'url'};
 		      } else {
-			      $sample_location = sprintf qq{<a href="/%s/Location/Compara_Alignments/Image?align=%s;r=%s">example</a>},$species,$aid,$sdata->{'sample_loc'};
+			      $sample_location = sprintf qq{<a href="/%s/Location/Compara_Alignments/Image?align=%s;r=%s">example</a>},$species_url,$aid,$sdata->{'sample_loc'};
 		      }
 		    }
 		    $astr .= sprintf qq{<tr>
