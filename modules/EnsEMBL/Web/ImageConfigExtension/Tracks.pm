@@ -155,7 +155,8 @@ sub add_alignments {
 
   return unless grep $self->get_node($_), qw(multiple_align pairwise_tblat pairwise_blastz pairwise_other conservation cactus_hal_pw);
   
-  my $lookup       = $species_defs->prodnames_to_urls_lookup;
+  my $prod_name = $species_defs->get_config($species, 'SPECIES_PRODUCTION_NAME');
+  my $lookup    = $species_defs->prodnames_to_urls_lookup;
 
   my $alignments = {};
   my $self_label = $species_defs->species_label($species, 'no_formatting');
@@ -164,10 +165,10 @@ sub add_alignments {
 ##
 
   foreach my $row (values %{$hashref->{'ALIGNMENTS'}}) {
-    next unless $row->{'species'}{$species};
+    next unless $row->{'species'}{$prod_name};
 
     if ($row->{'class'} =~ /pairwise_alignment/) {
-      my ($other_species) = grep { !/^$species$|ancestral_sequences$/ } keys %{$row->{'species'}};
+      my ($other_species) = grep { !/^$prod_name$|ancestral_sequences$/ } keys %{$row->{'species'}};
       $other_species      = $lookup->{$other_species};
       $other_species    ||= $species if scalar keys %{$row->{'species'}} == 1;
       my $other_label     = $species_defs->species_label($other_species, 'no_formatting');
