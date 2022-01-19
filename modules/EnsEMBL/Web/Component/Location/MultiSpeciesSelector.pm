@@ -91,7 +91,6 @@ sub content_ajax {
   foreach my $alignment (grep { $_->{'species'}{$prodname} && $_->{'class'} =~ /pairwise/ } values %$alignments) {
     foreach (keys %{$alignment->{'species'}}) {
       my $sp_url = $lookup->{$_};
-      next if $sp_url eq 'Pristionchus_pacificus_prjna12644';
       if ($_ ne $prodname) {
         my $type = lc $alignment->{'type'};
            $type =~ s/_net//;
