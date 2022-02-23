@@ -294,7 +294,9 @@ sub fetch_homology_species_hash {
       }      
     }
 
-    push @{$homologues{$name_lookup->{$genome_db_name}}}, [ $target_member, $homology->description, $homology->species_tree_node(), $query_perc_id, $target_perc_id, $dnds_ratio, $homology->{_gene_tree_node_id}, $homology->dbID, $goc_score, $goc_threshold, $wgac, $wga_threshold, $highconfidence ];    
+    my $species_url = $name_lookup->{$genome_db_name} || $genome_db_name;
+
+    push @{$homologues{$species_url}}, [ $target_member, $homology->description, $homology->species_tree_node(), $query_perc_id, $target_perc_id, $dnds_ratio, $homology->{_gene_tree_node_id}, $homology->dbID, $goc_score, $goc_threshold, $wgac, $wga_threshold, $highconfidence ];    
   }
 
   @{$homologues{$_}} = sort { $classification->{$a->[2]} <=> $classification->{$b->[2]} } @{$homologues{$_}} for keys %homologues;  
