@@ -22,7 +22,7 @@ use strict;
 
 sub _species_sets {
 ## Group species into sets - separate method so it can be pluggable easily
-  my ($self, $orthologue_list, $skipped, $orthologue_map, $cdb) = @_;
+  my ($self, $orthologue_list, $orthologue_map, $cdb) = @_;
   
   my $hub           = $self->hub;
   my $species_defs  = $self->hub->species_defs;
