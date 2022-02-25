@@ -262,45 +262,4 @@ sub get_homology_matches {
   return $matches;
 }
 
-## EG Revert genome_db name hack
-## see comments here https://github.com/Ensembl/ensembl-webcode/commit/cf7605438bc0a7bbf8df3ca90b149bfdd48ebaee
-sub fetch_homology_species_hash {
-  my $self                 = shift;
-  my $homology_source      = shift;
-  my $homology_description = shift;
-  my $compara_db           = shift || 'compara';
-  my ($homologies, $classification, $query_member) = $self->get_homologies($homology_source, $homology_description, $compara_db);
-  my $name_lookup          = $self->hub->species_defs->prodnames_to_urls_lookup;
-  my %homologues;
-
-  foreach my $homology (@$homologies) {
-    my ($query_perc_id, $target_perc_id, $genome_db_name, $target_member, $dnds_ratio, $goc_score, $wgac, $highconfidence, $goc_threshold, $wga_threshold);
-    
-    foreach my $member (@{$homology->get_all_Members}) {
-      my $gene_member = $member->gene_member;
-
-      if ($gene_member->stable_id eq $query_member->stable_id) {
-        $query_perc_id = $member->perc_id;
-      } else {
-        $target_perc_id = $member->perc_id;
-        $genome_db_name = $member->genome_db->name;
-        $target_member  = $gene_member;
-        $dnds_ratio     = $homology->dnds_ratio; 
-        $goc_score      = $homology->goc_score;
-        $goc_threshold  = $homology->method_link_species_set->get_value_for_tag('goc_quality_threshold');        
-        $wgac           = $homology->wga_coverage;
-        $wga_threshold  = $homology->method_link_species_set->get_value_for_tag('wga_quality_threshold');
-        $highconfidence = $homology->is_high_confidence;
-      }      
-    }
-
-    push @{$homologues{$name_lookup->{$genome_db_name}}}, [ $target_member, $homology->description, $homology->species_tree_node(), $query_perc_id, $target_perc_id, $dnds_ratio, $homology->{_gene_tree_node_id}, $homology->dbID, $goc_score, $goc_threshold, $wgac, $wga_threshold, $highconfidence ];    
-  }
-
-  @{$homologues{$_}} = sort { $classification->{$a->[2]} <=> $classification->{$b->[2]} } @{$homologues{$_}} for keys %homologues;  
-
-  return \%homologues;
-}
-##
-
 1;
