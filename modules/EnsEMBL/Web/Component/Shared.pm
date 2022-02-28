@@ -346,7 +346,7 @@ sub transcript_table {
     my $trans_gencode = {};
 
     foreach my $trans (@$transcripts) {
-      foreach my $attrib_type (qw(CDS_start_NF CDS_end_NF gencode_basic TSL appris)) {
+      foreach my $attrib_type (qw(CDS_start_NF CDS_end_NF gencode_basic TSL appris is_canonical)) {
         (my $attrib) = @{$trans->get_all_Attributes($attrib_type)};
         next unless $attrib;
         if($attrib_type eq 'gencode_basic' && $attrib->value) {
@@ -467,6 +467,9 @@ sub transcript_table {
         if ($trans_attribs->{$tsi}{'TSL'}) {
           my $tsl = uc($trans_attribs->{$tsi}{'TSL'} =~ s/^tsl([^\s]+).*$/$1/gr);#/
 	  push @flags, helptip("TSL:$tsl", get_glossary_entry($hub, "TSL:$tsl").get_glossary_entry($hub, 'TSL'));
+        }
+        if ($trans_attribs->{$tsi}{'is_canonical'}) {
+          push @flags, helptip("Ensembl Canonical", get_glossary_entry($hub, "Ensembl canonical"));
         }
       }
 
