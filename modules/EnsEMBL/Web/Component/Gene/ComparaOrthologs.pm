@@ -24,21 +24,28 @@ sub _species_sets {
 ## Group species into sets - separate method so it can be pluggable easily
   my ($self, $orthologue_list, $orthologue_map, $cdb) = @_;
   
-  my $hub           = $self->hub;
-  my $species_defs  = $self->hub->species_defs;
-  my $compara_spp   = $species_defs->multi_hash->{'DATABASE_COMPARA'}{'COMPARA_SPECIES'};
-  my $lookup        = $hub->species_defs->prodnames_to_urls_lookup;
+  my $hub             = $self->hub;
+  my $species_defs    = $self->hub->species_defs;
+  my $lookup          = {}; 
+  my $compara_spp     = {};
   my $sets_by_species = {};
-  my $set_order     = [];
-  my $pan_lookup    = {};
-  my $is_pan        = $cdb =~/compara_pan_ensembl/;
+  my $set_order       = [];
+  my $is_pan          = $cdb =~/compara_pan_ensembl/;
+  my $pan_info        = $is_pan ? $species_defs->multi_val('PAN_COMPARA_LOOKUP') : {};
 
   if ($is_pan) {
-    $set_order = [qw(all vertebrates metazoa plants fungi protists bacteria archaea)];
-    $pan_lookup  = $species_defs->multi_val('PAN_COMPARA_LOOKUP');
+    $set_order    = [qw(all vertebrates metazoa plants fungi protists bacteria archaea)];
+    foreach (keys %$pan_info) {
+      $compara_spp->{$_}  = 1;
+      $lookup->{$_}       = $pan_info->{$_}{'species_url'};
+    }
+  }
+  else {
+    $compara_spp  = $species_defs->multi_hash->{'DATABASE_COMPARA'}{'COMPARA_SPECIES'};
+    $lookup       = $hub->species_defs->prodnames_to_urls_lookup;
   }
   
-  my $species_sets = {
+  my $species_sets = $is_pan ? {
     'vertebrates' => {'title' => 'Vertebrates', 'desc' => '', 'species' => [], 'all' => 0},
     'metazoa'     => {'title' => 'Metazoa',     'desc' => '', 'species' => [], 'all' => 0},
     'plants'      => {'title' => 'Plants',      'desc' => '', 'species' => [], 'all' => 0},
@@ -47,18 +54,11 @@ sub _species_sets {
     'bacteria'    => {'title' => 'Bacteria',    'desc' => '', 'species' => [], 'all' => 0},
     'archaea'     => {'title' => 'Archaea',     'desc' => '', 'species' => [], 'all' => 0},
     'all'         => {'title' => 'All',         'desc' => '', 'species' => [], 'all' => 0},
-  };
+  } : {};
   
   foreach my $prod_name (keys %$compara_spp) {
 
-    my $species;
-    if ($is_pan) {
-      $species = $pan_lookup->{$prod_name}{'species_url'};
-    }
-    else {
-      $species = $lookup->{$prod_name};
-    }
-
+    my $species = $lookup->{$prod_name};
     my $orthologues = $orthologue_list->{$species};
     my $no_ortho = 0;
     my ($orth_type, $group);
@@ -81,7 +81,7 @@ sub _species_sets {
 
     ## Sort into groups
     if ($is_pan) {
-      $group = $pan_lookup->{$prod_name}{'subdivision'} ? $pan_lookup->{$prod_name}{'subdivision'} : $pan_lookup->{$prod_name}{'division'};
+      $group = $pan_info->{$prod_name}{'subdivision'} ? $pan_info->{$prod_name}{'subdivision'} : $pan_info->{$prod_name}{'division'};
     }
     else {
       # not the pan compara page - generate groups
