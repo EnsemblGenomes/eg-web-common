@@ -61,6 +61,7 @@ sub _species_sets {
   foreach my $prod_name (keys %$compara_spp) {
 
     my $species = $lookup->{$prod_name};
+    next unless $species; ## omit outgroup species on plants
     my $orthologues = $orthologue_list->{$species};
     my $no_ortho = 0;
     my ($orth_type, $group);
