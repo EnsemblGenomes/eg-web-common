@@ -54,7 +54,9 @@ sub _species_sets {
     'bacteria'    => {'title' => 'Bacteria',    'desc' => '', 'species' => [], 'all' => 0},
     'archaea'     => {'title' => 'Archaea',     'desc' => '', 'species' => [], 'all' => 0},
     'all'         => {'title' => 'All',         'desc' => '', 'species' => [], 'all' => 0},
-  } : {};
+  } : {
+    'all'         => {'title' => 'All',         'desc' => '', 'species' => [], 'all' => 0},
+  };
   
   foreach my $prod_name (keys %$compara_spp) {
 
