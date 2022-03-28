@@ -25,17 +25,16 @@ use previous qw(
   add_external_browsers
 );
 
-# ENSEMBL-4620 / ENSEMBL-4718 polyploid view currently disabled 
- sub modify_tree {
-   my $self  = shift;
-   my $species_defs = $self->hub->species_defs;
+sub modify_tree {
+  my $self  = shift;
+  my $species_defs = $self->hub->species_defs;
 
-   $self->PREV::modify_tree;
+  $self->PREV::modify_tree;
   
-   if ($species_defs->POLYPLOIDY) {
+  if ($species_defs->POLYPLOIDY) {
     
-     $self->get_node('Multi')->after( 
-       $self->create_node('MultiPolyploid', 'Polyploid view',
+    $self->get_node('Multi')->after( 
+      $self->create_node('MultiPolyploid', 'Polyploid view',
          [qw(
            summary  EnsEMBL::Web::Component::Location::MultiIdeogram
            top      EnsEMBL::Web::Component::Location::MultiTop
@@ -44,11 +43,10 @@ use previous qw(
          )],
          { 'availability' => 'slice database:compara has_intraspecies_alignments', 'concise' => 'Polyploid view' }
        )
-     );
+    );
     
-   }
- }
-#
+  }
+}
 
 ## EG add community annotation link
 sub add_external_browsers {
