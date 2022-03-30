@@ -51,42 +51,38 @@ sub content_ajax {
   my %shown           = map { $params->{"s$_"} => $_ } grep s/^s(\d+)$/$1/, keys %$params; # get species (and parameters) already shown on the page
   my $object          = $self->object;
   my $chr             = $object->seq_region_name;
-## EG 
-  #my $start           = $object->seq_region_start;
-  #my $end             = $object->seq_region_end;
-
   my $slice           = $object->Obj->{slice};
   my @intra_species   = @{ $hub->intra_species_alignments('DATABASE_COMPARA', $primary_species, $slice) };
-##
-#warn "INTRA" . Data::Dumper::Dumper(\@intra_species);
 
-  my $chromosomes     = $species_defs->ENSEMBL_CHROMOSOMES;
-  my (%species, %included_regions);
-  my $lookup = $species_defs->prodnames_to_urls_lookup;
+  my $chromosomes = $species_defs->ENSEMBL_CHROMOSOMES;
+  my $lookup      = $species_defs->prodnames_to_urls_lookup;
+  my $species     = {};
 
-## EG  
   foreach my $alignment (@intra_species) {
-##
     my $type = lc $alignment->{'type'};
     my ($s)  = grep /--$alignment->{'target_name'}$/, keys %{$alignment->{'species'}};
     my ($sp, $target) = split '--', $s;
-    my $url = $lookup->{$sp};
+    my $url = $lookup->{$sp} || $sp;
     s/_/ /g for $type, $target;
-
-    $species{$url} = $species_defs->species_label($url, 1) . (grep($target eq $_, @$chromosomes) ? ' chromosome' : '') . " $target - $type";
-  }
-
-  foreach my $target (keys %included_regions) {
-    my $s     = "$primary_species--$target";
-    my $label = $species_label . (grep($target eq $_, @$chromosomes) ? ' chromosome' : '');
-    
-    foreach (grep $_->{'target_name'} eq $chr, @{$included_regions{$target}}) {
-      (my $type = lc $_->{'type'}) =~ s/_/ /g;
-      (my $t    = $target)         =~ s/_/ /g;
-      $species{$s} = "$label $t - $type";
-    }
+    $species->{$url}{'type'} = $type;
+    $species->{$url}{'targets'}{$target}++;
   }
   
+  ## compile multiple regions
+  foreach my $url (keys %$species) {
+    my $type = $species->{$url}{'type'};
+    my @targets = keys %{$species->{$url}{'targets'}||{}};
+    my $target_string;
+    if (scalar @targets > 1) {
+      $target_string = sprintf('(%d regions)', scalar @targets);
+    }
+    else {
+      my $target = $targets[0];
+      $target_string = (grep($target eq $_, @$chromosomes) ? 'chromosome' : '') . " $target"; 
+    }
+    $species->{$url} = $species_defs->species_label($url, 1) . " $target_string - $type";
+  }
+
   my $prodname = $species_defs->SPECIES_PRODUCTION_NAME;
   foreach my $alignment (grep { $_->{'species'}{$prodname} && $_->{'class'} =~ /pairwise/ } values %$alignments) {
     foreach (keys %{$alignment->{'species'}}) {
@@ -96,10 +92,10 @@ sub content_ajax {
            $type =~ s/_net//;
            $type =~ s/_/ /g;
         
-        if ($species{$sp_url}) {
-          $species{$sp_url} .= "/$type";
+        if ($species->{$sp_url}) {
+          $species->{$sp_url} .= "/$type";
         } else {
-          $species{$sp_url} = $species_defs->species_label($sp_url, 1) . " - $type";
+          $species->{$sp_url} = $species_defs->species_label($sp_url, 1) . " - $type";
         }
       }
     }
@@ -107,10 +103,10 @@ sub content_ajax {
   
   if ($shown{$primary_species}) {
     my ($chr) = split ':', $params->{"r$shown{$primary_species}"};
-    $species{$primary_species} = "$species_label - chromosome $chr";
+    $species->{$primary_species} = "$species_label - chromosome $chr";
   }
 
-  $self->{'all_options'}      = \%species;
+  $self->{'all_options'}      = $species;
   $self->{'included_options'} = \%shown;
 
 ## EG-2183 - HACK: prefix with sub_genome group name  
