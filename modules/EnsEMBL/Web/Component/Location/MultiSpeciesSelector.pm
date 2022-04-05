@@ -65,32 +65,22 @@ sub content_ajax {
     my $url = $lookup->{$sp} || $sp;
     s/_/ /g for $type, $target;
     $species->{$url}{'type'} = $type;
-    if ($species_defs->get_config($url, 'POLYPLOIDY')) {
-      $target =~ /^(\d)(\w)$/;
-      my ($chr, $ploid) = ($1, $2);
-      $species->{$url}{'targets'}{$ploid}{$chr}++;
-    }
-    else { 
-      $species->{$url}{'targets'}{$target}++;
-    }
+    $species->{$url}{'targets'}{$target}++;
   }
   
   ## compile multiple regions
   foreach my $url (keys %$species) {
     my $type = $species->{$url}{'type'};
     my @targets = keys %{$species->{$url}{'targets'}||{}};
-    if ($species_defs->get_config($url, 'POLYPLOIDY')) {
-      foreach my $target (keys %{$species->{$url}{'targets'}}) {
-        my $new_key = sprintf('group_%s_%s', $url, $target);
-        $species->{$new_key} = sprintf '%s %s (%s regions)', $species_defs->species_label($url, 1), $target, 
-                                        scalar keys %{$species->{$url}{'targets'}{$target}||{}};
-      }
-      delete $species->{$url};
+    my $target_string;
+    if (scalar @targets > 1) {
+      $target_string = sprintf('(%d regions)', scalar @targets);
     }
     else {
-      my $target = $species->{$url}{'targets'}{$targets[0]};
-      $species->{$url} = $species_defs->species_label($url, 1) . (grep($target eq $_, @$chromosomes) ? ' chromosome' : '') . " $target - $type"; 
+      my $target = $targets[0];
+      $target_string = (grep($target eq $_, @$chromosomes) ? 'chromosome' : '') . " $target"; 
     }
+    $species->{$url} = $species_defs->species_label($url, 1) . " $target_string - $type";
   }
 
   my $prodname = $species_defs->SPECIES_PRODUCTION_NAME;
