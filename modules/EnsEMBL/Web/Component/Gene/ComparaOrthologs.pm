@@ -26,6 +26,9 @@ sub _species_sets {
   
   my $hub             = $self->hub;
   my $species_defs    = $self->hub->species_defs;
+
+  return "" if $self->hub->action =~ /^Strain/; #No summary table needed for strains
+
   my $lookup          = {}; 
   my $compara_spp     = {};
   my $sets_by_species = {};
