@@ -20,7 +20,7 @@ package EnsEMBL::Web::Component::Gene::ComparaOrthologs;
 
 use strict;
 
-sub _species_set_config {
+sub species_set_config {
   my ($self, $cdb) = @_;
   my $set_order       = [];
   my $species_sets    = {};
