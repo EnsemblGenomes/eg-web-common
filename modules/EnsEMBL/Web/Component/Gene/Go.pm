@@ -21,59 +21,6 @@ use strict;
 
 use EnsEMBL::Web::Constants;
 
-sub content {
-  my $self   = shift;
-  my $object = $self->object;  
-  
- # return $self->non_coding_error unless $object->translation_object;
-  
-  # This view very much depends on existance of the ontology db,
-  # but it does not have to - you can still display the ontology terms with the links to the corresponding 
-  # ontology website.
-  
-  my $hub         = $self->hub;
-  my $function    = $hub->function;  
-  my $adaptor     = $hub->get_adaptor('get_OntologyTermAdaptor', 'go');
-  my %clusters    = $hub->species_defs->multiX('ONTOLOGIES');
-  my $terms_found = 0;
-  my $label       = 'Ontology';
-
-## EG
-  my $columns     = [   
-    { key => 'go',              title => 'Accession',         sort => 'none', width => '10%', align => 'left'   },
-    { key => 'term',            title => 'Term',              sort => 'none', width => '20%', align => 'left'   },
-    { key => 'evidence',        title => 'Evidence',          sort => 'none', width => '3%',  align => 'left'   },
-    { key => 'source',          title => 'Annotation source', sort => 'none', width => '15%', align => 'left'   },    
-    { key => 'mapped',          title => 'Mapped using',      sort => 'html', width => '15%', align => 'left', 'hidden' => 1 },    
-    { key => 'transcript_id',   title => 'Transcript IDs',    sort => 'none', width => '10%', align => 'left' },
-    { key => 'extra_link',      title => '',                  sort => 'none', width => '10%', align => 'left' },
-  ];
-##
-
-  my $html    = '<ul>';
-  my $tables  = '';
-  my $i       = 0;
-  my $oid     = (grep { $clusters{$_}{'description'} eq $function } keys %clusters)[0];
-  my $go_hash = $object->get_go_list($clusters{$oid}{'db'}, $clusters{$oid}{'root'});
-
-  if (%$go_hash) {
-## EG    
-    my $table = $self->new_table($columns, []);
-##    
-    (my $desc = ucfirst $clusters{$oid}{'description'}) =~ s/_/ /g;
-   
-    $self->process_data($table, $go_hash, $clusters{$oid}{'db'});    
-
-    $tables     .= $table->render;
-    $terms_found = 1;
-    $i++;
-  }
-
-  $html .= '</ul>'.$tables;
-
-  return $terms_found ? $html : '<p>No ontology terms have been annotated to this entity.</p>';
-}
-
 sub biomart_link {
   my ($self, $term) = @_;
 
@@ -99,65 +46,6 @@ sub biomart_link {
   my $link = qq{<a rel="notexternal" href="$url">Search BioMart</a>};
 
   return $link;
-}
-
-sub process_data {
-  my ($self, $table, $data, $extdb) = @_;
-  
-  my $hub              = $self->hub;
-  # this is a dirty way of having all the go term description until core decide to have a table for them, this is how we will have to do thing
-  my $description_hash = {'EXP' => 'Inferred from Experiment', 'IC' => 'Inferred by Curator', 'IDA' => 'Inferred from Direct Assay', 'IEA' => 'Inferred from Electronic Annotation', 'IEP' => 'Inferred from Expression Pattern', 'IGC' => 'Inferred from Genomic Context', 'IGI' => 'Inferred from Genetic Interaction', 'IMP' => 'Inferred from Mutant Phenotype', 'IPI' => 'Inferred from Physical Interaction', 'ISA' => 'Inferred from Sequence Alignment', 'ISM' => 'Inferred from Sequence Model', 'ISO' => 'Inferred from Sequence Orthology', 'ISS' => 'Inferred from Sequence or Structural Similarity', 'NAS' => 'Non-traceable Author Statement', 'ND' => 'No biological Data available', 'RCA' => 'Inferred from Reviewed Computational Analysis', 'TAS' => 'Traceable Author Statement', 'NR' => 'Not Recorded', 'IBA' => 'Inferred from Biological aspect of Ancestor'};
-
-## EG  
-  my @bgs = qw(bg1 bg2);
-  my @row_styles;
-
-  my $chromosomes = $hub->species_defs->ENSEMBL_CHROMOSOMES;
-##
-
-  foreach my $go (sort keys %$data) {
-    my $hash        = $data->{$go} || {};
-    my $go_link     = $hub->get_ExtURL_link($go, $extdb, $go);
-    my $mart_link   = $self->biomart_link($go) ? "<li>".$self->biomart_link($go)."</li>": "";
-## EG
-    my $loc_link    = '<li><a rel="notexternal" href="' . $hub->url({type  => 'Location', action => 'Genome', ftype => 'Gene', id  => $go, gotype => $extdb}) . ( $chromosomes && scalar @$chromosomes && $hub->species_defs->MAX_CHR_LENGTH ? '">View on karyotype</a></li>' : '">View associated genes</a></li>' );
-##
-    my $goslim      = $hash->{'goslim'} || {};
-    my $row         = {};
-    my $go_evidence = [ split /\s*,\s*/, $hash->{'evidence'} || '' ];
-   (my $trans       = $hash->{transcript_id}) =~ s/^,/ /; # GO terms with multiple transcripts
-    my %all_trans   = map{$_ => $hub->url({type => 'Transcript', action => 'Summary',t => $_,})} split(/,/,$trans) if($hash->{transcript_id} =~ /,/);
-    
-    my $mapped;
-
-    if($hash->{'term'}) {
-      $row->{'go'}               = $go_link;
-      $row->{'term'}             = $hash->{'term'};
-      $row->{'evidence'}         = join ', ', map helptip($_, $description_hash->{$_} // 'No description available'), @$go_evidence;
-      $row->{'mapped'}           = $hash->{'mapped'} || '';
-      $row->{'source'}           = $hash->{'source'} || '';
-      $row->{'transcript_id'}    = %all_trans ? join("<br>", map { qq{<a href="$all_trans{$_}">$_</a>} } keys %all_trans) : '<a href="'.$hub->url({type => 'Transcript', action => 'Summary',t => $hash->{transcript_id},}).'">'.$hash->{transcript_id}.'</a>';
-      $row->{'extra_link'}       = $mart_link || $loc_link ? qq{<ul class="compact">$mart_link$loc_link</ul>} : "";
-      
-      $table->add_row($row);
-## EG
-      push @row_styles, $bgs[0]; 
-
-      foreach (@{$hash->{extensions}}) {
-        $_->{term} = delete $_->{description}; # rename column description -> term
-        $table->add_row($_);
-        push @row_styles, $bgs[0]; 
-      }
-
-      push @bgs, shift @bgs; 
-##      
-    }
-  }
-
-## EG  
-  $table->{'options'}{'rows'} = \@row_styles;
-##
-  return $table;  
 }
 
 1;
