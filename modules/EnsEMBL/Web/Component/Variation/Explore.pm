@@ -20,6 +20,8 @@ package EnsEMBL::Web::Component::Variation::Explore;
 
 use strict;
 
+use EnsEMBL::Web::Utils::Variation qw(vep_icon);
+
 sub content {
   my $self      = shift;
   my $hub       = $self->hub;
@@ -108,7 +110,7 @@ sub content {
   my $html = $self->button_portal(\@buttons);
 
   ## Variation documentation links
-  my $vep_icon = $self->vep_icon;
+  my $vep_icon = vep_icon($hub);
   $html .= qq(
     <div class="column-wrapper">
       <div class="column-two column-first">
