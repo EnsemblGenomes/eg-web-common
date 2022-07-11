@@ -232,6 +232,7 @@ sub _assembly_text {
   my $name             = $species_defs->SPECIES_DISPLAY_NAME;
   my $img_url          = $self->img_url;
   my $sample_data      = $species_defs->SAMPLE_DATA;
+  my $prod_name        = $species_defs->SPECIES_PRODUCTION_NAME;
   my $ensembl_version  = $self->_site_release;
   my $current_assembly = $species_defs->ASSEMBLY_NAME;
   my $accession        = $species_defs->ASSEMBLY_ACCESSION;
@@ -273,10 +274,10 @@ sub _assembly_text {
   if ($species_defs->ENSEMBL_FTP_URL) {
     my $ftp_url;
     if ($species_defs->SPECIES_DATASET && $species_defs->SPECIES_DATASET ne $species) {
-      $ftp_url = sprintf '%s/release-%s/fasta/%s_collection/%s/dna/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, lc $species_defs->SPECIES_DATASET, lc $species;
+      $ftp_url = sprintf '%s/release-%s/fasta/%s_collection/%s/dna/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, lc $species_defs->SPECIES_DATASET, $prod_name;
     }
     else {
-      $ftp_url = sprintf '%s/release-%s/fasta/%s/dna/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, lc $species;
+      $ftp_url = sprintf '%s/release-%s/fasta/%s/dna/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, $prod_name;
     }
     $html .= qq(<p><a href="$ftp_url" class="nodeco"><img src="${img_url}24/download.png" alt="" class="homepage-link" />Download DNA sequence</a> (FASTA)</p>);
   }
