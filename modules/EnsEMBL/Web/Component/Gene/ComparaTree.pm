@@ -179,7 +179,12 @@ sub content {
   my %genome_db_ids_by_clade = map {$_ => []} @{ $sd->TAXON_ORDER };
   foreach my $prod_name (keys %{$sd->multi_hash->{'DATABASE_COMPARA'}{'COMPARA_SPECIES'}||{}}) {  
     my $species_name = $lookup->{$prod_name};
-    foreach my $clade (@{ $sd->get_config($species_name, 'SPECIES_GROUP_HIERARCHY') || [] }) {
+    my $hierarchy     = $sd->get_config($species_name, 'SPECIES_GROUP_HIERARCHY') || [];
+    unless (scalar @$hierarchy) {
+      warn "### SPECIES $species_name APPEARS TO HAVE NO species.classification INFORMATION - THIS MAY CAUSE ERRORS IN THE GENETREE DISPLAY";
+      next;
+    }
+    foreach my $clade (@$hierarchy) {
       push @{$genome_db_ids_by_clade{$clade}}, $sd->multi_hash->{'DATABASE_COMPARA'}{'GENOME_DB'}{$prod_name};
     }
   }
@@ -296,7 +301,7 @@ sub content {
 
 
   $image->image_type        = 'genetree';
-  $image->image_name        = ($self->param('image_width')) . "-$image_id";
+  $image->image_name        = ($self->param('image_width')||'0') . "-$image_id";
   $image->imagemap          = 'yes';
   $image->{'panel_number'}  = 'tree';
 
