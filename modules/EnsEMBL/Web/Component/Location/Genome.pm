@@ -19,22 +19,7 @@ limitations under the License.
 package EnsEMBL::Web::Component::Location::Genome;
 
 use strict;
-use previous qw(content _configure_Gene_table);
-
-## EG - add warning about unassembled genome
-sub content {
-  my $self = shift;
-  my $html;
-  my $chromosomes  = $self->hub->species_defs->ENSEMBL_CHROMOSOMES || [];
-  
-  if (!scalar @$chromosomes) {
-    $html = $self->_info('Unassembled genome', '<p>This genome has yet to be assembled into chromosomes</p>');
-  }
-  
-  $html .= $self->PREV::content(@_);
-
-  return $html;
-}
+use previous qw(_configure_Gene_table);
 
 ## EG - add datatable config for domains
 sub _configure_Gene_table {

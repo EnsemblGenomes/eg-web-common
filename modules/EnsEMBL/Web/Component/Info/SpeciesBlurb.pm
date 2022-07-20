@@ -25,8 +25,6 @@ use strict;
 use EnsEMBL::Web::Controller::SSI;
 use Data::Dumper;
 
-use base qw(EnsEMBL::Web::Component);
-
 sub content {
   my $self              = shift;
   my $hub               = $self->hub;
