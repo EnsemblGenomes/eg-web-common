@@ -181,8 +181,9 @@ sub content {
     my $species_name = $lookup->{$prod_name};
     my $hierarchy     = $sd->get_config($species_name, 'SPECIES_GROUP_HIERARCHY') || [];
     unless (scalar @$hierarchy) {
-      warn "### SPECIES $species_name APPEARS TO HAVE NO species.classification INFORMATION - THIS MAY CAUSE ERRORS IN THE GENETREE DISPLAY";
-      next;
+      #warn "### SPECIES $species_name APPEARS TO HAVE NO species.classification META INFORMATION";
+      $html .= $self->error_panel('Data problem', '<p>Some species in this tree are missing taxonomy data, so we cannot display the image correctly.</p>');
+      return $html;
     }
     foreach my $clade (@$hierarchy) {
       push @{$genome_db_ids_by_clade{$clade}}, $sd->multi_hash->{'DATABASE_COMPARA'}{'GENOME_DB'}{$prod_name};
