@@ -49,6 +49,9 @@ sub update_conf {
   # (used by the interface to determine whether to use dropdown or auto-comeplete etc)
   $SiteDefs::LARGE_SPECIES_SET = 0;
 
+  ## Allow wiggle tracks to be drawn on whole chromosomes for small genomes
+  $SiteDefs::MAX_DRAWING_LENGTH = 1000000;
+
   # Static content flags
   $SiteDefs::HAS_ANNOTATION             = 1;
   $SiteDefs::HAS_TUTORIALS              = 1;
