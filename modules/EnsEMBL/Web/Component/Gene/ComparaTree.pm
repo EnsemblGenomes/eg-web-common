@@ -27,6 +27,7 @@ sub content {
   my $self        = shift;
   my $cdb         = shift || $self->param('cdb') || 'compara';
   my $hub         = $self->hub;
+  my $sd          = $hub->species_defs;
   my $object      = $self->object || $self->hub->core_object('gene');
   my $is_genetree = $object && $object->isa('EnsEMBL::Web::Object::GeneTree') ? 1 : 0;
   my ($gene, $member, $tree, $node, $test_tree);
@@ -120,7 +121,7 @@ sub content {
   # store g1 param in a different param as $highlight_gene can be undef if highlighting is disabled
   my $gene_to_highlight = $hub->param('g1');
   my $highlight_gene_display_label;
-  my $lookup = $hub->species_defs->prodnames_to_urls_lookup;
+  my $lookup = $sd->prodnames_to_urls_lookup;
   
   foreach my $this_leaf (@$leaves) {
     if ($gene_to_highlight && $this_leaf->gene_member->stable_id eq $gene_to_highlight) {
@@ -142,10 +143,10 @@ sub content {
         $html .= $self->_info('Highlighted genes',
           sprintf(
             '<p>The <i>%s</i> %s gene, its paralogues, its orthologue in <i>%s</i>, and paralogues of the <i>%s</i> gene, have all been highlighted. <a href="#" class="switch_highlighting on">Click here to disable highlighting</a>.</p>',
-            $hub->species_defs->get_config($lookup->{$member->genome_db->name}, 'SPECIES_DISPLAY_NAME'),
+            $sd->get_config($lookup->{$member->genome_db->name}, 'SPECIES_DISPLAY_NAME'),
             $highlight_gene_display_label,
-            $hub->species_defs->get_config($highlight_species, 'SPECIES_DISPLAY_NAME') || $highlight_species_name,
-            $hub->species_defs->get_config($highlight_species, 'SPECIES_DISPLAY_NAME') || $highlight_species_name
+            $sd->get_config($highlight_species, 'SPECIES_DISPLAY_NAME') || $highlight_species_name,
+            $sd->get_config($highlight_species, 'SPECIES_DISPLAY_NAME') || $highlight_species_name
           )
         );
       } else {
@@ -164,9 +165,9 @@ sub content {
       $html .= $self->_info('Highlighted genes', 
         sprintf(
           '<p>The <i>%s</i> %s gene and its paralogues are highlighted. <a href="#" class="switch_highlighting off">Click here to enable highlighting of %s homologues</a>.</p>',
-          $hub->species_defs->get_config($lookup->{$member->genome_db->name}, 'SPECIES_DISPLAY_NAME'),
+          $sd->get_config($lookup->{$member->genome_db->name}, 'SPECIES_DISPLAY_NAME'),
           $highlight_gene_display_label,
-          $hub->species_defs->get_config($highlight_species, 'SPECIES_DISPLAY_NAME') || $highlight_species_name
+          $sd->get_config($highlight_species, 'SPECIES_DISPLAY_NAME') || $highlight_species_name
         )
       );
     }
@@ -175,10 +176,11 @@ sub content {
   # Get all the genome_db_ids in each clade
   # Ideally, this should be stored in $hub->species_defs->multi_hash->{'DATABASE_COMPARA'}
   # or any other centralized place, to avoid recomputing it many times
-  my %genome_db_ids_by_clade = map {$_ => []} @{ $self->hub->species_defs->TAXON_ORDER };
-  foreach my $species_name (keys %{$self->hub->get_species_info}) {  
-    foreach my $clade (@{ $self->hub->species_defs->get_config($species_name, 'SPECIES_GROUP_HIERARCHY') }) {
-      push @{$genome_db_ids_by_clade{$clade}}, $hub->species_defs->multi_hash->{'DATABASE_COMPARA'}{'GENOME_DB'}{lc ($hub->species_defs->get_config($species_name, 'SPECIES_PRODUCTION_NAME'))};
+  my %genome_db_ids_by_clade = map {$_ => []} @{ $sd->TAXON_ORDER };
+  foreach my $prod_name (keys %{$sd->multi_hash->{'DATABASE_COMPARA'}{'COMPARA_SPECIES'}||{}}) {  
+    my $species_name = $lookup->{$prod_name};
+    foreach my $clade (@{ $sd->get_config($species_name, 'SPECIES_GROUP_HIERARCHY') || [] }) {
+      push @{$genome_db_ids_by_clade{$clade}}, $sd->multi_hash->{'DATABASE_COMPARA'}{'GENOME_DB'}{$prod_name};
     }
   }
 
@@ -253,7 +255,7 @@ sub content {
     # TAXON_ORDER is ordered by increasing phylogenetic size. Reverse it to
     # get the largest clades first, so that they can be overwritten later
     # (see ensembl-webcode/modules/EnsEMBL/Draw/GlyphSet/genetree.pm)
-    foreach my $clade_name (reverse @{ $self->hub->species_defs->TAXON_ORDER }) {
+    foreach my $clade_name (reverse @{ $sd->TAXON_ORDER }) {
       next unless $self->param("group_${clade_name}_${mode}colour");
       my $genome_db_ids = $genome_db_ids_by_clade{$clade_name};
       my $colour        = $self->param("group_${clade_name}_${mode}colour");
