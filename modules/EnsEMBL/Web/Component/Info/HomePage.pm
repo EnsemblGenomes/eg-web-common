@@ -314,6 +314,7 @@ sub _genebuild_text {
   my $hub             = $self->hub;
   my $species_defs    = $hub->species_defs;
   my $species         = $hub->species;
+  my $prod_name        = $species_defs->SPECIES_PRODUCTION_NAME;
   my $img_url         = $self->img_url;
   my $sample_data     = $species_defs->SAMPLE_DATA;
   my $ensembl_version = $self->_site_release;
@@ -337,8 +338,8 @@ sub _genebuild_text {
 
   if ($species_defs->ENSEMBL_FTP_URL) {
     my $dataset = $species_defs->SPECIES_DATASET;
-    my $fasta_url = $hub->get_ExtURL('SPECIES_FTP_URL',{GENOMIC_UNIT=>$species_defs->GENOMIC_UNIT,VERSION=>$ensembl_version, FORMAT=>'fasta', SPECIES=> ($dataset && $dataset ne $species) ? lc($dataset) . "_collection/" . lc $species : lc $species},{class=>'nodeco'});
-    my $gff3_url  = $hub->get_ExtURL('SPECIES_FTP_URL',{GENOMIC_UNIT=>$species_defs->GENOMIC_UNIT,VERSION=>$ensembl_version, FORMAT=>'gff3', SPECIES=> ($dataset && $dataset ne $species) ? lc($dataset) . "_collection/" . lc $species : lc $species},{class=>'nodeco'});
+    my $fasta_url = $hub->get_ExtURL('SPECIES_FTP_URL',{GENOMIC_UNIT=>$species_defs->GENOMIC_UNIT,VERSION=>$ensembl_version, FORMAT=>'fasta', SPECIES=> ($dataset && $dataset ne $species) ? lc($dataset) . "_collection/" . $prod_name : $prod_name},{class=>'nodeco'});
+    my $gff3_url  = $hub->get_ExtURL('SPECIES_FTP_URL',{GENOMIC_UNIT=>$species_defs->GENOMIC_UNIT,VERSION=>$ensembl_version, FORMAT=>'gff3', SPECIES=> ($dataset && $dataset ne $species) ? lc($dataset) . "_collection/" . $prod_name : $prod_name},{class=>'nodeco'});
     $html .= qq[<p><img src="${img_url}24/download.png" alt="" class="homepage-link" />Download genes, cDNAs, ncRNA, proteins - <span class="center"><a href="$fasta_url" class="nodeco">FASTA</a> - <a href="$gff3_url" class="nodeco">GFF3</a></span></p>];
   }
   
@@ -448,6 +449,7 @@ sub _variation_text {
   my $sample_data  = $species_defs->SAMPLE_DATA;
   my $ensembl_version = $species_defs->SITE_RELEASE_VERSION;
   my $display_name    = $species_defs->SPECIES_SCIENTIFIC_NAME;
+  my $prod_name    = $species_defs->SPECIES_PRODUCTION_NAME;
   my $html;
 
   if ($hub->database('variation')) {
@@ -498,9 +500,9 @@ sub _variation_text {
     if ($species_defs->ENSEMBL_FTP_URL && !$vcf_only) {
       my @links;
       foreach my $format (qw/gvf vcf/){
-        push(@links, sprintf('<a href="%s/release-%s/variation/%s/%s/" class="nodeco _ht" title="Download (via FTP) all <em>%s</em> variants in %s format">%s</a>', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, $format, lc $species, $display_name, uc $format,uc $format));
+        push(@links, sprintf('<a href="%s/release-%s/variation/%s/%s/" class="nodeco _ht" title="Download (via FTP) all <em>%s</em> variants in %s format">%s</a>', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, $format, $prod_name, $display_name, uc $format,uc $format));
       }
-      push(@links, sprintf('<a href="%s/release-%s/variation/vep/%s_vep_%s_%s.tar.gz" class="nodeco _ht" title="Download (via FTP) all <em>%s</em> variants in VEP format">VEP</a>', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, lc $species, $ensembl_version, $species_defs->ASSEMBLY_NAME, $display_name));
+      push(@links, sprintf('<a href="%s/release-%s/variation/vep/%s_vep_%s_%s.tar.gz" class="nodeco _ht" title="Download (via FTP) all <em>%s</em> variants in VEP format">VEP</a>', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, $prod_name, $ensembl_version, $species_defs->ASSEMBLY_NAME, $display_name));
       my $links = join(" - ", @links);
       $html .= qq[<p><img src="${img_url}24/download.png" alt="" class="homepage-link" />Download all variants - $links</p>];
     }
@@ -525,6 +527,7 @@ sub _funcgen_text {
   my $hub             = $self->hub;
   my $species_defs    = $hub->species_defs;
   my $species         = $hub->species;
+  my $prod_name       = $species_defs->SPECIES_PRODUCTION_NAME;
   my $img_url         = $self->img_url;
   my $sample_data     = $species_defs->SAMPLE_DATA;
   my $ensembl_version = $species_defs->ENSEMBL_VERSION;
@@ -550,7 +553,7 @@ sub _funcgen_text {
     $html .= qq(<p><a href="/info/docs/funcgen/" class="nodeco"><img src="${img_url}24/info.png" alt="" class="homepage-link" />More about the $site regulatory build</a> and <a href="/info/docs/microarray_probe_set_mapping.html" class="nodeco">microarray annotation</a></p>);
 
     if ($species_defs->ENSEMBL_FTP_URL) {
-      my $ftp_url = sprintf '%s/release-%s/regulation/%s/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, lc $species;
+      my $ftp_url = sprintf '%s/release-%s/regulation/%s/', $species_defs->ENSEMBL_FTP_URL, $ensembl_version, $prod_name;
       $html .= qq(<p><a href="$ftp_url" class="nodeco"><img src="${img_url}24/download.png" alt="" class="homepage-link" />Download all regulatory features</a> (GFF)</p>);
     }
   }
