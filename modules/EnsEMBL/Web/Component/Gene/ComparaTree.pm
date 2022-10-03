@@ -150,7 +150,7 @@ sub content {
           )
         );
       } else {
-        my $hl_member = $object->get_compara_Member($cdb, $highlight_gene);
+        my $hl_member = $object->get_compara_Member({'cdb' => $cdb, 'stable_id' => $highlight_gene});
         my $hl_adaptor = $hl_member->adaptor->db->get_adaptor('GeneTree')    || return;
         my $hl_tree    = $hl_adaptor->fetch_all_by_Member($hl_member, -clusterset_id => $clusterset_id)->[0];
         unless ($hl_tree) {

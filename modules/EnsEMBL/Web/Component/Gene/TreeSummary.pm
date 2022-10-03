@@ -40,7 +40,7 @@ sub get_details {
   my $self   = shift;
   my $cdb    = shift;
   my $object = $self->object;
-  my $member = $object->get_compara_Member($cdb);
+  my $member = $object->get_compara_Member({'cdb' => $cdb, 'stable_id' => $object->stable_id});
 
   return (undef, '<strong>Gene is not in the compara database</strong>') unless $member;
 
