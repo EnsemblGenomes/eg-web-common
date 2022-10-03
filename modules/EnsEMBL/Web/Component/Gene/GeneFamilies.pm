@@ -39,12 +39,10 @@ sub content {
   my $object         = $self->object;
   my $gene_stable_id = $object->stable_id;
   my $compara_db     = $object->database('compara');
-  my $member_adaptor = $compara_db->get_GeneMemberAdaptor;
   my $family_adaptor = $compara_db->get_FamilyAdaptor;
   my $html;
   
-  
-  my $member = $member_adaptor->fetch_by_stable_id($gene_stable_id);
+  my $member = $object->get_compara_Member({'cdb' => 'compara', 'stable_id' => $gene_stable_id});
     
   my $families = [];
   $families = $family_adaptor->fetch_all_by_GeneMember($member) if $member;
