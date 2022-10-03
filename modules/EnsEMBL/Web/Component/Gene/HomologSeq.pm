@@ -44,7 +44,7 @@ sub content {
   my $cds          = $self->param('seq') eq 'cds';
   my $format       = $self->param('_format');
   my $database     = $hub->database($cdb);
-  my $qm           = $database->get_GeneMemberAdaptor->fetch_by_stable_id($gene_id);
+  my $qm           = $self->object->get_compara_Member({'cdb' => $cdb, 'stable_id' => $gene_id});
   my ($homologies, $html, %skipped);
 
   eval {
