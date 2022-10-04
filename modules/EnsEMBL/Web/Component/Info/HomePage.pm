@@ -613,10 +613,14 @@ sub _has_compara {
     if ($object_type) { 
       if ($sample_gene_id) {
         # check existence of a specific data type for the sample gene
+        my $genome_adaptor = $db->get_GenomeDBAdaptor;
         my $member_adaptor = $db->get_GeneMemberAdaptor;
         my $object_adaptor = $db->get_adaptor($object_type);
   
-        if (my $member = $member_adaptor->fetch_by_stable_id($sample_gene_id)) {
+        my $genome = $genome_adaptor->fetch_by_name_assembly($species_defs->SPECIES_PRODUCTION_NAME);
+        my $member = $member_adaptor->fetch_by_stable_id_GenomeDB($sample_gene_id, $genome);
+
+        if ($member) {
           if ($object_type eq 'Family') {
             $member = $member->get_all_SeqMembers->[0];
             $has_compara = $object_adaptor->fetch_by_SeqMember($member) ? 1 : 0;
