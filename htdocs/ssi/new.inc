@@ -4,7 +4,7 @@
 <ul>
 <li>this web browser</li> 
 <li><a href="/biomart/martview/">BioMarts</a> (query optimised data warehouses) constructed for each of the Ensembl Genomes site</li.s
-<li> via FTP (<a href="http://ftp.ensemblgenomes.org/pub">ftp.ensemblgenomes.org/pub</a>) </li>
+<li> via FTP (<a href="https://ftp.ensemblgenomes.org/pub">ftp.ensemblgenomes.org/pub</a>) </li>
 <li>via the Ensembl Genomes public mysql server (mysql.ebi.ac.uk:4157:anonymous). </li>
 <li>using the <a href="/info/data/api.html">Ensembl API</a>.</li>
 </ul>
