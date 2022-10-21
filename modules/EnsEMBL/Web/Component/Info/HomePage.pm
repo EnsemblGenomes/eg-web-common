@@ -617,15 +617,17 @@ sub _has_compara {
         my $member_adaptor = $db->get_GeneMemberAdaptor;
         my $object_adaptor = $db->get_adaptor($object_type);
   
-        my $genome = $genome_adaptor->fetch_by_name_assembly($species_defs->SPECIES_PRODUCTION_NAME);
-        my $member = $member_adaptor->fetch_by_stable_id_GenomeDB($sample_gene_id, $genome);
+        my $genome = $genome_adaptor->fetch_by_name_assembly($species_defs->SPECIES_PRODUCTION_NAME, $species_defs->SPECIES_ASSEMBLY_NAME);
+        if ($genome) {
+          my $member = $member_adaptor->fetch_by_stable_id_GenomeDB($sample_gene_id, $genome);
 
-        if ($member) {
-          if ($object_type eq 'Family') {
-            $member = $member->get_all_SeqMembers->[0];
-            $has_compara = $object_adaptor->fetch_by_SeqMember($member) ? 1 : 0;
-          } else {
-            $has_compara = @{$object_adaptor->fetch_all_by_Member($member)} ? 1 : 0;
+          if ($member) {
+            if ($object_type eq 'Family') {
+              $member = $member->get_all_SeqMembers->[0];
+              $has_compara = $object_adaptor->fetch_by_SeqMember($member) ? 1 : 0;
+            } else {
+              $has_compara = @{$object_adaptor->fetch_all_by_Member($member)} ? 1 : 0;
+            }
           }
         }
       }
