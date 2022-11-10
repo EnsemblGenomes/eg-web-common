@@ -34,6 +34,7 @@ sub render {
   my $sitename      = $species_defs->ENSEMBL_SITETYPE;
   my $static_server = $species_defs->ENSEMBL_STATIC_SERVER;
   my @valid_species = $species_defs->valid_species;
+  my $lookup = $species_defs->prodnames_to_urls_lookup;
   my %species;
 
   foreach my $sp (@valid_species) {
@@ -54,7 +55,7 @@ sub render {
   my $mda = EnsEMBL::Web::DBSQL::MetaDataAdaptor->new($hub);
   if ($mda) {
     for my $genome (@{ $mda->all_genomes_by_division }) { 
-      my $sp = ucfirst $genome->name;
+      my $sp = $lookup->{$genome->name};
       if (!$species{$sp}) {
         warn "Warning: got meta data for genome '$sp' but this species is not configured. Skipping.";
         next; 
