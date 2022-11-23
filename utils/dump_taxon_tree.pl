@@ -71,7 +71,7 @@ GetOptions(
   "version=s"    => \$version
 );
 
-if (!$host || !$port || !$version || !$thost || !$tport || !$plugin_dir) {
+if (!$host || !$port || !$thost || !$tport || !$plugin_dir) {
   die "Missing input options\
     -host : species db host
     -port : species db port
