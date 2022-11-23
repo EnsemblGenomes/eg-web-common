@@ -132,6 +132,7 @@ sub content {
       last;
     }
   }
+  $highlight_gene = 0 unless $highlight_species;
 
   # check if highlight ancestor (anc param) is available or not
   # if it isn't then there is no need for a message as there will be no g1 (highlight gene) as well
@@ -150,9 +151,10 @@ sub content {
           )
         );
       } else {
-        my $hl_member = $object->get_compara_Member({'cdb' => $cdb, 'stable_id' => $highlight_gene});
-        my $hl_adaptor = $hl_member->adaptor->db->get_adaptor('GeneTree')    || return;
-        my $hl_tree    = $hl_adaptor->fetch_all_by_Member($hl_member, -clusterset_id => $clusterset_id)->[0];
+        my $hl_member   = $object->get_compara_Member({'cdb' => $cdb, 'stable_id' => $highlight_gene, 'species' => $highlight_species});
+        my $dba         = $object->database($cdb); 
+        my $hl_adaptor  = $dba->get_adaptor('GeneTree') || return;
+        my $hl_tree     = $hl_adaptor->fetch_all_by_Member($hl_member, -clusterset_id => $clusterset_id)->[0];
         unless ($hl_tree) {
             $hl_tree = $hl_adaptor->fetch_default_for_Member($hl_member);
         }
