@@ -24,8 +24,6 @@ use HTML::Entities qw(encode_entities);
 use JSON qw(from_json to_json encode_json decode_json);
 
 use base qw(EnsEMBL::Web::Component::Gene);
-use Data::Dumper;
-$Data::Dumper::Maxdepth = 4; $Data::Dumper::Sortkeys = 1;
 
 sub _init {
   my $self = shift;

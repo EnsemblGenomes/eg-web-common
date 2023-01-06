@@ -97,6 +97,10 @@ sub update_conf {
   # EG rest server
   $SiteDefs::ENSEMBL_REST_DOC_URL = '/info/data/rest.html';
   $SiteDefs::Pathway              = 1; #enabling pathway widget
+
+  # Molecular interaction REST API
+  $SiteDefs::MOLECULAR_INTERACTIONS_URL = 'http://wp-p2m2-18.ebi.ac.uk:8080';
+
 }
 
 

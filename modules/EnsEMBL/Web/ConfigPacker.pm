@@ -37,9 +37,8 @@ sub munge_config_tree {
 sub _add_available_interactions {
   my ($self) = @_;
   my $data = '';
-  my $url = 'http://wp-p2m2-18.ebi.ac.uk:8080/interactions_by_prodname/';
+  my $url = $SiteDefs::MOLECULAR_INTERACTIONS_URL . '/interactions_by_prodname/';
   my $response = read_file($url,{
-                    # proxy => $SiteDefs::HTTP_PROXY,
                     nice => 1,
                     no_exception => 1,
                   });

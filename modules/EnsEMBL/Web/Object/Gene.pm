@@ -278,7 +278,7 @@ sub get_homology_matches {
 sub get_molecular_interactions {
   my ($self, $gene_id) = @_;
   my $hub = $self->hub;
-  my $mol_int_url = $hub->get_ExtURL('MOLECULAR_INTERACTIONS').'/display_by_gene';
+  my $mol_int_url = $SiteDefs::MOLECULAR_INTERACTIONS_URL . '/display_by_gene';
 
   my $rest = EnsEMBL::Web::REST->new($hub, $mol_int_url);
 

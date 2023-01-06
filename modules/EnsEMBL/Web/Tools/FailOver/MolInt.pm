@@ -34,7 +34,7 @@ sub new {
 
   my $self        = $proto->SUPER::new("mol_int");
   $self->{'hub'}  = $hub;
-  $self->{'check_url'}  = $hub->get_ExtURL('MOLECULAR_INTERACTIONS');
+  $self->{'check_url'}  = $SiteDefs::MOLECULAR_INTERACTIONS_URL;
   return $self;
 }
 
