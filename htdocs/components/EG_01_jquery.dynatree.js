@@ -30,45 +30,6 @@
 
 var _canLog = true;
 
-function _log(mode, msg) {
-  /**
-   * Usage: logMsg("%o was toggled", this);
-   */
-  if( !_canLog ){
-    return;
-  }
-  // Remove first argument
-  var args = Array.prototype.slice.apply(arguments, [1]);
-  // Prepend timestamp
-  var dt = new Date();
-  var tag = dt.getHours()+":"+dt.getMinutes()+":"+dt.getSeconds()+"."+dt.getMilliseconds();
-  args[0] = tag + " - " + args[0];
-
-  try {
-    switch( mode ) {
-    case "info":
-      window.console.info.apply(window.console, args);
-      break;
-    case "warn":
-      window.console.warn.apply(window.console, args);
-      break;
-    default:
-      window.console.log.apply(window.console, args);
-      break;
-    }
-  } catch(e) {
-    if( !window.console ){
-      _canLog = false; // Permanently disable, when logging is not supported by the browser
-    }
-  }
-}
-
-function logMsg(msg) {
-  Array.prototype.unshift.apply(arguments, ["debug"]);
-  _log.apply(this, arguments);
-}
-
-
 // Forward declaration
 var getDynaTreePersistData = null;
 
