@@ -20,14 +20,27 @@ limitations under the License.
 
 package EnsEMBL::Web::Object::Gene;
 
-use Data::Dumper;
 use JSON;
 use EnsEMBL::Web::TmpFile::Text;
 use Compress::Zlib;
-use Data::Dumper;
 
 use strict;
-use previous qw(get_homology_matches);
+use previous qw(get_homology_matches availability);
+
+sub availability {
+  my $self = shift;
+  $self->PREV::availability(@_);
+  $self->{_availability}->{"has_interactions"} = $self->interaction_check;
+  return $self->{_availability};
+}
+
+sub interaction_check {
+  my $self = shift;
+  my $interactionsGenelist = $self->species_defs->get_config($self->species, 'INTERACTION_GENELIST');
+  my $gene = $self->gene->stable_id;
+  my $match = grep /$gene/, @$interactionsGenelist;
+  return $match ? 1 : 0;
+}
 
 sub get_go_list {
   my $self = shift ;
@@ -262,4 +275,18 @@ sub get_homology_matches {
   return $matches;
 }
 
+sub get_molecular_interactions {
+  my ($self, $gene_id) = @_;
+  my $hub = $self->hub;
+  my $mol_int_url = $SiteDefs::MOLECULAR_INTERACTIONS_URL . '/display_by_gene';
+
+  my $rest = EnsEMBL::Web::REST->new($hub, $mol_int_url);
+
+  my ($ref, $error) = $rest->fetch($gene_id);
+
+  if($error) {
+    return {};
+  }
+  return $ref;
+}
 1;
