@@ -46,8 +46,6 @@ Ensembl.Panel.Interaction = Ensembl.Panel.extend({
 
     var speciesMetadata = this.elLk.intr_metadata.species;
     var otherMetadata = this.elLk.intr_metadata.other;
-    console.log(speciesMetadata)
-
 
     speciesMetadata.forEach((md, i) => {
       var ele = this.elLk.speciesRows[i];
@@ -60,7 +58,6 @@ Ensembl.Panel.Interaction = Ensembl.Panel.extend({
       $(ele).after('<tr class="metarow"  style="background-color:#eee"><td colspan="10">' + metahtml + '</td></tr>')
     });
 
-    console.log(otherMetadata)
     otherMetadata && otherMetadata.forEach((md, i) => {
       var ele = this.elLk.otherRows[i]
       var metahtml = '<div class="meta">'
