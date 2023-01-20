@@ -44,15 +44,17 @@ Ensembl.Panel.Interaction = Ensembl.Panel.extend({
       return;
     }
 
-    var speciesMetadata = this.elLk.intr_metadata.species;
-    var otherMetadata = this.elLk.intr_metadata.other;
+    const speciesMetadata = this.elLk.intr_metadata.species;
+    const otherMetadata = this.elLk.intr_metadata.other;
+    var ele, label, value, metahtml;
 
     speciesMetadata.forEach((md, i) => {
-      var ele = this.elLk.speciesRows[i];
-      console.log(md)
-      var metahtml = '<div class="meta">'
+      ele = this.elLk.speciesRows[i];
+      metahtml = '<div class="meta">'
       md.forEach((meta) => {
-        metahtml += '<div><div class="label">' + meta.label + '</div><div class="value">' + meta.value + '</div></div>';
+        label = meta.label ? '<div class="label">' + meta.label + '</div>' : '';
+        value = meta.value ? '<div class="value"><p>' + meta.value + '</p></div>' : '';
+        metahtml += '<div>' + label + value + '</div>';
       });
       metahtml += '</div>'
       $(ele).after('<tr class="metarow"  style="background-color:#eee"><td colspan="10">' + metahtml + '</td></tr>')
