@@ -99,7 +99,7 @@ sub update_conf {
   $SiteDefs::Pathway              = 1; #enabling pathway widget
 
   # Molecular interaction REST API
-  $SiteDefs::MOLECULAR_INTERACTIONS_URL = 'http://wp-p2m2-18.ebi.ac.uk:8080';
+  $SiteDefs::MOLECULAR_INTERACTIONS_URL = 'https://interactions.rest.ensembl.org';
 
 }
 
