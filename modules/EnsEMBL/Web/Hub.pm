@@ -23,9 +23,6 @@ use warnings;
 use List::Util qw(min max);
 use previous qw(new);
 
-use EnsEMBL::Web::Tools::FailOver::MolInt;
-
-
 ## EG - set correct factory type for polyploid view
 sub new {
   my $self = shift->PREV::new(@_);
@@ -201,20 +198,5 @@ sub compara_species {
   return map {$_->name} @$genome_dbs;
 }
 ##
-
-
-# check to see if Molecular interactions site is up or down
-# if $out then site is up
-sub mol_int_status {
-  my $self = shift;
-  my $failover = EnsEMBL::Web::Tools::FailOver::MolInt->new($self);
-  my $out;
-  try {
-    $out = $failover->get_cached;
-  } catch {
-    warn "Molecular interactions failure";
-  };
-  return $out;
-}
 
 1;

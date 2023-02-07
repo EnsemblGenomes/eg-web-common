@@ -98,9 +98,6 @@ sub update_conf {
   $SiteDefs::ENSEMBL_REST_DOC_URL = '/info/data/rest.html';
   $SiteDefs::Pathway              = 1; #enabling pathway widget
 
-  # Molecular interaction REST API
-  $SiteDefs::MOLECULAR_INTERACTIONS_URL = 'https://interactions.rest.ensembl.org';
-
 }
 
 

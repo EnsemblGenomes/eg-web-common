@@ -23,44 +23,14 @@ no warnings qw(uninitialized);
 
 use LWP::UserAgent;
 
-use EnsEMBL::Web::File::Utils::URL qw(read_file);
-
 use previous qw(munge_config_tree);
 
 sub munge_config_tree {
   my $self = shift;
   $self->PREV::munge_config_tree(@_);
   $self->_configure_external_resources;
-  $self->_add_available_interactions;
 }
 
-sub _add_available_interactions {
-  my ($self) = @_;
-  my $data = '';
-  my $url = $SiteDefs::MOLECULAR_INTERACTIONS_URL . '/interactions_by_prodname/';
-  my $response = read_file($url,{
-                    nice => 1,
-                    no_exception => 1,
-                  });
-
-  if($response->{'error'}) {
-    warn "REST ERROR at $url\n";
-  }
-  else {
-    eval { $data = from_json($response->{'content'}); };
-    if ($@) {
-      warn "ERROR FROM REST SERVER: $@\n";
-      $data = '';
-    }
-  }
-
-  if ($data && $data ne '') {
-    foreach my $sp (keys %$data) {
-      $self->tree($sp)->{'INTERACTION_GENELIST'} = $data->{$sp};
-    }
-  }
-
-}
 sub _summarise_compara_alignments {
   ## EG - now done on the fly - too many alignments to put in configs 
 }
