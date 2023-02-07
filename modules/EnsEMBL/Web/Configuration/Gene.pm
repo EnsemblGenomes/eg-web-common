@@ -159,12 +159,6 @@ sub modify_tree {
     { 'availability'  => 'gene has_pathway' }
   );
   $gxa->after($pathway);
-  
-  my $int = $self->create_node('Interaction', 'Molecular interactions',
-    [qw( pathway EnsEMBL::Web::Component::Gene::Interaction )],
-    { 'availability'  => 'gene has_interactions' }
-  );
-  $pathway->after($int);
 }
 
 1;

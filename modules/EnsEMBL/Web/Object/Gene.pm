@@ -275,18 +275,4 @@ sub get_homology_matches {
   return $matches;
 }
 
-sub get_molecular_interactions {
-  my ($self, $gene_id) = @_;
-  my $hub = $self->hub;
-  my $mol_int_url = $SiteDefs::MOLECULAR_INTERACTIONS_URL . '/display_by_gene';
-
-  my $rest = EnsEMBL::Web::REST->new($hub, $mol_int_url);
-
-  my ($ref, $error) = $rest->fetch($gene_id);
-
-  if($error) {
-    return {};
-  }
-  return $ref;
-}
 1;
