@@ -148,6 +148,13 @@ sub populate_tree {
       )],
       { 'availability' => 1, 'concise' => 'Variant Effect Predictor results', 'no_menu_entry' => "$action/$function" ne 'VEP/Results' }
     ));
+
+    $vep_node->append($self->create_subnode('VEP/AFDB', "AlphaFold Predicted Model",
+      [qw(
+        afdb  EnsEMBL::Web::Component::VEP::AFDB
+      )],
+      { 'availability' => 1, 'concise' => 'AlphaFold Predicted Model', 'no_menu_entry' => "$action/$function" ne 'VEP/AFDB' }
+    ));
   }
 
   ## Assembly converter specific node (doesn't need results page, just a download of file from ticket details)
