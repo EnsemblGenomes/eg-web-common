@@ -19,6 +19,7 @@ limitations under the License.
 package EnsEMBL::Draw::GlyphSet::genetree_legend;
 
 use strict;
+use Data::Dumper;
 
 sub render_normal {
   my ($self) = @_;
@@ -34,7 +35,7 @@ sub render_normal {
   my $highlight_ancestor    = $self->{highlights}->[6];
 # EG highlight ontology terms
   my @ot_terms; 
-  foreach (@{$self->{highlights}->[8]||[]}) {     
+  foreach (split(';', $self->{highlights}->[8]||'')) {
     my ($term) = split(',',  $_);
     push @ot_terms, $term;
   } 
