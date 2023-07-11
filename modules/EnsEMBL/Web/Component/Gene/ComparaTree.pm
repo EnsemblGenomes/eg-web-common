@@ -280,14 +280,17 @@ sub content {
     my @highlight_tags             = split(',',$self->param('ht') || "");
     my $highlight_map = $self->get_highlight_map($cdb,$tree->tree);
     #my @compara_highlights; # not to be confused with COMPARA_HIGHLIGHTS list
+
+    my @ontology_terms = ();
     foreach my $ot_map (@$highlight_map){
       my $xref = $ot_map->{'xref'};
       if ( grep /^$xref$/, @highlight_tags ){
-        push (@highlights, 
+        push (@ontology_terms, 
           sprintf("%s,%s,%s", $xref, $ot_map->{'colour'}, join(',', @{$ot_map->{'members'}})) 
         );
       }
     }
+    push(@highlights, \@ontology_terms);
     #my $compara_highlights_str = join(';',@compara_highlights);
 
   my $image = $self->new_image($tree, $image_config, \@highlights);
