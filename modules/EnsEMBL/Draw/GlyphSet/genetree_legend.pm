@@ -34,7 +34,7 @@ sub render_normal {
   my $highlight_ancestor    = $self->{highlights}->[6];
 # EG highlight ontology terms
   my @ot_terms; 
-  foreach (@{$self->{highlights}->[8]||[]}) {     
+  foreach (@{$self->{highlights}->[8]||[]}) {
     my ($term) = split(',',  $_);
     push @ot_terms, $term;
   } 
