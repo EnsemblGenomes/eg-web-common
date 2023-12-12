@@ -76,7 +76,6 @@ sub content {
   
   @rows = ();
   
-  my $lookup = $species_defs->prodnames_to_urls_lookup;
   foreach my $species (sort { ($a =~ /^<.*?>(.+)/ ? $1 : $a) cmp ($b =~ /^<.*?>(.+)/ ? $1 : $b) } keys %homoeologue_list) {
     next if $skipped{$species};
     
@@ -88,7 +87,6 @@ sub content {
       my $homoeologue_desc = $homoeologue->{'homology_desc'};
 
       my $spp = $homoeologue->{'spp'};
-      $spp = $lookup->{$spp};
       my $link_url = $hub->url({
         species => $spp,
         action  => 'Summary',
@@ -169,7 +167,7 @@ sub content {
       });
 
       my $table_details = {
-        'Species'    => join('<br />(', split /\s*\(/, $species_defs->species_label($lookup->{$species})),
+        'Species'    => join('<br />(', split /\s*\(/, $species_defs->species_label($species)),
         'Type'       => $self->html_format ? glossary_helptip($hub, ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues").qq{<p class="top-margin"><a href="$tree_url">View Gene Tree</a></p>} : glossary_helptip($hub, ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues") ,
         'identifier' => $self->html_format ? $id_info : $stable_id,
         'Target %id' => qq{<span class="$target_class">}.sprintf('%.2f&nbsp;%%', $target).qq{</span>},
@@ -198,7 +196,7 @@ sub content {
       sprintf(
         '<p>%d homoeologues not shown in the table above from the following species. Use the "<strong>Configure this page</strong>" on the left to show them.<ul><li>%s</li></ul></p>',
         $count,
-        join "</li>\n<li>", sort map {$species_defs->species_label($lookup->{$_})." ($skipped{$_})"} keys %skipped
+        join "</li>\n<li>", sort map {$species_defs->species_label($_)." ($skipped{$_})"} keys %skipped
       )
     );
   }   
