@@ -321,7 +321,7 @@ sub content {
 ## EG
   $image->{'export_params'} = [['gene_name', $gene_name],['align', 'tree'],['cdb', $cdb]];
 ##
-  my @extra_params = qw(g1 anc collapse);
+  my @extra_params = qw(g1 anc collapse exons);
   foreach (@extra_params) {
     push @{$image->{'export_params'}}, [$_, $self->param($_)];
   }
