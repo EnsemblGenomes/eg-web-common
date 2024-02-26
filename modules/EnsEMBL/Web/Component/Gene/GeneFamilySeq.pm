@@ -46,18 +46,20 @@ sub content {
   my $family           = $family_adaptor->fetch_by_stable_id($gene_family_id);
   my @all_members      = @{ $family->get_all_Members };
   my $filtered_data    = $object->filtered_family_data($family);
-  my %filtered_members = map {$_->{id} => $_} @{$filtered_data->{members}};
+  my %filtered_members = map {$_->{species} . '|' . $_->{id} => $_} @{$filtered_data->{members}};
   my $html = '';
 
+  my $lookup = $species_defs->prodnames_to_urls_lookup;
   foreach my $member (@all_members) {
     my $member_id   = $member->stable_id;
-    my $member_data = $filtered_members{$member_id};
+    my $member_key  = $member->genome_db->name . '|' . $member_id;
+    my $member_data = $filtered_members{$member_key};
     next unless $member_data;
 
     my $sequence = $member->sequence;
     next unless $sequence;
 
-    my $title = join ' ', $member_id, $member_data->{description}, '('.$species_defs->species_display_label($member_data->{species}).')';
+    my $title = join ' ', $member_id, $member_data->{description}, '('.$species_defs->species_label($lookup->{$member_data->{species}}).')';
     $title   .= " (gene=$member_data->{name})" if $member_data->{name};
 
     if($format =~ /^text$/i){

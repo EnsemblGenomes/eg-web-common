@@ -91,11 +91,12 @@ sub content {
 
 ### EG Start 
 
+  my $lookup = $species_defs->prodnames_to_urls_lookup;
   if($self->format eq 'Excel'){
 
     my $excel_output = "Gene stable ID, Name, Discription, Taxon ID, Species \n";
     foreach my $member (@{$data->{members}}) {
-      $excel_output .= sprintf('"%s","%s","%s","%s","%s"',$member->{id},$member->{name},$member->{description},$member->{taxon_id},$species_defs->species_display_label($member->{species}));
+      $excel_output .= sprintf('"%s","%s","%s","%s","%s"',$member->{gene_id},$member->{name},$member->{description},$member->{taxon_id},$species_defs->species_label($lookup->{$member->{species}}));
       $excel_output .= "\n";
     }
     return $excel_output;
@@ -171,14 +172,14 @@ sub content {
   
   foreach my $member (@{$data->{members}}) {
 
-    my $species_path = '/' . $member->{species};
+    my $species_path = '/' . $lookup->{$member->{species}};
 
     $table->add_row({
-      id          => '<a href="' . $species_path. '/Gene/Summary?db=core;g=' . $member->{id} . '">' . $member->{id} . '</a>',
+      id          => '<a href="' . $species_path. '/Gene/Summary?db=core;g=' . $member->{gene_id} . '">' . $member->{gene_id} . '</a>',
       name        => $member->{name},
       taxon_id    => $member->{taxon_id},
       description => $member->{description},
-      species     => '<a href="' . $species_path . '">' . $species_defs->species_display_label($member->{species}) . '</a>',
+      species     => '<a href="' . $species_path . '">' . $species_defs->species_label($lookup->{$member->{species}}) . '</a>',
     });
 
     $member_count++;
