@@ -199,9 +199,9 @@ sub filtered_family_data {
   if(!@$members) {
     my $member_objs = $family->get_all_Members;
 
-    # API too slow, use raw SQL to get name and desc for all genes   
+    # API too slow, use raw SQL to get stable_id, name and desc for all genes
     my $gene_info = $self->database('compara')->dbc->db_handle->selectall_hashref(
-      'SELECT g.gene_member_id, g.display_label, g.description FROM family f 
+      'SELECT g.gene_member_id, g.stable_id, g.display_label, g.description FROM family f
        JOIN family_member fm USING (family_id) 
        JOIN seq_member s USING (seq_member_id) 
        JOIN gene_member g USING (gene_member_id) 
@@ -215,6 +215,7 @@ sub filtered_family_data {
       my $gene = $gene_info->{$member->gene_member_id};
       push (@$members, {
         name        => $gene->{display_label},
+        gene_id     => $gene->{stable_id},
         id          => $member->stable_id,
         taxon_id    => $member->taxon_id,
         description => $gene->{description},
