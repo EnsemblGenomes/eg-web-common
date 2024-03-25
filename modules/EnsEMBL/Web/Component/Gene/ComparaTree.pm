@@ -128,7 +128,16 @@ sub content {
     $current_gene_display_name = $hub->param('g');
   }
 
-  my $lookup = $sd->prodnames_to_urls_lookup;
+  my $lookup;
+  if ($cdb =~ /pan/) {
+    my $pan_info = $hub->species_defs->multi_val('PAN_COMPARA_LOOKUP');
+    foreach (keys %$pan_info) {
+      $lookup->{$_} = $pan_info->{$_}{'species_url'};
+    }
+  }
+  else {
+    $lookup = $sd->prodnames_to_urls_lookup;
+  }
   
   foreach my $this_leaf (@$leaves) {
     if ($gene_to_highlight && $this_leaf->gene_member->stable_id eq $gene_to_highlight) {
