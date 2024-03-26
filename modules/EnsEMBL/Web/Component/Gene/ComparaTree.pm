@@ -120,12 +120,27 @@ sub content {
 
   # store g1 param in a different param as $highlight_gene can be undef if highlighting is disabled
   my $gene_to_highlight = $hub->param('g1');
-  my $highlight_gene_display_label;
-  my $lookup = $sd->prodnames_to_urls_lookup;
+  my $current_gene_display_name;
+
+  if ($gene && defined $gene->Obj->display_xref) {
+    $current_gene_display_name = $gene->Obj->display_xref->display_id;
+  } else {
+    $current_gene_display_name = $hub->param('g');
+  }
+
+  my $lookup;
+  if ($cdb =~ /pan/) {
+    my $pan_info = $hub->species_defs->multi_val('PAN_COMPARA_LOOKUP');
+    foreach (keys %$pan_info) {
+      $lookup->{$_} = $pan_info->{$_}{'species_url'};
+    }
+  }
+  else {
+    $lookup = $sd->prodnames_to_urls_lookup;
+  }
   
   foreach my $this_leaf (@$leaves) {
     if ($gene_to_highlight && $this_leaf->gene_member->stable_id eq $gene_to_highlight) {
-      $highlight_gene_display_label = $this_leaf->gene_member->display_label || $gene_to_highlight;
       $highlight_species            = $lookup->{$this_leaf->gene_member->genome_db->name};
       $highlight_species_name       = $this_leaf->gene_member->genome_db->display_name;
       $highlight_genome_db_id       = $this_leaf->gene_member->genome_db_id;
@@ -145,7 +160,7 @@ sub content {
           sprintf(
             '<p>The <i>%s</i> %s gene, its paralogues, its orthologue in <i>%s</i>, and paralogues of the <i>%s</i> gene, have all been highlighted. <a href="#" class="switch_highlighting on">Click here to disable highlighting</a>.</p>',
             $sd->get_config($lookup->{$member->genome_db->name}, 'SPECIES_DISPLAY_NAME'),
-            $highlight_gene_display_label,
+            $current_gene_display_name,
             $sd->get_config($highlight_species, 'SPECIES_DISPLAY_NAME') || $highlight_species_name,
             $sd->get_config($highlight_species, 'SPECIES_DISPLAY_NAME') || $highlight_species_name
           )
@@ -168,7 +183,7 @@ sub content {
         sprintf(
           '<p>The <i>%s</i> %s gene and its paralogues are highlighted. <a href="#" class="switch_highlighting off">Click here to enable highlighting of %s homologues</a>.</p>',
           $sd->get_config($lookup->{$member->genome_db->name}, 'SPECIES_DISPLAY_NAME'),
-          $highlight_gene_display_label,
+          $current_gene_display_name,
           $sd->get_config($highlight_species, 'SPECIES_DISPLAY_NAME') || $highlight_species_name
         )
       );
