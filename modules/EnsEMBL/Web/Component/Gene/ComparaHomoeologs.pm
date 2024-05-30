@@ -43,6 +43,8 @@ sub content {
   my $species_defs = $hub->species_defs;
   my $cdb          = shift || $self->param('cdb') || 'compara';
   my $availability = $object->availability;
+  my $strain_url   = $hub->is_strain ? "Strain_" : "";
+  my $strain_param = $hub->is_strain ? ";strain=1" : ""; # initialize variable even if is_strain is false, to avoid warnings
 
   my @homoeologues = (
     $object->get_homology_matches('ENSEMBL_HOMOEOLOGUES', 'homoeolog', undef, $cdb), 
@@ -126,14 +128,14 @@ sub content {
           cdb     => $cdb,
         });
 
-        $alignment_link = sprintf '<a href="%s" class="_zmenu">View Sequence Alignments</a><a class="hidden _zmenu_link" href="%s"></a>', $page_url ,$zmenu_url;          
+        $alignment_link = sprintf '<a href="%s" class="_zmenu">View Sequence Alignments</a><a class="hidden _zmenu_link" href="%s%s"></a>', $page_url ,$zmenu_url, $strain_param;
         
         $alignview = 1;
       }       
 
       my $tree_url = $hub->url({
         type   => 'Gene',
-        action => 'Compara_Tree' . ($cdb =~ /pan/ ? '/pan_compara' : ''),
+        action => $strain_url . 'Compara_Tree' . ($cdb =~ /pan/ ? '/pan_compara' : ''),
         g1     => $stable_id,
         anc    => $homoeologue->{'gene_tree_node_id'},
         r      => undef

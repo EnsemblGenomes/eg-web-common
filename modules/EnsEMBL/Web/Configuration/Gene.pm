@@ -98,6 +98,32 @@ sub modify_tree {
         {'availability' => 'gene database:compara core has_homoeologs', 'no_menu_entry' => 1}
       )
     );
+
+    my $strain_paralog_node = $self->get_node('Strain_Compara_Paralog');
+    if ($strain_paralog_node) {
+      $strain_paralog_node->after(
+        $self->create_node(
+          'Strain_Compara_Homoeolog',
+          'Homoeologues',
+          [
+            qw(
+              paralogues EnsEMBL::Web::Component::Gene::ComparaHomoeologs
+              )
+          ],
+          {'availability' => 'gene database:compara core has_strain_homoeologs', 'concise' => 'Homoeologues'}
+        ),
+        $self->create_node(
+          'Strain_Compara_Homoeolog/Alignment',
+          'Homoeologue alignment',
+          [
+            qw(
+              alignment EnsEMBL::Web::Component::Gene::HomologAlignment
+              )
+          ],
+          {'availability' => 'gene database:compara core has_strain_homoeologs', 'no_menu_entry' => 1}
+        )
+      );
+    }
   }
 
 ##----------------------------------------------------------------------

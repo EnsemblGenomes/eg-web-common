@@ -50,7 +50,7 @@ sub count_alignments {
     my $hub           = $self->hub;
     my $seq_region    = $self->slice->seq_region_name;
 
-    if ($hub->species_defs->POLYPLOIDY) {
+    if ($hub->species_defs->POLYPLOIDY && $self->species_defs->HAS_INTRASPECIES_ALIGNMENTS) {
       my $gc = $hub->database('core')->get_adaptor('GenomeContainer');
       my @components = @{ $gc->get_genome_components };
       $c->{'patch'} = @components - 1;
