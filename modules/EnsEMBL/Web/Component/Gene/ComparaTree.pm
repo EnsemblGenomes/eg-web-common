@@ -30,6 +30,7 @@ sub content {
   my $sd          = $hub->species_defs;
   my $object      = $self->object || $self->hub->core_object('gene');
   my $is_genetree = $object && $object->isa('EnsEMBL::Web::Object::GeneTree') ? 1 : 0;
+  my $is_strain   = $hub->is_strain || $hub->param('strain') || $hub->action =~ /Strain_/;
   my ($gene, $member, $tree, $node, $test_tree);
 
   my $type   = $self->param('data_type') || $hub->type;
@@ -86,7 +87,7 @@ sub content {
   if (defined $parent) {
 
     if ($vc->get('super_tree') eq 'on' || $self->param('super_tree') eq 'on') {
-      my $super_url = $self->ajax_url('sub_supertree',{ cdb => $cdb, update_panel => undef });
+      my $super_url = $self->ajax_url('sub_supertree',{ cdb => $cdb, update_panel => undef, strain => $is_strain });
       $html .= qq(<div class="ajax"><input type="hidden" class="ajax_load" value="$super_url" /></div>);
     } else {
       $html .= $self->_info(
@@ -233,6 +234,7 @@ sub content {
     image_width     => $image_width,
     slice_number    => '1|1',
     cdb             => $cdb,
+    strain          => $is_strain,
     highlight_gene  => $highlight_gene
   });
   
