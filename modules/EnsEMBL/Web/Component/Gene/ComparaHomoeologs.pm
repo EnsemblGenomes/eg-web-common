@@ -150,13 +150,13 @@ sub content {
         $description   .= sprintf '[Source: %s; acc: %s]', $edb, $hub->get_ExtURL_link($acc, $edb, $acc) if $acc;
       }
       
-      my $id_info;
+      my @id_info_parts;
       if (!$homoeologue->{'display_id'} || $homoeologue->{'display_id'} eq 'Novel Ensembl prediction') {
-        $id_info = qq{<p class="space-below"><a href="$link_url">$stable_id</a></p>};
+        push(@id_info_parts, qq{<p class="space-below"><a href="$link_url">$stable_id</a></p>});
       } else {
-        $id_info = qq{<p class="space-below">$homoeologue->{'display_id'}&nbsp;&nbsp;<a href="$link_url">($stable_id)</a></p>};
+        push(@id_info_parts, qq{<p class="space-below">$homoeologue->{'display_id'}&nbsp;&nbsp;<a href="$link_url">($stable_id)</a></p>});
       }
-      $id_info .= qq{<p class="space-below">$region_link</p><p class="space-below">$alignment_link</p>};
+      push(@id_info_parts, (qq{<p class="space-below">$region_link</p>}, qq{<p class="space-below">$alignment_link</p>}));
 
       ##Location - split into elements to reduce horizonal space
       my $location_link = $hub->url({
@@ -168,10 +168,13 @@ sub content {
         __clear => 1
       });
 
+      my @homology_type_parts = (glossary_helptip($hub, ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues"));
+      push(@homology_type_parts, qq{<p class="top-margin"><a href="$tree_url">View Gene Tree</a></p>}) if $self->html_format;
+
       my $table_details = {
         'Species'    => join('<br />(', split /\s*\(/, $species_defs->species_label($species)),
-        'Type'       => $self->html_format ? glossary_helptip($hub, ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues").qq{<p class="top-margin"><a href="$tree_url">View Gene Tree</a></p>} : glossary_helptip($hub, ucfirst $homoeologue_desc, ucfirst "$homoeologue_desc homoeologues") ,
-        'identifier' => $self->html_format ? $id_info : $stable_id,
+        'Type'       => join(' ', @homology_type_parts),
+        'identifier' => $self->html_format ? join(' ', @id_info_parts) : $stable_id,
         'Target %id' => qq{<span class="$target_class">}.sprintf('%.2f&nbsp;%%', $target).qq{</span>},
         'Query %id'  => qq{<span class="$query_class">}.sprintf('%.2f&nbsp;%%', $query).qq{</span>},
       };      
