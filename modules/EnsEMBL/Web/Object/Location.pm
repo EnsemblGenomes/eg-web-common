@@ -35,7 +35,7 @@ sub counts {
   my $self = shift;
   $self->PREV::counts(@_);
   my $alignments = $self->count_alignments;
-  $self->{_counts}->{"alignments"} = $alignments->{pairwise};
+  $self->{_counts}->{"alignments"} = $alignments->{pairwise} + $alignments->{multi};
   $self->{_counts}->{"intraspecies_alignments"} = $alignments->{patch};
   return $self->{_counts};
 }
