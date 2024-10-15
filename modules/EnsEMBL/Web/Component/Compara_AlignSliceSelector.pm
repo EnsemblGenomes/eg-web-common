@@ -42,6 +42,8 @@ sub content {
   my $extra_inputs = join '', map qq(<input type="hidden" name="$_" value="$url->[1]{$_}" />), sort keys %{$url->[1] || {}};
   my $alignments   = $db_hash->{'DATABASE_COMPARA' . ($cdb =~ /pan_ensembl/ ? '_PAN_ENSEMBL' : '')}{'ALIGNMENTS'} || {}; # Get the compara database hash
 
+  $alignments = $self->_filter_alignments($alignments);
+
   my $species   = $hub->species;
   my $prodname  = $species_defs->SPECIES_PRODUCTION_NAME;
   my $lookup    = $species_defs->prodnames_to_urls_lookup;
@@ -112,6 +114,12 @@ sub content {
     $options,
     $extra_inputs
   );
+}
+
+sub _filter_alignments {
+  my ($self, $alignments) = @_;
+
+  return $alignments;
 }
 
 1;
