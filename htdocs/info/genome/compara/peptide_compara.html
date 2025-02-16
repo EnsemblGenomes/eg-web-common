@@ -17,23 +17,25 @@ the gene trees.</p>
 
 <p>For Ensembl Protists and Ensembl Fungi, one genome per species is included in the peptide 
 comparative analysis. The selection of this genome is based on prior inclusion in Ensembl Genomes, 
-or the date of its submission to INSDC. For Ensembl Bacteria, 108 important genomes are included 
+or the date of its submission to INSDC. For Ensembl Bacteria, 108 important genomes are included
 in the <a href="/info/genome/compara/pan_compara.html">pan-taxonomic comparative analysis</a>; 
 these are selected to provide one representative genome from any species which either features 
-in the curated <a href="http://www.uniprot.org/proteomes/?query=*&amp;fil=reference%3Ayes">reference proteome set</a> from <a href="http://www.uniprot.org/">UniProt</a>, or which has a high citation 
-rate in <a href="http://europepmc.org/">Europe PubMed Central</a>.</p>
+in the curated <a href="https://www.uniprot.org/proteomes?facets=proteome_type%3A1&query=%2A">reference proteome set</a> from <a href="https://www.uniprot.org/">UniProt</a>, or which has a high citation
+rate in <a href="https://europepmc.org/">Europe PubMed Central</a>.</p>
 
 <!--<p>We provide lists of the genomes in <a href="/info/genomes?field_peptide_alignments_value=1">division-specific</a> and <a href="/info/genomes?pan_compara=1">pan-taxonomic</a> peptide comparative analyses.</p>-->
 
-<h2>Orthologue QC</h2>
+<h2 id="orthologue_qc">Orthologue QC</h2>
 
 <p>A subset of orthologues are classified as a "high confidence" set. At a minimum, orthologous 
 proteins must have percentage identity above a certain threshold, currently set at 25% for all 
-species, and satisfy a <a href="/info/genome/compara/homology_method.html#homology_types">"tree-compliance" metric</a> that identifies orthologues inferred from dubious tree topologies.</p>
+species, and satisfy a <a
+href="https://www.ensembl.org/info/genome/compara/homology_types.html#betweenspeciesparalogues">
+"tree-compliance" metric</a> that identifies orthologues inferred from dubious tree topologies.</p>
 
 <p>For some species in Ensembl Metazoa, orthologue metrics have been calculated using two 
 orthogonal sources of information: gene order conservation (GOC) and whole genome alignments (WGA). 
-The <a href="http://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html">methodology is described in more detail elsewhere</a>, but briefly: The "GOC score" metric for a pair of orthologues 
+The <a href="/info/genome/compara/Ortholog_qc_manual.html">methodology is described in more detail elsewhere</a>, but briefly: The "GOC score" metric for a pair of orthologues
 measures whether the two genes up- and downstream of each gene in the orthologue pair are also 
 orthologous, and allows for inversions and gene insertions. The "WGA coverage" metric determines 
 the extent to which the orthologous regions have been aligned by pairwise genome alignments, 
@@ -51,7 +53,7 @@ WGA threshold is 50; no thresholds are applied beyond these clades.</p>
 <h2>Data Access</h2>
 
 <p>Interactive gene trees and homologue data can be accessed in the genome browser, and also with the <a href="/info/data/api.html">Perl API</a> and 
-<a href="http://rest.ensembl.org">REST</a> service. Data files are also made available via the 
+<a href="https://rest.ensembl.org">REST</a> service. Data files are also made available via the
 Ensembl Genomes <a href="/info/data/ftp/">FTP site</a>.</p>
 
 
