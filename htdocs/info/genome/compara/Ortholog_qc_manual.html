@@ -1,0 +1,127 @@
+<html>
+  <head>
+    <meta name="navigation" content="Comparative Genomics">
+    <title>Orthology quality-controls</title>
+  </head>
+  <body>
+
+    <h1>Orthology quality-controls</h1>
+
+    <p>We have two methods to provide quality scores for orthologue pairs:</p>
+
+    <ul>
+      <li><a href="#goc">Gene order conservation (GOC) score</a></li>
+      <li><a href="#wga">Whole genome alignment score</a></li>
+    </ul>
+
+    <p>
+      These methods are completely independent of each other and of the orthology inference itself.
+      The scores can be used to determine how likely it is that the orthologue pairs are real.
+    </p>
+
+    <h2 id="goc">Gene Order Conservation score</h2>
+
+    <p>
+      Genes that are descended from the same gene are likely to be part of a block of genes,
+      all in the same order, in both species. Some rearrangements between genes may occur over
+      time, particularly in distantly related species, but it is less likely that an isolated
+      gene which does not share gene neighbours with its inferred orthologue is a real orthologue.
+    </p>
+
+    <p>
+      The gene order conservation (GOC) score indicates how many of the four closest neighbours of a
+      gene match between orthologous pairs. It is calculated by following these steps:
+    </p>
+
+    <ol>
+      <li>Load all the predicted orthologues for a pair of species.</li>
+      <li>Separate the orthologues into their respective chromosomes.</li>
+      <li>Discard any orthologue that is by itself (usually in a scaffold). These orthologues automatically get a NULL score for having no neighbours.</li>
+      <li>Order the set of orthologues in each chromosome by their start positions on the chosen reference genome.</li>
+      <li>For each orthologous pair, fetch the two genes upstream and downstream.</li>
+      <li>Check whether they are also identified as orthologues and in the same orientation.</li>
+      <li>Each match is scored as 25%, meaning if all four neighbouring genes match that orthologue, it gets a GOC score of 100% for this reference genome.</li>
+      <li>Go back to step 4 and repeat using the alternative species as the reference genome.</li>
+      <li>Now we have two GOC scores for the pair of orthologues. We currently report the max of these scores.</li>
+    </ol>
+
+    <h3>Example comparison</h3>
+    <img style="width: 187px; height: 349px;" alt="ortholog_qc_goc"
+         src="/info/genome/compara/ortholog_qc_goc_thumb.png"
+         srcset="/info/genome/compara/ortholog_qc_goc_thumb.png 1x, /info/genome/compara/ortholog_qc_goc.png 2x" />
+
+    <p>Of the four neighbouring genes, three are orthologues and in conserved order and position, resulting in a GOC score of 75.</p>
+
+    <h2 id="wga">Whole Genome Alignment score</h2>
+    <p>
+      We assume that genes which are orthologous to each other will fall within genomic regions that can be aligned to one another.
+      Since we calculate pairwise whole genome alignments (WGA), we can use these to check the regions surrounding orthologues.
+    </p>
+
+    <p>
+      The whole genome alignment score calculates the coverage of the alignment over the orthologue pair, as follows:
+    </p>
+
+    <ol>
+      <li>
+        Exon boundaries are fetched for all genes in all species of interest.
+      </li>
+      <li>
+        The species are paired off and all alignments between each pair are detected.
+        All predicted orthologues between the pair are fetched and batched (default = 10).
+      </li>
+      <li>
+        The coverage over each member of the orthology is calculated using every available alignment.
+        Coverage over exons is regarded as a higher importance than intronic regions, so a weighted
+        score is generated. The score takes the coverage over exons as a base, with bonus points given
+        for coverage over the introns (normalised by the proportion of intronic sequence in the gene).
+      </li>
+      <li>
+        An overall score for the homology prediction, as a whole is computed. This can be defined as
+        the maximum score, after the score for the pair of genes has been averaged for each alignment
+        i.e. we report the average score for the greatest-coverage alignment.
+        </li>
+    </ol>
+
+    <h3>Example comparison</h3>
+
+    <img style="width: 470px; height: 274px;" alt="ortholog_qc_wga"
+         src="/info/genome/compara/ortholog_qc_wga_thumb.png"
+         srcset="/info/genome/compara/ortholog_qc_wga_thumb.png 1x, /info/genome/compara/ortholog_qc_wga.png 2x" />
+
+    <div class="info left-margin right-margin">
+      <h3>Availability</h3>
+      <div class="message-pad">
+        <p>This pipeline is run on all LastZ and EPO alignments available at the time the WGA coverage score is calculated.</p>
+      </div>
+    </div>
+
+    <h2 id="hc">High-confidence orthologies</h2>
+
+    <p>
+      Orthologue pairs may be tagged as high confidence if they meet certain thresholds for
+      these two measures as well as identity. The thresholds we use depend on the most-recent
+      common ancestor of the species pair. The orthologue pair must satisfy all the criteria
+      to be tagged as high confidence. In every orthology inference between two species, the
+      set of orthologue pairs between the species is considered for high-confidence annotation.
+      The GOC and WGA scores among others are used to determine which orthologies to tag as
+      being high-confidence.
+    </p>
+    <p>
+      The primary filter used to select the high-confidence set of orthologue pairs, consists
+      of three thresholds for respectively the GOC score, the WGA coverage and the percentage
+      identity of the orthologue pairs. The thresholds we use depend on the most recent common
+      ancestor of the species pair. The primary filter is used if there are scores of either
+      type (GOC or WGA) in the set of orthologues between the two species. The orthology between
+      two genes will be classified as high confidence if the alignment between the two genes
+      satisfies the percentage identity requirement and either GOC or WGA scores meet their
+      thresholds.
+    </p>
+    <p>
+      If GOC or WGA scores are not available or if no threshold is used for a set of orthologues,
+      the pipeline will use fallback criteria, that is the prediction will be classified as high
+      confidence if the percentage identity meets the threshold and the prediction is tree compliant.
+    </p>
+
+  </body>
+</html>
