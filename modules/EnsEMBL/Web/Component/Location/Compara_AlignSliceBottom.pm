@@ -39,6 +39,15 @@ sub content {
 
   return $self->_error('Unknown alignment', '<p>The alignment you have selected does not exist in the current database.</p>') unless $align_details;
   
+  ## Check for wrong component in per-component polyploid alignments.
+  my $warning_box = $self->check_for_wrong_genome_component({
+    'cdb'   => $self->param('cdb') || 'compara',
+    'align' => $align,
+    'slice' => $object->slice,
+  });
+  return $warning_box if $warning_box;
+  ##
+
   my $primary_species = $hub->species; 
   my $prodname        = $species_defs->SPECIES_PRODUCTION_NAME;
   
@@ -62,6 +71,10 @@ sub content {
   my $lookup          = $species_defs->prodnames_to_urls_lookup;
   my (@images, $html);
   
+  if ($align_details->{'type'} eq 'CACTUS_DB') {
+    $html .= $self->show_scale_dependent_track_info_box($align_details);
+  }
+
   my ($caption_height,$caption_img_offset) = (0,-24);
   foreach (@$slices) {
     my $species      = $_->{'name'} eq 'Ancestral_sequences' ? 'Multi' : $lookup->{$_->{'name'}}; # Cheating: set species to Multi to stop errors due to invalid species.
