@@ -59,11 +59,13 @@ sub content {
     ));
   }
   
+  my $need_underlying_slices = !$self->has_image || $align_details->{'class'} eq 'GenomicAlignTree.ancestral_alignment';
   my $image_width     = $self->image_width;
   my $slice           = $object->slice;
   my ($slices)        = $object->get_slices({
                                               'slice' => $slice, 
                                               'align' => $align_params, 
+                                              'image' => !$need_underlying_slices,
                                               'species' => $primary_species
                         });
   my %aligned_species = map { $_->{'name'} => 1 } @$slices;
@@ -130,6 +132,7 @@ sub content {
   my ($alert_box, $error) = $self->check_for_align_problems({
                                 'align'   => $align, 
                                 'species' => $prodname, 
+                                'image'   => !$need_underlying_slices,
                                 'cdb'     => $self->param('cdb') || 'compara',
                                 });
 
