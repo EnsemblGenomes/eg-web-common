@@ -52,7 +52,7 @@ sub multi_table {
     [
       {
       database => qq{<strong>Pan_compara Multi-species</strong>},
-      mysql   => qq{<a rel="external" title="$title{pan}" href="$ftp/pan_ensembl/release-$rel/mysql/$pan_compara/">MySQL</a>},
+      mysql   => qq{<a rel="external" title="$title{pan}" href="$ftp/release-$rel/pan/mysql/$pan_compara/">MySQL</a>},
       emf     => qq{<a rel="external" title="$title{emf}" href="$ftp/release-$rel/pan/emf/ensembl-compara/homologies">EMF</a>},
       tsv     => qq{<a rel="external" title="$title{tsv}" href="$ftp/release-$rel/pan/tsv/ensembl-compara/homologies">TSV</a>},
       xml     => qq{<a rel="external" title="$title{xml}" href="$ftp/release-$rel/pan/xml/ensembl-compara/homologies">XML</a>}
