@@ -44,15 +44,13 @@ sub get_details {
 
   return (undef, '<strong>Gene is not in the compara database</strong>') unless $member;
 
-  my $test_tree = $object->get_SpeciesTree($cdb);
-  
   my $tree = $object->get_GeneTree($cdb);
   return (undef, '<strong>Gene is not in a compara tree</strong>') unless $tree;
 
   my $node = $tree->get_leaf_by_Member($member);
   return (undef, '<strong>Gene is not in the compara tree</strong>') unless $node;
 
-  return ($member, $tree, $node, $test_tree);
+  return ($member, $tree, $node);
 }
 
 sub content {
@@ -61,14 +59,14 @@ sub content {
   my $hub         = $self->hub;
   my $object      = $self->object;
   my $is_genetree = $object->isa('EnsEMBL::Web::Object::GeneTree') ? 1 : 0;
-  my ($gene, $member, $tree, $node, $test_tree);
+  my ($gene, $member, $tree, $node);
 
   if ($is_genetree) {
     $tree   = $object->Obj;
     $member = undef;
   } else {
     $gene = $object;
-    ($member, $tree, $node, $test_tree) = $self->get_details($cdb);
+    ($member, $tree, $node) = $self->get_details($cdb);
   }
 
   return $tree . $self->genomic_alignment_links($cdb) if $self->param('g') && !$is_genetree && !defined $member;
