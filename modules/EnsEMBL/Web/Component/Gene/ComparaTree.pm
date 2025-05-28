@@ -31,7 +31,7 @@ sub content {
   my $object      = $self->object || $self->hub->core_object('gene');
   my $is_genetree = $object && $object->isa('EnsEMBL::Web::Object::GeneTree') ? 1 : 0;
   my $is_strain   = $hub->is_strain || $hub->param('strain') || $hub->action =~ /Strain_/;
-  my ($gene, $member, $tree, $node, $test_tree);
+  my ($gene, $member, $tree, $node);
 
   my $type   = $self->param('data_type') || $hub->type;
   my $vc = $self->viewconfig($type);
@@ -45,7 +45,7 @@ sub content {
     $member = undef;
   } else {
     $gene = $object;
-    ($member, $tree, $node, $test_tree) = $self->get_details($cdb);
+    ($member, $tree, $node) = $self->get_details($cdb);
   }
 
   return $tree . $self->genomic_alignment_links($cdb) if $self->param('g') && !$is_genetree && !defined $member;
