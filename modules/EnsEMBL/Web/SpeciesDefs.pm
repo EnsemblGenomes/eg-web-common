@@ -61,6 +61,8 @@ sub abbreviated_species_label {
   my $label = $self->species_label($species, 'no_formatting');
 
   if (length $label > $threshold) {
+    my $identifying_prefix = $self->_extract_identifying_prefix($label);
+    $label = $identifying_prefix if defined $identifying_prefix;
     my @words = split /\s/, $label;
     if (@words == 2) {
       $label = substr($words[0], 0, 1) . '. ' . $words[1];
@@ -72,6 +74,8 @@ sub abbreviated_species_label {
   return $label;
 }
 ##
+
+sub _extract_identifying_prefix {}  # method stub used only in specific NV divisions
 
 sub _load_in_taxonomy_division {}
 
