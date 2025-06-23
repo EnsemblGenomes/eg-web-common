@@ -53,6 +53,7 @@ sub content {
   my $leaves               = $tree->get_all_leaves;
   my $tree_stable_id       = $tree->tree->stable_id;
   my $highlight_gene       = $hub->param('g1');
+  my $highlight_species_url = $hub->param('s1');
   my $highlight_status     = $hub->get_cookie_value('gene_tree_highlighting') || 'on'; # get the the highlight switch status from the cookie
   my $highlight_ancestor   = $self->param('anc');
 
@@ -141,7 +142,9 @@ sub content {
   }
   
   foreach my $this_leaf (@$leaves) {
-    if ($gene_to_highlight && $this_leaf->gene_member->stable_id eq $gene_to_highlight) {
+    if ($gene_to_highlight
+        && $this_leaf->gene_member->stable_id eq $gene_to_highlight
+        && $lookup->{$this_leaf->gene_member->genome_db->name} eq $highlight_species_url) {
       $highlight_species            = $lookup->{$this_leaf->gene_member->genome_db->name};
       $highlight_species_name       = $this_leaf->gene_member->genome_db->display_name;
       $highlight_genome_db_id       = $this_leaf->gene_member->genome_db_id;
@@ -174,7 +177,7 @@ sub content {
         unless ($hl_tree) {
             $hl_tree = $hl_adaptor->fetch_default_for_Member($hl_member);
         }
-        my $highlight_gene_tree_link = sprintf ' <a href="%s">%s</a>', $hub->url({ species => 'Multi', type => 'GeneTree', action => 'Image', gt => $hl_tree->stable_id, g1 => $highlight_gene, __clear => 1 }), $hl_tree->stable_id;
+        my $highlight_gene_tree_link = sprintf ' <a href="%s">%s</a>', $hub->url({ species => 'Multi', type => 'GeneTree', action => 'Image', gt => $hl_tree->stable_id, g1 => $highlight_gene, s1 => $highlight_species_url, __clear => 1 }), $hl_tree->stable_id;
         my $doc_link = '<a target="_blank" href="/info/genome/compara/super_trees.html">more</a>';
         $html .= $self->_warning('The requested gene is in a different Gene Tree', "<p>$highlight_gene is part of a different Gene Tree,  $highlight_gene_tree_link, 
                     than the one displayed here. Both are part of the same Super tree (find out $doc_link about Super trees)</p>");
@@ -215,8 +218,7 @@ sub content {
     foreach my $this_leaf (@$leaves) {
       my $genome_db_id = $this_leaf->genome_db_id;
       
-      next if $highlight_genome_db_id && $genome_db_id eq $highlight_genome_db_id;
-      next if $highlight_gene && $this_leaf->gene_member->stable_id eq $highlight_gene;
+      next if $highlight_genome_db_id && $genome_db_id eq $highlight_genome_db_id;  # this should also skip $highlight_gene
       next if $member && $genome_db_id == $member->genome_db_id;
       
       if ($hidden_genome_db_ids{$genome_db_id}) {
@@ -338,7 +340,7 @@ sub content {
 ## EG
   $image->{'export_params'} = [['gene_name', $gene_name],['align', 'tree'],['cdb', $cdb]];
 ##
-  my @extra_params = qw(g1 anc collapse exons);
+  my @extra_params = qw(g1 s1 anc collapse exons);
   foreach (@extra_params) {
     push @{$image->{'export_params'}}, [$_, $self->param($_)];
   }
@@ -352,15 +354,15 @@ sub content {
 
   $image->set_button('drag', 'title' => 'Drag to select region');
 # EG include the ht param
-  my $default_view_url = $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_gene, g1 => $highlight_gene });
+  my $default_view_url = $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_gene, g1 => $highlight_gene, s1 => $highlight_species_url });
 
   if ($gene) {
     push @view_links, sprintf '<li><a href="%s">%s</a> (Default) </li>', $default_view_url, $highlight_gene ? 'View current genes only' : 'View current gene only';
-    push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_para || undef, g1 => $highlight_gene }), $highlight_gene ? 'View paralogues of current genes' : 'View paralogues of current gene';
+    push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_para || undef, g1 => $highlight_gene, s1 => $highlight_species_url }), $highlight_gene ? 'View paralogues of current genes' : 'View paralogues of current gene';
   }
   
-  push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_dups, g1 => $highlight_gene }), 'View all duplication nodes';
-  push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => 'none', g1 => $highlight_gene }), 'View fully expanded tree';
+  push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => $collapsed_to_dups, g1 => $highlight_gene, s1 => $highlight_species_url }), 'View all duplication nodes';
+  push @view_links, sprintf $li_tmpl, $hub->url({ $self->param('ht') ? (ht => $self->param('ht')) : (), collapse => 'none', g1 => $highlight_gene, s1 => $highlight_species_url }), 'View fully expanded tree';
   push @view_links, sprintf $li_tmpl, '#', 'Switch off highlighting' if $highlight_gene;
 # /EG
 
@@ -369,7 +371,7 @@ sub content {
     my $selected_rank = $self->param('gtr') || '';
     foreach my $rank (qw(species genus family order class phylum kingdom)) {
       my $collapsed_to_rank = $self->collapsed_nodes($tree, $node, "rank_$rank", $highlight_genome_db_id, $highlight_gene);
-      push @rank_options, sprintf qq{<option value="%s" %s>%s</option>\n}, $hub->url({ collapse => $collapsed_to_rank, g1 => $highlight_gene, gtr => $rank }), $rank eq $selected_rank ? 'selected' : '', ucfirst $rank;
+      push @rank_options, sprintf qq{<option value="%s" %s>%s</option>\n}, $hub->url({ collapse => $collapsed_to_rank, g1 => $highlight_gene, s1 => $highlight_species_url, gtr => $rank }), $rank eq $selected_rank ? 'selected' : '', ucfirst $rank;
     }
     push @view_links, sprintf qq{<li>Collapse all the nodes at the taxonomic rank <select onchange="Ensembl.redirect(this.value)">%s</select></li>}, join("\n", @rank_options) if(!$self->is_strain);
   }
