@@ -182,7 +182,7 @@ sub content {
         }
         my $highlight_gene_tree_link = sprintf ' <a href="%s">%s</a>', $hub->url({ species => 'Multi', type => 'GeneTree', action => 'Image', gt => $hl_tree->stable_id, g1 => $highlight_gene, s1 => $highlight_species_url, __clear => 1 }), $hl_tree->stable_id;
         my $doc_link = '<a target="_blank" href="/info/genome/compara/super_trees.html">more</a>';
-        $html .= $self->_warning('The requested gene is in a different Gene Tree', "<p>$highlight_gene is part of a different Gene Tree,  $highlight_gene_tree_link,
+        $html .= $self->_warning('The requested gene is in a different Gene Tree', "<p>$highlight_gene is part of a different Gene Tree,  $highlight_gene_tree_link, 
                     than the one displayed here. Both are part of the same Super tree (find out $doc_link about Super trees)</p>");
       }
     } else {
