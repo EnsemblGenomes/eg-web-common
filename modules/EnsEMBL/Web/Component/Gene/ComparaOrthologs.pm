@@ -28,6 +28,7 @@ sub species_set_config {
   my $set_order       = [];
   my $species_sets    = {};
   my $is_pan          = $cdb =~/compara_pan_ensembl/;
+  my $is_strain_view  = $self->hub->action =~ /^Strain_/;
 
   if ($is_pan) {
     $set_order    = [qw(all vertebrates metazoa plants fungi protists bacteria archaea)];
@@ -49,14 +50,12 @@ sub species_set_config {
 
     ## Work out the species sets from taxonomic groups
 
-    my $compara_spp = $species_defs->multi_hash->{'DATABASE_COMPARA'}{'COMPARA_SPECIES'};
+    my $compara_spp = EnsEMBL::Web::Utils::Compara::orthoset_prod_names($self->hub, $cdb, $is_strain_view);
     my $lookup      = $species_defs->prodnames_to_urls_lookup;
 
-    foreach my $prod_name (keys %$compara_spp) {
+    foreach my $prod_name (@$compara_spp) {
 
-      next if $prod_name eq 'ancestral_sequences';
       my $species = $lookup->{$prod_name};
-      next unless $species;
       my $group   = $species_defs->get_config($species, 'SPECIES_GROUP') || 'Undefined';
 
       if (!exists $species_sets->{$group}){

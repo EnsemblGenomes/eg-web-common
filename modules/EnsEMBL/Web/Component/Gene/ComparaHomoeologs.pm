@@ -43,8 +43,9 @@ sub content {
   my $species_defs = $hub->species_defs;
   my $cdb          = shift || $self->param('cdb') || 'compara';
   my $availability = $object->availability;
-  my $strain_url   = $hub->is_strain ? "Strain_" : "";
-  my $strain_param = $hub->is_strain ? ";strain=1" : ""; # initialize variable even if is_strain is false, to avoid warnings
+  my $is_strain_view = $hub->action =~ /^Strain_/;
+  my $strain_url   = $is_strain_view ? "Strain_" : "";
+  my $strain_param = $is_strain_view ? ";strain=1" : ""; # initialize variable even if is_strain_view is false, to avoid warnings
 
   my @homoeologues = (
     $object->get_homology_matches('ENSEMBL_HOMOEOLOGUES', 'homoeolog', undef, $cdb), 

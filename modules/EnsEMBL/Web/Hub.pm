@@ -183,7 +183,7 @@ sub intra_species_alignments {
 }
 
 ## EG - get species list from compara db (ENSEMBL-4604, ENSEMBL-4584)
-sub compara_species {
+sub compara_species {  # not in use as of 2025-06
   my $self       = shift;
   my $function   = $self->function;
   
