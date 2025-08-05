@@ -1,0 +1,199 @@
+<html>
+<head>
+  <title>GeneTree stable ID</title>
+</head>
+
+<body>
+
+<h1>GeneTree stable IDs in Compara</h1>
+
+<p>
+We provide stable IDs for some gene trees. These IDs are kept from one release to the other depending
+on the genes present in the Gene Tree. In particular, we do not rely on the underlying alignment,
+the tree structure or the resulting homologues to assign stable IDs to GeneTrees.
+</p>
+
+<h2 id="format">Format</h2>
+
+<p>The format of the stable IDs is <strong>ENSGTRRRRXXXXXXXXXX</strong>:</p>
+
+<ul>
+<li>
+Prefix <strong>ENSGT</strong> indicates that this is an Ensembl Vertebrates gene tree ID. Each row of the table
+below shows the Gene-Tree stable ID prefix associated with an Ensembl comparative genomics data resource.
+</li>
+
+<li><strong>RRRR</strong> corresponds to the Ensembl release number when the stable ID was first assigned.</li>
+
+<li><strong>XXXXXXXXXX</strong> is a unique number.</li>
+</ul>
+
+<p>For instance, ENSGT00560000077204 is a gene tree first described in Ensembl 56.</p>
+
+<h3>Ensembl GeneTree stable ID prefixes</h3>
+<table class="ss" style="width:auto">
+  <tr class="ss_header">
+    <th>Prefix</th>
+    <th>Comparative resource</th>
+  </tr>
+  <tr class="bg1">
+    <td>EFGT0</td>
+    <td>Fungi</td>
+  </tr>
+  <tr class="bg2">
+    <td>EGGT0</td>
+    <td>Pan-taxonomic compara</td>
+  </tr>
+  <tr class="bg1">
+    <td>EMGT0</td>
+    <td>Metazoa</td>
+  </tr>
+  <tr class="bg2">
+    <td>ENSGT</td>
+    <td>Vertebrates</td>
+  </tr>
+  <tr class="bg1">
+    <td>EPlGT</td>
+    <td>Plants</td>
+  </tr>
+  <tr class="bg2">
+    <td>EPrGT</td>
+    <td>Protists</td>
+  </tr>
+</table>
+
+<h2 id="Algorithm">Stable ID mapping</h2>
+
+<p>This is a generic description of the Stable ID mapping algorithm. We use it to track stable IDs from release to release, but we also use it to match Ensembl GeneTrees to TreeFam entries.
+</p>
+
+<p>
+The algorithm takes two different classification schemes (i.e. Gene-Trees from the current release and Gene-Trees from the forthcoming one)
+over a given set of members. It is assumed that the classifications are somehow related, i.e. they tend to group members similarly. One is
+called <b>"old"</b> and the other <b>"new"</b>, given an order of succession.
+</p>
+
+<p>
+The comparison requires a common namespace for the members used in
+both classifications.  The algorithm then infers how the names of the
+classes in two different classifications are related.
+To compare the Gene-Trees, we use the ENSEMBL translation stable_ids.
+</p>
+
+<p>
+With respect to the two given classifications, we have three kinds of members:
+</p>
+
+<ul>
+<li><b>SHARED</b> members (the ones present in both classifications)</li>
+<li><b>DISAPPEARING</b> members (the ones present only in the <b>"old"</b> classification)
+- e.g. for the GeneTrees, gene predictions or complete genomes that disappear in the next release</li>
+<li><b>NEWBORN</b> members (the ones present only in the <b>"new"</b> classification).
+- e.g. for the GeneTrees, new gene predictions or new complete genomes in the next release</li>
+</ul>
+
+<p>
+The relationship between classes is inferred from the <b>SHARED</b> members,
+but the other two kinds are also counted by the algorithm.
+</p>
+
+<p>
+The algorithm iterates through the <b>"new"</b> classes in the descending
+order of their sizes, trying to reuse a name of one of the <b>"old"</b>
+classes from where the <b>SHARED</b> members come to the <b>"new"</b> class, and
+make it the name of the <b>"new"</b> class, if it has not been taken yet.
+</p>
+
+<p>If 100% <b>SHARED</b> members of the <b>"old"</b> class become 100% <b>SHARED</b> members
+of the new class, we call this case an <b>EXACT</b> reuse.
+If there was only one <b>SHARED</b> member, we call it an <b>EXACT_o</b> for "orphan".
+</p>
+
+<p>Otherwise we have a split/join situation and iterate through the
+  "contributors" (the <b>"old"</b> classes from which the <b>SHARED</b> members come
+  from) in the decreasing order of the sizes of the shared parts.
+  This ordering ensures that both in cases of joins and splits we are
+  reusing the name of the biggest contributor.
+</p>
+
+
+<ul>
+<li>If the <b>"old"</b> class name of the first (the biggest) part has not yet
+  been taken, we take it and call this a <b>MAJORITY</b> reuse.  Due to the
+  ordering (and looking at the statistics) this type of name reuse
+  usually means that the <b>SHARED</b> majority of the biggest <b>"old"</b>
+  contributor becomes the <b>SHARED</b> majority of the <b>"new"</b> class.
+  If there was only one <b>SHARED</b> member, we call it a <b>MAJORITY_o</b> for
+  "orphan", although this will rarely happen.
+</li>
+
+<li>If the <b>"old"</b> class name of the first part has been taken, but one of
+  the other <b>"old"</b> class names is still available, we take it and call it a
+  <b>NEXTBEST</b> name.  (these classes are usually very small, because the
+  majority of the <b>SHARED</b> members participate in <b>EXACT/MAJORITY</b> cases).
+</li>
+
+<li>If a name could not have been reused, because all the <b>"old"</b>
+  contributor's names have been used, a completely new name is
+  generated and it is a <b>NEWNAME</b> case. This usually means we are dealing
+  with a split of a big class, where the majority has gone into a <b>MAJORITY</b>,
+  and the rest of it needs a new name. Again, if there was only one <b>SHARED</b>
+  member, we call it <b>NEWNAME_o</b>.
+</li>
+
+<li>Finally, if we have a <b>"new"</b> class that only contains <b>NEWBORN</b> members
+(meaning there were no <b>"old"</b> classes to reuse the names from), a
+new name is also generated, but this is a <b>NEWFAM</b> case. If the new class has only
+one (<b>NEWBORN</b>) member, it is a <b>NEWFAM_o</b> case.
+</li>
+</ul>
+
+<p>
+In this example diagram:
+</p>
+<p><img style="width: 637px; height: 574px;" alt="stable_id_mapping" src="/info/genome/compara/compara_stable_id_mapping.png" /></p>
+
+<ul>
+<li>D1 is an <b>EXACT</b> reuse (cyan contributor)</li>
+<li>A2 inherits the name from A1 according to the <b>MAJORITY</b> rule (light red contributor)</li>
+<li>B2 inherits the name from B1 (pink contributor), and C1 name disappears in the new classification and it is merged into B2 (light green).</li>
+<li>Z1 is created from <b>NEWBORN</b> members</li>
+<li>Y1 is an example of <b>NEWNAME</b> (yellow contributor)</li>
+</ul>
+<h2 id="Versioning">Versioning</h2>
+
+<p>
+A version increase indicates that the <b>SHARED</b> members have changed for
+that class. The version is kept the same if it is an <b>EXACT</b> reuse
+case. For example, in the GeneTrees:
+</p>
+
+<p>
+a) If a genetree with 50 members in release 56 turns into a genetree
+with 49+2 members in release 57, 49 being <b>SHARED</b> and 2 being <b>NEWBORN</b>,
+the version will change.
+</p>
+
+<p>
+b) If a genetree with 50 members in release 56 turns into a genetree
+with 48+2 members in release 57, 48 being <b>SHARED</b> and 2 being <b>NEWBORN</b>,
+the version will change, even though the total number of members is
+the same.
+</p>
+
+<p>
+c) If a genetree with 48+2 members in release 56 turns into a genetree
+with 48 members in release 57, 48 being <b>SHARED</b> and 2 being
+<b>DISAPPEARING</b> (e.g. updated genebuild that deletes some members), the
+version will be the same.
+</p>
+
+<p>
+d) If a genetree with 48+2 members in release 56 turns into a genetree
+with 48+3 members in release 57, 48 being <b>SHARED</b>, 2 being <b>DISAPPEARING</b>
+and 3 being <b>NEWBORN</b>, the version will be the same.
+</p>
+
+
+</body>
+</html>
