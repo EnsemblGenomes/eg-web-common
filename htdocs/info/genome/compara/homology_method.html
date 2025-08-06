@@ -1,7 +1,7 @@
 <html>
 <head>
 
-  <title>Protein trees and orthologies</title>
+  <title>Protein trees</title>
 
 
   <meta name="author" content="web" />
@@ -23,10 +23,10 @@ There is a clear concordance with reciprocal best approaches in the
 simple case of unique orthologous genes. However, the gene tree
 pipeline is able to find more complex one-to-many and many-to-many
 relations. This, for instance, significantly raises the number of Teleost
-(bony fish) to Mammal orthologs and has even more dramatic effects on
+(bony fish) to Mammal orthologues and has even more dramatic effects on
 Fly/Mammal or Worm/Mammal orthologous gene predictions. Using this
 approach, we are also able to "time" duplication events which produce
-paralogs by identifying the most recent common ancestor (i.e. taxonomy level) for a
+paralogues by identifying the most recent common ancestor (i.e. taxonomy level) for a
 given internal node of the tree.
 </p>
 
@@ -54,7 +54,7 @@ Please note that, primarily due to performance limitations, between-species para
 
 <li>Cluster the genes that did not have any match into additional families:
 <ol>
-<li>run NCBI Blast+ <a href="#fn1">[1]</a> (refined with SmithWaterman) on every orphaned gene against every other (both self and non-self species). We use the 
+<li>run NCBI Blast+ <a href="#fn1">[1]</a> (refined with SmithWaterman) on every orphaned gene against every other (both self and non-self species). We use the
 version 2.2.30, with the parameters: <code>-seg no -max_hsps_per_subject 1 -use_sw_tback -num_threads 1</code>.</li>
 
 <li>Build a sparse graph of gene relations based on Blast e-values and generate clusters using hcluster_sg <a href="#fn2">[2]</a>. Hcluster_sg has a little insight about the phylogeny of the species (namely: a list of outgroup species), which helps define pertinent clusters for the ingroup species. We use yeast (Saccharomyces cerevisiae) as an outgroup for the main protein trees collection (via the -C option) and the following command line arguments: <code>-m 750 -w 0 -s 0.34 -O</code>. See below for more details.</li>
@@ -87,8 +87,8 @@ obtained at this stage, reconciling it against a species tree inferred from the 
 hcluster_sg <a href="#fn2">[2]</a> performs hierarchical clustering under mean distance. It reads an input file that describes the similarity between two sequences, and groups two nearest nodes at each step. When two nodes are joined, the distance between the joined node and all the other nodes are updated by mean distance. This procedure is iterated until one of the three rules is met:
 </p>
 <ol>
-<li style="list-style-type: lower-alpha">Do not merge cluster A and B if the total number of edges between A and B is smaller than |A|*|B|/3, where |A| and |B| are the sizes of A and B, respectively. This rule guarantees each cluster is compact.</li>
-<li style="list-style-type: lower-alpha">Do not join A to any other cluster if |A| &lt; 500. This rule avoids huge clusters which may cause computational burden for multiple alignment and tree building as well.</li>
+    <li style="list-style-type: lower-alpha">Do not merge cluster A and B if the total number of edges between A and B is smaller than <code>|A|*|B|/3</code>, where <code>|A|</code> and <code>|B|</code> are the sizes of A and B, respectively. This rule guarantees each cluster is compact.</li>
+    <li style="list-style-type: lower-alpha">Do not join A to any other cluster if <code>|A| &lt; 500</code>. This rule avoids huge clusters which may cause computational burden for multiple alignment and tree building as well.</li>
 <li style="list-style-type: lower-alpha">Do not join A and B if both A and B contain outgroup genes. This rule tries to find ingroup gene families. TreeFam clustering is done with outgroups.</li>
 </ol>
 
@@ -158,7 +158,7 @@ The weights used in the graph are <kbd>MIN(100, ROUND(-LOG10(evalue)/2))</kbd>
 
 <li id="fn3">
 <a href="https://tcoffee.org/Projects/mcoffee/index.html">M-Coffee</a>:
-Wallace IM, O'Sullivan O, Higgins DG, Notredame C. "M-Coffee: combining multiple sequence alignment methods with T-Coffee." <a href="https://europepmc.org/articles/PMC1410914">Nucleic Acid Research. 2006 Mar 23;34(6):1692-9.</a><br/>
+Wallace IM, O'Sullivan O, Higgins DG, Notredame C., "M-Coffee: combining multiple sequence alignment methods with T-Coffee." <a href="https://europepmc.org/articles/PMC1410914">Nucleic Acid Research. 2006 Mar 23;34(6):1692-9.</a><br/>
 We use the version 9.03.r1318, with the aligner set: <kbd>mafftgins_msa, muscle_msa, kalign_msa, t_coffee_msa</kbd>
 </li>
 
