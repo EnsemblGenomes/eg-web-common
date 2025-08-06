@@ -97,17 +97,17 @@ Hcluster_sg also introduces an additional edge-breaking rule: removes an edge be
 </p>
 
 <p>
-As the pipeline has to be completed in time for the Ensembl releases, we limit the size of the clusters to 1500 genes.
+As the pipeline has to be completed in time for the Ensembl releases, we limit the size of the clusters to 1,500 genes.
 For larger clusters, we run Mafft <a href="#fn4">[4]</a> and QuickTree <a href="#fn6">[6]</a>.
 QuickTree is a very fast and efficient way to build an unrooted phylogenetic tree. We then find the branch that best splits the cluster into two halves.
-We recursively follow this approach until each sub-cluster is smaller than 1500 genes.
+We recursively follow this approach until each sub-cluster is smaller than 1,500 genes.
 </p>
 
 <h2 id="treebest">Tree building</h2>
 
 <p>The CDS
 back-translated protein alignment (i.e., codon alignment) is used to
-build 5 different trees (within TreeBeST <a href="#fn5">[5]</a>):</p>
+build five different trees (within TreeBeST <a href="#fn5">[5]</a>):</p>
 <ol class="lc-roman">
 <li>a maximum likelihood (ML) tree built, based on the protein alignment with the WAG model, which takes into account the species tree</li>
 <li>a ML tree built using phyml, based on the codon alignment with the Hasegawa-Kishino-Yano (HKY) model, also taking into account the species tree</li>
@@ -147,7 +147,7 @@ based on the DNA alignment, using phyml with the HKY model.</p>
 <ol>
 
 <li id="fn1">
-Camacho C et al,, "BLAST+: architecture and applications."  <a href="https://europepmc.org/articles/PMC2803857">BMC Bioinformatics. 2009 Dec 15;10:421.</a><br/>
+Camacho C et al., "BLAST+: architecture and applications."  <a href="https://europepmc.org/articles/PMC2803857">BMC Bioinformatics. 2009 Dec 15;10:421.</a><br/>
 We use the version 2.2.30, with the parameters: <kbd>-seg no -max_hsps_per_subject 1 -use_sw_tback -num_threads 1</kbd>
 </li>
 
