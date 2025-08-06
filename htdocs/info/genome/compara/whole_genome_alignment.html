@@ -8,26 +8,36 @@
 
 <h1>Whole genome alignment</h1>
 
-<p>Two types of pairwise genome alignment are available in Ensembl Genomes, based on LastZ <a href="#fn1">[1]</a>
-(or its predecessor BlastZ <a href="#fn2">[2]</a>) and translated BLAT (tBLAT) <a href="#fn3">[3]</a>. LastZ is typically used for
-closely related species, and tBLAT for more distant species. The method of alignment affects 
-the coverage of the genomes, with tBLAT expected to mostly find homologies in coding regions.</p>
 
-<p>The raw results from LastZ or tBLAT are alignment blocks, which are 'chained' according to their 
-location in both genomes, then 'netted' to choose the best sub-chain in each region for the 
-reference species <a href="#fn4">[4]</a>. The resultant <b>LastZ-net</b> and <b>tBLAT-net</b> alignments are displayed
+<p>Pairwise whole genome alignments can be used to determine conservation or differences between pairs of species, 
+or to match up regions between species, so as to study the same genomic region in multiple species.</p>
+
+<p><a href="https://www.bx.psu.edu/~rsharris/lastz/">LastZ</a> <a href="#fn1">[1]</a> is used to align the genome sequences at the DNA level.</p>
+
+<p>Genomes are compared to one another, for comparison between species, and to themselves, to identify paralogous regions. 
+In self-alignment analyses, the trivial alignments (i.e. regions against themselves) are removed, 
+such that only the paralogous regions remain.</p>
+
+<p>The actual whole-genome alignments are the results of post-processing the raw LastZ results. 
+In the first step, original blocks are chained according to their location in both genomes. 
+The netting process chooses for the reference species the best sub-chain in each region.</p>
+
+The resultant <b>LastZ-net</b> alignments are displayed
 in Ensembl Genomes for selected <a href="https://fungi.ensembl.org/info/genome/compara/compara_analyses.html">fungal</a>,
 <a href="https://metazoa.ensembl.org/info/genome/compara/compara_analyses.html">metazoan</a>,
 <a href="https://protists.ensembl.org/info/genome/compara/compara_analyses.html">protist</a> and
 <a href="https://plants.ensembl.org/info/genome/compara/compara_analyses.html">plant</a> species.</p>
 
+<p>These alignments are used to calculate <a href="/info/genome/compara/synteny.html">synteny</a> and for
+<a href="/info/genome/compara/Ortholog_qc_manual.html">scoring orthologue quality</a>.</p>
+
+<h2>Alignments available</h2>
+[[SCRIPT::EnsEMBL::Web::Document::HTML::Compara::draw_pairwise_alignment_list()]]
+
 <h2>References</h2>
 
 <ol>
   <li id="fn1"><a href="https://www.bx.psu.edu/~rsharris/lastz">Improved pairwise alignment of genomic DNA</a>. Harris RS. 2007. Ph.D. Thesis, The Pennsylvania State University.</li>
-  <li id="fn2"><a href="https://europepmc.org/abstract/MED/12529312">Human-mouse alignments with BLASTZ</a>. Schwartz S <em>et al</em>. 2003. Genome Research. 13(1):103-7.</li>
-  <li id="fn3"><a href="https://europepmc.org/abstract/MED/11932250">BLAT--the BLAST-like alignment tool</a>. Kent WJ. 2002. Genome Research. 12(4):656-64.</li>
-  <li id="fn4"><a href="https://europepmc.org/abstract/MED/14500911">Evolution's cauldron: duplication, deletion, and rearrangement in the mouse and human genomes</a>. Kent WJ <em>et al</em>. 2003. PNAS. 100(20):11484-9.</li>
 </ol>
 
 </body>
