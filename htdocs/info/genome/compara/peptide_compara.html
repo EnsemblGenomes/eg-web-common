@@ -11,13 +11,11 @@
 <p>Each Ensembl Genomes division, apart from Ensembl Bacteria, performs comparative analyses 
 at the peptide level, and an additional <a href="/info/genome/compara/pan_compara.html">pan-taxonomic comparative analysis</a> is performed for a set of representative species from across the 
 taxonomic space. In brief, the <a href="/info/genome/compara/homology_method.html">methodology</a> uses 
-peptide sequence alignments to cluster proteins, which are then aligned, and phylogenetic trees 
-are inferred from those alignments. Finally, lists of orthologues and paralogues are derived from 
+HMM sequence search (falling back to using peptide sequence alignment) to cluster proteins, which are then aligned, and phylogenetic trees
+are inferred from those alignments. Finally, lists of homologues of various types (e.g. orthologues, paralogues) are derived from
 the gene trees.</p>
 
-<p>For Ensembl Protists and Ensembl Fungi, one genome per species is included in the peptide 
-comparative analysis. The selection of this genome is based on prior inclusion in Ensembl Genomes, 
-or the date of its submission to INSDC. For Ensembl Bacteria, 108 important genomes are included
+<p>For Ensembl Bacteria, 108 important genomes are included
 in the <a href="/info/genome/compara/pan_compara.html">pan-taxonomic comparative analysis</a>; 
 these are selected to provide one representative genome from any species which either features 
 in the curated <a href="https://www.uniprot.org/proteomes?facets=proteome_type%3A1&query=%2A">reference proteome set</a> from <a href="https://www.uniprot.org/">UniProt</a>, or which has a high citation
@@ -27,28 +25,26 @@ rate in <a href="https://europepmc.org/">Europe PubMed Central</a>.</p>
 
 <h2 id="orthologue_qc">Orthologue QC</h2>
 
-<p>A subset of orthologues are classified as a "high confidence" set. At a minimum, orthologous 
+<p>A subset of orthologues are classified as a "high confidence" set. At a minimum, high-confidence orthologous
 proteins must have percentage identity above a certain threshold, currently set at 25% for all 
 species, and satisfy a <a
-href="https://www.ensembl.org/info/genome/compara/homology_types.html#betweenspeciesparalogues">
+href="/info/genome/compara/homology_types.html#betweenspeciesparalogues">
 "tree-compliance" metric</a> that identifies orthologues inferred from dubious tree topologies.</p>
 
-<p>For some species in Ensembl Metazoa, orthologue metrics have been calculated using two 
+<p>For some pairs of species, orthologue metrics have been calculated using two
 orthogonal sources of information: gene order conservation (GOC) and whole genome alignments (WGA). 
-The <a href="/info/genome/compara/Ortholog_qc_manual.html">methodology is described in more detail elsewhere</a>, but briefly: The "GOC score" metric for a pair of orthologues
+The <a href="/info/genome/compara/Ortholog_qc_manual.html">orthologue QC methodology</a> is described in more detail elsewhere, but briefly: The "GOC score" metric for a pair of orthologues
 measures whether the two genes up- and downstream of each gene in the orthologue pair are also 
-orthologous, and allows for inversions and gene insertions. The "WGA coverage" metric determines 
+orthologous, and accounts for inversions and gene insertions. The "WGA coverage" metric determines
 the extent to which the orthologous regions have been aligned by pairwise genome alignments, 
 primarily based on exonic coverage, with a small contribution from intronic coverage. Both metrics 
 have a value between 0 and 100.</p>
 
 <p>There is only an expectation for gene order conservation between species that are evolutionarily 
-close; thus the GOC score is only calculated within Diptera, Hymenoptera, and Nematoda. Similarly, 
+close; thus the GOC score is only calculated within selected taxonomic groups (e.g. Nematoda). Similarly,
 pairwise WGAs, and thus the related metric, are only available for a subset of fairly 
 closely-related species. To classify orthologues as "high confidence", thresholds are applied to 
-the orthologue metrics, according to the evolutionary distance between the species. Within 
-Aculeata, Caenorhabditis, Drosophila, and Onchocercidae the GOC threshold is 50 and the 
-WGA threshold is 50; no thresholds are applied beyond these clades.</p>
+the orthologue metrics, according to the evolutionary distance between the species.</p>
 
 <h2>Data Access</h2>
 
