@@ -52,13 +52,23 @@ sub content {
   });
 
   if ($ens_prot) {
+
+    my ($prot_summary_action, $prot_sequence_action);
+    if ($hub->species_defs->GENOMIC_UNIT eq 'bacteria') {
+      $prot_summary_action = sprintf('ProteinSummary_%s', $ens_prot->stable_id);
+      $prot_sequence_action = sprintf('Sequence_Protein_%s', $ens_prot->stable_id);
+    } else {
+      $prot_summary_action = 'ProteinSummary';
+      $prot_sequence_action = 'Sequence_Protein';
+    }
+
     $self->add_entry({
       type     => 'Protein',
       label    => 'Summary',
       position => 5,
       link     => $hub->url({
         type   => 'Transcript',
-        action => 'ProteinSummary',
+        action => $prot_summary_action,
         t      => $ens_tran->stable_id 
       })
     });
@@ -69,7 +79,7 @@ sub content {
       position => 6,
       link     => $hub->url({
         type   => 'Transcript',
-        action => 'Sequence_Protein',
+        action => $prot_sequence_action,
         t      => $ens_tran->stable_id 
       })
     });
