@@ -162,7 +162,7 @@ sub content {
       sorting => [ 'species asc' ], 
       class => 'no_col_toggle',
       data_table => 1, 
-      data_table_config => { iDisplayLength => 25, aLengthMenu => [[25, 50, 100, -1], [25, 50, 100, "All"]] },
+      data_table_config => { iDisplayLength => 25, aLengthMenu => [[25, 50, 100, 500], [25, 50, 100, 500]] },
     }
   );
 

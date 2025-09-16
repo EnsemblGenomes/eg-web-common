@@ -130,7 +130,7 @@ sub highlight_tags_table {
       ht => $hub->get_ExtURL_link($xref,$db_name,$xref),
       highlight => sprintf(qq{<input class="%04d_members update_genetree" %s type="radio" name="highlight_tag_selector" value="%s"/>%s},$count,$checked,$update_url,$text),
       description=> $desc,
-      options => {class => "type_any type_$db_name"},
+      options => {class => "all type_$db_name"},
     });
   }
   my $table = $self->new_table(
@@ -177,8 +177,15 @@ sub highlight_types_selector {
   my $meta = $self->dom->create_element('div', {class=>'ht_table', style=>''});
   my $form = $meta->append_child('div',{class=>sprintf('toggleable toggleTable_wrapper_no_margin %s', $hide ? 'hide':'')});
   $form->append_child('span',{inner_HTML=>'Show '});
-  for my $db_name (keys %types){
-    $form->append_child('input',{name=>'ht_table',class=>'table_filter',type=>'checkbox', checked=>1, value=>"type_$db_name"});
+
+  my @db_names = sort keys %types;
+  if (scalar @db_names > 0) {
+    $form->append_child('input',{name=>'ht_table',class=>'table_filter',type=>'checkbox', checked=>1, value=>'all'});
+    $form->append_child('label',{inner_HTML=>'All'});
+  }
+
+  for my $db_name (@db_names){
+    $form->append_child('input',{name=>'ht_table',class=>'table_filter',type=>'checkbox', value=>"type_$db_name"});
     $form->append_child('label',{inner_HTML=>sprintf("%s ",$db_name)});
   }
 
