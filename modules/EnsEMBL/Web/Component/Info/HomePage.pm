@@ -26,6 +26,7 @@ use EnsEMBL::Web::Document::HTML::HomeSearch;
 use EnsEMBL::Web::Document::HTML::Compara;
 use EnsEMBL::Web::Component::GenomicAlignments;
 use EnsEMBL::Web::Controller::SSI;
+use EnsEMBL::Web::Utils::Compara qw(get_sample_gene_tree_action);
 
 use LWP::UserAgent;
 use JSON;
@@ -371,12 +372,14 @@ sub _compara_text {
   my $html = '<div class="homepage-icon">';
   
   my $tree_text = $sample_data->{'GENE_TEXT'};
-  my $tree_url  = $species_defs->species_path . '/Gene/Compara_Tree?g=' . $sample_data->{'GENE_PARAM'};
+  my $tree_url;
 
   # EG genetree
+  my $compara_tree_action = EnsEMBL::Web::Utils::Compara::get_sample_gene_tree_action($hub, 'compara');
+  $tree_url  = sprintf('%s/Gene/%s?g=%s', $species_defs->species_path, $compara_tree_action, $sample_data->{'GENE_PARAM'});
   $html .= qq(
     <a class="nodeco _ht" href="$tree_url" title="Go to gene tree for $tree_text"><img src="${img_url}96/compara.png" class="bordered" /><span>Example gene tree</span></a>
-  ) if $self->has_compara('GeneTree');
+  ) if $compara_tree_action;
 
   # EG family
   if ($self->is_bacteria) {
@@ -388,8 +391,9 @@ sub _compara_text {
   #
 
   # EG pan tree
-  $tree_url = $species_defs->species_path . '/Gene/PanComparaTree?g=' . $sample_data->{'GENE_PARAM'};
-  if ($self->has_pan_compara('GeneTree')) {
+  my $pan_compara_tree_action = EnsEMBL::Web::Utils::Compara::get_sample_gene_tree_action($hub, 'compara_pan_ensembl');
+  if ($pan_compara_tree_action) {
+    $tree_url = sprintf('%s/Gene/%s?g=%s', $species_defs->species_path, $pan_compara_tree_action, $sample_data->{'GENE_PARAM'});
     $html .=
       $self->is_bacteria
       ? qq(<a class="nodeco _ht" href="$tree_url" title="Go to pan-taxonomic gene tree for $tree_text"><img src="${img_url}96/compara.png" class="bordered" /><span>Pan-taxonomic tree</span></a>)
