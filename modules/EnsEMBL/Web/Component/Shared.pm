@@ -226,10 +226,34 @@ sub species_stats {
       'name' => "<b>$header</b>",
       'stat' => $self->thousandify($genome_container->get_ref_length())
   });
-  $summary->add_row({
-      'name' => '<b>Genebuild by</b>',
-      'stat' => $sd->ANNOTATION_PROVIDER_NAME
-  });
+  if (my $annot_prov_name_config = $sd->ANNOTATION_PROVIDER_NAME) {
+    my $annot_prov_url_config = $sd->ANNOTATION_PROVIDER_URL;
+
+    my @annot_prov_names = ref $annot_prov_name_config eq 'ARRAY' ? @$annot_prov_name_config : ($annot_prov_name_config);
+    @annot_prov_names = grep { $_ } @annot_prov_names;  # drop empty meta values
+
+    my @annot_prov_urls = ref $annot_prov_url_config eq 'ARRAY' ? @$annot_prov_url_config : ($annot_prov_url_config);
+    @annot_prov_urls = grep { $_ } @annot_prov_urls;  # drop empty meta values
+
+    my @annot_prov_stats;
+    foreach my $annot_prov_name (@annot_prov_names) {
+      my $annot_prov_url = shift @annot_prov_urls;
+
+      my $annot_prov_stat = $annot_prov_url
+                          ? qq{<a href="$annot_prov_url">$annot_prov_name</a>}
+                          : $annot_prov_name
+                          ;
+
+      push @annot_prov_stats, $annot_prov_stat;
+    }
+
+    if (@annot_prov_stats) {
+      $summary->add_row({
+        'name' => '<b>Genebuild by</b>',
+        'stat' => join ', ', @annot_prov_stats,
+      });
+    }
+  }
   my @A         = @{$meta_container->list_value_by_key('genebuild.method')};
   my $method  = ucfirst($A[0]) || '';
   $method     =~ s/_/ /g;
