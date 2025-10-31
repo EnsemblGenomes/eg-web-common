@@ -13,7 +13,7 @@
 <p>MySQL databases are also used by the <a href="/info/data/biomart">BioMart</a> data warehouse 
 interface, although we recommend that you use the web interface to access data in BioMart, as 
 the mart schema contains many tables of denormalised data. Data can also be retrieved from 
-BioMart programmatically, using the <a href="http://www.biomart.org/martservice.html">XML-based martservice</a>.</p>
+BioMart programmatically, using the <a href="/biomart/martview">martview web interface</a>.</p>
 
 <h2>Public MySQL Servers</h2>
 
@@ -90,7 +90,7 @@ can be used in conjuction with the <a href="http://www.ensembl.org/info/data/mys
   <li>ensembl_version is the version of the Ensembl schema/API used</li>
 </ul>
 
-<p>The terminal number (which usually represents the assembly version) has no significance in this context. For the majority of genomes, there is no significance to which databases contain which genomes, but any new genomes are added to the last database in the list by db_number (or a new database with the next value of db_name if that has more than 250 genomes). However, genomes used in pan compara, which typically are references for key species, are found in collection bacteria_0. For this reason, users are strongly recommended to use the <a href="/info/access/eg_api">Ensembl Genomes API</a> to access Ensembl Bacteria.</p>
+<p>The terminal number (which usually represents the assembly version) has no significance in this context. For the majority of genomes, there is no significance to which databases contain which genomes, but any new genomes are added to the last database in the list by db_number (or a new database with the next value of db_name if that has more than 250 genomes). However, genomes used in pan compara, which typically are references for key species, are found in collection bacteria_0. For this reason, users are strongly recommended to use the <a href="/info/data/eg_api.html">Ensembl Genomes API</a> to access Ensembl Bacteria.</p>
 
 <p>For Ensembl Fungi and Protists, from release 27 onwards, a large proportion of genomes are stored in collection databases in a similar way to bacteria, following the pattern fungi|protists_&lt;collection_name&gt;_collection_&lt;eg_version&gt;_&lt;ensembl_version&gt;_1. The naming convention is above, except the collection name is based on taxonomic grouping e.g. fungi_ascomycota1_collection_core_27_80_1 is the first database containing genomes from Ascomycota.</p>
 
