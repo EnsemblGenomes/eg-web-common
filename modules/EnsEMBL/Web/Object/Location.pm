@@ -77,6 +77,7 @@ sub chr_short_name {
   
   my $short_names = { 
     chromosome => 'Chr.', 
+    scaffold => 'Scaf.',
     supercontig => q{S'ctg}, 
     plasmid => 'Pla.'
   };
@@ -90,6 +91,8 @@ sub chr_short_name {
   elsif($sr_name !~ /^$cs_name/i) {
     $cs_name = $short_names->{lc $cs_name} || ucfirst $cs_name;
     $slice_name = "$cs_name $sr_name";
+  } else {  # We should ensure there is a slice name
+    $slice_name = $sr_name;
   }
   
   my $abbreviated_name;
