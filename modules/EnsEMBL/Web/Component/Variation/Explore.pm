@@ -92,21 +92,6 @@ sub content {
     {'title' => 'Citations',                                          'img' => '96/var_citations.png',              'url' => $cit_url,      'count' => $cit_count   },
   );
 
-## EG - show icon and link for AG1000 browser (ported from VectorBase)
-  if ($hub->species eq 'Anopheles_gambiae' and $hub->param('vf')) {
-    my $vf = $variation->get_VariationFeature_by_dbID($hub->param('vf'));
-    if ($vf) {
-
-      my $link      = 'http://www.malariagen.net/apps/ag1000g/phase1-AR3/index.html?genome_region=%s#genomebrowser';
-      my $vf_region = sprintf '%s:%s-%s', $vf->seq_region_name, $vf->seq_region_start, $vf->seq_region_end;
-
-      push @buttons, (
-        {'title' => 'Ag1000G variant locus', 'img' => '96/var_variant_ag1000g.png',  'url' => sprintf($link, $vf_region),       'target' => '_blank' },
-      );
-    }
-  }
-##
-
   my $html = $self->button_portal(\@buttons);
 
   ## Variation documentation links
