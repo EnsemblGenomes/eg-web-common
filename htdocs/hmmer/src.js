@@ -20176,7 +20176,7 @@ Used to build the taxonomy filter for Hmmerweb
         node.append(this.checkbox);
         var label = $("<label>").attr('for', cb_id).append($('<span>').addClass('check_image'));
         var tooltip_data = this.long_name +
-          ' (taxid:<a class="ext" title="Link to taxonomy browser on NCBI site" href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=' +
+          ' (taxid:<a class="ext" title="Link to taxonomy browser on NCBI site" href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=' +
           this.ncbi + '">' +
           this.ncbi+'</a>)';
         node_name =  $('<span>').addClass("nodeName").html(this.short_name);

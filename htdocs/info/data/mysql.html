@@ -8,7 +8,7 @@
 
 <h1>The Ensembl Genomes public MySQL Servers</h1>
 
-<p>Ensembl Genomes and the Ensembl software platform use the <a href="http://www.mysql.com">MySQL</a> relational database management system to store data. MySQL databases are used by the web browser and <a href="https://rest.ensembl.org">REST service</a>, and can be used with the <a href="/info/data/api.html">Ensembl Perl API</a> or directly with a MySQL client (see below). The schema used by the Ensembl platform are described in the <a href="/info/docs/api/index.html">Ensembl API documentation</a>.</p>
+<p>Ensembl Genomes and the Ensembl software platform use the <a href="https://www.mysql.com">MySQL</a> relational database management system to store data. MySQL databases are used by the web browser and <a href="https://rest.ensembl.org">REST service</a>, and can be used with the <a href="/info/data/api.html">Ensembl Perl API</a> or directly with a MySQL client (see below). The schema used by the Ensembl platform are described in the <a href="/info/docs/api/index.html">Ensembl API documentation</a>.</p>
 
 <p>MySQL databases are also used by the BioMart data warehouse 
 interface, although we recommend that you use the web interface to access data in BioMart, as 
@@ -19,7 +19,7 @@ BioMart programmatically, using the <a href="/biomart/martview">martview web int
 
 <p>Ensembl Genomes operates a MySQL server for public use which contains all databases from the 
 last 10 Ensembl Genomes releases, including those used for the BioMart interface. This server 
-can be used in conjuction with the <a href="http://www.ensembl.org/info/data/mysql.html">Ensembl public MySQL servers</a> (though Ensembl Genomes do not currently offer any mirror servers). Details of Ensembl and Ensembl Genomes servers are shown below, and all servers can be accessed using the user 'anonymous' (no password required): </p>
+can be used in conjuction with the <a href="https://www.ensembl.org/info/data/mysql.html">Ensembl public MySQL servers</a> (though Ensembl Genomes do not currently offer any mirror servers). Details of Ensembl and Ensembl Genomes servers are shown below, and all servers can be accessed using the user 'anonymous' (no password required): </p>
 
 <table class="ss tint">
   <thead>
@@ -48,7 +48,7 @@ can be used in conjuction with the <a href="http://www.ensembl.org/info/data/mys
   </tbody>
 </table>
 
-<p><strong>Note:</strong> Ensembl Genomes and <a href="http://www.ensembl.org/info/data/mysql.html">Ensembl</a> MySQL servers are located at different URLs. Ensembl Genomes databases from all five divisions are located on the same server. Ensembl BioMart is on a different server. Not all MySQL instances use the default port, so please ensure that you specify the correct port when trying to connect!</p>
+<p><strong>Note:</strong> Ensembl Genomes and <a href="https://www.ensembl.org/info/data/mysql.html">Ensembl</a> MySQL servers are located at different URLs. Ensembl Genomes databases from all five divisions are located on the same server. Ensembl BioMart is on a different server. Not all MySQL instances use the default port, so please ensure that you specify the correct port when trying to connect!</p>
 
 <p>The MySQL server is provided 'as-is', though scheduled downtime will be publicised on the mailing lists and on the <a href="https://www.ensembl.info">Ensembl blog</a>. Please note that processes that use this service excessively to the detriment of other users may be terminated without warning to preserve the service functionality. For intensive use of this server, an alternative is to set up a local MySQL database with <a href="ftp/index.html">copies of Ensembl Genomes data</a>.</p>
 
@@ -75,7 +75,6 @@ can be used in conjuction with the <a href="http://www.ensembl.org/info/data/mys
 <ul>
   <li>core databases -  &lt;genus_species&gt;_core_&lt;eg_version&gt;_&lt;ensembl_version&gt;_&lt;assembly_version&gt;</li>
   <li>variation databases -  &lt;genus_species&gt;_variation_&lt;eg_version&gt;_&lt;ensembl_version&gt;_&lt;assembly_version&gt;</li>
-  <li>funcgen databases -  &lt;genus_species&gt;_funcgen_&lt;eg_version&gt;_&lt;ensembl_version&gt;_&lt;assembly_version&gt;</li>
   <li>compara databases -  ensembl_compara__&lt;eg_version&gt;_&lt;ensembl_version&gt;</li>
   <li>mart databases - _mart_&lt;eg_version&gt;, _seq_mart_&lt;eg_version&gt;, _snp_mart_&lt;eg_version&gt;</li>
 </ul>
@@ -107,7 +106,7 @@ join coord_system using (coord_system_id) join meta using (species_id)
 where meta_key="species.production_name" and meta_value="escherichia_coli_str_k_12_substr_mg1655"
 and biotype="protein_coding";</pre>
 
-<p>Given this, you are <strong>strongly</strong> recommended to use the <a href="http://rest.ensembl.org">REST service</a>, and <a href="/info/data/api.html">Ensembl Perl API</a> where possible.</p>
+<p>Given this, you are <strong>strongly</strong> recommended to use the <a href="https://rest.ensembl.org">REST service</a>, and <a href="/info/data/api.html">Ensembl Perl API</a> where possible.</p>
 
 </body>
 </html>

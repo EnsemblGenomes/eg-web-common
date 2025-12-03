@@ -23,7 +23,7 @@ currently use the "Old" method, but are moving to the "New" method in subsequent
 <p>The RNA gene annotation uses three sources:</p>
 
 <ul>
-  <li><a href="http://www.mirbase.org/">miRBase</a> (release 21) [1] provides genomic locations 
+  <li><a href="https://www.mirbase.org/">miRBase</a> (release 21) [1] provides genomic locations 
 of precursor microRNA genes for a subset of species. These are loaded without any filtering.</li>
   <li><a href="http://lowelab.ucsc.edu/tRNAscan-SE/">tRNAscan-SE</a> (version 1.23) [2] is used 
 to predict tRNA genes. tRNA annotation is sometimes difficult in repeat-rich species, leading to 
@@ -32,7 +32,7 @@ distribution of predicted tRNA genes for each division, to determine a score thr
 provides a balance between sensitivity and specificity. For Ensembl Metazoa we use a score 
 threshold of 65, and tRNA genes are not annotated if they would overlap either repeat regions 
 or protein-coding exons.</li>
-  <li><a href="http://rfam.xfam.org/">Rfam</a> (version 12.2) [3] covariance model alignments 
+  <li><a href="https://rfam.xfam.org/">Rfam</a> (version 12.2) [3] covariance model alignments 
 are used to annotate RNA genes of all classes except tRNA. The annotation relies on 
 <a href="/info/genome/dna_align/rfam_alignment.html">taxonomically-appropriate alignments</a> 
 with <i>cmscan</i>, from the <a href="http://eddylab.org/infernal">Infernal</a> (version 1.1.2) 
@@ -61,7 +61,7 @@ base pairing increases. RNA genes are not annotated in areas of high GC or AT co
 <h2>Ensembl Genomes annotation pipeline: Old</h2>
 
 <p>For all <b>ncRNA</b> except <b>tRNA</b> and <b>rRNA</b> genes, models are predicted by 
-aligning a genomic sequence against <a href="http://rfam.sanger.ac.uk/" rel="external">Rfam sequences</a> [5] using <a href="http://blast.ncbi.nlm.nih.gov/Blast.cgi" rel="external">BLASTN</a>. 
+aligning a genomic sequence against <a href="http://rfam.sanger.ac.uk/" rel="external">Rfam sequences</a> [5] using <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi" rel="external">BLASTN</a>. 
 The BLAST hits are then used to seed <a href="http://infernal.janelia.org" rel="external">Infernal</a>
  searches of the aligned regions with the corresponding Rfam covariance models. The purpose of this 
 is to reduce the search space required, as to scan the entire genome with all the Rfam covariance 
@@ -82,7 +82,7 @@ switching to a simpler format, applicable across all divisions, with an "ENSRNA"
 a gene stable identifier, and transcripts of that gene have a suffix with "T" for transcript 
 and a number, e.g. ENSRNA022711053-T1.</p>
 
-<p>Stable identifiers have been mapped, such that <a href="http://metazoa.ensembl.org/Bombyx_mori/Tools/IDMapper?db=core">ID History Converter tool</a> can be used to find new IDs which correspond 
+<p>Stable identifiers have been mapped, such that <a href="https://metazoa.ensembl.org/Bombyx_mori/Tools/IDMapper?db=core">ID History Converter tool</a> can be used to find new IDs which correspond 
 to old IDs (and vice versa). However, note that the new pipeline for RNA gene annotation is 
 more rigorous in its filtering than the old pipeline, so old, unsupported genes may have been 
 deleted and have no mapping to a new ID.</p>
@@ -91,22 +91,22 @@ deleted and have no mapping to a new ID.</p>
 
 <ol>
   <li>
-  <p>Kozomara A and Griffiths-Jones S (2014) <a href="http://europepmc.org/abstract/MED/24275495">miRBase: annotating high confidence microRNAs using deep sequencing data</a> <i>Nucl. Acids Res.</i> <b>42</b> D68-73</p>
+  <p>Kozomara A and Griffiths-Jones S (2014) <a href="https://europepmc.org/abstract/MED/24275495">miRBase: annotating high confidence microRNAs using deep sequencing data</a> <i>Nucl. Acids Res.</i> <b>42</b> D68-73</p>
   </li>
   <li>
-  <p>Lowe TM and Eddy SR (1997) <a href="http://europepmc.org/abstract/MED/9023104">tRNAScan-SE: a program for improved detection of transfer RNA genes in genomic sequence</a> <i>Nucl. Acids Res.</i> <b>25</b> 955-964</p>
+  <p>Lowe TM and Eddy SR (1997) <a href="https://europepmc.org/abstract/MED/9023104">tRNAScan-SE: a program for improved detection of transfer RNA genes in genomic sequence</a> <i>Nucl. Acids Res.</i> <b>25</b> 955-964</p>
   </li>
   <li>
-  <p>Nawrocki EP <i>et al.</i> (2015) <a href="http://europepmc.org/abstract/MED/25392425">Rfam 12.0: updates to the RNA families database</a> <i>Nucl. Acids Res.</i> <b>43</b> D130-37</p>
+  <p>Nawrocki EP <i>et al.</i> (2015) <a href="https://europepmc.org/abstract/MED/25392425">Rfam 12.0: updates to the RNA families database</a> <i>Nucl. Acids Res.</i> <b>43</b> D130-37</p>
   </li>
   <li>
-  <p>Nawrocki EP and Eddy SR (2013) <a href="http://europepmc.org/abstract/MED/24008419">Infernal 1.1: 100-fold faster RNA homology searches</a> <i>Bioinformatics</i> <b>29</b> 2933-2935</p>
+  <p>Nawrocki EP and Eddy SR (2013) <a href="https://europepmc.org/abstract/MED/24008419">Infernal 1.1: 100-fold faster RNA homology searches</a> <i>Bioinformatics</i> <b>29</b> 2933-2935</p>
   </li>
   <li>
-  <p>Burge SW <i>et al.</i> (2013) <a href="http://europepmc.org/abstract/MED/23125362">Rfam 11.0: 10 years of RNA families</a> <i>Nucl. Acids Res.</i> <b>41</b> D226-32</p>
+  <p>Burge SW <i>et al.</i> (2013) <a href="https://europepmc.org/abstract/MED/23125362">Rfam 11.0: 10 years of RNA families</a> <i>Nucl. Acids Res.</i> <b>41</b> D226-32</p>
   </li>
   <li>
-  <p>Lagesen K <i>et al.</i> (2007) <a href="http://europepmc.org/abstract/MED/17452365">RNammer: consistent annotation of rRNA genes in genomic sequences</a> <i>Nucl. Acids Res.</i> <b>35</b> 3100-3108</p>
+  <p>Lagesen K <i>et al.</i> (2007) <a href="https://europepmc.org/abstract/MED/17452365">RNammer: consistent annotation of rRNA genes in genomic sequences</a> <i>Nucl. Acids Res.</i> <b>35</b> 3100-3108</p>
   </li>
 </ol>
 

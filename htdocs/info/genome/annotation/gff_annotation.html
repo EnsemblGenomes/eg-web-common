@@ -9,10 +9,7 @@
 <h1>GFF annotation import</h1>
 
 <p>Gene models for some species are loaded from GFF files provided by the research community. 
-(If the gene models are available in INSDC, however, we usually <a href="/info/data/insdc_annotation/">import directly from INSDC</a>.) In most cases, the GFF files consist of protein-coding genes, 
-pseudogenes, transcripts, exons, and CDS regions. In a small number of cases, the GFF files 
-include non-coding RNA annotation, which is also imported; the GFF type of the ncRNA is used 
-as the biotype in Ensembl Genomes.</p>
+If the gene models are available in INSDC, however, we usually <a href="/info/genome/annotation/insdc_annotation/">import directly from INSDC</a>. In most cases, the GFF files consist of protein-coding genes, pseudogenes, transcripts, exons, and CDS regions. In a small number of cases, the GFF files include non-coding RNA annotation, which is also imported; the GFF type of the ncRNA is used as the biotype in Ensembl Genomes.</p>
 
 <p>When importing genes from a GFF file, we check whether they produce a valid translation, 
 i.e. one without internal stop codons. If there are invalid translations, then we first query 
@@ -22,7 +19,7 @@ we can accommodate changes in either the nucleotide or amino acid sequence, or i
 We aim to minimise these changes, as they add complexity when interpreting the data, and also 
 because the role of Ensembl Genomes is to present, rather than modify, the data of others. 
 If the status of a gene with an invalid translation remains unclear, then it is assigned a 
-"nontranslating CDS" biotype; no protein sequence is associated with such a gene, but it is 
+"non-translating CDS" biotype; no protein sequence is associated with such a gene, but it is 
 otherwise displayed as a normal gene in Ensembl Genomes.</p>
 
 
