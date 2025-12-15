@@ -11,30 +11,29 @@
 <p>Ensembl Genomes provides a RESTful web service giving language-independent programmatic access 
 to data including sequences, genes and gene trees, and tools including assembly conversion and 
 variant effect predictors. Full documentation, including extensive code samples, is available at 
-<a href="http://rest.ensembl.org">http://rest.ensembl.org</a> and 
+<a href="https://rest.ensembl.org">https://rest.ensembl.org</a> and
 <a href="https://github.com/Ensembl/ensembl-rest/wiki">https://github.com/Ensembl/ensembl-rest/wiki</a> </p>
 
 <h2>Accessing Compara Data through the Ensembl REST API</h2>
 
-<p>Note when using the REST API with Compara end-points such as <a href="http://rest.ensembl.org/documentation/info/genetree">genetree</a> or <a href="http://rest.ensembl.org/documentation/info/homology_ensemblgene">homology</a>, the particular compara database to use can be selected using the appropriate compara argument (metazoa, protists, plants, fungi, pan_homology).</p>
+<p>Note when using the REST API with Compara end-points such as <a href="https://rest.ensembl.org/documentation/info/genetree">genetree</a> or <a href="https://rest.ensembl.org/documentation/info/homology_species_gene_id">homology</a>, the particular compara database to use can be selected using the appropriate compara argument (metazoa, protists, plants, fungi, pan_homology).</p>
 
 <p>For example, to select homologies for a given metazoan gene in the default metazoan compara:</p>
 
 <pre>
-<a href="http://rest.ensembl.org/homology/id/DAPPUDRAFT_100962?compara=metazoa&amp;content-type=application/json">http://rest.ensembl.org/homology/id/DAPPUDRAFT_100962?compara=metazoa&amp;content-type=application/json</a></pre>
+<a href="https://rest.ensembl.org/homology/id/drosophila_melanogaster/FBgn0000055?compara=metazoa&amp;content-type=application/json">https://rest.ensembl.org/homology/id/drosophila_melanogaster/FBgn0000055?compara=metazoa&amp;content-type=application/json</a></pre>
 
 <p>To select gene trees for a given fungal gene in the default fungal compara, use the following form of URL:</p>
 
 <pre>
-<a href="http://rest.ensembl.org/homology/id/DAPPUDRAFT_100962?compara=metazoa&amp;content-type=application/json">http://rest.ensembl.org/homology/id/SPBC460.01c?compara=fungi&amp;content-type=application/json</a></pre>
+<a href="https://rest.ensembl.org/genetree/member/id/saccharomyces_cerevisiae/YHR053C?compara=fungi&amp;content-type=application/json">https://rest.ensembl.org/genetree/member/id/saccharomyces_cerevisiae/YHR053C?compara=fungi&amp;content-type=application/json</a></pre>
 
 <p>To select gene trees for a plant gene in the pan-taxonomic compara, use the following form of URL:</p>
 
 <pre>
-<a href="http://rest.ensembl.org/homology/id/AT3G52260?compara=pan_homology&amp;content-type=application/json">http://rest.ensembl.org/homology/id/AT3G52260?compara=pan_homology&amp;content-type=application/json</a></pre>
+<a href="https://rest.ensembl.org/genetree/member/id/vitis_vinifera/Vitis12g00114?compara=plants&amp;content-type=application/json">https://rest.ensembl.org/genetree/member/id/vitis_vinifera/Vitis12g00114?compara=plants&amp;content-type=application/json</a></pre>
 
-<p>The compara argument applies for any compara-related endpoint.</p>
-
+<p>The compara argument applies for any compara-related endpoint, and is recommended.</p>
 
 </body>
 </html>
