@@ -144,6 +144,8 @@ sub content {
     $html .= ".</p>";
   }
 
+  $html .= $self->_show_large_gene_family_info_panel();
+
   ### EG End
 
 
@@ -192,5 +194,7 @@ sub content {
    
   return $html . $table->render;
 }
+
+sub _show_large_gene_family_info_panel {}  # stub method for use in plugins
 
 1;
