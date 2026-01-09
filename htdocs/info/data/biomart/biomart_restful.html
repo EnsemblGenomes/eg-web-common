@@ -30,11 +30,11 @@ The BioMart xml file can be downloaded from the BioMart result page accessible v
 <h2>Using the wget UNIX command</h2>
 <p>Type the following command in your terminal:</p>
 <pre class="code">
-wget -O result.txt 'http://www.ensembl.org/biomart/martservice?query=
+wget -O result.txt 'https://www.ensembl.org/biomart/martservice?query=
 </pre>
 <p>Then copy the content of the previouly saved xml file all in one line after the "query=", you should now have the following:</p>
 <pre class="code">
-wget -O result.txt 'http://www.ensembl.org/biomart/martservice?query=&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;!DOCTYPE Query&gt;&lt;Query  virtualSchemaName = "default" formatter = "TSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" &gt;&lt;Dataset name = "hsapiens_gene_ensembl" interface = "default" &gt;&lt;Filter name = "ensembl_gene_id" value = "ENSG00000139618"/&gt;&lt;Attribute name = "ensembl_gene_id" /&gt;&lt;Attribute name = "ensembl_transcript_id" /&gt;&lt;Attribute name = "hgnc_symbol" /&gt;&lt;Attribute name = "uniprotswissprot" /&gt;&lt;/Dataset&gt;&lt;/Query&gt;'
+wget -O result.txt 'https://www.ensembl.org/biomart/martservice?query=&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;!DOCTYPE Query&gt;&lt;Query  virtualSchemaName = "default" formatter = "TSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" &gt;&lt;Dataset name = "hsapiens_gene_ensembl" interface = "default" &gt;&lt;Filter name = "ensembl_gene_id" value = "ENSG00000139618"/&gt;&lt;Attribute name = "ensembl_gene_id" /&gt;&lt;Attribute name = "ensembl_transcript_id" /&gt;&lt;Attribute name = "hgnc_symbol" /&gt;&lt;Attribute name = "uniprotswissprot" /&gt;&lt;/Dataset&gt;&lt;/Query&gt;'
 </pre>
 <p>Finally, just run the command to get the BioMart data stored inside the "result.txt" file. In our example, we get the following result.txt file:</p>
 <pre class="code">
@@ -54,7 +54,7 @@ git clone --branch cvs/release-0_7 https://github.com/biomart/biomart-perl
 </pre>
 <p>To use the Ensembl marts from the ensembl.org website, just edit the path variable in the biomart-perl/scripts/webExample.pl Perl script to the following:</p>
 <pre class="code">
-my $path="http://www.ensembl.org/biomart/martservice?";
+my $path="https://www.ensembl.org/biomart/martservice?";
 </pre>
 <p>Finally run the biomart-perl/scripts/webExample.pl Perl script with the xml file obtained in the <a href="#biomartxml"=>"Obtaining the BioMart xml"</a> section:</p>
 <pre class="code">

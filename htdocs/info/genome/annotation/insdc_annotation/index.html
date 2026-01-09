@@ -6,11 +6,13 @@
 
 <body>
 
-<p>Many genomes made available through Ensembl Genomes are imported from annotated records in the <a href="http://www.insdc.org/">INSDC</a> archives (<a href="http://www.ebi.ac.uk/ena">ENA</a>, <a href="http://www.ncbi.nlm.nih.gov/genbank/">GenBank</a> and <a href="http://www.ddbj.nig.ac.jp/">DDBJ</a>). This document gives an overview of the steps involved in loading these data. Note that the import pipeline is currently only for internal EBI use as it depends on resources only available within the European Bioinformatics Institute, though the data integrated by this pipeline are made freely available. For more information on how this pipeline is used for Ensembl Bacteria, see <a href="http://bacteria.ensembl.org/info/genome/annotation/insdc_annotation/bacteria_pipeline.html">Ensembl Bacteria import pipeline</a>. </p>
+<h1>INSDC annotation import</h1>
+
+<p>Many genomes made available through Ensembl Genomes are imported from annotated records in the <a href="https://www.insdc.org/">INSDC</a> archives (<a href="https://www.ebi.ac.uk/ena">ENA</a>, <a href="https://www.ncbi.nlm.nih.gov/genbank/">GenBank</a> and <a href="https://www.ddbj.nig.ac.jp/">DDBJ</a>). This document gives an overview of the steps involved in loading these data. Note that the import pipeline is currently only for internal EBI use as it depends on resources only available within the European Bioinformatics Institute, though the data integrated by this pipeline are made freely available. For more information on how this pipeline is used for Ensembl Bacteria, see <a href="https://bacteria.ensembl.org/info/genome/annotation/insdc_annotation/bacteria_pipeline.html">Ensembl Bacteria import pipeline</a>. </p>
 
 <h2>Genome identification</h2>
 
-<p>Genomes imported from <a href="http://www.insdc.org/">INSDC</a> are uniquely identified by an INSDC assembly accession corresponding to an entry in the INSDC <a href="http://www.ebi.ac.uk/ena/about/genome_assembly_database">Genome Assembly Database</a>, which is used as an authorative source of assemblies. Each assembly record comprises basic metadata about the organism plus INSDC accessions for replicons, unassembled scaffolds and WGS sets.</p>
+<p>Genomes imported from <a href="https://www.insdc.org/">INSDC</a> are uniquely identified by an INSDC assembly accession corresponding to an entry in the INSDC <a href="https://www.ebi.ac.uk/ena/about/genome_assembly_database">Genome Assembly Database</a>, which is used as an authoritative source of assemblies. Each assembly record comprises basic metadata about the organism plus INSDC accessions for replicons, unassembled scaffolds and WGS sets.</p>
 
 <h2>Gene model generation</h2>
 
@@ -36,14 +38,14 @@
   </li>
   <li>process each translations in the generated model to:
     <ul>
-      <li>find the corresponding entry in <a href="http://www.uniprot.org/help/uniparc">UniParc</a> based on INSDC protein_id cross-references</li>
-      <li>use <a href="http://www.uniprot.org/help/uniparc">UniParc</a> identifiers to retrieve matches from <a href="https://www.ebi.ac.uk/interpro/">InterPro</a> to create protein features</li>
-      <li>use <a href="http://www.uniprot.org/">UniProtKB</a> identifiers to retrieve annotation from <a href="https://www.ebi.ac.uk/GOA">GOA</a>, or if no <a href="http://www.uniprot.org/">UniProtKB</a> mapping found, use <a href="https://www.ebi.ac.uk/interpro/">InterPro</a> signatures to retrieve annotation from <a href="https://www.ebi.ac.uk/GOA">GOA</a> using the InterPro2GO mapping.</li>
-      <li>use <a href="http://www.uniprot.org/">UniProtKB</a> identifiers to retrieve selected cross-references to other resources from the corresponding <a href="http://www.uniprot.org/">UniProtKB</a> record</li>
+      <li>find the corresponding entry in <a href="https://www.uniprot.org/help/uniparc">UniParc</a> based on INSDC protein_id cross-references</li>
+      <li>use <a href="https://www.uniprot.org/help/uniparc">UniParc</a> identifiers to retrieve matches from <a href="https://www.ebi.ac.uk/interpro/">InterPro</a> to create protein features</li>
+      <li>use <a href="https://www.uniprot.org/">UniProtKB</a> identifiers to retrieve annotation from <a href="https://www.ebi.ac.uk/GOA">GOA</a>, or if no <a href="https://www.uniprot.org/">UniProtKB</a> mapping found, use <a href="https://www.ebi.ac.uk/interpro/">InterPro</a> signatures to retrieve annotation from <a href="https://www.ebi.ac.uk/GOA">GOA</a> using the InterPro2GO mapping.</li>
+      <li>use <a href="https://www.uniprot.org/">UniProtKB</a> identifiers to retrieve selected cross-references to other resources from the corresponding <a href="https://www.uniprot.org/">UniProtKB</a> record</li>
     </ul>
   </li>
   <li>load imported genomes into Ensembl core MySQL databases.</li>
-  <li>Additional non-coding RNA gene models are generated based on available alignments of <a href="http://rfam.xfam.org">Rfam</a> family models to available INSDC genomic sequences.</li>
+  <li>Additional non-coding RNA gene models are generated based on available alignments of <a href="https://rfam.xfam.org">Rfam</a> family models to available INSDC genomic sequences.</li>
 </ul>
 
 <h2>Gene Identifier Assignment</h2>
