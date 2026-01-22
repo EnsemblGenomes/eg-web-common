@@ -53,10 +53,16 @@ sub species_set_config {
     my $compara_spp = EnsEMBL::Web::Utils::Compara::orthoset_prod_names($self->hub, $cdb, $is_strain_view);
     my $lookup      = $species_defs->prodnames_to_urls_lookup;
 
+    my $pan_info;
     foreach my $prod_name (@$compara_spp) {
 
       my $species = $lookup->{$prod_name};
-      my $group   = $species_defs->get_config($species, 'SPECIES_GROUP') || 'Undefined';
+      my $group   = $species_defs->get_config($species, 'SPECIES_GROUP');
+
+      if (!defined $group) {
+        $pan_info = $species_defs->multi_val('PAN_COMPARA_LOOKUP') if (!defined $pan_info);
+        $group = $pan_info->{$prod_name}{'subdivision'} || $pan_info->{$prod_name}{'division'} || 'Undefined';
+      }
 
       if (!exists $species_sets->{$group}){
         $species_sets->{$group} = {'title' => ucfirst $group};
@@ -64,7 +70,7 @@ sub species_set_config {
       }
     }
 
-    @$set_order = sort (@unsorted);
+    @$set_order = sort { lc($a) cmp lc($b) } (@unsorted);  # groups may have inconsistent capitalisation at this point
     unshift(@$set_order, 'all');
   }
   return ($set_order, $species_sets);
