@@ -79,7 +79,7 @@ sub content {
 
 sub default_file_name {
   my $self = shift;
-  my $name = $self->hub->species_defs->SPECIES_DISPLAY_NAME;
+  (my $name = $self->hub->species_defs->SPECIES_DISPLAY_NAME) =~ s/ /_/g;
 
   $name .= '_'.$self->hub->param('gene_name').'_homoeologues';
   return $name;
