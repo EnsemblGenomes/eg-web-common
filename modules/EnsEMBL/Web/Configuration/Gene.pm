@@ -110,7 +110,7 @@ sub modify_tree {
               paralogues EnsEMBL::Web::Component::Gene::ComparaHomoeologs
               )
           ],
-          {'availability' => 'gene database:compara core has_strain_homoeologs', 'concise' => 'Homoeologues'}
+          {'availability' => 'gene database:compara core has_strain_gene_tree has_strain_homoeologs', 'concise' => 'Homoeologues'}
         ),
         $self->create_node(
           'Strain_Compara_Homoeolog/Alignment',
@@ -120,7 +120,7 @@ sub modify_tree {
               alignment EnsEMBL::Web::Component::Gene::HomologAlignment
               )
           ],
-          {'availability' => 'gene database:compara core has_strain_homoeologs', 'no_menu_entry' => 1}
+          {'availability' => 'gene database:compara core has_strain_gene_tree has_strain_homoeologs', 'no_menu_entry' => 1}
         )
       );
     }
