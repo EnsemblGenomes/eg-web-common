@@ -25,6 +25,7 @@ use strict;
 
 use Math::Round;
 use EnsEMBL::Web::Document::Table;
+use Bio::EnsEMBL::Compara::Method;
 use Bio::EnsEMBL::Compara::Utils::SpeciesTree;
 use Data::Dumper;
 
@@ -189,6 +190,12 @@ sub table {
       my $xbg = $j++ % 2 ? 'bg1' : 'bg2';
       my $astr = qq{<table cellpadding="0" cellspacing="2" style="width:100%">};
       foreach my $a (sort keys %{$adata->{$ss} || {}}) {
+
+            my $a_name = exists $Bio::EnsEMBL::Compara::Method::PLAIN_TEXT_DESCRIPTIONS{$a}
+                       ? $Bio::EnsEMBL::Compara::Method::PLAIN_TEXT_DESCRIPTIONS{$a}
+                       : $a
+                       ;
+
 		    my ($aid, $stats) = @{$adata->{$ss}->{$a} || []};
 		    my $sample_location = '&nbsp;';
         my $species_url     = $sdata->{'url'};
@@ -203,7 +210,7 @@ sub table {
 		    }
 		    $astr .= sprintf qq{<tr>
 <td style="padding:0px 10px 0px 0px;text-align:right;">&nbsp;</td>
-<td style="padding:0px 10px 0px 0px;text-align:right;widht:20px">$a |</td>
+<td style="padding:0px 10px 0px 0px;text-align:right;widht:20px">$a_name |</td>
 <td style="padding:0px 10px 0px 0px;text-align:left;width:60px;">%s</td>
 <td style="padding:0px 10px 0px 0px;text-align:left;width:40px;">%s</td><tr>},
 $sample_location,
