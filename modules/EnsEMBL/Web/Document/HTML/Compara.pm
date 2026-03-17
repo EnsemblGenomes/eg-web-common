@@ -25,6 +25,7 @@ use strict;
 
 use Math::Round;
 use EnsEMBL::Web::Document::Table;
+use Bio::EnsEMBL::Compara::Method;
 use Bio::EnsEMBL::Compara::Utils::SpeciesTree;
 use Data::Dumper;
 
@@ -147,7 +148,7 @@ sub table {
   my ($self, $species) = @_;
     
   my $hub  = $self->hub;
-  my $methods = ['SYNTENY', 'TRANSLATED_BLAT_NET','BLASTZ_NET', 'LASTZ_NET', 'ATAC'];
+  my $methods = ['SYNTENY', 'TRANSLATED_BLAT_NET','BLASTZ_NET', 'LASTZ_NET', 'POLYPLOID', 'CACTUS_HAL_PW', 'ATAC'];
   my $data = get_compara_alignments($hub->database('compara'), $methods);
 
   my $thtml = qq{<table id="genomic_align_table" class="no_col_toggle ss autocenter" style="width: 100%" cellpadding="0" cellspacing="0">};
@@ -189,19 +190,27 @@ sub table {
       my $xbg = $j++ % 2 ? 'bg1' : 'bg2';
       my $astr = qq{<table cellpadding="0" cellspacing="2" style="width:100%">};
       foreach my $a (sort keys %{$adata->{$ss} || {}}) {
+
+            my $a_name = exists $Bio::EnsEMBL::Compara::Method::PLAIN_TEXT_DESCRIPTIONS{$a}
+                       ? $Bio::EnsEMBL::Compara::Method::PLAIN_TEXT_DESCRIPTIONS{$a}
+                       : $a
+                       ;
+
 		    my ($aid, $stats) = @{$adata->{$ss}->{$a} || []};
 		    my $sample_location = '&nbsp;';
         my $species_url     = $sdata->{'url'};
 		    if ($sdata->{'sample_loc'}) {
 		      if ($a =~ /SYNTENY/) {
 			      $sample_location = sprintf qq{<a href="/%s/Location/Synteny?r=%s;otherspecies=%s">example</a>},$species_url,$sdata->{'sample_loc'}, $data->{$ss}{'url'};
+		      } elsif ($a =~ /POLYPLOID/) {
+                  $sample_location = sprintf qq{<a href="/%s/Location/MultiPolyploid?db=core;r=%s">example</a>},$species_url,$sdata->{'sample_loc'};
 		      } else {
 			      $sample_location = sprintf qq{<a href="/%s/Location/Compara_Alignments/Image?align=%s;r=%s">example</a>},$species_url,$aid,$sdata->{'sample_loc'};
 		      }
 		    }
 		    $astr .= sprintf qq{<tr>
 <td style="padding:0px 10px 0px 0px;text-align:right;">&nbsp;</td>
-<td style="padding:0px 10px 0px 0px;text-align:right;widht:20px">$a |</td>
+<td style="padding:0px 10px 0px 0px;text-align:right;widht:20px">$a_name |</td>
 <td style="padding:0px 10px 0px 0px;text-align:left;width:60px;">%s</td>
 <td style="padding:0px 10px 0px 0px;text-align:left;width:40px;">%s</td><tr>},
 $sample_location,
@@ -266,30 +275,42 @@ sub get_compara_alignments {
   
  my $dbh = $compara_db->dbc->db_handle;
  
- my $genome_dbs = $dbh->selectall_arrayref(
-          "SELECT ml.type, gd.name, mlss.method_link_species_set_id, ss.species_set_id, 
-           mlsst_ref.value AS ref_species, mlsst_blocks.value AS num_blocks
+ my $rows = $dbh->selectall_arrayref(
+          "SELECT ml.type,
+                  gd1.name AS gd1_name,
+                  gd2.name AS gd2_name,
+                  mlss.method_link_species_set_id,
+                  mlsst_blocks.value AS num_blocks
            FROM method_link ml
-                JOIN method_link_species_set mlss USING (method_link_id)
-                JOIN species_set ss USING (species_set_id)
-                JOIN genome_db gd USING (genome_db_id)
-                LEFT JOIN method_link_species_set_tag mlsst_ref USING (method_link_species_set_id)
-                LEFT JOIN method_link_species_set_tag mlsst_blocks USING (method_link_species_set_id)
+                JOIN method_link_species_set mlss
+                  USING (method_link_id)
+                JOIN species_set_header ssh
+                  USING (species_set_id)
+                JOIN species_set ss1
+                  ON ss1.species_set_id = ssh.species_set_id
+                JOIN genome_db gd1
+                  ON gd1.genome_db_id = ss1.genome_db_id
+                JOIN species_set ss2
+                  ON ss2.species_set_id = ssh.species_set_id
+                JOIN genome_db gd2
+                  ON gd2.genome_db_id = ss2.genome_db_id
+                LEFT JOIN method_link_species_set_tag mlsst_blocks
+                  ON mlsst_blocks.method_link_species_set_id = mlss.method_link_species_set_id
+                  AND mlsst_blocks.tag = 'num_blocks'
            WHERE 
-                ml.type IN ('SYNTENY', 'TRANSLATED_BLAT_NET', 'BLASTZ_NET', 'LASTZ_NET', 'ATAC')
-                AND mlsst_ref.tag = 'reference_species'
-                AND mlsst_blocks.tag = 'num_blocks'
-                ORDER BY name", { Slice => {} }
+                ml.type IN ('SYNTENY', 'TRANSLATED_BLAT_NET', 'BLASTZ_NET', 'LASTZ_NET', 'POLYPLOID', 'CACTUS_HAL_PW', 'ATAC')
+                AND (ssh.size = 1 OR gd1.genome_db_id < gd2.genome_db_id)
+                ORDER BY gd1.name, gd2.name", { Slice => {} }
         ); 
         
         
         my $data = {};
         
-        if(scalar(@$genome_dbs)){
-            foreach my $genome_db(@$genome_dbs){
-                if($genome_db->{'ref_species'} ne $genome_db->{'name'}){
-                    $data->{$genome_db->{'ref_species'}}->{align}->{$genome_db->{'name'}}->{$genome_db->{'type'}} = [$genome_db->{'method_link_species_set_id'},  $genome_db->{'num_blocks'} ? 1 : 0];
-                    $data->{$genome_db->{'name'}}->{align}->{$genome_db->{'ref_species'}}->{$genome_db->{'type'}} = [$genome_db->{'method_link_species_set_id'},  $genome_db->{'num_blocks'} ? 1 : 0];
+        if(scalar(@$rows)){
+            foreach my $row (@$rows){
+                $data->{$row->{'gd1_name'}}->{align}->{$row->{'gd2_name'}}->{$row->{'type'}} = [$row->{'method_link_species_set_id'},  $row->{'num_blocks'} ? 1 : 0];
+                if($row->{'gd2_name'} ne $row->{'gd1_name'}){
+                    $data->{$row->{'gd2_name'}}->{align}->{$row->{'gd1_name'}}->{$row->{'type'}} = [$row->{'method_link_species_set_id'},  $row->{'num_blocks'} ? 1 : 0];
                 }
             }
          }
