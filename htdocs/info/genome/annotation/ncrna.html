@@ -32,7 +32,7 @@ distribution of predicted tRNA genes for each division, to determine a score thr
 provides a balance between sensitivity and specificity. For Ensembl Metazoa we use a score 
 threshold of 65, and tRNA genes are not annotated if they would overlap either repeat regions 
 or protein-coding exons.</li>
-  <li><a href="https://rfam.xfam.org/">Rfam</a> (version 12.2) [3] covariance model alignments 
+  <li><a href="https://rfam.org/">Rfam</a> (version 12.2) [3] covariance model alignments
 are used to annotate RNA genes of all classes except tRNA. The annotation relies on 
 <a href="/info/genome/dna_align/rfam_alignment.html">taxonomically-appropriate alignments</a> 
 with <i>cmscan</i>, from the <a href="http://eddylab.org/infernal">Infernal</a> (version 1.1.2) 
@@ -61,15 +61,15 @@ base pairing increases. RNA genes are not annotated in areas of high GC or AT co
 <h2>Ensembl Genomes annotation pipeline: Old</h2>
 
 <p>For all <b>ncRNA</b> except <b>tRNA</b> and <b>rRNA</b> genes, models are predicted by 
-aligning a genomic sequence against <a href="http://rfam.sanger.ac.uk/" rel="external">Rfam sequences</a> [5] using <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi" rel="external">BLASTN</a>. 
-The BLAST hits are then used to seed <a href="http://infernal.janelia.org" rel="external">Infernal</a>
+aligning a genomic sequence against <a href="https://rfam.org/" rel="external">Rfam sequences</a> [5] using <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi" rel="external">BLASTN</a>.
+The BLAST hits are then used to seed <a href="http://eddylab.org/infernal/" rel="external">Infernal</a>
  searches of the aligned regions with the corresponding Rfam covariance models. The purpose of this 
 is to reduce the search space required, as to scan the entire genome with all the Rfam covariance 
 models would be extremely CPU-intensive.</p>
 
-<p><b>tRNA</b> is predicted by using <a href="http://selab.janelia.org/tRNAscan-SE">tRNAScan-SE</a> software [2]. Version 1.23 of the program was used, configured for superregnum as appropriate.</p>
+<p><b>tRNA</b> is predicted by using <a href="http://lowelab.ucsc.edu/tRNAscan-SE/">tRNAScan-SE</a> software [2]. Version 1.23 of the program was used, configured for superregnum as appropriate.</p>
 
-<p><b>rRNA</b> is predicted by using <a href="http://www.cbs.dtu.dk/services/RNAmmer">RNAmmer</a> software [6]. Version 1.2 of the program was used, configured for superregnum as appropriate.</p>
+<p><b>rRNA</b> is predicted by using <a href="https://services.healthtech.dtu.dk/service.php?RNAmmer-1.2">RNAmmer</a> software [6]. Version 1.2 of the program was used, configured for superregnum as appropriate.</p>
 
 <h2>Stable identifiers</h2>
 
@@ -82,7 +82,7 @@ switching to a simpler format, applicable across all divisions, with an "ENSRNA"
 a gene stable identifier, and transcripts of that gene have a suffix with "T" for transcript 
 and a number, e.g. ENSRNA022711053-T1.</p>
 
-<p>Stable identifiers have been mapped, such that <a href="https://metazoa.ensembl.org/Bombyx_mori/Tools/IDMapper?db=core">ID History Converter tool</a> can be used to find new IDs which correspond 
+<p>Stable identifiers have been mapped, such that <a href="https://plants.ensembl.org/Multi/Tools/IDMapper?db=core">ID History Converter tool</a> can be used to find new IDs which correspond
 to old IDs (and vice versa). However, note that the new pipeline for RNA gene annotation is 
 more rigorous in its filtering than the old pipeline, so old, unsupported genes may have been 
 deleted and have no mapping to a new ID.</p>
