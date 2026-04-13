@@ -51,7 +51,8 @@ sub content {
     link  => $hub->url({ 
       type   => 'Location', 
       action => $action, 
-      region => $slice_name 
+      region => $slice_name,
+      r => sprintf '%s:%s-%s', map $top_level_slice->$_, qw(seq_region_name start end)
     })
   }) unless $no_center_on_contig;
   
@@ -137,7 +138,8 @@ sub content {
       link  => $hub->url({
         type   => 'Location', 
         action => $action, 
-        region => $new_slice_name
+        region => $new_slice_name,
+        r => sprintf '%s:%s-%s', map $new_slice->$_, qw(seq_region_name start end)
       })
     });
 
