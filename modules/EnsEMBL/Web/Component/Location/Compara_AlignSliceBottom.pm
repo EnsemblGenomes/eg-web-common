@@ -131,6 +131,7 @@ sub content {
   my ($alert_box, $error) = $self->check_for_align_problems({
                                 'align'   => $align, 
                                 'species' => $prodname, 
+                                'ignore'  => 'ancestral_sequences',
                                 'image'   => $self->has_image,
                                 'cdb'     => $self->param('cdb') || 'compara',
                                 });
