@@ -25,7 +25,7 @@ use LWP::UserAgent;
 
 use EnsEMBL::Web::Utils::Compara;
 
-use previous qw(munge_config_tree munge_databases_multi);
+use previous qw(munge_config_tree munge_databases_multi _summarise_compara_alignments);
 
 sub munge_config_tree {
   my $self = shift;
@@ -69,6 +69,14 @@ sub _homologies_sql {
       group by mls.method_link_species_set_id, mls.method_link_id
       having count = 1
   );
+}
+
+sub _summarise_compara_alignments {
+  my ($self, $dbh, $db_name, $constraint) = @_;
+
+  return if $constraint && keys %$constraint;
+
+  return $self->PREV::_summarise_compara_alignments(@_);
 }
 
 sub _go_sql {
