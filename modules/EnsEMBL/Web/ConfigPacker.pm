@@ -23,12 +23,20 @@ no warnings qw(uninitialized);
 
 use LWP::UserAgent;
 
-use previous qw(munge_config_tree);
+use EnsEMBL::Web::Utils::Compara;
+
+use previous qw(munge_config_tree munge_databases_multi);
 
 sub munge_config_tree {
   my $self = shift;
   $self->PREV::munge_config_tree(@_);
   $self->_configure_external_resources;
+}
+
+sub munge_databases_multi {
+  my $self = shift;
+  $self->PREV::munge_databases_multi(@_);
+  $self->_summarise_eg_alignment_metadata;
 }
 
 sub _intraspecies_sql {
@@ -124,6 +132,14 @@ sub _configure_external_resources {
       }
     }
   }
+}
+
+sub _summarise_eg_alignment_metadata {
+  my $self = shift;
+  my $db_name = 'DATABASE_COMPARA';
+  my $dbh = $self->db_connect($db_name);
+  $self->db_tree->{$db_name}{'EG_ALIGNMENT_METADATA'} = EnsEMBL::Web::Utils::Compara::_query_compara_alignments($dbh);
+  $dbh->disconnect;
 }
 
 1;
