@@ -44,22 +44,16 @@ sub content {
   my $compara_db       = $object->database('compara');
   my $family_adaptor   = $compara_db->get_FamilyAdaptor;
   my $family           = $family_adaptor->fetch_by_stable_id($gene_family_id);
-  my @all_members      = @{ $family->get_all_Members };
-  my $filtered_data    = $object->filtered_family_data($family);
-  my %filtered_members = map {$_->{species} . '|' . $_->{id} => $_} @{$filtered_data->{members}};
+  my $filtered_data    = $object->filtered_family_data($family, 1);
   my $html = '';
 
   my $lookup = $species_defs->prodnames_to_urls_lookup;
-  foreach my $member (@all_members) {
-    my $member_id   = $member->stable_id;
-    my $member_key  = $member->genome_db->name . '|' . $member_id;
-    my $member_data = $filtered_members{$member_key};
-    next unless $member_data;
+  foreach my $member_data (@{$filtered_data->{members}}) {
 
-    my $sequence = $member->sequence;
+    my $sequence = $member_data->{sequence};
     next unless $sequence;
 
-    my $title = join ' ', $member_id, $member_data->{description}, '('.$species_defs->species_label($lookup->{$member_data->{species}}).')';
+    my $title = join ' ', $member_data->{id}, $member_data->{description}, '('.$species_defs->species_label($lookup->{$member_data->{species}}).')';
     $title   .= " (gene=$member_data->{name})" if $member_data->{name};
 
     if($format =~ /^text$/i){
