@@ -185,7 +185,7 @@ sub get_go_list {
 }
 
 sub filtered_family_data {
-  my ($self, $family) = @_;
+  my ($self, $family, $include_sequences) = @_;
   my $hub       = $self->hub;
   my $family_id = $family->stable_id;
   
@@ -197,29 +197,35 @@ sub filtered_family_data {
   } 
 
   if(!@$members) {
-    my $member_objs = $family->get_all_Members;
 
-    # API too slow, use raw SQL to get stable_id, name and desc for all genes
-    my $gene_info = $self->database('compara')->dbc->db_handle->selectall_hashref(
-      'SELECT g.gene_member_id, g.stable_id, g.display_label, g.description FROM family f
+    # API too slow, use raw SQL to get the data we need
+    my $gene_rows = $self->database('compara')->dbc->db_handle->selectall_arrayref(
+      'SELECT
+           g.display_label,
+           g.stable_id,
+           s.stable_id,
+           s.taxon_id,
+           g.description,
+           gdb.name
+       FROM family f
        JOIN family_member fm USING (family_id) 
        JOIN seq_member s USING (seq_member_id) 
+       JOIN genome_db gdb USING (genome_db_id)
        JOIN gene_member g USING (gene_member_id) 
        WHERE f.stable_id = ?',
-      'gene_member_id',
       undef,
       $family_id
     );
 
-    foreach my $member (@$member_objs) {
-      my $gene = $gene_info->{$member->gene_member_id};
+    foreach my $row ( @$gene_rows ) {
+      my ($gene_name, $gene_stable_id, $member_stable_id, $taxon_id, $gene_description, $genome_db_name) = @$row;
       push (@$members, {
-        name        => $gene->{display_label},
-        gene_id     => $gene->{stable_id},
-        id          => $member->stable_id,
-        taxon_id    => $member->taxon_id,
-        description => $gene->{description},
-        species     => $member->genome_db->name
+        name        => $gene_name,
+        gene_id     => $gene_stable_id,
+        id          => $member_stable_id,
+        taxon_id    => $taxon_id,
+        description => $gene_description,
+        species     => $genome_db_name,
       });  
     }
 
@@ -231,6 +237,29 @@ sub filtered_family_data {
     $temp_file->print($hub->jsonify($members));
     
   }  
+
+  if ($include_sequences) {
+
+    # A majority of gene families have at least some redundant sequences, so we fetch
+    # sequences by their member stable_id, then match each sequence to its associated members.
+    my $seq_recs = $self->database('compara')->dbc->db_handle->selectall_hashref(
+      'SELECT s.stable_id AS member_stable_id, sequence
+       FROM family f
+       JOIN family_member fm USING (family_id)
+       JOIN seq_member s USING (seq_member_id)
+       JOIN sequence USING (sequence_id)
+       WHERE f.stable_id = ?',
+       'member_stable_id',
+       undef,
+       $family_id
+    );
+
+    foreach my $member (@$members) {
+      my $member_stable_id = $member->{id};
+      my $seq_rec = $seq_recs->{$member_stable_id};
+      $member->{sequence} = $seq_rec->{sequence};
+    }
+  }
   
   my $total_member_count  = scalar @$members;
      
