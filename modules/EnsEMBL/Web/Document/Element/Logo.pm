@@ -63,12 +63,12 @@ sub site_menu {
       <span id="site_menu_button">&#9660;</span>
       <ul id="site_menu" style="display:none">
         <li><a href="http://www.ensemblgenomes.org">Ensembl Genomes</a></li>
-        <li><a href="http://bacteria.ensembl.org">Ensembl Bacteria</a></li>
-        <li><a href="http://protists.ensembl.org">Ensembl Protists</a></li>
-        <li><a href="http://fungi.ensembl.org">Ensembl Fungi</a></li>
-        <li><a href="http://plants.ensembl.org">Ensembl Plants</a></li>
-        <li><a href="http://metazoa.ensembl.org">Ensembl Metazoa</a></li>
-        <li><a href="http://www.ensembl.org">Ensembl (vertebrates)</a></li>
+        <li><a href="http://jun2026-bacteria.ensembl.org">Ensembl Bacteria</a></li>
+        <li><a href="http://jun2026-protists.ensembl.org">Ensembl Protists</a></li>
+        <li><a href="http://jun2026-fungi.ensembl.org">Ensembl Fungi</a></li>
+        <li><a href="http://jun2026-plants.ensembl.org">Ensembl Plants</a></li>
+        <li><a href="http://jun2026-metazoa.ensembl.org">Ensembl Metazoa</a></li>
+        <li><a href="http://jun2026.archive.ensembl.org">Ensembl (vertebrates)</a></li>
       </ul>
     </span>
   };
